@@ -18,6 +18,7 @@ export const chatElementSchema=z.union([
 ]);
 export const chatPlanSchema=z.object({
  summary:z.string().min(1).max(1200),
+ replaceCurrent:z.boolean().default(false),
  reviews:z.array(reviewSchema).max(7),
  badgeBatch:z.object({sourceId:id.nullable(),people:z.array(z.object({name:z.string().min(1).max(48),role:z.string().max(55),city:z.string().max(45)}).strict()).max(64),city:z.string().max(45),role:z.string().max(55)}).strict().nullable(),
  designs:z.array(z.object({title:z.string().min(1).max(100),reference:z.enum(communityReferenceIds),visualTreatment:z.enum(['brand-scene','retained-visual','typographic']),width:z.number().int().min(200).max(communityWorkingCanvasLimit),height:z.number().int().min(200).max(communityWorkingCanvasLimit),background:z.literal('ink'),elements:z.array(chatElementSchema).min(1).max(60)}).strict()).max(6),
@@ -29,6 +30,7 @@ const snapshotBlock=z.object({id,kind:z.string().max(30),frame:z.record(z.string
 export const chatRequestSchema=z.object({
  prompt:z.string().trim().min(1).max(4000),title:z.string().max(100),width:z.number().min(100).max(4000),height:z.number().min(100).max(4000),
  availablePageSlots:z.number().int().min(0).max(64).optional(),
+ startingTemplate:z.boolean().optional(),
  blocks:z.array(snapshotBlock).max(200),context:z.string().max(6000).optional(),
  conversation:z.array(z.object({user:z.boolean(),text:z.string().max(8000)}).strict()).max(16),
  sources:z.array(z.object({id,name:z.string().max(160),kind:z.enum(['image','text','link']),text:z.string().max(20000).optional(),image:z.string().max(400000).regex(/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/).optional()}).strict()).max(6),
@@ -36,11 +38,15 @@ export const chatRequestSchema=z.object({
 }).strict();
 export function validateChatPlan(value,request){
  const plan=chatPlanSchema.parse(value);
+ if(request.startingTemplate&&(plan.designs.length||plan.badgeBatch))plan.replaceCurrent=true;
  if(plan.badgeBatch&&(plan.designs.length||plan.edits.length||plan.removeIds.length))throw Error('Create a badge batch separately from other designs or edits.');
  if(plan.designs.length&&(plan.edits.length||plan.removeIds.length))throw Error('Create designs or edit the current canvas, not both.');
- plan.badgeBatch=resolveBadgeBatch(plan.badgeBatch,request);
- if(plan.designs.length>(request.availablePageSlots??64))throw Error('This canvas is full. Start another canvas or remove an asset before generating more.');
+ if(plan.replaceCurrent&&!plan.designs.length&&!plan.badgeBatch)throw Error('Replacing the current asset needs a complete design.');
+ if(plan.replaceCurrent&&request.blocks.some(block=>block.frame?.locked))throw Error('Unlock the current asset before replacing its composition.');
+ plan.badgeBatch=resolveBadgeBatch(plan.badgeBatch,{...request,availablePageSlots:(request.availablePageSlots??64)+(plan.replaceCurrent?1:0)});
+ if(plan.designs.length-(plan.replaceCurrent?1:0)>(request.availablePageSlots??64))throw Error('This canvas is full. Start another canvas or remove an asset before generating more.');
  let selected=[];try{if(request.context?.startsWith('HTML_SELECTION '))selected=JSON.parse(request.context.slice(15)).blockIds??[];}catch{}
+ if(plan.replaceCurrent&&selected.length)throw Error('Clear the element selection before replacing the entire asset.');
  if(!plan.designs.length&&selected.length){
   const changed=[...plan.edits.filter(e=>request.blocks.some(b=>b.id===e.id)).map(e=>e.id),...plan.removeIds];
   if(changed.some(id=>!selected.includes(id)))throw Error('The edit changed an unselected element. Please retry.');

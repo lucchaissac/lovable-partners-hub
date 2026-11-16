@@ -8,6 +8,14 @@ const request={prompt:'Make name badges for our event in Paris.',title:'Event',w
 const batch={reviews:[],summary:'Created the name badges.',badgeBatch:{sourceId:'attachment-0',people:[],city:'Paris',role:''},designs:[],edits:[],removeIds:[]};
 const withCsv=text=>({...request,sources:[{id:'attachment-0',name:'people.csv',kind:'text',text}]});
 
+test('A first badge batch consumes the starting template instead of leaving a spare event page',()=>{
+ const csv=['name',...Array.from({length:64},(_,i)=>`Guest ${i+1}`)].join('\n');
+ const result=validateChatPlan(batch,{...withCsv(csv),startingTemplate:true});
+ assert.equal(result.replaceCurrent,true);
+ assert.equal(result.badgeBatch.people.length,64);
+ assert.throws(()=>validateChatPlan(batch,withCsv(csv)),/64 people.*63 more/);
+});
+
 test('CSV supports quoted names, escaped quotes, multiline fields, BOM, CRLF and ignored columns',()=>{
  assert.deepEqual(parseCommunityRoster('\uFEFFname,role,city,email\r\n"Martin, Camille","Designer,\nmaker",Paris,ignored@example.test\r\n"Alex ""Al"" Moreau",,Lyon,'),[
   {name:'Martin, Camille',role:'Designer, maker',city:'Paris'},

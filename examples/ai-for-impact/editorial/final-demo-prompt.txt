@@ -1,0 +1,18 @@
+Refais entièrement la proposition active et remplace-la, puis ajoute exactement deux alternatives : il doit rester seulement trois propositions AI for impact dans ce canvas. Les anciennes variantes et Event Paris ont été retirés. Garde les trois canvases à 1080 × 1080 px, quelle que soit la résolution des images.
+
+Correction importante : ce sont des images vues en petit. Le logo, le titre, le sous-titre et surtout le visuel doivent avoir beaucoup plus de présence. Pas de petites illustrations flottant dans une grande surface vide. La signature reste le lockup Lovable Community original, intact, à x=y=43.2, largeur 407.025 et hauteur 40.003 : même proportion que le master, agrandi de 1.25 pour cette composition éditoriale. Camera Plain Bold 700, fond #1b1b1b, texte clair.
+
+Pièce 1 : nouvelle photographie générée d’un groupe divers qui crée ensemble, avec une femme noire ; la grande zone sombre est volontairement prévue pour le texte. C’est une illustration de démo, pas une photo d’un événement réel. Pièce 2 : collage détouré. Utilise uniquement ces deux visuels pour remplacer les anciennes images ; aucun MacBook, globe ou calque résiduel.
+
+1. « AI for impact · Idée collective » : garde le layout demandé, titre très grand « AI for
+impact » à gauche : x43.2, y300, largeur590, hauteur350, taille180, interligne92%. Sous-titre « Build something
+that matters » x43.2, y700, largeur550, hauteur150, taille64, interligne105%. Le collage devient énorme à droite : x615, y330, 750 × 750, image contain sans crop interne, opacité1. Son débordement à droite est une coupe éditoriale volontaire, pas une raison de l’ajuster plus petit. Sa partie gauche reste hors des lettres ; aucun arrondi ni bordure.
+2. « AI for impact · Au flash » : photo 1 réellement plein cadre : x0 y0 largeur1080 hauteur1080, placement background, fit cover, crop null, opacité1, en premier dans les calques. Garde la vraie lumière de la photo, aucun voile sur les personnes. La signature et les mots sont dans la zone sombre : titre « AI for
+impact » x43.2 y160 largeur650 hauteur350, taille180, interligne92%. Sous-titre « Build something
+that matters » x43.2 y530 largeur600 hauteur130, taille56, interligne105%. Les mots restent hors des visages.
+3. « AI for impact · Matière » : titre « AI for
+impact » x43.2 y150 largeur650 hauteur350, taille180, interligne92%. Sous-titre « Build
+something
+that matters » x720 y250 largeur317 hauteur200, taille52, interligne110%. Très grand collage en bas, x150 y520, 850 × 850, sans déformation ni fond blanc ; il déborde volontairement en bas.
+
+Les trois directions sont des compositions éditoriales retained-visual. Respecte ces échelles, les sauts de ligne et la place réservée à chaque bloc ; ne réduis ni les images ni les caractères pour les faire rentrer tous entiers. Le logo et les textes restent des calques natifs éditables. Décris brièvement les trois propositions en français.

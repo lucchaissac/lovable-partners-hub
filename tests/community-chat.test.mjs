@@ -23,6 +23,18 @@ function galleryDesign(width=1080,height=1080){
 }
 const plan={reviews:[],badgeBatch:null,summary:'Created a LinkedIn post.',designs:[galleryDesign()],edits:[],removeIds:[]};
 
+test('Replacing a composition uses its existing slot and respects selected or locked content',()=>{
+ const replace={...plan,replaceCurrent:true};
+ assert.equal(validateChatPlan(replace,{...request,availablePageSlots:0}).replaceCurrent,true);
+ assert.equal(validateChatPlan(plan,request).replaceCurrent,false);
+ assert.equal(validateChatPlan(plan,{...request,startingTemplate:true,availablePageSlots:0}).replaceCurrent,true);
+ assert.throws(()=>validateChatPlan(plan,{...request,availablePageSlots:0}),/full/);
+ assert.throws(()=>validateChatPlan({...replace,designs:[...plan.designs,...plan.designs]},{...request,availablePageSlots:0}),/full/);
+ assert.throws(()=>validateChatPlan({...replace,designs:[]},request),/complete design/);
+ assert.throws(()=>validateChatPlan(replace,{...request,context:'HTML_SELECTION '+JSON.stringify({blockIds:['title']})}),/selection/);
+ assert.throws(()=>validateChatPlan(replace,{...request,blocks:[{...request.blocks[0],frame:{locked:true}}]}),/Unlock/);
+});
+
 test('Generation accepts free formats and multiple designs, but rejects executable content and unknown sources',()=>{
  assert.equal(validateChatPlan({...plan,designs:[...plan.designs,galleryDesign(1200,627)]},request).designs.length,2);
  assert.throws(()=>chatPlanSchema.parse({...plan,designs:[{...plan.designs[0],elements:[{id:'script',kind:'code',code:'alert(1)'}]}]}));
@@ -105,7 +117,7 @@ test('Reference measurements match the actual gallery renderer and include all s
 test('Invalid composition is corrected before being returned, with a bounded retry',async()=>{
  let calls=0;const bad=structuredClone(plan);bad.designs[0].elements[2].frame.width*=2;
  const result=await validatedCommunityGeneration(request,async feedback=>{calls++;if(calls===1){assert.equal(feedback,undefined);return bad;}assert.match(feedback.correctionFeedback,/intact light logo/);return plan;});
- assert.deepEqual(result,plan);assert.equal(calls,2);
+ assert.deepEqual(result,chatPlanSchema.parse(plan));assert.equal(calls,2);
  calls=0;await assert.rejects(validatedCommunityGeneration(request,async()=>{calls++;return bad;}),/did not meet/);assert.equal(calls,2);
 });
 

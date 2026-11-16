@@ -1,0 +1,20 @@
+{
+  "title": "AI for impact · Editorial directions",
+  "generation": "Built-in image_gen, generated separately and supplied to the local Community planner",
+  "images": [
+    {
+      "file": "community-flash-inclusive.png",
+      "prompt": "inclusive-flash-prompt.txt",
+      "reference": "User requested a diverse fictional group and a full-bleed scene with dark space for native type",
+      "note": "Generated fictional collaboration scene, not a photograph of a real Community event"
+    },
+    {
+      "file": "impact-collage.png",
+      "prompt": "collage-prompt.txt",
+      "note": "Generated tactile collage on transparency; all poster headlines and branding remain native editor layers"
+    }
+  ],
+  "compositionPrompt": "final-demo-prompt.txt",
+  "layoutReference": "User-supplied AI for impact layout screenshot, 2026-11-16 at 13.38.11",
+  "workflow": "Remove the starting template and superseded variants; replace the active composition in place with the main direction and two alternatives, all at 1080 × 1080 px"
+}

@@ -56,12 +56,15 @@ export function validateCommunityDesignRules(plan,request){
   const logos=elements.filter(e=>isBrand(e,'community-logo'));
   if(logos.length!==1)reject('Each design needs exactly one original Community lockup.');
   const logo=logos[0],f=logo.frame;
-  if(logo.color!=='light'||!near(f.x,m.inset)||!near(f.y,m.inset)||!near(f.width,m.logoWidth)||!near(f.height,m.logoHeight)||f.rotation!==0||f.opacity!==1)reject(`For ${design.reference} at ${design.width}px, use the intact light logo at x=y=${m.inset.toFixed(2)}, width=${m.logoWidth.toFixed(2)}, height=${m.logoHeight.toFixed(2)}, no rotation or opacity change.`);
+  const editorial=plan.reviews.length&&design.visualTreatment!=='brand-scene';
+  const logoScale=f.width/m.logoWidth;
+  const validLogoSize=editorial?logoScale>=.99&&logoScale<=1.35&&near(f.height,m.logoHeight*logoScale):near(f.width,m.logoWidth)&&near(f.height,m.logoHeight);
+  if(logo.color!=='light'||!near(f.x,m.inset)||!near(f.y,m.inset)||!validLogoSize||f.rotation!==0||f.opacity!==1)reject(`For ${design.reference} at ${design.width}px, use the intact light logo at x=y=${m.inset.toFixed(2)}, width=${m.logoWidth.toFixed(2)}, height=${m.logoHeight.toFixed(2)}, no rotation or opacity change. Reviewed editorial layouts may enlarge it proportionally by up to 1.35 for small-size legibility.`);
   const x=f.width*communityLogo.heartHeight/communityLogo.width,clear={x:f.x-x,y:f.y-x,width:f.width+2*x,height:f.height+2*x};
   for(const e of elements){
    if(e===logo||isBrand(e,'globe')||isBrand(e,'gradient'))continue;
    if(e.kind==='image'&&e.placement==='background'){
-    if(elements.indexOf(e)>elements.indexOf(logo)||elements.slice(0,elements.indexOf(e)).some(element=>element.kind==='text')||e.frame.opacity>.3)reject('Keep a retained background behind the complete logo and all copy, at opacity 0.3 or less over the dark canvas for legibility.');
+    if(elements.indexOf(e)>elements.indexOf(logo)||elements.slice(0,elements.indexOf(e)).some(element=>element.kind==='text'))reject('Keep a retained background behind the complete logo and all copy. Place text on a quiet dark part of the photograph for legibility.');
     continue;
    }
    const source='sourceId'in e?request.blocks.find(b=>b.id===e.sourceId):undefined,frame=e.frame??(source?frameOf(source):null);
@@ -69,7 +72,8 @@ export function validateCommunityDesignRules(plan,request){
    if(e.kind==='text'){
     if(e.weight!==600&&e.weight!==700)reject('Use Camera Plain Bold 700 for headlines and Semibold 600 for supporting copy.');
     if(!['#f7f4ed','#ffffff'].includes(e.color.toLowerCase()))reject('Community copy stays light on the authored dark artwork.');
-    if(e.fontSize>m.headlineSize*1.05)reject(`Keep type in the ${design.reference} hierarchy: headline maximum ${m.headlineSize.toFixed(2)}px at this width.`);
+    const headlineMaximum=m.headlineSize*(plan.reviews.length&&design.visualTreatment!=='brand-scene'?1.6:1.05);
+    if(e.fontSize>headlineMaximum)reject(`Keep type in the ${design.reference} hierarchy: headline maximum ${headlineMaximum.toFixed(2)}px at this width.`);
     if(e.fontSize>=m.headlineSize*.65&&(e.align!=='left'||e.weight!==700))reject('The gallery headline is left-aligned Camera Plain Bold 700.');
     if(frame.x<m.inset*.8||frame.x+frame.width>design.width-m.inset*.8+2||frame.y<0||frame.y+frame.height>design.height-m.inset*.7+2)reject('Keep text within the reference content grid and canvas bounds.');
    }

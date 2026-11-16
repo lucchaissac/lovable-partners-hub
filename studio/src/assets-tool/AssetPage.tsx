@@ -14,7 +14,7 @@ import { readStudioConfig, studioApi } from '../studio/client';
 
 import { AssetCanvas } from './AssetCanvas';
 import {CommunityCanvas} from './CommunityCanvas';
-import {assetPages,insertAssetPages,linkAssetPages,moveAssetPage,MAX_ASSET_PAGES} from './assetSeries';
+import {assetPages,insertAssetPages,replaceAssetPage,linkAssetPages,moveAssetPage,MAX_ASSET_PAGES} from './assetSeries';
 import { AssetLibrary } from './AssetLibrary';
 import { badgeAsset, starterAsset } from './starter';
 import { AssetDesignPanel } from './AssetDesignPanel';
@@ -236,12 +236,13 @@ function AssetPageContent() {
           const replies:StudioMessage[]=communityPlanReplies(plan,payload).map(text=>({id:crypto.randomUUID(),createdAt:new Date().toISOString(),text,user:false,channel:'workspace',workspaceChatId:request.chatId}));
           for(const design of designs)design.messages=[...assetMessages(current.current),...replies];
           await saves.current;
-          const collection=insertAssetPages(assetPages(current.current,await listAssets(owner)),current.current.id,designs);
+          const collection=(plan.replaceCurrent?replaceAssetPage:insertAssetPages)(assetPages(current.current,await listAssets(owner)),current.current.id,designs);
           await saveAssets(owner,collection);
           if(!mounted.current||run!==operation.current||active.signal.aborted)return;
-          pageHistory.current.set(current.current.id,{past:past.current,future:future.current});
-          past.current=[];future.current=[];setHistoryVersion(value=>value+1);
-          setPageArrangement(undefined);put(collection.find(page=>page.id===designs[0].id)!);setRecent(await listAssets(owner));setZoom(0);
+          if(plan.replaceCurrent){past.current=[...past.current.slice(-49),current.current];future.current=[];}
+          else{pageHistory.current.set(current.current.id,{past:past.current,future:future.current});past.current=[];future.current=[];}
+          setHistoryVersion(value=>value+1);
+          setPageArrangement(undefined);put(collection.find(page=>page.id===(plan.replaceCurrent?document.id:designs[0].id))!);setRecent(await listAssets(owner));setZoom(0);
           // Keep this editor session mounted so undo and queued messages survive creation.
           // put() records the new draft as the last-open asset for reopening the studio.
         }else{

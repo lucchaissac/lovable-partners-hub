@@ -21,7 +21,7 @@ export async function localChatStatus(signal?:AbortSignal):Promise<{enabled:bool
 const blocksOf=(editor:HtmlEditorState)=>editor.pages.flatMap(page=>page.sections.flatMap(section=>section.columns.flat()));
 export function localChatRequest(document:AssetDocument,prompt:string,sources:StudioSource[],context?:string,preview?:string,availablePageSlots=64){
  const {width,height}=assetDimensions(document);
- return chatRequestSchema.parse({prompt,title:document.title,width,height,context,preview,availablePageSlots,
+ return chatRequestSchema.parse({prompt,title:document.title,width,height,context,preview,availablePageSlots,startingTemplate:!!document.community&&(document.series?.length??1)<=1,
   blocks:blocksOf(nativeDocument(document)).map(block=>({id:block.id,kind:block.kind,frame:block.editor,...(block.kind==='text'?{text:block.value.runs.map(run=>run.text).join(''),style:block.value}:{}),...(block.kind==='image'?{alt:block.value.alt,asset:block.ambassadorElement??(block.value.alt==='Lovable Community'?'community-logo':'image')}:{}),...(block.kind==='shape'?{asset:block.icon??block.shape}: {})})),
   conversation:(document.messages??[]).slice(-16).map(message=>({user:message.user,text:message.text.slice(0,8000)})),
   sources:sources.map((source,index)=>({id:`attachment-${index}`,name:source.name,kind:source.kind,...(source.kind==='image'?{image:source.image}:{text:source.kind==='link'?`${source.url}\n${source.text}`.slice(0,20000):source.encoding?'Compressed HTML attachment omitted; use an image or plain text reference.':source.text.slice(0,20000)})})),

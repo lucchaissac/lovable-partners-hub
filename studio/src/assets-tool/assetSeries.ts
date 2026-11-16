@@ -28,3 +28,11 @@ export function insertAssetPages(pages:AssetDocument[],afterId:string,added:Asse
  const next=[...pages.slice(0,at+1),...added,...pages.slice(at+1)];
  return linkAssetPages(next);
 }
+/** Replace in place, preserving the active URL and every unrelated sibling. */
+export function replaceAssetPage(pages:AssetDocument[],id:string,proposals:AssetDocument[]):AssetDocument[]{
+ const at=pages.findIndex(page=>page.id===id);
+ if(at<0||!proposals.length)throw Error('Choose an existing asset and at least one replacement.');
+ const replacement={...proposals[0],id};
+ const next=[...pages.slice(0,at),replacement,...pages.slice(at+1)];
+ return insertAssetPages(next,id,proposals.slice(1));
+}

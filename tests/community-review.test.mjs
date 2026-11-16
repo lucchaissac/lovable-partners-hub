@@ -36,7 +36,7 @@ test('A clean supplied photo can remain whole; background use preserves signatur
  const p=retained();p.reviews[0].verdict='reference-only';p.reviews[0].issues=[];
  const photo=p.designs[0].elements.pop();photo.crop=null;photo.placement='background';photo.frame=frame(0,0,900,600,.25);p.designs[0].elements.unshift(photo);
  assert.ok(validateChatPlan(p,request));
- photo.frame.opacity=1;assert.throws(()=>validateChatPlan(p,request),/legibility/);
+ photo.frame.opacity=1;assert.ok(validateChatPlan(p,request));
  photo.frame.opacity=.25;p.designs[0].elements.push(p.designs[0].elements.shift());assert.throws(()=>validateChatPlan(p,request),/behind/);
 });
 test('Reviewed layouts preserve whitespace, avoid overlapping copy and do not mix competing scenes',()=>{

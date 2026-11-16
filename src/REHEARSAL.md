@@ -43,3 +43,9 @@ Reduced the miniature’s placeholder-to-action gap from 44 to 16 px, and the re
 Initial entry briefly shows Lovable; switching workspaces shows Lovable, Partners or Community, all in the same responsive Camera Plain Bold size. Only the word fades; the fixed, pointer-transparent container has no background, blur or dimming. Text is white in dark appearance and #1b1b1b in light appearance. Native opacity animation lasts 780 ms, cancels on subsequent switches, and is omitted for reduced motion. The default entry and workspace controls lead to Gallery, while explicit deep links remain intact.
 
 Browser verification: initial label, all three names, rapid switching, no replay between Gallery and Guidelines, transparent background, correct colors in both appearances, and eventual hidden state after initial and subsequent transitions. The shared CSS specimen fits Community at 320 and 390 px (214 and 251 px text widths); desktop type is 192 px. No console errors. Reduced motion is implemented in both CSS and the controller; OS-level emulation was not available for this check.
+
+## Community clear space
+
+The original diagram incorrectly treated the complete 46.1959-unit lockup height as a heart height. The revised pair derives x from the source heart’s visible bounds (48.0209 − 12.3906 = 35.6303 units), uses that same distance on all four sides, and measures the full logo through the right edge and bottom of Community’s y. The standalone heart is cropped from the same vector artwork. Thin solid guides keep a one-pixel optical weight and HTML x labels remain 12 px at every size. The presentation reuses Partners’ paired specimens and caption placement.
+
+Verified in light and dark appearance on desktop and at 320/390 px: original artwork preserved, heart crop clean, four equal margins, labels visible, no section overflow. Build passes; no browser console errors.

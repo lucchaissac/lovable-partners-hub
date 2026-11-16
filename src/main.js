@@ -2,13 +2,14 @@ import { createElement, House, Grid3X3, Moon, Sun, Search, X, ArrowUpRight, Arro
 import { FORMATS, TIERS, FIGMA_FILE, badgeSvg, badgeGeometry, prepareTypography } from './badges.js';
 import { exportBadge } from './export.js';
 import { guidelines } from './guidelines.js';
+import { gallery, mountGallery } from './gallery.js';
 
 const icons={house:House,grid:Grid3X3,moon:Moon,sun:Sun,search:Search,x:X,arrow:ArrowUpRight,next:ArrowRight,chevron:ChevronDown,download:Download,check:Check,copy:Copy,upload:Upload,replay:RotateCcw,pause:Pause,play:Play};
 export const icon=name=>`<i data-icon="${name}" aria-hidden="true"></i>`;
 export const sections=[['overview','Overview'],['construction','Construction'],['connections','Connections'],['clear-space','Clear space'],['scale','Scale'],['motion','Motion'],['formats','Formats'],['color','Color'],['typography','Typography'],['usage','Usage']];
 const app=document.querySelector('#app');
 const state={view:'guidelines',filter:'all',tier:'Select',format:'solution-compact',year:'2026',partnerName:'',partnerImage:'',symbolSize:'large',guides:false,background:'dark',scale:2};
-let observer,assemblyObserver,toastTimer;
+let observer,assemblyObserver,toastTimer,cleanupGallery;
 const escape=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function hydrateIcons(root=document){root.querySelectorAll('select').forEach(select=>{if(select.parentElement.classList.contains('select-control'))return;const wrapper=document.createElement('span');wrapper.className='select-control';select.replaceWith(wrapper);wrapper.append(select,createElement(ChevronDown,{class:'select-chevron',width:14,height:14,'stroke-width':1.75,'aria-hidden':'true',focusable:'false'}));});root.querySelectorAll('[data-icon]').forEach(el=>el.replaceWith(createElement(icons[el.dataset.icon]||icons.grid,{class:'icon','stroke-width':1.8,'aria-hidden':'true',focusable:'false'})));}
 export function formatCard(f,compact=false){return `<article class="format-card"><button class="format-preview ${f.layout}" data-customize="${f.id}" aria-label="Customize ${f.name}">${badgeSvg(f.id,{tier:state.tier})}</button><div class="format-caption"><div><h3>${f.name}</h3>${compact?'':`<p>${f.description}</p>`}</div><button class="subtle-button" data-download="${f.id}" aria-label="Download ${f.name} as .svg" title="Download .svg">${icon('download')}</button></div></article>`;}
@@ -39,10 +40,11 @@ function syncGuidelinePosition(){
 }
 window.addEventListener('scroll',()=>{if(scrollFrame)return;scrollFrame=requestAnimationFrame(()=>{scrollFrame=undefined;syncGuidelinePosition();});},{passive:true});
 function render(view=state.view,{reset=true}={}){
- state.view=view;observer?.disconnect();assemblyObserver?.disconnect();app.innerHTML=view==='library'?library():view==='create'?creator():guidelines(state.tier,{icon,formatCard,sections});
+ state.view=view;observer?.disconnect();assemblyObserver?.disconnect();cleanupGallery?.();cleanupGallery=undefined;app.innerHTML=view==='gallery'?gallery():view==='library'?library():view==='create'?creator():guidelines(state.tier,{icon,formatCard,sections});
  document.querySelectorAll('.section-switcher [data-view]').forEach(b=>{const active=b.dataset.view===view;b.classList.toggle('is-selected',active);if(active)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});hydrateIcons();if(view==='create')updatePreview();
  if(view==='guidelines'){observer=new IntersectionObserver(syncGuidelinePosition,{rootMargin:'-100px 0px -65% 0px',threshold:0});document.querySelectorAll('.guide-section').forEach(el=>observer.observe(el));assemblyObserver=new IntersectionObserver(entries=>entries.forEach(e=>e.target.classList.toggle('is-playing',e.isIntersecting)),{threshold:.2});assemblyObserver.observe(document.querySelector('.assembly-stage'));}
  if(reset)window.scrollTo({top:0,behavior:'instant'});
+ if(view==='gallery')cleanupGallery=mountGallery(app);
 
 }
 function navigate(view,section){history.replaceState(null,'',`#${view}${section?`/${section}`:''}`);render(view);if(section)requestAnimationFrame(()=>{document.getElementById(section)?.scrollIntoView({behavior:'smooth',block:'start'});markSection(section);});}
@@ -74,7 +76,7 @@ document.querySelector('#close-search').addEventListener('click',()=>dialog.clos
 document.querySelector('#search-input').addEventListener('input',event=>searchResults(event.target.value));
 dialog.addEventListener('click',event=>{if(event.target===dialog){dialog.close();return;}const result=event.target.closest('[data-search-format],[data-search-section]');if(!result)return;dialog.close();if(result.dataset.searchFormat){state.format=result.dataset.searchFormat;navigate('create');}else navigate('guidelines',result.dataset.searchSection);});
 document.querySelector('#theme-toggle').addEventListener('click',()=>{const light=document.documentElement.dataset.theme!=='light';document.documentElement.dataset.theme=light?'light':'dark';const button=document.querySelector('#theme-toggle');button.setAttribute('aria-label',light?'Switch to dark appearance':'Switch to light appearance');button.innerHTML=icon(light?'sun':'moon');hydrateIcons(button);});
-function openHash(){const [view,section]=location.hash.slice(1).split('/'),valid=['library','guidelines','create'].includes(view)?view:'guidelines';render(valid);if(valid==='guidelines'&&sections.some(([id])=>id===section))requestAnimationFrame(()=>{document.getElementById(section).scrollIntoView();markSection(section);});}
+function openHash(){const [view,section]=location.hash.slice(1).split('/'),valid=['gallery','library','guidelines','create'].includes(view)?view:'guidelines';render(valid);if(valid==='guidelines'&&sections.some(([id])=>id===section))requestAnimationFrame(()=>{document.getElementById(section).scrollIntoView();markSection(section);});}
 window.addEventListener('hashchange',openHash);
 await prepareTypography();
 openHash();

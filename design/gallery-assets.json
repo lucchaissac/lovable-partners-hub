@@ -1,0 +1,114 @@
+{
+  "figmaFile": "sUeZcAIPXpjFAuHnPigkNm",
+  "nodes": [
+    "3:8",
+    "3:100",
+    "3:44",
+    "3:10",
+    "3:27",
+    "3:9",
+    "3:52",
+    "3:101",
+    "3:76"
+  ],
+  "badges": "All live artwork reuses src/badges.js. No legacy Figma badge images are used.",
+  "photos": [
+    {
+      "nodes": [
+        "3:8",
+        "3:9"
+      ],
+      "file": "public/gallery/portrait.webp",
+      "source": "Figma original image fill; both supplied nodes use the same photograph. Kept at native 399 × 501 resolution."
+    },
+    {
+      "node": "3:100",
+      "files": [
+        "public/gallery/hoodie-480.webp",
+        "public/gallery/hoodie-960.webp"
+      ],
+      "editMode": "Built-in ImageGen",
+      "prompt": "Use case: precise-object-edit. Edit target: the supplied product photograph of a person wearing a pink hoodie. Remove ONLY the entire printed white Lovable partner badge, all its white text, boxes and logo from the back of the hoodie. Fill the erased print with natural uninterrupted pink cotton fabric matching adjacent folds and lighting. Keep the person, identity, face, hair, body, hands, pose, clothing silhouette, pink color, jeans, shoes, gray-white studio background, camera angle, crop, and original 2:3 vertical framing unchanged. The back of the hoodie must be completely blank pink fabric, no graphics or text. Preserve photographic quality. This is a blank mockup for a precise vector badge to be overlaid later."
+    },
+    {
+      "node": "3:101",
+      "files": [
+        "public/gallery/blanket-480.webp",
+        "public/gallery/blanket-960.webp"
+      ],
+      "editMode": "Built-in ImageGen",
+      "prompt": "Use case: precise-object-edit. Edit target: the supplied photograph of hands holding a woven blanket. Remove the entire old Lovable badge graphic, all lettering, symbols and all rounded black panels. Make the WHOLE blanket interior a uniform charcoal black knitted fabric with the same realistic woven yarn texture and subtle natural folds. Preserve the multicolored fringes, exact blanket edges, hands, legs, sneakers, studio wall and floor, camera view and portrait framing. No graphic, no text, no outlines on the blanket. The entire fabric interior is plain charcoal knitted yarn. This is a blank textile mockup to receive a precise white vector badge later."
+    }
+  ],
+  "motion": {
+    "sources": [
+      "DADA_Lovable_motion4K_3_loop.mp4",
+      "DADA_Lovable_motion4K_4_loop.mp4",
+      "DADA_Lovable_motion4K_8_loop.mp4"
+    ],
+    "sourceBytes": 204540083,
+    "desktopBytes": 2386991,
+    "smallBytes": 623140,
+    "format": "H.264 High, yuv420p, 24 fps, 480 or 960 square, no audio, fast start",
+    "rebuild": "python3 scripts/optimize-gallery.py /path/to/MP4",
+    "playback": "Load on visibility; pause outside viewport and when the document is hidden; poster only for reduced motion or data saving. Portal crops share one decoder per composition."
+  },
+  "assets": [
+    {
+      "file": "public/gallery/blanket-480.webp",
+      "bytes": 56498
+    },
+    {
+      "file": "public/gallery/blanket-960.webp",
+      "bytes": 189428
+    },
+    {
+      "file": "public/gallery/hoodie-480.webp",
+      "bytes": 14082
+    },
+    {
+      "file": "public/gallery/hoodie-960.webp",
+      "bytes": 45386
+    },
+    {
+      "file": "public/gallery/motion-3-480.mp4",
+      "bytes": 172700
+    },
+    {
+      "file": "public/gallery/motion-3-960.mp4",
+      "bytes": 681462
+    },
+    {
+      "file": "public/gallery/motion-3.webp",
+      "bytes": 8780
+    },
+    {
+      "file": "public/gallery/motion-4-480.mp4",
+      "bytes": 242328
+    },
+    {
+      "file": "public/gallery/motion-4-960.mp4",
+      "bytes": 937991
+    },
+    {
+      "file": "public/gallery/motion-4.webp",
+      "bytes": 12130
+    },
+    {
+      "file": "public/gallery/motion-8-480.mp4",
+      "bytes": 208112
+    },
+    {
+      "file": "public/gallery/motion-8-960.mp4",
+      "bytes": 767538
+    },
+    {
+      "file": "public/gallery/motion-8.webp",
+      "bytes": 9274
+    },
+    {
+      "file": "public/gallery/portrait.webp",
+      "bytes": 48670
+    }
+  ]
+}

@@ -95,8 +95,10 @@ export function badgeSvg(formatId,options={}){
  }
  let artwork=parts.join('');
  if(treatment==='dark-outline'){
-  artwork=artwork.replaceAll('fill="white"','fill="#1b1b1b"').replaceAll('stroke="white"','stroke="#1b1b1b"').replaceAll('<image ',`<image filter="url(#${id}-dark)" `);
-  artwork=`<defs><filter id="${id}-dark" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0 0 0 0 .105882 0 0 0 0 .105882 0 0 0 0 .105882 0 0 0 1 0"/></filter></defs>${artwork}`;
+  const ink=/^#[0-9a-f]{6}$/i.test(options.ink)?options.ink:'#1b1b1b';
+  const [r,g,b]=[1,3,5].map(start=>n(parseInt(ink.slice(start,start+2),16)/255));
+  artwork=artwork.replaceAll('fill="white"',`fill="${ink}"`).replaceAll('stroke="white"',`stroke="${ink}"`).replaceAll('<image ',`<image filter="url(#${id}-dark)" `);
+  artwork=`<defs><filter id="${id}-dark" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0 0 0 0 ${r} 0 0 0 0 ${g} 0 0 0 0 ${b} 0 0 0 1 0"/></filter></defs>${artwork}`;
  }
  if(treatment==='dark-filled')artwork=artwork.replaceAll('fill="none" stroke="white"','fill="#1b1b1b" stroke="#1b1b1b"');
  const label=options.ariaLabel||`${format.name}${solution?` · ${tier}`:''} · ${year}${options.trailingLines?` · ${options.trailingLines.join(' ')}`:''}`;
@@ -121,5 +123,17 @@ export function badgeAssembly(options={}){
 }
 export function symbolClearSpace(){
  const u=32,h=96,w=82.2357/83.3616*h;
+// Rotate the badge's own modules in sequence, keeping their type scale while the frame changes width.
+export function badgeVolume(options={}) {
+ const {u,h,role,level,roleWidth,tierWidth}=model('solution-compact',options.tier||'Select',options);
+ const displayHeight=84,scale=displayHeight/h;
+ const heartScale=3*u/83.3616,heartWidth=82.2357*heartScale;
+ const heart=image('1-713-imgVector1',(h-heartWidth)/2,u,82.2357,83.3616,heartScale);
+ const panel=(name,width,art)=>`<div class="volume-face volume-${name}" style="--face-width:${n(width*scale)}px"><svg viewBox="0 0 ${n(width)} ${h}" aria-hidden="true">${art}</svg></div>`;
+ return `<div class="demo-rotor badge-volume" role="img" aria-label="The heart, Solution Partner and tier rotate in sequence, with each block sized to its content." style="--heart-width:${displayHeight}px;--role-width:${n(roleWidth*scale)}px;--tier-width:${n(tierWidth*scale)}px;--volume-height:${displayHeight}px;--volume-stroke:${n(u/8*scale)}px;--volume-radius:${n(u*1.125*scale)}px">
+ ${panel('heart',h,heart)}${panel('role',roleWidth,drawShape(role,u,u))}${panel('tier',tierWidth,drawShape(level,u,u))}
+ </div>`;
+}
+
  return `<svg class="symbol-space-diagram" viewBox="0 0 ${w+2*u} ${h+2*u}" role="img" aria-label="Leave x on every side of the Lovable heart, with the symbol itself three x high">${image('1-713-imgVector1',u,u,82.2357,83.3616,h/83.3616)}<g fill="none" stroke="white" stroke-opacity=".28" stroke-width=".7"><rect x=".5" y=".5" width="${w+2*u-1}" height="${h+2*u-1}"/><path d="M32 0V160M${w+u} 0V160M0 32H${w+2*u}M0 128H${w+2*u}"/></g><g fill="white" fill-opacity=".6" font-family="Camera Plain" font-size="12" font-weight="600" text-anchor="middle"><text x="${u+w/2}" y="20">x</text><text x="${u+w/2}" y="149">x</text><text x="16" y="84">x</text><text x="${w+u*1.5}" y="84">x</text></g></svg>`;
 }

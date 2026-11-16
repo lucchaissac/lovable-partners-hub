@@ -52,15 +52,15 @@ export function gallery() {
       ${partnerCard()}
       ${card('3:100', 'gallery-hoodie', 'White outlined partner badge printed on a pink hoodie', photo('hoodie', 1024, 1536, true) + badge('solution-stacked', 'badge-hoodie'))}
       ${card('3:44', 'gallery-square', 'Symbol-led Solution Partner badge on a flowing color field', motion(4) + badge('solution-symbol', 'badge-symbol', { tier: 'Elite', symbolSize: 'large' }))}
-      ${card('4:143', 'gallery-website gallery-area', 'Area website illustration with a compact Solution Partner signature', website('area', 1710, 919) + badge('solution-compact', 'badge-area', { treatment: 'dark-outline' }))}
-      ${card('4:154', 'gallery-square gallery-storefront', 'Current Solution Partner badge applied to a shop window', photo('storefront', 1254, 1254) + badge('solution-stacked', 'badge-storefront', { partnerName: 'J&T Promotions' }))}
+      ${card('4:143', 'gallery-website gallery-area', 'Area website illustration with a compact Solution Partner signature', website('area', 1710, 919) + badge('solution-compact', 'badge-area', { treatment: 'dark-outline', ink: '#a5b2c2' }))}
+      ${card('4:154', 'gallery-square gallery-storefront', 'Current Solution Partner badge applied to a shop window', photo('storefront', 1254, 1254) + badge('solution-stacked', 'badge-storefront', { partnerName: 'J&T Promotions', treatment: 'dark-filled' }))}
       ${card('3:27', 'gallery-landscape gallery-portal gallery-portal-alt', 'Outlined Solution Partner badge inside a moving color composition', motion(8, true) + badge('solution-compact', 'badge-portal', { tier: 'Premier' }))}
       ${card('3:101', 'gallery-blanket', 'White outlined partner badge on a charcoal woven blanket', photo('blanket', 1096, 1435) + badge('solution-stacked', 'badge-blanket'))}
       ${card('4:118', 'gallery-program', 'Grow your business. Partner Program: apply for 2027.', '<img class="gallery-media" src="/gallery/program.webp" width="699" height="377" alt="" loading="lazy" decoding="async" /><p class="gallery-program-copy">Grow your<br />business</p>' + badge('solution-compact', 'badge-program', { year: '2027', roleLines: ['Partner', 'Program'], tierLines: ['Apply', 'for 2027'], ariaLabel: 'Partner Program · Apply for 2027' }))}
       ${card('3:10', 'gallery-landscape gallery-portal', 'Solution Partner badge inside a moving color composition', motion(4, true) + badge('solution-compact', 'badge-portal', { tier: 'Elite' }))}
       ${card('3:9', 'gallery-portrait', 'Solution Partner badge on an outdoor portrait', photo('portrait', 399, 501) + badge('solution-horizontal', 'badge-portrait-wide'))}
       ${card('3:52', 'gallery-square', 'Stacked Solution Partner badge on flowing pink and blue', motion(3) + badge('solution-stacked', 'badge-stacked'))}
-      ${card('4:119', 'gallery-website gallery-locomotive', 'Locomotive website illustration with a Solution Partner signature', website('locomotive', 1706, 908) + badge('solution-stacked', 'badge-locomotive', { partnerName: 'J&T Promotions' }))}
+      ${card('4:119', 'gallery-website gallery-locomotive', 'Locomotive website illustration with a Solution Partner signature', website('locomotive', 1706, 908) + badge('solution-stacked', 'badge-locomotive', { partnerName: 'Locomotive' }))}
       ${card('3:76', 'gallery-landscape gallery-signature', 'Grow your business with a Solution Partner signature', motion(8) + '<p class="gallery-artwork-copy">Grow your<br />business</p>' + badge('solution-stacked', 'badge-signature', { partnerName: 'Logo' }))}
   </div></section>`;
 }

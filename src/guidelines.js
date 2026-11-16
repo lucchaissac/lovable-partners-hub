@@ -1,4 +1,4 @@
-import { FORMATS, badgeSvg, paddingDiagram, badgeAssembly, symbolClearSpace } from './badges.js';
+import { FORMATS, badgeSvg, paddingDiagram, badgeAssembly, badgeVolume, symbolClearSpace } from './badges.js';
 import { studioInvitation } from './studio-preview.js';
 
 export function guidelines(tier,{icon,formatCard,sections}) {
@@ -41,7 +41,7 @@ export function guidelines(tier,{icon,formatCard,sections}) {
    <div class="motion-demos">
     <figure class="motion-example motion-assembly"><div class="motion-surface assembly-stage" aria-label="Repeating badge construction">${badgeAssembly({tier})}</div><figcaption><span>The heart stays. Each block opens from the left.</span><div class="assembly-controls"><button class="subtle-button" data-replay aria-label="Replay badge assembly">${icon('replay')}</button><button class="subtle-button" data-pause aria-label="Pause badge assembly" aria-pressed="false">${icon('pause')}</button></div></figcaption></figure>
     <figure class="motion-example" data-motion-label="flip"><div class="motion-surface"><div class="demo-rotor flip-rotor"><div class="flip-face">${badge('solution-compact')}</div><div class="flip-face flip-back">${badge('expert-compact')}</div></div></div><figcaption><span>Flip</span><button class="subtle-button" data-demo-pause aria-label="Pause flip" aria-pressed="false">${icon('pause')}</button></figcaption></figure>
-    <figure class="motion-example" data-motion-label="cube"><div class="motion-surface cube-surface"><div class="demo-rotor badge-cube"><div class="cube-face cube-front">${badge('solution-compact')}</div><div class="cube-face cube-right">${badge('expert-compact')}</div><div class="cube-face cube-back">${badge('solution-compact',{tier:'Premier'})}</div><div class="cube-face cube-left">${badge('expert-compact')}</div><div class="cube-face cube-top"><img src="/brand/outlined/1-713-imgVector1.svg" alt="" /></div><div class="cube-face cube-bottom"><img src="/brand/outlined/1-713-imgVector1.svg" alt="" /></div></div></div><figcaption><span>Cube</span><button class="subtle-button" data-demo-pause aria-label="Pause cube" aria-pressed="false">${icon('pause')}</button></figcaption></figure>
+    <figure class="motion-example" data-motion-label="badge volume"><div class="motion-surface volume-surface">${badgeVolume({tier})}</div><figcaption><span>Badge volume</span><button class="subtle-button" data-demo-pause aria-label="Pause badge volume" aria-pressed="false">${icon('pause')}</button></figcaption></figure>
    </div>
   </section>
   <section id="formats" class="guide-section">

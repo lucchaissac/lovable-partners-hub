@@ -1,6 +1,5 @@
 import {warmGallery} from './galleryLoading.js';
 import './navigation.js';
-import { showWorkspaceTransition } from './brand-transition.js';
 import {ambassadorFormats,ambassadorSections} from './ambassadors/catalog.js';
 import {ambassadorGallery,ambassadorGuidelines,mountAmbassadorPreviews} from './ambassadors/views.js';
 import { createElement, Globe, Grid3X3, Moon, Sun, Search, X, ArrowUpRight, ArrowRight, ChevronDown, Download, Check, Copy, Upload, RotateCcw, Pause, Play } from 'lucide';
@@ -58,7 +57,6 @@ function syncGuidelinePosition(){
 }
 window.addEventListener('scroll',()=>{if(scrollFrame)return;scrollFrame=requestAnimationFrame(()=>{scrollFrame=undefined;syncGuidelinePosition();});},{passive:true});
 function render(view=state.view,{reset=true}={}){
- showWorkspaceTransition(view==='brand'?'lovable':state.workspace);
  const showLibrary=view==='library';if(showLibrary||view==='badge')view='create';
  const requestedBadge=parseRoute().section,badge=currentFormats().some(format=>format.id===requestedBadge)?requestedBadge:undefined;
  requestedSection=undefined;state.view=view;observer?.disconnect();assemblyObserver?.disconnect();cleanupGallery?.();cleanupGallery=undefined;cleanupAmbassadors?.();cleanupAmbassadors=undefined;

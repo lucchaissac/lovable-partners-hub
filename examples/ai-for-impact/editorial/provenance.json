@@ -18,13 +18,33 @@
       "prompt": "light-flash-prompt.txt",
       "reference": "community-flash-inclusive.png",
       "note": "Built-in image_gen edit: same fictional group with an ivory wall and direct flash; room above the group is reserved for native dark typography."
+    },
+    {
+      "file": "impact-collage-lovable-gradient.png",
+      "prompt": "collage-lovable-gradient-prompt.txt",
+      "reference": "impact-collage.png + original ambassadors/assets/heart-overlay.png palette",
+      "note": "Built-in image_gen edit. Approved gradient printed into existing paper and a subtle tint in the translucent disc. Same tactile composition, independent editable layer, true alpha; no generated identity or typography."
+    },
+    {
+      "file": "community-flash-badges-dark.png",
+      "prompt": "community-photo-props-prompt.txt",
+      "reference": "community-flash-inclusive.png",
+      "note": "Built-in image_gen edits of the same fictional group: blank physical badges and a silver laptop, then corrected to realistic 13-inch proportions. Original identity is a separate transparent SVG layer.",
+      "refinementPrompt": "laptop-scale-prompt.txt"
+    },
+    {
+      "file": "community-flash-badges-light.png",
+      "prompt": "community-photo-props-prompt.txt",
+      "reference": "community-flash-light.png",
+      "note": "Built-in image_gen edits of the same fictional group: blank physical badges and a silver laptop, then corrected to realistic 13-inch proportions. Original identity is a separate transparent SVG layer.",
+      "refinementPrompt": "laptop-scale-prompt.txt"
     }
   ],
   "compositionPrompt": "final-demo-prompt.txt",
   "layoutReference": "User-supplied AI for impact layout screenshot, 2026-11-16 at 13.38.11",
   "workflow": "Remove the starting template and superseded variants; replace the active composition in place with the main direction and two alternatives, all at 1080 × 1080 px",
   "lightCompositionPrompt": "light-demo-prompt.txt",
-  "lightWorkflow": "Append three editable light counterparts to the existing three dark assets; preserve 1080 × 1080 working dimensions, original collage alpha/scale and the native full Community signature. The light photo title and subtitle move slightly up to remain on quiet light wall.",
+  "lightWorkflow": "Three editable light counterparts at 1080 square. All six headline frames are now aligned; see headlineAlignment.",
   "materialRefinementPrompt": "material-refinement-prompt.txt",
   "materialRefinement": "Match the user-refined dark Matière composition: right-aligned support copy with a baseline aligned to the headline, and a larger lower collage with an intentional edge crop.",
   "currentDirections": [
@@ -45,5 +65,34 @@
   ],
   "currentGlobePlacement": "User-refined close-up: original sphere x=-85, y=-116, 2361×2361 inside the unchanged 1080×1080 canvas; gradient x=-486.121, y=29.87, 2340×2358.9072, rotation=-9.91. Applied to the light counterpart without changing native type.",
   "verification": "Six distinct editable canvases verified in the local studio. Export checks stopped at the user’s request; saved source files are snapshots before any subsequent manual canvas refinements.",
-  "communityCloseCropPrompt": "community-close-crop-prompt.txt"
+  "communityCloseCropPrompt": "community-close-crop-prompt.txt",
+  "headlineAlignment": {
+    "canvas": [
+      1080,
+      1080
+    ],
+    "frame": {
+      "x": 43.2,
+      "y": 150,
+      "width": 650,
+      "height": 350
+    },
+    "fontSize": 180,
+    "lineHeightPercent": 92,
+    "text": "AI for\nimpact",
+    "appliesTo": "All six current variants; photo titles aligned without moving other content."
+  },
+  "photoBranding": {
+    "overlays": [
+      "community-flash-branding-dark.svg",
+      "community-flash-branding-light.svg"
+    ],
+    "sourceLockup": "public/ambassadors/assets/lovable-community.svg",
+    "sourceSymbol": "public/brand/favicon-lovable.svg",
+    "font": "Camera Plain Bold, original glyph outlines",
+    "badgeLayout": "Original Community name-tag hierarchy, with fictional first names Maya, Leo and Emi",
+    "placement": "Transparent 1254 square vector layer mapped to the 1080 square photo, with local card/laptop transforms. Original logo paths retained verbatim.",
+    "laptopSticker": "Original SVG heart silhouette with the exact gradient pixels from Luc’s supplied logo reference, clipped to the symbol and a small white die-cut edge; no beige background.",
+    "laptopScalePrompt": "laptop-scale-prompt.txt"
+  }
 }

@@ -10,7 +10,6 @@
   row-gap: clamp(80px, 9vw, 144px);
   align-items: start;
 }
-.gallery-column { display: contents; }
 .gallery-item {
   position: relative;
   isolation: isolate;
@@ -21,19 +20,27 @@
   border-radius: 2px;
 }
 .gallery-item[data-gallery-node='3:8'] { grid-area: 1 / 1 / auto / span 3; margin-top: 72px; }
-.gallery-item[data-gallery-node='3:27'] { grid-area: 2 / 5 / auto / span 4; margin-top: 32px; }
+.gallery-item[data-gallery-node='3:27'] { grid-area: 3 / 8 / auto / span 5; margin-top: 96px; }
 .gallery-item[data-gallery-node='3:100'] { grid-area: 1 / 10 / auto / span 3; }
 .gallery-item[data-gallery-node='3:44'] { grid-area: 2 / 1 / auto / span 3; }
-.gallery-item[data-gallery-node='3:10'] { grid-area: 2 / 10 / auto / span 3; margin-top: 96px; }
-.gallery-item[data-gallery-node='3:101'] { grid-area: 3 / 1 / auto / span 4; }
-.gallery-item[data-gallery-node='3:9'] { grid-area: 3 / 8 / auto / span 4; margin-top: 96px; }
-.gallery-item[data-gallery-node='3:52'] { grid-area: 4 / 2 / auto / span 4; margin-top: 48px; }
-.gallery-item[data-gallery-node='3:76'] { grid-area: 4 / 7 / auto / span 6; }
+.gallery-item[data-gallery-node='3:10'] { grid-area: 5 / 1 / auto / span 3; margin-top: 96px; }
+.gallery-item[data-gallery-node='3:101'] { grid-area: 4 / 1 / auto / span 3; }
+.gallery-item[data-gallery-node='3:9'] { grid-area: 5 / 5 / auto / span 3; }
+.gallery-item[data-gallery-node='3:52'] { grid-area: 5 / 10 / auto / span 3; margin-top: 144px; }
+.gallery-item[data-gallery-node='3:76'] { grid-area: 6 / 8 / auto / span 5; margin-top: 96px; }
+.gallery-item[data-gallery-node='4:143'] { grid-area: 2 / 6 / auto / span 7; margin-top: 48px; }
+.gallery-item[data-gallery-node='4:154'] { grid-area: 3 / 2 / auto / span 4; }
+.gallery-item[data-gallery-node='4:118'] { grid-area: 4 / 6 / auto / span 7; margin-top: 80px; }
+.gallery-item[data-gallery-node='4:119'] { grid-area: 6 / 1 / auto / span 6; }
 .gallery-square { aspect-ratio: 1; }
 .gallery-landscape { aspect-ratio: 2680 / 1445; }
 .gallery-portrait { aspect-ratio: 399 / 501; }
 .gallery-hoodie { aspect-ratio: 2 / 3; }
 .gallery-blanket { aspect-ratio: 1096 / 1435; }
+.gallery-website { border-radius: 2.34% / 4.4%; container-type: inline-size; }
+.gallery-area { aspect-ratio: 1710 / 919; }
+.gallery-locomotive { aspect-ratio: 1706 / 908; }
+.gallery-program { aspect-ratio: 2679 / 1444; container-type: inline-size; }
 .gallery-media { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .gallery-video { pointer-events: none; }
 .gallery-badge { position: absolute; z-index: 2; pointer-events: none; }
@@ -45,6 +52,11 @@
 .badge-hoodie { width: 23%; left: 33%; top: 22.5%; transform: rotate(-4deg) skewY(-1deg); opacity: .94; }
 .badge-blanket { width: 78%; left: 11%; top: 50%; transform: translateY(-50%); opacity: .89; }
 .badge-signature { width: 17.68%; right: 5.36%; bottom: 9.3%; }
+.badge-area { width: 17.77%; left: 1.58%; bottom: 5.62%; }
+.badge-locomotive { width: 9.51%; right: 4.26%; bottom: 5.16%; }
+.badge-storefront { width: 31%; left: 27%; top: 29%; transform: perspective(800px) rotateY(15deg) skewY(4deg); transform-origin: left center; filter: drop-shadow(0 1px 1px #0005); }
+.badge-program { width: 32.25%; left: 8.36%; bottom: 13.77%; }
+.gallery-program-copy { position: absolute; z-index: 2; top: 14.13%; left: 8.36%; margin: 0; color: white; font-size: 10.91cqw; font-weight: 700; line-height: .956; letter-spacing: -.03em; }
 .gallery-signature { container-type: inline-size; }
 .gallery-artwork-copy {
   position: absolute;
@@ -109,13 +121,10 @@
   .partner-name { font-size: clamp(15px, 4.6cqw, 22px); line-height: 1.05; font-weight: 600; letter-spacing: -.025em; }
   .partner-rating { display: flex; align-items: center; gap: 4px; font-size: clamp(11px, 3cqw, 14px); line-height: 1.25; font-weight: 600; }
   .partner-star { width: 12px; height: 12px; fill: currentColor; }
-  .partner-credentials { grid-column: 2 / -1; display: flex; align-items: center; gap: clamp(8px, 2.5cqw, 12px); }
-  .partner-expert { flex: none; height: clamp(28px, 6.6cqw, 32px); }
-  .partner-expert .badge-graphic { display: block; width: auto; height: 100%; filter: invert(1); }
+  .partner-credentials { grid-column: 2 / -1; display: flex; align-items: center; }
+  .partner-expert { flex: none; height: clamp(14px, 3.3cqw, 16px); }
+  .partner-expert .badge-graphic { display: block; width: auto; height: 100%; }
   .partner-expert .module-outline { stroke-width: 5; }
-  /* This light profile specimen has a white identity tile and black symbol. */
-  .partner-expert [data-module='identity'] .module-outline { fill: #000; }
-  .partner-country { color: #787875; font-size: clamp(11px, 2.7cqw, 13px); line-height: 1.35; white-space: nowrap; }
 }
 
 @media (max-width: 1000px) and (min-width: 681px) {
@@ -126,6 +135,9 @@
   .gallery-item[data-gallery-node='3:10'], .gallery-item[data-gallery-node='3:9'] { margin-top: 64px; }
   .gallery-item[data-gallery-node='3:100'] { width: 76%; justify-self: center; }
   .gallery-item[data-gallery-node='3:76'] { grid-column: span 2; width: 80%; justify-self: end; }
+  .gallery-item[data-gallery-node='4:143'], .gallery-item[data-gallery-node='4:118'] { grid-column: span 2; width: 88%; justify-self: end; }
+  .gallery-item[data-gallery-node='4:119'] { grid-column: span 2; width: 88%; }
+  .gallery-item[data-gallery-node='4:154'] { width: 86%; margin-top: 32px; justify-self: center; }
 }
 @media (max-width: 680px) {
   .gallery { width: calc(100% - 40px); padding-block: 174px 48px; }
@@ -135,6 +147,9 @@
   .gallery-item[data-gallery-node='3:8'], .gallery-item[data-gallery-node='3:100'] { width: 72%; justify-self: center; }
   .gallery-item[data-gallery-node='3:44'], .gallery-item[data-gallery-node='3:52'] { width: 84%; justify-self: end; }
   .gallery-item[data-gallery-node='3:101'], .gallery-item[data-gallery-node='3:9'] { width: 84%; justify-self: start; }
+  .gallery-item[data-gallery-node='4:154'] { width: 84%; justify-self: center; }
+  .badge-area { min-width: 76px; }
+  .badge-locomotive { min-width: 48px; }
   .badge-portrait { min-width: 80px; }
   .badge-portrait-wide { min-width: 160px; }
   .badge-signature { min-width: 76px; }

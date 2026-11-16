@@ -9,7 +9,11 @@
     "3:9",
     "3:52",
     "3:101",
-    "3:76"
+    "3:76",
+    "4:143",
+    "4:154",
+    "4:119",
+    "4:118"
   ],
   "badges": "All live artwork reuses src/badges.js. No legacy Figma badge images are used.",
   "photos": [
@@ -38,6 +42,22 @@
       ],
       "editMode": "Built-in ImageGen",
       "prompt": "Use case: precise-object-edit. Edit target: the supplied photograph of hands holding a woven blanket. Remove the entire old Lovable badge graphic, all lettering, symbols and all rounded black panels. Make the WHOLE blanket interior a uniform charcoal black knitted fabric with the same realistic woven yarn texture and subtle natural folds. Preserve the multicolored fringes, exact blanket edges, hands, legs, sneakers, studio wall and floor, camera view and portrait framing. No graphic, no text, no outlines on the blanket. The entire fabric interior is plain charcoal knitted yarn. This is a blank textile mockup to receive a precise white vector badge later."
+    },
+    {
+      "node": "4:154",
+      "files": [
+        "public/gallery/storefront-480.webp",
+        "public/gallery/storefront-960.webp"
+      ],
+      "source": "Figma 4:154 original image fill. Legacy sticker removed so the current shared SVG badge can be used.",
+      "editMode": "Built-in ImageGen",
+      "prompt": "Use case: precise-object-edit. Edit target: the supplied square photograph of a shop glass entrance with a tall stainless steel door handle on the right. Remove ONLY the entire Lovable partner sticker in the center-left of the glass: remove all black rounded panels, white text, white logo, outlines, and transparent sticker edge. Reconstruct uninterrupted transparent glass with plausible warm shop interior and street reflections matching the surrounding glass. Keep the handle, stone wall, door frame, camera angle, square crop, warm golden light, interior plants, shelves, furniture, clothes, street buildings and depth of field unchanged. No new sticker, no new text, no logo, no graphic. This is a blank glass mockup for a precise vector badge to be overlaid in code."
+    },
+    {
+      "node": "4:118",
+      "file": "public/gallery/program.webp",
+      "source": "Figma original image fill: 1024 × 1536.",
+      "transform": "Export the authored image slot: source at -622,-1304, scaled to 3923 × 5884 inside a 2679 × 1444 frame. Native 699 × 377 crop, WebP quality 90. Text and program signature remain live vector/DOM layers."
     }
   ],
   "motion": {
@@ -121,6 +141,34 @@
     {
       "file": "public/gallery/loco-logo.webp",
       "bytes": 7632
+    },
+    {
+      "file": "public/gallery/area-1280.webp",
+      "bytes": 20196
+    },
+    {
+      "file": "public/gallery/area-640.webp",
+      "bytes": 8628
+    },
+    {
+      "file": "public/gallery/locomotive-1280.webp",
+      "bytes": 28870
+    },
+    {
+      "file": "public/gallery/locomotive-640.webp",
+      "bytes": 11598
+    },
+    {
+      "file": "public/gallery/program.webp",
+      "bytes": 52142
+    },
+    {
+      "file": "public/gallery/storefront-480.webp",
+      "bytes": 30220
+    },
+    {
+      "file": "public/gallery/storefront-960.webp",
+      "bytes": 73708
     }
   ],
   "partnerProfile": {
@@ -138,6 +186,25 @@
       "file": "public/gallery/loco-logo.webp",
       "transform": "Original logo resized to 128 × 128, lossless WebP"
     },
-    "note": "Illustrative profile composition requested by Luc; the Eames screenshot is a chosen visual reference, not an assertion of project authorship."
-  }
+    "note": "Illustrative profile composition requested by Luc; the Eames screenshot is a chosen visual reference, not an assertion of project authorship.",
+    "badge": "Half-size 14–16 px high; dark transparent outlines for heart, Expert/year and joined United/States module. All three use the shared vector construction."
+  },
+  "websitePreviews": [
+    {
+      "node": "4:143",
+      "files": [
+        "public/gallery/area-640.webp",
+        "public/gallery/area-1280.webp"
+      ],
+      "source": "Figma 4:144 image fill, full 1710 × 919 composition."
+    },
+    {
+      "node": "4:119",
+      "files": [
+        "public/gallery/locomotive-640.webp",
+        "public/gallery/locomotive-1280.webp"
+      ],
+      "source": "Figma 4:120 image fill, full 1706 × 908 composition."
+    }
+  ]
 }

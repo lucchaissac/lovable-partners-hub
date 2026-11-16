@@ -36,11 +36,13 @@ function outline(x,y,w,h,u){const stroke=u/8;return `<rect class="module-outline
 function model(formatId,tier='Select',options={}){
  const format=FORMATS.find(f=>f.id===formatId)||FORMATS[0],solution=format.family==='solution',u=format.layout==='symbol'?21:32,h=5*u;
  const year=options.year||'2026';
- const role=shape(solution?['Solution','Partner']:['Expert',year],3*u),level=solution?shape([tier,year],3*u):null;
+ const role=shape(options.roleLines||(solution?['Solution','Partner']:['Expert',year]),3*u);
+ const trailingLines=solution?(options.tierLines||[tier,year]):(['compact','horizontal'].includes(format.layout)?options.trailingLines:null);
+ const level=trailingLines?shape(trailingLines,3*u):null;
  const roleWidth=role.width+2*u,tierWidth=level?level.width+2*u:0;const wordmarkWidth=582.295/105.276*(3*u)+2*u;
  const stroke=u/8;
  let width,height,topHeight;
- if(format.layout==='horizontal'||format.layout==='compact'){width=(format.layout==='horizontal'?wordmarkWidth:h)+roleWidth+tierWidth-stroke*(solution?2:1);height=h;topHeight=h;}
+ if(format.layout==='horizontal'||format.layout==='compact'){width=(format.layout==='horizontal'?wordmarkWidth:h)+roleWidth+tierWidth-stroke*(level?2:1);height=h;topHeight=h;}
  if(format.layout==='stacked'){width=solution?roleWidth+tierWidth-stroke:wordmarkWidth;topHeight=solution?(width-2*u)/(461.0845/83.3618)+2*u:h;height=topHeight+(solution?2:1)*(h-stroke);}
  if(format.layout==='symbol'){width=h+roleWidth+tierWidth-stroke*(solution?2:1);topHeight=h;height=2*h-stroke;}
  return {format,solution,u,h,width,height,topHeight,role,level,roleWidth,tierWidth,wordmarkWidth,stroke,moduleHeight:h};
@@ -77,7 +79,7 @@ export function badgeSvg(formatId,options={}){
  if(format.layout==='horizontal'||format.layout==='compact'){
   const start=(format.layout==='horizontal'?wordmarkWidth:h)-stroke;
   if(format.layout==='horizontal')wordmark(wordmarkWidth,h,solution?'1-523':'1-67');else symbol(0,0,h);
-  cell(role,start,0,roleWidth);if(solution)cell(level,start+roleWidth-stroke,0,tierWidth);
+  cell(role,start,0,roleWidth);if(level)cell(level,start+roleWidth-stroke,0,tierWidth);
  }else if(format.layout==='stacked'){
   wordmark(width,topHeight,solution?'1-713':'1-177');cell(role,0,topHeight-stroke,roleWidth);
   if(solution){cell(level,roleWidth-stroke,topHeight-stroke,tierWidth);partner(0,topHeight+h-2*stroke,width);}else partner(roleWidth-stroke,topHeight-stroke,width-roleWidth+stroke);
@@ -97,7 +99,8 @@ export function badgeSvg(formatId,options={}){
   artwork=`<defs><filter id="${id}-dark" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0 0 0 0 .105882 0 0 0 0 .105882 0 0 0 0 .105882 0 0 0 1 0"/></filter></defs>${artwork}`;
  }
  if(treatment==='dark-filled')artwork=artwork.replaceAll('fill="none" stroke="white"','fill="#1b1b1b" stroke="#1b1b1b"');
- return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${-pad} ${-pad} ${n(width+pad*2)} ${n(height+pad*2)}" class="badge-graphic" role="img" aria-labelledby="${id}-title" data-format="${format.id}" data-figma-node="${format.node}"><title id="${id}-title">${esc(format.name)}${solution?` · ${tier}`:''} · ${esc(year)}</title>${artwork}</svg>`;
+ const label=options.ariaLabel||`${format.name}${solution?` · ${tier}`:''} · ${year}${options.trailingLines?` · ${options.trailingLines.join(' ')}`:''}`;
+ return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${-pad} ${-pad} ${n(width+pad*2)} ${n(height+pad*2)}" class="badge-graphic" role="img" aria-labelledby="${id}-title" data-format="${format.id}" data-figma-node="${format.node}"><title id="${id}-title">${esc(label)}</title>${artwork}</svg>`;
 }
 
 export function paddingDiagram(){

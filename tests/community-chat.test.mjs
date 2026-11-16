@@ -16,7 +16,7 @@ function galleryDesign(width=1080,height=1080){
  const brand=(id,asset,geometry)=>({id,kind:'brand',asset,color:'light',city:'Montréal',frame:{rotation:0,opacity:1,...geometry}});
  return {title:'Community meetup',reference:'social',width,height,background:'ink',elements:[
   brand('glow','gradient',{x:-width*.54,y:-height*.2,width:m.gradientWidth,height:m.gradientWidth*1.00808,rotation:-9.91}),
-  brand('globe','globe',{x:m.globeX,y:height*.3,width:m.globeWidth,height:m.globeWidth}),
+  brand('globe','globe',{x:m.globeX,y:m.globeY,width:m.globeWidth,height:m.globeWidth}),
   brand('logo','community-logo',{x:m.inset,y:m.inset,width:m.logoWidth,height:m.logoHeight}),
   {...text,frame:{...frame,x:m.inset,y:m.headlineY,width:m.headlineWidth,height:180*m.scale},fontSize:m.headlineSize,lineHeight:88/96*100},
  ]};
@@ -107,4 +107,17 @@ test('Invalid composition is corrected before being returned, with a bounded ret
  const result=await validatedCommunityGeneration(request,async feedback=>{calls++;if(calls===1){assert.equal(feedback,undefined);return bad;}assert.match(feedback.correctionFeedback,/intact light logo/);return plan;});
  assert.deepEqual(result,plan);assert.equal(calls,2);
  calls=0;await assert.rejects(validatedCommunityGeneration(request,async()=>{calls++;return bad;}),/did not meet/);assert.equal(calls,2);
+});
+
+test('Square social designs keep a large headline, high globe and equal footer insets',()=>{
+ const square=communityDesignMetrics('social',1080,1080),landscape=communityDesignMetrics('social',1200,630);
+ assert.equal(square.headlineSize,120);assert.equal(square.headlineWidth,900);assert.equal(square.globeY,0);
+ assert.equal(landscape.headlineSize,96);assert.ok(Math.abs(square.footerSize-32.4)<.001);
+ const modify=fn=>{const copy=structuredClone(plan);fn(copy.designs[0]);return copy;};
+ assert.throws(()=>validateChatPlan(modify(d=>{d.elements[1].frame.y=513;}),request),/Keep the globe high/);
+ assert.throws(()=>validateChatPlan(modify(d=>{d.elements[3].fontSize=86.4;}),request),/headline prominent/);
+ const footer={...text,id:'footer',text:'Bring your ideas.',weight:600,fontSize:32.4,lineHeight:133.3333,frame:{...frame,x:43.2,y:993.6,width:800,height:43.2}};
+ assert.ok(validateChatPlan(modify(d=>d.elements.push(footer)),request));
+ assert.throws(()=>validateChatPlan(modify(d=>d.elements.push({...footer,frame:{...footer.frame,y:940}})),request),/same bottom inset/);
+ assert.throws(()=>validateChatPlan(modify(d=>d.elements.push({...footer,fontSize:21.6})),request),/footer type/);
 });

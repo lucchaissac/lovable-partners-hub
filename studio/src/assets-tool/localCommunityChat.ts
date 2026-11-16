@@ -1,5 +1,6 @@
 import {z} from 'zod';
 import {chatPlanSchema,chatRequestSchema,validateChatPlan} from '../../../shared/communityChat.mjs';
+import {communityDesignMetrics} from '../../../shared/communityDesignRules.mjs';
 import {COMMUNITY_MARKUP,COMMUNITY_VIEWBOX} from '../../../src/ambassadors/source/brand.mjs';
 import {renderAmbassador} from '../../../src/ambassadors/render.js';
 import {defaultAmbassador} from './ambassadorSettings';
@@ -71,6 +72,7 @@ async function nativeElement(spec:ChatElement,existing:Map<string,HtmlBlock>,ima
  return {id:spec.id,kind:'image',...(ambassador?{ambassador,ambassadorElement}:{}),value:{src,alt,caption:'',alignment:'center',width:100},editor:{...editor,appearance:{imageFit:fit,radius}}};
 }
 export async function materializeLocalPlan(plan:ChatPlan,base:AssetDocument,sources:StudioSource[],signal:AbortSignal):Promise<AssetDocument[]>{
+ await Promise.all([document.fonts.load('600 32px "Camera Plain"'),document.fonts.load('700 120px "Camera Plain"')]);
  await document.fonts.ready;
  const existing=new Map(blocksOf(nativeDocument(base)).map(block=>[block.id,block])),images=new Map(sources.flatMap((s,i)=>s.kind==='image'?[[`attachment-${i}`,s.image] as const]:[]));
  if(!plan.designs.length){
@@ -83,7 +85,23 @@ export async function materializeLocalPlan(plan:ChatPlan,base:AssetDocument,sour
  }
  const results:AssetDocument[]=[];
  for(const design of plan.designs){
-  const blocks:HtmlBlock[]=[];for(const spec of design.elements)blocks.push(await nativeElement(spec,existing,images,signal));signal.throwIfAborted();
+  const metrics=communityDesignMetrics(design.reference,design.width,design.height);
+  const blocks:HtmlBlock[]=[];for(const spec of design.elements){
+   const block=await nativeElement(spec,existing,images,signal);
+   if(design.reference==='social'&&spec.kind==='text'&&/footer|caption/i.test(spec.id)&&block.kind==='text'){
+    // Equal visible insets, including font bearings and the last line's descenders.
+    // CSS positions a line box; it does not position the actual letter shapes.
+    const ctx=document.createElement('canvas').getContext('2d')!,size=block.value.size;
+    ctx.font=`${spec.weight} ${size}px "Camera Plain"`;
+    const lines:string[]=[];
+    for(const paragraph of spec.text.split('\n')){let line='';for(const word of paragraph.split(/\s+/)){const next=line?`${line} ${word}`:word;if(line&&ctx.measureText(next).width>spec.frame.width){lines.push(line);line=word;}else line=next;}lines.push(line);}
+    const first=ctx.measureText(lines[0]??''),last=ctx.measureText(lines.at(-1)??''),leading=size*spec.lineHeight/100;
+    const ascent=last.fontBoundingBoxAscent,descent=last.fontBoundingBoxDescent;
+    const bottom=(leading-ascent-descent)/2+ascent+last.actualBoundingBoxDescent+(lines.length-1)*leading;
+    block.editor={...block.editor,x:metrics.inset+first.actualBoundingBoxLeft,y:design.height-metrics.inset-bottom};
+   }
+   blocks.push(block);
+  }signal.throwIfAborted();
   const format=design.width===design.height?'square':design.width>design.height?'landscape':'portrait';
   results.push(assetSchema.parse({...base,id:crypto.randomUUID(),title:sentenceCase(design.title),format,dimensions:{width:design.width,height:design.height},background:design.background,grid:false,community:undefined,series:undefined,layouts:undefined,updatedAt:Date.now(),nodes:[makeNode('image',{x:0,y:0,w:100,h:100})],editor:{version:1,pages:[{id:'asset-page',name:design.title,sections:[{id:'asset-board',name:'Canvas',background:'transparent',padding:0,gap:0,blockGap:0,minHeight:design.height,columns:[blocks]}]}]}}));
  }

@@ -11,10 +11,15 @@ function openDatabase() {
   });
 }
 export async function saveAsset(owner: string, document: AssetDocument) {
+  return saveAssets(owner,[document]);
+}
+/** Membership and documents commit together, so reopening any sibling sees the same pages. */
+export async function saveAssets(owner:string,documents:AssetDocument[]){
+  const parsed=documents.map(document=>assetSchema.parse(document));
   const db = await openDatabase();
   return new Promise<void>((resolve, reject) => {
     const tx = db.transaction('assets', 'readwrite');
-    tx.objectStore('assets').put({ key: `${owner}:${document.id}`, owner, document: assetSchema.parse(document) } satisfies StoredAsset);
+    for(const document of parsed)tx.objectStore('assets').put({ key: `${owner}:${document.id}`, owner, document } satisfies StoredAsset);
     tx.oncomplete = () => resolve();
     tx.onabort = tx.onerror = () => reject(new Error('Could not save on this device. Download the editable source to keep your work.'));
   });

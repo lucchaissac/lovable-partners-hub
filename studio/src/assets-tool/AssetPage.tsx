@@ -13,6 +13,8 @@ import { assetTheme } from './websiteTokens';
 import { readStudioConfig, studioApi } from '../studio/client';
 
 import { AssetCanvas } from './AssetCanvas';
+import {CommunityCanvas} from './CommunityCanvas';
+import {assetPages,insertAssetPages,linkAssetPages,moveAssetPage} from './assetSeries';
 import { AssetLibrary } from './AssetLibrary';
 import { badgeAsset, starterAsset } from './starter';
 import { AssetDesignPanel } from './AssetDesignPanel';
@@ -36,7 +38,7 @@ import '../studio/workspace-widgets.css';
 import { Artwork } from './Artwork';
 import { assetSchema, assetDimensions, compositionSchema, formats, resizeAsset, referenceDocument, type AssetDocument, type AssetFormat, type Composition } from './model';
 import { exportPng, renderPng, exportSource, readReference, visionReference } from './media';
-import { listAssets, saveAsset } from './storage';
+import { listAssets, saveAsset, saveAssets } from './storage';
 import './assets.css';
 import {AssetScreenMenu} from './AssetScreenMenu';
 
@@ -71,6 +73,9 @@ function AssetPageContent() {
 
   const [zoom,setZoom]=useState(0);
   const [changingTemplate,setChangingTemplate]=useState(false);
+  const [addingPage,setAddingPage]=useState(false);
+  const [pageArrangement,setPageArrangement]=useState<string[]|undefined>();
+  const pageHistory=useRef(new Map<string,{past:AssetDocument[];future:AssetDocument[]}>());
   const [designOpen,setDesignOpen]=useState(false);
   const [libraryOpen,setLibraryOpen]=useState(() => new URLSearchParams(locationSearch()).get('panel') === 'library');
   const [reviewCandidate,setReviewCandidate]=useState<AssetDocument>();
@@ -98,7 +103,7 @@ function AssetPageContent() {
 
 
   const put = useCallback((next: AssetDocument) => {
-    current.current = next; setAsset(next); setLoadError(''); try { localStorage.setItem(studioLastAssetKey, next.id); } catch {} setSaveState('Saving…');
+    current.current = next; setAsset(next); if(studioWorkspace==='ambassadors')setRecent(items=>[next,...items.filter(item=>item.id!==next.id)]); setLoadError(''); try { localStorage.setItem(studioLastAssetKey, next.id); } catch {} setSaveState('Saving…');
     const ownerAtSave = owner;
     // Serial writes avoid a slower earlier write overwriting a later edit.
     saves.current = saves.current.catch(() => {}).then(() => saveAsset(ownerAtSave, next)).then(() => {
@@ -120,8 +125,8 @@ function AssetPageContent() {
     if (current.current) past.current = [...past.current.slice(-49), current.current];
     future.current = []; put(parsed.data); setHistoryVersion(value => value + 1);
   }, [put]);
-  const undo = useCallback(() => { const previous = past.current.pop(); if (!previous || !current.current) return; future.current.push(current.current); put({ ...previous, messages:current.current.messages,workspaceChats:current.current.workspaceChats,workspaceActiveChatId:current.current.workspaceActiveChatId, updatedAt: Date.now() }); setHistoryVersion(value => value + 1);  }, [put]);
-  const redo = useCallback(() => { const next = future.current.pop(); if (!next || !current.current) return; past.current.push(current.current); put({ ...next, messages:current.current.messages,workspaceChats:current.current.workspaceChats,workspaceActiveChatId:current.current.workspaceActiveChatId, updatedAt: Date.now() }); setHistoryVersion(value => value + 1);  }, [put]);
+  const undo = useCallback(() => { const previous = past.current.pop(); if (!previous || !current.current) return; future.current.push(current.current); put({ ...previous, series:current.current.series, messages:current.current.messages,workspaceChats:current.current.workspaceChats,workspaceActiveChatId:current.current.workspaceActiveChatId, updatedAt: Date.now() }); setHistoryVersion(value => value + 1);  }, [put]);
+  const redo = useCallback(() => { const next = future.current.pop(); if (!next || !current.current) return; past.current.push(current.current); put({ ...next, series:current.current.series, messages:current.current.messages,workspaceChats:current.current.workspaceChats,workspaceActiveChatId:current.current.workspaceActiveChatId, updatedAt: Date.now() }); setHistoryVersion(value => value + 1);  }, [put]);
   useEffect(() => {
     mounted.current = true;
     return () => { mounted.current = false; controller.current?.abort(); operation.current++; };
@@ -226,10 +231,14 @@ function AssetPageContent() {
         if(!mounted.current||run!==operation.current||current.current?.id!==document.id)return;
         if(plan.designs.length){
           const reply:StudioMessage={id:crypto.randomUUID(),createdAt:new Date().toISOString(),text:plan.summary,user:false,channel:'workspace',workspaceChatId:request.chatId};
-          for(const design of designs){design.messages=[...assetMessages(current.current),reply];await saveAsset(owner,design);}
+          for(const design of designs)design.messages=[...assetMessages(current.current),reply];
+          await saves.current;
+          const collection=insertAssetPages(assetPages(current.current,await listAssets(owner)),current.current.id,designs);
+          await saveAssets(owner,collection);
           if(!mounted.current||run!==operation.current||active.signal.aborted)return;
-          past.current=[...past.current.slice(-49),current.current];future.current=[];setHistoryVersion(value=>value+1);
-          put(designs[0]);setRecent(await listAssets(owner));setZoom(0);
+          pageHistory.current.set(current.current.id,{past:past.current,future:future.current});
+          past.current=[];future.current=[];setHistoryVersion(value=>value+1);
+          setPageArrangement(undefined);put(collection.find(page=>page.id===designs[0].id)!);setRecent(await listAssets(owner));setZoom(0);
           // Keep this editor session mounted so undo and queued messages survive creation.
           // put() records the new draft as the last-open asset for reopening the studio.
         }else{
@@ -300,7 +309,7 @@ function AssetPageContent() {
         else throw new Error('The source image dimensions do not match the file.');
       }
       const opened=studioWorkspace==='ambassadors'?await migrateCommunityAsset(parsed.data):parsed.data;
-      const next = { ...opened, id: crypto.randomUUID(), updatedAt: Date.now() };
+      const next = { ...opened, series:undefined, id: crypto.randomUUID(), updatedAt: Date.now() };
       await saveAsset(owner, next);
       if(studioWorkspace==='ambassadors'){try{localStorage.setItem(studioLastAssetKey,next.id);}catch{}}
       navigate(`/assets/${next.id}`);
@@ -335,14 +344,89 @@ function AssetPageContent() {
       const oldTemplate=communitySettings(previous),next=await ambassadorAsset(formatId,oldTemplate);
       if(!mounted.current||current.current?.id!==previous.id)return;
       const automaticTitle=oldTemplate?`${ambassadorFormats.find(format=>format.id===oldTemplate.format)!.name} · ${oldTemplate.city||'Community'}`:previous.title;
-      change({...previous,...next,id:previous.id,title:previous.title===automaticTitle?next.title:previous.title,layouts:undefined});setZoom(0);
+      change({...previous,...next,id:previous.id,series:previous.series,title:previous.title===automaticTitle?next.title:previous.title,layouts:undefined});setZoom(0);
     }catch(reason){setError(reason instanceof Error?reason.message:'Could not open this template.');}
     finally{if(mounted.current)setChangingTemplate(false);}
+  };
+  const pages=asset?assetPages(asset,recent):[];
+  const openCommunityPage=(pageId:string)=>{
+    if(busy||addingPage||changingTemplate||pageId===current.current?.id)return;
+    const next=pages.find(page=>page.id===pageId);if(!next)return;
+    if(current.current)pageHistory.current.set(current.current.id,{past:past.current,future:future.current});
+    const history=pageHistory.current.get(pageId);past.current=history?.past??[];future.current=history?.future??[];
+    put(next);setVisual(undefined);setReviewCandidate(undefined);setHistoryVersion(value=>value+1);setZoom(0);
+  };
+  const addCommunityPage=async(afterId:string,kind:string)=>{
+    if(busy||addingPage||changingTemplate||!current.current)return;
+    setAddingPage(true);setError('');
+    try{
+      await saves.current;
+      const all=await listAssets(owner),collection=assetPages(current.current,all),source=collection.find(page=>page.id===afterId);
+      if(!source)throw Error('The selected asset is no longer available.');
+      let next:AssetDocument;
+      if(kind==='blank'||kind==='duplicate'){
+        next=structuredClone(source);next.id=crypto.randomUUID();next.updatedAt=Date.now();next.title=kind==='blank'?'Untitled asset':`${source.title.slice(0,93)} · Copy`;
+        if(kind==='blank'){
+          const editor=structuredClone(nativeDocument(source));
+          for(const page of editor.pages)for(const section of page.sections)section.columns=section.columns.map(()=>[]);
+          next={...next,editor,community:undefined,layouts:undefined};
+        }
+      }else next=await ambassadorAsset(kind,communitySettings(source));
+      await saves.current;
+      const latest=assetPages(current.current,await listAssets(owner));
+      const updated=insertAssetPages(latest,afterId,[next]);await saveAssets(owner,updated);
+      if(!mounted.current)return;
+      pageHistory.current.set(current.current.id,{past:past.current,future:future.current});past.current=[];future.current=[];
+      setPageArrangement(undefined);setRecent([...updated,...all.filter(page=>!updated.some(item=>item.id===page.id))]);put(updated.find(page=>page.id===next.id)!);
+      setVisual(undefined);setReviewCandidate(undefined);setZoom(0);setHistoryVersion(value=>value+1);
+    }catch(reason){if(mounted.current)setError(reason instanceof Error?reason.message:'Could not add this asset.');}
+    finally{if(mounted.current)setAddingPage(false);}
+  };
+  const renameCommunityPage=(pageId:string,title:string)=>{
+    if(!title.trim()||busy||addingPage)return;
+    const page=pages.find(item=>item.id===pageId);if(!page)return;
+    if(page.id===current.current?.id){change({...page,title});return;}
+    const next={...page,title:title.trim().slice(0,100),updatedAt:Date.now()};
+    const history=pageHistory.current.get(page.id)??{past:[],future:[]};
+    pageHistory.current.set(page.id,{past:[...history.past.slice(-49),page],future:[]});
+    setRecent(items=>items.map(item=>item.id===pageId?next:item));
+    saves.current=saves.current.then(()=>saveAsset(owner,next)).catch(reason=>setError(reason.message));
+  };
+  const arrangeCommunityPages=async(action:'move'|'remove'|'undo',pageId?:string,targetId?:string,side:'before'|'after'='before')=>{
+    if(busy||addingPage||changingTemplate||!current.current)return;
+    setAddingPage(true);setError('');
+    try{
+      await saves.current;
+      const all=await listAssets(owner),collection=assetPages(current.current,all);
+      let next:AssetDocument[],detached:AssetDocument[]=[];
+      if(action==='undo'){
+        if(!pageArrangement)return;
+        const documents=new Map([...all,current.current].map(page=>[page.id,page]));
+        next=linkAssetPages(pageArrangement.flatMap(id=>documents.has(id)?[documents.get(id)!]:[]));
+      }else if(action==='move')next=moveAssetPage(collection,pageId!,targetId!,side);
+      else{
+        if(collection.length<=1)return;
+        detached=collection.filter(page=>page.id===pageId).map(page=>({...page,series:undefined}));
+        next=linkAssetPages(collection.filter(page=>page.id!==pageId));
+      }
+      if(!next.length)return;
+      await saveAssets(owner,[...next,...detached]);
+      if(!mounted.current)return;
+      setPageArrangement(action==='undo'?undefined:collection.map(page=>page.id));
+      setRecent([...next,...detached,...all.filter(page=>![...next,...detached].some(item=>item.id===page.id))]);
+      const selected=next.find(page=>page.id===current.current!.id)??next[Math.min(collection.findIndex(page=>page.id===pageId),next.length-1)]??next[0];
+      if(selected.id!==current.current.id){
+        pageHistory.current.set(current.current.id,{past:past.current,future:future.current});
+        const history=pageHistory.current.get(selected.id);past.current=history?.past??[];future.current=history?.future??[];
+      }
+      put(selected);setVisual(undefined);setHistoryVersion(value=>value+1);
+    }catch(reason){if(mounted.current)setError(reason instanceof Error?reason.message:'Could not update the asset order.');}
+    finally{if(mounted.current)setAddingPage(false);}
   };
   const canvasToolbar = asset && <div className="lovable-canvas-toolbar">
     <Input className="lovable-design-title" aria-label="Asset name" maxLength={100} disabled={busy} value={asset.title} onChange={event=>{if(event.target.value.trim())change({...asset,title:event.target.value});}}/>
     <div className="lovable-canvas-tools">
-      {studioWorkspace==='ambassadors'&&!!asset.series?.length&&<Dropdown value={asset.id} items={asset.series.map(item=>({id:item.id,label:item.title}))} onChange={value=>{if(busy)return;void listAssets(owner).then(items=>{const next=items.find(item=>item.id===value);if(next){put(next);setVisual(undefined);setZoom(0);navigate(`/assets/${next.id}`,{replace:true});}});}} trigger={<Button variant="ghost" disabled={busy} aria-label="Choose generated design" trailingIcon={<Icon name="chevron-down" size={14}/>}>{Math.max(1,asset.series.findIndex(item=>item.id===asset.id)+1)} / {asset.series.length}</Button>}/>}
+
 
       <AssetLibrary open={libraryOpen} onOpenChange={setLibraryOpen} onNew={()=>void newAsset()} onImport={studioWorkspace==='ambassadors'?()=>upload.current?.click():undefined}/>
       <HtmlPresentationTools primitivesOnly/>
@@ -359,7 +443,7 @@ function AssetPageContent() {
     {loading ? <div className="asset-empty"><p role="status">Opening your asset…</p></div> : !asset ? <AssetHome reading={reading} onBrowse={() => upload.current?.click()}>
       {(recentLoading || recent.length > 0) && <AssetRecents loading={recentLoading}>{recent.map(item=><AssetLibraryCard key={item.id} asset={item} onOpen={()=>navigate(`/assets/${item.id}`)}/>)}</AssetRecents>}
     </AssetHome> : <>
-      <div className="we-body asset-workspace"><WorkspaceChat singleAsset placeholder="Ask Lovable…"/><AssetCanvas toolbar={canvasToolbar} asset={asset} onChange={change} preview={false} busy={busy} zoom={zoom} onZoom={setZoom} />
+      <div className="we-body asset-workspace"><WorkspaceChat singleAsset placeholder="Ask Lovable…"/>{studioWorkspace==='ambassadors'?<CommunityCanvas toolbar={canvasToolbar} asset={asset} pages={pages} generating={busy} busy={busy||addingPage||changingTemplate} zoom={zoom} onZoom={setZoom} onChange={change} onOpen={openCommunityPage} onAdd={(afterId,kind)=>void addCommunityPage(afterId,kind)} onOverview={()=>setVisual(undefined)} onRename={renameCommunityPage} onMove={(pageId,targetId,side)=>void arrangeCommunityPages('move',pageId,targetId,side)} onRemove={pageId=>void arrangeCommunityPages('remove',pageId)} onUndoArrangement={pageArrangement?()=>void arrangeCommunityPages('undo'):undefined}/>:<AssetCanvas toolbar={canvasToolbar} asset={asset} onChange={change} preview={false} busy={busy} zoom={zoom} onZoom={setZoom} />}
         <AssetDesignPanel mobileOpen={designOpen} onClose={()=>setDesignOpen(false)} asset={asset} onChange={change} onImport={() => upload.current?.click()}/>
       </div>
       <div className="asset-export-host" aria-hidden="true"><Artwork ref={exportBoard} asset={reviewCandidate??asset} /></div>

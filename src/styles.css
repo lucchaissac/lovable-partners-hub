@@ -124,9 +124,10 @@ body {
 .lovable-mark {
   width: 16px;
   height: 16px;
-  transform: translateY(.5px);
+  transform: translateY(-.5px);
 }
 
+.workspace-switcher { gap: calc(var(--segment-inset) / 2); }
 .partner-workspace-mark { display: block; width: 19px; height: 19px; }
 .workspace-switcher [aria-disabled="true"] { cursor: default; }
 

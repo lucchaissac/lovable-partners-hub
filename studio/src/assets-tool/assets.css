@@ -37,6 +37,16 @@
 .asset-recent-preview > div { flex: none; transform-origin: top center; }
 .asset-overflow-link { padding: 0; border: 0; background: none; color: var(--ui-text); text-decoration: underline; text-underline-offset: 3px; }
 .asset-workspace { display: flex; min-height: 0; flex: 1; }
+/* Text attachments use the same compact, inline treatment as chat links. */
+.asset-app[data-workspace="ambassadors"] .hcs-source-attachment:has(> .hcs-source-card[data-compact]) { display: flex; align-items: center; gap: var(--ui-space-1); max-width: 100%; }
+.asset-app[data-workspace="ambassadors"] .hcs-source-card[data-compact] { flex-direction: row; gap: var(--ui-space-2); padding: 0; min-height: 0; border: 0; border-radius: var(--ui-radius-item); background: transparent; box-shadow: none; color: inherit; }
+.asset-app[data-workspace="ambassadors"] .hcs-source-card[data-compact] .hcs-source-icon { display: flex; flex: none; align-items: center; justify-content: center; width: 14px; height: 14px; }
+.asset-app[data-workspace="ambassadors"] .hcs-source-card[data-compact] .hcs-source-icon svg { width: 14px; height: 14px; }
+.asset-app[data-workspace="ambassadors"] .hcs-source-card[data-compact] .hcs-source-label { flex: 1; padding: 0; }
+.asset-app[data-workspace="ambassadors"] .hcs-source-card[data-compact] .hcs-source-name { flex: 1; }
+.asset-app[data-workspace="ambassadors"] .hcs-source-card[data-compact] .hcs-source-name strong { font-weight: 600; text-decoration: underline; text-decoration-thickness: .5px; text-underline-offset: 3px; text-decoration-color: var(--ui-text-muted); }
+.asset-app[data-workspace="ambassadors"] .hcs-source-card[data-compact] .hcs-source-name > span { display: none; }
+.asset-app[data-workspace="ambassadors"] .hcs-source-card[data-compact] + .hcs-source-remove { position: static; flex: none; background: transparent; box-shadow: none; }
 .asset-canvas-area { display: flex; flex-direction: column; flex: 1; min-width: 0; background: var(--ui-bg-subtle); }
 .asset-canvas-scroll { flex: 1; min-height: 0; overflow: auto; position: relative; outline-offset: -3px !important; }
 .asset-canvas-center { min-width: 100%; min-height: 100%; width: max-content; display: grid; place-items: center; padding: var(--ui-space-10); box-sizing: border-box; }

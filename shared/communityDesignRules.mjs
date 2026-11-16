@@ -15,7 +15,7 @@ export const communityWorkingCanvasLimit=2560;
 export function communityWorkingDimensions(reference){
  const source=ambassadorFormats.find(format=>format.id===reference);
  if(!source)throw Error('Choose an existing Community gallery reference.');
- const scale=reference==='banner'?1080/source.width:1;
+ const scale=['banner','poster'].includes(reference)?1000/Math.max(source.width,source.height):1;
  const fit=Math.min(scale,communityWorkingCanvasLimit/Math.max(source.width,source.height));
  return {width:Math.round(source.width*fit),height:Math.round(source.height*fit)};
 }
@@ -49,8 +49,8 @@ export function validateCommunityDesignRules(plan,request){
   if(isBrand(e,'heart')||(e.kind==='icon'&&e.name==='heart')||(source&&[source.asset,source.alt].some(label=>/^(heart|lovable symbol)$/i.test(label??''))))reject('Use the Community lockup and the original globe/gradient composition. Standalone heart artwork is not a gallery composition.');
  }
  for(const design of plan.designs){
-  if(design.width>communityWorkingCanvasLimit||design.height>communityWorkingCanvasLimit)reject('Use an editor-sized canvas, at most 2560px on either side. Physical print dimensions or words like large do not request print-DPI pixel dimensions. A standard roll-up is 1080 × 2541px.');
-  if(design.reference==='banner'&&design.width>1080)reject('Keep a roll-up at a practical working width of 1080px or less, preserving its aspect ratio. The standard Community roll-up is 1080 × 2541px.');
+  if(design.width>communityWorkingCanvasLimit||design.height>communityWorkingCanvasLimit)reject('Use an editor-sized canvas, at most 2560px on either side. Physical print dimensions do not request print-DPI pixel dimensions. A standard roll-up is 425 × 1000px.');
+  if(['banner','poster'].includes(design.reference)&&Math.max(design.width,design.height)>1000&&!/\bpx\b|pixels?/i.test(request.prompt))reject('Use a 1000px long edge for print previews unless the user explicitly supplies pixel dimensions. Preserve the requested proportions; the standard roll-up is 425 × 1000px.');
   const m=communityDesignMetrics(design.reference,design.width,design.height),elements=design.elements;
   if(design.background!=='ink')reject('Community gallery compositions use the authored #1b1b1b background, including in light UI.');
   const logos=elements.filter(e=>isBrand(e,'community-logo'));

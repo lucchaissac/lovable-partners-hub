@@ -14,7 +14,7 @@ import { readStudioConfig, studioApi } from '../studio/client';
 
 import { AssetCanvas } from './AssetCanvas';
 import {CommunityCanvas} from './CommunityCanvas';
-import {assetPages,insertAssetPages,linkAssetPages,moveAssetPage} from './assetSeries';
+import {assetPages,insertAssetPages,linkAssetPages,moveAssetPage,MAX_ASSET_PAGES} from './assetSeries';
 import { AssetLibrary } from './AssetLibrary';
 import { badgeAsset, starterAsset } from './starter';
 import { AssetDesignPanel } from './AssetDesignPanel';
@@ -222,14 +222,14 @@ function AssetPageContent() {
       const png=await renderPng(exportBoard.current,document);
       if(studioWorkspace==='ambassadors'&&localChat.enabled){
         const rendered=await visionReference({name:'Current asset',src:png,...assetDimensions(document)});
-        const payload=localChatRequest(document,request.prompt,request.sources,request.visual?.context,rendered.src);
+        const payload=localChatRequest(document,request.prompt,request.sources,request.visual?.context,rendered.src,Math.max(0,MAX_ASSET_PAGES-assetPages(document,recent).length));
         setGenerationStage('Designing your asset…');
         const plan=await requestLocalDesign(payload,active.signal);
         setGenerationStage('Building your canvas…');
         const designs=await materializeLocalPlan(plan,document,request.sources,active.signal);
         if(JSON.stringify([current.current?.editor,current.current?.dimensions,current.current?.background])!==JSON.stringify([document.editor,document.dimensions,document.background]))throw Error('The canvas changed during generation. Retry to keep your latest edits.');
         if(!mounted.current||run!==operation.current||current.current?.id!==document.id)return;
-        if(plan.designs.length){
+        if(plan.designs.length||plan.badgeBatch){
           const reply:StudioMessage={id:crypto.randomUUID(),createdAt:new Date().toISOString(),text:plan.summary,user:false,channel:'workspace',workspaceChatId:request.chatId};
           for(const design of designs)design.messages=[...assetMessages(current.current),reply];
           await saves.current;

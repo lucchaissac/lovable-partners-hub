@@ -1,4 +1,5 @@
 import { mountGalleryPreview } from './galleryPreview.js';
+import { createElement, Star } from 'lucide';
 import { badgeSvg } from './badges.js';
 import './gallery.css';
 
@@ -36,12 +37,17 @@ function partnerCard() {
       <div class="partner-summary">
         <div class="partner-avatar"><img src="${media}loco-logo.webp" width="128" height="128" alt="" decoding="async" /></div>
         <div class="partner-name">LoCo AI Solutions</div>
+        <div class="partner-rating" aria-label="Rated 4.6 out of 5">${createElement(Star, { class: 'partner-star', 'aria-hidden': 'true' }).outerHTML}<span>4.6</span></div>
         <div class="partner-credentials">
           <div class="partner-expert" aria-hidden="true">${badgeSvg('expert-compact', { year: '2026', treatment: 'dark-outline', trailingLines: ['United', 'States'] })}</div>
         </div>
       </div>
     </div>
   </figure>`;
+}
+
+function teamPortrait() {
+  return website('team', 2160, 1215) + badge('solution-compact', 'badge-team') + `<div class="gallery-team-foreground" aria-hidden="true"><img src="${media}team-foreground-1280.webp" srcset="${media}team-foreground-640.webp 640w, ${media}team-foreground-1280.webp 1280w" sizes="(max-width: 680px) calc(100vw - 48px), (max-width: 1000px) 80vw, min(58vw, 850px)" width="2160" height="1215" alt="" loading="lazy" decoding="async" /></div>`;
 }
 
 export function gallery() {
@@ -55,6 +61,8 @@ export function gallery() {
       ${card('3:27', 'gallery-landscape gallery-portal gallery-portal-alt', 'Outlined Solution Partner badge inside a moving color composition', motion(8, true) + badge('solution-compact', 'badge-portal', { tier: 'Premier' }))}
       ${card('3:101', 'gallery-blanket', 'White outlined partner badge on a charcoal woven blanket', photo('blanket', 1096, 1435) + badge('solution-stacked', 'badge-blanket'))}
       ${card('4:118', 'gallery-program', 'Grow your business. Partner Program: apply for 2027.', '<img class="gallery-media" src="/gallery/program.webp" width="699" height="377" alt="" loading="lazy" decoding="async" /><p class="gallery-program-copy">Grow your<br />business</p>' + badge('solution-compact', 'badge-program', { year: '2027', roleLines: ['Partner', 'Program'], tierLines: ['Apply', 'for 2027'], ariaLabel: 'Partner Program · Apply for 2027' }))}
+      ${card('4:209', 'gallery-team', 'Solution Partner signature behind a three-person team portrait', teamPortrait())}
+      ${card('1:1417', 'gallery-building', 'Current Solution Partner signature on a dark brick storefront entrance', photo('building', 1090, 1443) + badge('solution-stacked', 'badge-building'))}
       ${card('3:10', 'gallery-landscape gallery-portal', 'Solution Partner badge inside a moving color composition', motion(4, true) + badge('solution-compact', 'badge-portal', { tier: 'Elite' }))}
       ${card('3:9', 'gallery-portrait', 'Solution Partner badge on an outdoor portrait', photo('portrait', 399, 501) + badge('solution-horizontal', 'badge-portrait-wide'))}
       ${card('3:52', 'gallery-square', 'Stacked Solution Partner badge on flowing pink and blue', motion(3) + badge('solution-stacked', 'badge-stacked'))}
@@ -83,7 +91,7 @@ export function mountGallery(root, { interactive = true } = {}) {
     }
     const playing = video.play();
     playing?.then(() => {
-      if (disposed || !visible.has(video) || document.hidden || reducedMotion.matches || connection?.saveData) video.pause();
+      if (disposed || !visible.has(video) || document.hidden || reducedMotion.matches || connection?.saveData || (interactive && document.querySelector('.gallery-lightbox[open]'))) video.pause();
     }).catch(() => { /* Keep the poster when autoplay is unavailable. */ });
   }
 

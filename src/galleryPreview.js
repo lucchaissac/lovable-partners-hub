@@ -27,6 +27,11 @@ export function mountGalleryPreview(root, mountMedia, refreshMedia) {
   function finishClose(focus = true) {
     animation?.cancel();
     animation = undefined;
+    const previewVideos = [...stage.querySelectorAll('video')];
+    selected.querySelectorAll('video').forEach((video, index) => {
+      const preview = previewVideos[index];
+      if (video.readyState >= 1 && preview?.readyState >= 1) video.currentTime = preview.currentTime;
+    });
     cleanupMedia?.();
     cleanupMedia = undefined;
     selected.style.visibility = visibility;

@@ -13,7 +13,9 @@
     "4:143",
     "4:154",
     "4:119",
-    "4:118"
+    "4:118",
+    "1:1417",
+    "4:209"
   ],
   "badges": "All live artwork reuses src/badges.js. No legacy Figma badge images are used.",
   "photos": [
@@ -58,6 +60,27 @@
       "file": "public/gallery/program.webp",
       "source": "Figma original image fill: 1024 × 1536.",
       "transform": "Export the authored image slot: source at -622,-1304, scaled to 3923 × 5884 inside a 2679 × 1444 frame. Native 699 × 377 crop, WebP quality 90. Text and program signature remain live vector/DOM layers."
+    },
+    {
+      "node": "1:1417",
+      "files": [
+        "public/gallery/building-480.webp",
+        "public/gallery/building-960.webp"
+      ],
+      "source": "Figma image 11 original image fill, 1090 × 1443. Replaced the embedded legacy badge with a live transparent outlined signature.",
+      "editMode": "Built-in ImageGen",
+      "prompt": "Use case: precise-object-edit. Edit target: the supplied portrait photograph of the dark brick Teenage Engineering storefront at 216 Lafayette Street. Remove ONLY the entire Lovable Solution Partner Select 2026 CroissantStudio badge printed on the lower-right black entrance door: remove its white filled top tile, text, heart logo and all white rounded outlines. Reconstruct the same uninterrupted dark door surface with its subtle vertical seam, reflections and lighting. Preserve the original door handle, pipes at sidewalk level, red alarm, security camera, all windows and brickwork, shop sign and its lettering, sky, adjacent buildings, street, original 1090:1443 framing, perspective and photographic detail unchanged. No other alterations. No new logo, no new lettering on the door. The cleared door will receive a precise current vector badge in code."
+    },
+    {
+      "node": "4:209",
+      "files": [
+        "public/gallery/team-640.webp",
+        "public/gallery/team-1280.webp",
+        "public/gallery/team-foreground-640.webp",
+        "public/gallery/team-foreground-1280.webp"
+      ],
+      "source": "Figma 1:1320 original photo and 1:1329 transparent foreground, both 2160 × 1215.",
+      "transform": "Preserve the original layered composition: foreground clipped to the top 839/1215 of the frame; live compact badge at x=105/2160, y=109/1215, height=242/1215. Replace the obsolete filled identity tile with the current transparent outlined badge. Both source layers encoded at the same 640/1280 dimensions, WebP quality 88."
     }
   ],
   "motion": {
@@ -169,6 +192,30 @@
     {
       "file": "public/gallery/storefront-960.webp",
       "bytes": 73708
+    },
+    {
+      "file": "public/gallery/building-480.webp",
+      "bytes": 55002
+    },
+    {
+      "file": "public/gallery/building-960.webp",
+      "bytes": 129546
+    },
+    {
+      "file": "public/gallery/team-1280.webp",
+      "bytes": 62916
+    },
+    {
+      "file": "public/gallery/team-640.webp",
+      "bytes": 24868
+    },
+    {
+      "file": "public/gallery/team-foreground-1280.webp",
+      "bytes": 72654
+    },
+    {
+      "file": "public/gallery/team-foreground-640.webp",
+      "bytes": 27782
     }
   ],
   "partnerProfile": {
@@ -187,7 +234,7 @@
       "transform": "Original logo resized to 128 × 128, lossless WebP"
     },
     "note": "Illustrative profile composition requested by Luc; the Eames screenshot is a chosen visual reference, not an assertion of project authorship.",
-    "badge": "Half-size 14–16 px high; dark transparent outlines for heart, Expert/year and joined United/States module. All three use the shared vector construction."
+    "badge": "Transparent dark outlines for heart, Expert/year and joined United/States module; shared vector construction. The profile name has a filled star and 4.6 directly beneath it."
   },
   "websitePreviews": [
     {

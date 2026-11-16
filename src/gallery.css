@@ -1,5 +1,5 @@
 .gallery {
-  width: min(1640px, calc(100% - 96px));
+  width: min(1480px, calc(100% - clamp(96px, 12vw, 192px)));
   margin-inline: auto;
   padding-block: 128px 100px;
 }
@@ -23,15 +23,17 @@
 .gallery-item[data-gallery-node='3:27'] { grid-area: 3 / 8 / auto / span 5; margin-top: 96px; }
 .gallery-item[data-gallery-node='3:100'] { grid-area: 1 / 10 / auto / span 3; }
 .gallery-item[data-gallery-node='3:44'] { grid-area: 2 / 1 / auto / span 3; }
-.gallery-item[data-gallery-node='3:10'] { grid-area: 5 / 1 / auto / span 3; margin-top: 96px; }
+.gallery-item[data-gallery-node='3:10'] { grid-area: 6 / 1 / auto / span 3; margin-top: 96px; }
 .gallery-item[data-gallery-node='3:101'] { grid-area: 4 / 1 / auto / span 3; }
-.gallery-item[data-gallery-node='3:9'] { grid-area: 5 / 5 / auto / span 3; }
-.gallery-item[data-gallery-node='3:52'] { grid-area: 5 / 10 / auto / span 3; margin-top: 144px; }
-.gallery-item[data-gallery-node='3:76'] { grid-area: 6 / 8 / auto / span 5; margin-top: 96px; }
+.gallery-item[data-gallery-node='3:9'] { grid-area: 6 / 5 / auto / span 3; }
+.gallery-item[data-gallery-node='3:52'] { grid-area: 6 / 10 / auto / span 3; margin-top: 144px; }
+.gallery-item[data-gallery-node='3:76'] { grid-area: 7 / 8 / auto / span 5; margin-top: 96px; }
 .gallery-item[data-gallery-node='4:143'] { grid-area: 2 / 6 / auto / span 7; margin-top: 48px; }
 .gallery-item[data-gallery-node='4:154'] { grid-area: 3 / 2 / auto / span 4; }
 .gallery-item[data-gallery-node='4:118'] { grid-area: 4 / 6 / auto / span 7; margin-top: 80px; }
-.gallery-item[data-gallery-node='4:119'] { grid-area: 6 / 1 / auto / span 6; }
+.gallery-item[data-gallery-node='4:119'] { grid-area: 7 / 1 / auto / span 6; }
+.gallery-item[data-gallery-node='4:209'] { grid-area: 5 / 1 / auto / span 7; margin-top: 72px; }
+.gallery-item[data-gallery-node='1:1417'] { grid-area: 5 / 9 / auto / span 4; }
 .gallery-square { aspect-ratio: 1; }
 .gallery-landscape { aspect-ratio: 2680 / 1445; }
 .gallery-portrait { aspect-ratio: 399 / 501; }
@@ -41,6 +43,10 @@
 .gallery-area { aspect-ratio: 1710 / 919; }
 .gallery-locomotive { aspect-ratio: 1706 / 908; }
 .gallery-program { aspect-ratio: 2679 / 1444; container-type: inline-size; }
+.gallery-building { aspect-ratio: 1090 / 1443; }
+.gallery-team { aspect-ratio: 16 / 9; }
+.gallery-team-foreground { position: absolute; inset: 0 0 auto; height: 69.0535%; z-index: 3; overflow: hidden; pointer-events: none; }
+.gallery-team-foreground img { display: block; width: 100%; height: auto; }
 .gallery-media { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .gallery-video { pointer-events: none; }
 .gallery-badge { position: absolute; z-index: 2; pointer-events: none; }
@@ -56,6 +62,9 @@
 .badge-locomotive { width: 9.51%; right: 4.26%; bottom: 5.16%; mix-blend-mode: difference; }
 .badge-storefront { width: 31%; left: 27%; top: 29%; transform: perspective(800px) rotateY(15deg) skewY(4deg); transform-origin: left center; filter: drop-shadow(0 1px 1px #0005); }
 .badge-program { width: 32.25%; left: 8.36%; bottom: 13.77%; }
+.badge-building { width: 18.1%; left: 63.94%; top: 75.75%; opacity: .92; }
+.badge-team { left: 4.8611%; top: 8.9712%; height: 19.9177%; }
+.badge-team .badge-graphic { width: auto; height: 100%; }
 .gallery-program-copy { position: absolute; z-index: 2; top: 14.13%; left: 8.36%; margin: 0; color: white; font-size: 10.91cqw; font-weight: 700; line-height: .956; letter-spacing: -.03em; }
 .gallery-signature { container-type: inline-size; }
 .gallery-artwork-copy {
@@ -107,7 +116,7 @@
     margin-top: clamp(6px, 1.8cqw, 9px);
   }
   .partner-avatar {
-    grid-row: 1;
+    grid-row: 1 / span 2;
     align-self: center;
     display: grid;
     place-items: center;
@@ -120,14 +129,16 @@
   }
   .partner-avatar img { display: block; width: 100%; height: 100%; object-fit: contain; }
   .partner-name { grid-column: 2; grid-row: 1; font-size: clamp(15px, 4.6cqw, 22px); line-height: 1.05; font-weight: 600; letter-spacing: -.025em; }
-  .partner-credentials { grid-column: 3; grid-row: 1; display: flex; align-items: center; }
+  .partner-rating { grid-column: 2; grid-row: 2; display: flex; align-items: center; gap: 4px; font-size: clamp(11px, 3cqw, 14px); line-height: 1.25; font-weight: 600; }
+  .partner-star { width: 12px; height: 12px; fill: currentColor; }
+  .partner-credentials { grid-column: 3; grid-row: 1 / span 2; display: flex; align-items: center; }
   .partner-expert { flex: none; height: var(--partner-icon-size); }
   .partner-expert .badge-graphic { display: block; width: auto; height: 100%; }
   .partner-expert .module-outline { stroke-width: 5; }
 }
 
 @media (max-width: 1000px) and (min-width: 681px) {
-  .gallery { width: calc(100% - 64px); padding-top: 112px; }
+  .gallery { width: calc(100% - 80px); padding-top: 112px; }
   .gallery-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 72px 40px; }
   .gallery-item[data-gallery-node] { grid-area: auto; margin-top: 0; }
   .gallery-partner-demo { grid-area: auto; margin-top: 0; order: -1; }
@@ -137,9 +148,11 @@
   .gallery-item[data-gallery-node='4:143'], .gallery-item[data-gallery-node='4:118'] { grid-column: span 2; width: 88%; justify-self: end; }
   .gallery-item[data-gallery-node='4:119'] { grid-column: span 2; width: 88%; }
   .gallery-item[data-gallery-node='4:154'] { width: 86%; margin-top: 32px; justify-self: center; }
+  .gallery-item[data-gallery-node='4:209'] { grid-column: span 2; width: 88%; }
+  .gallery-item[data-gallery-node='1:1417'] { width: 86%; justify-self: end; }
 }
 @media (max-width: 680px) {
-  .gallery { width: calc(100% - 40px); padding-block: 174px 48px; }
+  .gallery { width: calc(100% - 48px); padding-block: 174px 48px; }
   .gallery-grid { grid-template-columns: 1fr; gap: 56px; }
   .gallery-item[data-gallery-node] { grid-area: auto; margin-top: 0; }
   .gallery-partner-demo { grid-area: auto; margin-top: 0; order: -1; }
@@ -147,6 +160,7 @@
   .gallery-item[data-gallery-node='3:44'], .gallery-item[data-gallery-node='3:52'] { width: 84%; justify-self: end; }
   .gallery-item[data-gallery-node='3:101'], .gallery-item[data-gallery-node='3:9'] { width: 84%; justify-self: start; }
   .gallery-item[data-gallery-node='4:154'] { width: 84%; justify-self: center; }
+  .gallery-item[data-gallery-node='1:1417'] { width: 84%; justify-self: end; }
   .badge-area { min-width: 76px; }
   .badge-locomotive { min-width: 48px; }
   .badge-portrait { min-width: 80px; }

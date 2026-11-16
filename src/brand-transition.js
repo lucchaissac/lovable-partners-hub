@@ -31,18 +31,18 @@ export function showWorkspaceTransition(workspace) {
 
   try {
     const word = label.animate([
-      { opacity: firstVisit ? 1 : 0, offset: 0 },
-      { opacity: 1, offset: 0.22 },
-      { opacity: 1, offset: 0.55 },
+      { opacity: firstVisit ? 1 : 0, offset: 0, easing: 'cubic-bezier(.16,1,.3,1)' },
+      { opacity: 1, offset: 0.15 },
+      { opacity: 1, offset: 0.65, easing: 'cubic-bezier(.2,0,0,1)' },
       { opacity: 0, offset: 1 },
-    ], { duration: 780, easing: 'ease-in-out', fill: 'both' });
+    ], { duration: 320, easing: 'linear', fill: 'both' });
     animations = [word];
     word.finished.then(() => {
       if (activeRevision === revision) dismiss();
     }).catch(() => {});
     timeout = setTimeout(() => {
       if (activeRevision === revision) dismiss();
-    }, 1600);
+    }, 800);
   } catch {
     dismiss();
   }

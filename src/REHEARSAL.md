@@ -40,7 +40,7 @@ Reduced the miniature’s placeholder-to-action gap from 44 to 16 px, and the re
 
 ## Universe name transitions
 
-Initial entry briefly shows Lovable; switching workspaces shows Lovable, Partners or Community, all in the same responsive Camera Plain Bold size, centered horizontally at the bottom with the same 16 px inset as the header at the top. Only the word fades; the fixed, pointer-transparent container has no background, blur or dimming. Text is white in dark appearance and #1b1b1b in light appearance. Native opacity animation lasts 780 ms, cancels on subsequent switches, and is omitted for reduced motion. The default entry and workspace controls lead to Gallery, while explicit deep links remain intact.
+Initial entry briefly shows Lovable; switching workspaces shows Lovable, Partners or Community, all in the same responsive Camera Plain Bold size, centered horizontally at the bottom with the same 16 px inset as the header at the top. Only the word fades; the fixed, pointer-transparent container has no background, blur or dimming. Text is white in dark appearance and #1b1b1b in light appearance. Native opacity animation lasts 320 ms with a 112 ms accelerated fade-out, cancels on subsequent switches, and is omitted for reduced motion. The default entry and workspace controls lead to Gallery, while explicit deep links remain intact.
 
 Browser verification: initial label, all three names, rapid switching, no replay between Gallery and Guidelines, transparent background, correct colors in both appearances, and eventual hidden state after initial and subsequent transitions. The shared CSS specimen fits Community at 320 and 390 px (214 and 251 px text widths); desktop type is 192 px. No console errors. Reduced motion is implemented in both CSS and the controller; OS-level emulation was not available for this check.
 
@@ -52,4 +52,4 @@ Verified in light and dark appearance on desktop and at 320/390 px: original art
 
 ## Bottom workspace labels and glyph favicons
 
-Workspace labels now sit at the bottom with the header’s shared 16 px vertical inset. The brand link remains centered, reduced to clamp(56px, 10vw, 208px) with −0.025em tracking. Browser checks at 2560 and 480 CSS pixels confirm the shared inset, complete text and no horizontal overflow. The three favicon vectors use black glyphs on transparency, verified at 16, 32 and 96 px; active favicon URLs update across all three workspaces. The production build passes.
+Workspace labels now sit at the bottom with the header’s shared 16 px vertical inset. The brand link remains centered, reduced to clamp(56px, 10vw, 208px), Bold (700), with −0.025em tracking. Browser checks at 2560 and 480 CSS pixels confirm the shared inset, complete text and no horizontal overflow. The three favicon vectors use black glyphs on transparency, verified at 16, 32 and 96 px; active favicon URLs update across all three workspaces. The production build passes.

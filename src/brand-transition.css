@@ -26,7 +26,7 @@ html[data-theme='light'] .brand-transition { color: #1b1b1b; }
 
 /* A failed or slow application boot must never leave the word behind. */
 .brand-transition:not([data-managed]) {
-  animation: brand-boot-fallback 300ms ease-out 2500ms forwards;
+  animation: brand-boot-fallback 112ms ease-out 2500ms forwards;
 }
 
 @keyframes brand-boot-fallback {

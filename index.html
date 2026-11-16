@@ -10,12 +10,14 @@
     <meta name="description" content="The Lovable partner hub." />
     <title>Lovable Partners</title>
     <meta property="og:title" content="Lovable Partners" />
-    <link id="workspace-favicon" rel="icon" type="image/svg+xml" href="/brand/favicon-partners.svg" />
-    <script>(()=>{const key=location.hash.slice(1).split('/')[0]==='brand'?'lovable':location.hash.startsWith('#ambassadors')?'ambassadors':'partners',title={lovable:'Lovable',partners:'Lovable Partners',ambassadors:'Lovable Community'}[key];document.title=title;document.querySelector('#workspace-favicon').href='/brand/favicon-'+key+'.svg';document.querySelector('meta[property="og:title"]').content=title;})()</script>
+    <link id="workspace-favicon" rel="icon" type="image/svg+xml" href="/brand/favicon-partners.svg?v=2" />
+    <script>(()=>{const key=location.hash.slice(1).split('/')[0]==='brand'?'lovable':location.hash.startsWith('#ambassadors')?'ambassadors':'partners',title={lovable:'Lovable',partners:'Lovable Partners',ambassadors:'Lovable Community'}[key];document.title=title;document.querySelector('#workspace-favicon').href='/brand/favicon-'+key+'.svg?v=2';document.querySelector('meta[property="og:title"]').content=title;})()</script>
     <link rel="preload" href="/fonts/CameraPlainVariable.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="/src/styles.css" />
+    <link rel="stylesheet" href="/src/brand-transition.css" />
   </head>
   <body>
+    <div class="brand-transition" data-brand-transition aria-hidden="true"><span>Lovable</span></div>
     <header class="hub-header" aria-label="Partner hub">
       <div class="header-start">
         <div class="segmented workspace-switcher" role="group" aria-label="Workspaces">

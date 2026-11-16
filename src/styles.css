@@ -16,6 +16,8 @@
   --control-size: 40px;
   --segment-inset: 4px;
   --header-height: 72px;
+  --header-inset-block: 16px;
+  --header-inset-inline: 24px;
   --icon-size: 20px;
   --radius-pill: 999px;
   --color-dim: rgb(255 255 255 / 38%);
@@ -58,7 +60,7 @@ body {
   grid-template-areas: "start sections end";
   align-items: center;
   gap: 16px;
-  padding: 16px 24px;
+  padding: var(--header-inset-block) var(--header-inset-inline);
 }
 
 .hub-header .segmented,
@@ -347,8 +349,8 @@ input[type='checkbox'] { accent-color: #ededed; width: 15px; height: 15px; margi
  .rule-grid { gap: 20px; }
 }
 @media (max-width: 680px) {
- :root { --header-height: 124px; }
- .hub-header { grid-template-columns: 1fr 1fr; grid-template-areas: "start end" "sections sections"; gap: 12px; padding: 16px; }
+ :root { --header-height: 124px; --header-inset-inline: 16px; }
+ .hub-header { grid-template-columns: 1fr 1fr; grid-template-areas: "start end" "sections sections"; gap: 12px; }
  .text-segment { padding-inline: 16px; }
  .guideline-sidebar { padding-inline: 20px; }
  .guideline-content { margin-inline: 20px; padding-top: 52px; }

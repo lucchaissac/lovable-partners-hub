@@ -9,5 +9,5 @@ export function updateWorkspaceMetadata(workspace) {
   document.querySelector('meta[property="og:title"]')?.setAttribute('content', title);
   document.querySelector('meta[name="description"]')?.setAttribute('content', description);
   const icon = document.querySelector('#workspace-favicon');
-  if (icon) icon.setAttribute('href', `/brand/favicon-${workspace in workspaces ? workspace : 'partners'}.svg`);
+  if (icon) icon.setAttribute('href', `/brand/favicon-${workspace in workspaces ? workspace : 'partners'}.svg?v=2`);
 }

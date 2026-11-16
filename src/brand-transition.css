@@ -3,9 +3,10 @@
   inset: 0;
   z-index: 100;
   display: grid;
-  place-items: center;
+  align-items: end;
+  justify-items: center;
   overflow: hidden;
-  padding: 24px;
+  padding: var(--header-inset-block) var(--header-inset-inline);
   color: #fff;
   pointer-events: none;
 }

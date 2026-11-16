@@ -3,7 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="color-scheme" content="dark light" />
-    <style>html,body{background:#1b1b1b;color:rgba(255,255,255,.92);color-scheme:dark}</style>
+    <script>try{document.documentElement.dataset.theme=localStorage.getItem('lovable-hub-theme')==='light'?'light':'dark'}catch{}</script>
+    <style>html{--boot-background:#1b1b1b;--boot-text:rgba(255,255,255,.92);color-scheme:dark}html[data-theme='light']{--boot-background:#f7f4ed;--boot-text:rgba(0,0,0,.92);color-scheme:light}html,body{background:var(--boot-background);color:var(--boot-text)}</style>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#1b1b1b" />
     <meta name="description" content="The Lovable partner hub." />

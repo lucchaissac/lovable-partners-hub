@@ -5,7 +5,7 @@ import {createServer} from 'node:http';
 import {once} from 'node:events';
 import {communityChatPlugin,localRequestAllowed,runProcess,validatedCommunityGeneration} from '../server/communityChat.mjs';
 import {chatPlanSchema,validateChatPlan} from '../shared/communityChat.mjs';
-import {communityDesignMetrics,communityCompositionRules} from '../shared/communityDesignRules.mjs';
+import {communityDesignMetrics,communityCompositionRules,communityWorkingDimensions} from '../shared/communityDesignRules.mjs';
 import {loadCommunityDesignReferences} from '../server/communityDesignReferences.mjs';
 
 const frame={x:64,y:64,width:700,height:120,rotation:0,opacity:1};
@@ -120,4 +120,23 @@ test('Square social designs keep a large headline, high globe and equal footer i
  assert.ok(validateChatPlan(modify(d=>d.elements.push(footer)),request));
  assert.throws(()=>validateChatPlan(modify(d=>d.elements.push({...footer,frame:{...footer.frame,y:940}})),request),/same bottom inset/);
  assert.throws(()=>validateChatPlan(modify(d=>d.elements.push({...footer,fontSize:21.6})),request),/footer type/);
+});
+
+
+test('Print requests use practical working canvases and retain the roll-up proportions',()=>{
+ const dimensions=communityWorkingDimensions('banner');
+ assert.deepEqual(dimensions,{width:1080,height:2541});
+ assert.ok(Math.abs(dimensions.width/dimensions.height-850/2000)<.0001);
+ const m=communityDesignMetrics('banner',dimensions.width,dimensions.height);
+ const brand=(id,asset,geometry)=>({id,kind:'brand',asset,color:'light',city:'Paris',frame:{rotation:0,opacity:1,...geometry}});
+ const rollup={title:'Build together',reference:'banner',...dimensions,background:'ink',elements:[
+  brand('globe','globe',{x:m.globeX,y:m.globeY,width:m.globeWidth,height:m.globeWidth}),
+  brand('gradient','gradient',{x:-1630,y:700,width:3967,height:3999,rotation:-9.91}),
+  brand('logo','community-logo',{x:m.inset,y:m.inset,width:m.logoWidth,height:m.logoHeight}),
+  {...text,fontSize:m.headlineSize,lineHeight:m.headlineLeading/m.headlineSize*100,frame:{...frame,x:m.headlineX,y:m.headlineY,width:m.headlineWidth,height:m.headlineLeading*3}},
+ ]};
+ assert.ok(validateChatPlan({...plan,designs:[rollup]},{...request,prompt:'Create a giant 85 × 200 cm roll-up.'}));
+ assert.throws(()=>validateChatPlan({...plan,designs:[{...rollup,width:1200}]},request),/working width/);
+ assert.throws(()=>chatPlanSchema.parse({...plan,designs:[{...rollup,height:3000}]}));
+ assert.throws(()=>chatPlanSchema.parse({...plan,designs:[{...plan.designs[0],width:3000}]}));
 });

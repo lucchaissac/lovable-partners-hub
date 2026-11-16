@@ -1,5 +1,5 @@
 import {z} from 'zod';
-import {communityReferenceIds,validateCommunityDesignRules} from './communityDesignRules.mjs';
+import {communityReferenceIds,communityWorkingCanvasLimit,validateCommunityDesignRules} from './communityDesignRules.mjs';
 
 const id=z.string().min(1).max(80).regex(/^[a-zA-Z0-9-]+$/);
 const color=z.string().regex(/^(#[0-9a-fA-F]{6}|transparent)$/);
@@ -15,7 +15,7 @@ export const chatElementSchema=z.union([
 ]);
 export const chatPlanSchema=z.object({
  summary:z.string().min(1).max(1200),
- designs:z.array(z.object({title:z.string().min(1).max(100),reference:z.enum(communityReferenceIds),width:z.number().int().min(200).max(4000),height:z.number().int().min(200).max(4000),background:z.literal('ink'),elements:z.array(chatElementSchema).min(1).max(60)}).strict()).max(6),
+ designs:z.array(z.object({title:z.string().min(1).max(100),reference:z.enum(communityReferenceIds),width:z.number().int().min(200).max(communityWorkingCanvasLimit),height:z.number().int().min(200).max(communityWorkingCanvasLimit),background:z.literal('ink'),elements:z.array(chatElementSchema).min(1).max(60)}).strict()).max(6),
  edits:z.array(chatElementSchema).max(80),removeIds:z.array(id).max(80),
 }).strict();
 export const chatPlanJSONSchema=z.toJSONSchema(chatPlanSchema);

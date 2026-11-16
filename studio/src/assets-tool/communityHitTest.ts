@@ -1,8 +1,9 @@
 // Transparent parts of Community art must not hide the objects underneath them.
 const masks=new WeakMap<HTMLImageElement,{src:string;data:Uint8ClampedArray}>();
 export function communityImageHit(element:HTMLElement,x:number,y:number,zoom:number){
- if(!/^block-community-(?:glow|globe)-/.test(element.id))return true;
- const image=element.querySelector('img');if(!image?.complete||!image.naturalWidth)return true;
+ const image=element.querySelector('img');
+ if(!/^block-community-(?:glow|globe)-/.test(element.id)&&!(/^(globe|gradient)$/i.test(image?.alt??'')&&element.closest('[data-workspace="ambassadors"]')))return true;
+ if(!image?.complete||!image.naturalWidth)return true;
  try{
   let mask=masks.get(image);
   if(!mask||mask.src!==image.src){const canvas=document.createElement('canvas');canvas.width=canvas.height=96;const ctx=canvas.getContext('2d',{willReadFrequently:true})!;ctx.drawImage(image,0,0,96,96);mask={src:image.src,data:ctx.getImageData(0,0,96,96).data};masks.set(image,mask);}

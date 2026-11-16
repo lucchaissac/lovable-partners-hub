@@ -1,4 +1,5 @@
 import {studioWorkspace,studioLastAssetKey,studioOwner} from './workspace';
+import {localCommunityChatAvailable,localChatStatus,localChatRequest,requestLocalDesign,materializeLocalPlan} from './localCommunityChat';
 import {ambassadorAsset,migrateCommunityAsset} from './ambassadorAsset';
 import {ambassadorFormats} from '../../../src/ambassadors/catalog.js';
 import {communityTemplate,communitySettings,syncCommunityDocument} from './communityDocument';
@@ -56,6 +57,8 @@ function AssetPageContent() {
   const [recent, setRecent] = useState<AssetDocument[]>([]);
   const [recentLoading, setRecentLoading] = useState(true);
   const [instructions, setInstructions] = useState('');
+  const [localChat,setLocalChat]=useState({enabled:false,reason:''});
+  useEffect(()=>{if(studioWorkspace!=='ambassadors'||!localCommunityChatAvailable)return;const abort=new AbortController();const check=()=>void localChatStatus(abort.signal).then(status=>{if(!abort.signal.aborted)setLocalChat({enabled:status.enabled,reason:status.reason??''});});check();window.addEventListener('focus',check);return()=>{abort.abort();window.removeEventListener('focus',check);};},[]);
   const [visual, setVisual] = useState<WorkspaceVisual>();
   const [queued, setQueued] = useState<AssetRequest[]>([]);
   const lastRequest = useRef<AssetRequest | undefined>(undefined);
@@ -197,6 +200,7 @@ function AssetPageContent() {
   };
   const refine = async (request:AssetRequest) => {
     if(!current.current || controller.current)return;
+    if(studioWorkspace==='ambassadors'&&!localChat.enabled){setError(localChat.reason||'Chat is available in the local demo only.');return;}
     setError('');
     request={...request,chatId:request.chatId??workspaceChats(current.current,assetMessages(current.current)).active.id};
     if(!request.recorded) {
@@ -211,6 +215,29 @@ function AssetPageContent() {
     try {
       if(!exportBoard.current)throw new Error('The asset is still opening. Please retry.');
       const png=await renderPng(exportBoard.current,document);
+      if(studioWorkspace==='ambassadors'&&localChat.enabled){
+        const rendered=await visionReference({name:'Current asset',src:png,...assetDimensions(document)});
+        const payload=localChatRequest(document,request.prompt,request.sources,request.visual?.context,rendered.src);
+        setGenerationStage('Designing your asset…');
+        const plan=await requestLocalDesign(payload,active.signal);
+        setGenerationStage('Building your canvas…');
+        const designs=await materializeLocalPlan(plan,document,request.sources,active.signal);
+        if(JSON.stringify([current.current?.editor,current.current?.dimensions,current.current?.background])!==JSON.stringify([document.editor,document.dimensions,document.background]))throw Error('The canvas changed during generation. Retry to keep your latest edits.');
+        if(!mounted.current||run!==operation.current||current.current?.id!==document.id)return;
+        if(plan.designs.length){
+          const reply:StudioMessage={id:crypto.randomUUID(),createdAt:new Date().toISOString(),text:plan.summary,user:false,channel:'workspace',workspaceChatId:request.chatId};
+          for(const design of designs){design.messages=[...assetMessages(current.current),reply];await saveAsset(owner,design);}
+          if(!mounted.current||run!==operation.current||active.signal.aborted)return;
+          past.current=[...past.current.slice(-49),current.current];future.current=[];setHistoryVersion(value=>value+1);
+          put(designs[0]);setRecent(await listAssets(owner));setZoom(0);
+          // Keep this editor session mounted so undo and queued messages survive creation.
+          // put() records the new draft as the last-open asset for reopening the studio.
+        }else{
+          if(plan.edits.length||plan.removeIds.length)change(designs[0]);
+          appendMessage({id:crypto.randomUUID(),createdAt:new Date().toISOString(),text:plan.summary,user:false,workspaceChatId:request.chatId});
+        }
+        lastRequest.current=undefined;setVisual(undefined);return;
+      }
       const [reference,rendered]=await Promise.all([visionReference(document.reference),visionReference({name:'Current asset',src:png,...assetDimensions(document)})]);
       active.signal.throwIfAborted();
       const result=await studioApi<{editor:HtmlEditorState;summary:string}>('asset-refine',{
@@ -228,9 +255,9 @@ function AssetPageContent() {
     }
   };
   useEffect(()=>{
-    if(busy||error||!queued.length||!readStudioConfig()?.user)return;
+    if(busy||error||!queued.length||!readStudioConfig()?.user||studioWorkspace==='ambassadors'&&!localChat.enabled)return;
     const [request,...rest]=queued;setQueued(rest);void refine(request);
-  },[busy,error,queued]);
+  },[busy,error,queued,localChat.enabled]);
   const stop = () => { setQueued([]); operation.current++; controller.current?.abort(); controller.current = undefined; setBusy(false); setReviewCandidate(undefined); };
   const loadImage = async (file?: File) => {
     if (!file || busy || readingFile.current) return;
@@ -294,7 +321,7 @@ function AssetPageContent() {
   };
   const runtime:WorkspaceRuntime={
     title:asset?.title??'Asset',content:null,
-    state:{enabled:false,messages:assetMessages(asset).filter(message=>messageWorkspaceChat(message)===chatState.active.id),userId:readStudioConfig()?.user?.id,chats:[],activeChatId:chatState.active.id,manageDisabled:busy||!!queued.length,working:busy?generationStage:undefined,error,retryable:!!lastRequest.current,queued},
+    state:{enabled:studioWorkspace==='ambassadors'&&localChat.enabled,messages:assetMessages(asset).filter(message=>messageWorkspaceChat(message)===chatState.active.id),userId:readStudioConfig()?.user?.id,chats:[],activeChatId:chatState.active.id,manageDisabled:busy||!!queued.length,working:busy?generationStage:undefined,error,retryable:!!lastRequest.current,queued},
     send:(prompt,visual,sources=[])=>{const request={id:Date.now(),prompt,visual,sources,chatId:chatState.active.id};if(controller.current)setQueued(items=>[...items,request]);else void refine(request);},
     chat:()=>{},
     action:(action,id)=>{if(action==='stop')stop();else if(action==='retry'&&lastRequest.current)void refine(lastRequest.current);else if(action==='dismiss')setError('');else if(action==='remove')setQueued(items=>items.filter(item=>item.id!==id));},
@@ -315,6 +342,8 @@ function AssetPageContent() {
   const canvasToolbar = asset && <div className="lovable-canvas-toolbar">
     <Input className="lovable-design-title" aria-label="Asset name" maxLength={100} disabled={busy} value={asset.title} onChange={event=>{if(event.target.value.trim())change({...asset,title:event.target.value});}}/>
     <div className="lovable-canvas-tools">
+      {studioWorkspace==='ambassadors'&&!!asset.series?.length&&<Dropdown value={asset.id} items={asset.series.map(item=>({id:item.id,label:item.title}))} onChange={value=>{if(busy)return;void listAssets(owner).then(items=>{const next=items.find(item=>item.id===value);if(next){put(next);setVisual(undefined);setZoom(0);navigate(`/assets/${next.id}`,{replace:true});}});}} trigger={<Button variant="ghost" disabled={busy} aria-label="Choose generated design" trailingIcon={<Icon name="chevron-down" size={14}/>}>{Math.max(1,asset.series.findIndex(item=>item.id===asset.id)+1)} / {asset.series.length}</Button>}/>}
+
       <AssetLibrary open={libraryOpen} onOpenChange={setLibraryOpen} onNew={()=>void newAsset()} onImport={studioWorkspace==='ambassadors'?()=>upload.current?.click():undefined}/>
       <HtmlPresentationTools primitivesOnly/>
       {studioWorkspace==='ambassadors'?<Dropdown align="end" value={templateFormat?.id} items={ambassadorFormats.map(format=>({id:format.id,label:format.name,leadingIcon:<Icon name={format.width===format.height?'square':'rectangle-horizontal'} size={16} style={format.width<format.height?{transform:'rotate(90deg)'}:undefined}/>}))} onChange={value=>void switchCommunityTemplate(value)} trigger={<Button variant="ghost" disabled={busy||changingTemplate||exporting} className="asset-format-trigger" aria-label={`Community template: ${templateFormat?.name??'Custom'}`} trailingIcon={<Icon name="chevron-down" size={14}/>}>{templateFormat?.name??'Template'}</Button>}/>:<Dropdown align="end" value={asset.format} items={Object.entries(formats).map(([id,item])=>({id,label:item.label,leadingIcon:<Icon name={id==='square'?'square':'rectangle-horizontal'} size={16} style={id==='portrait'?{transform:'rotate(90deg)'}:undefined}/>}))} onChange={value=>{change(resizeAsset({...asset,editor:nativeDocument(asset)},value as AssetFormat));setZoom(0);}} trigger={<Button variant="ghost" disabled={busy} className="asset-format-trigger" aria-label={`Canvas format: ${formats[asset.format].label}`} leadingIcon={<Icon name={asset.format==='square'?'square':'rectangle-horizontal'} size={16} style={asset.format==='portrait'?{transform:'rotate(90deg)'}:undefined}/>} trailingIcon={<Icon name="chevron-down" size={14}/>}/>}/>}
@@ -323,7 +352,7 @@ function AssetPageContent() {
       <Dropdown align="end" items={[{id:'png',label:`.png · ${assetDimensions(asset).width} × ${assetDimensions(asset).height}`,leadingIcon:<Icon name="image" size={16}/>},{id:'source',label:'Editable source',leadingIcon:<Icon name="file-text" size={16}/>}]} onChange={value=>{if(value==='png')void exportImage();else exportSource(asset);}} trigger={<Button variant="primary" disabled={busy||changingTemplate} loading={exporting}>Export</Button>}/>
     </div>
   </div>;
-  return <CommunityRenderErrors.Provider value={communityErrors}><WorkspaceRuntimeContext.Provider value={runtime}><WorkspaceSelectionContext.Provider value={{visual,setVisual}}><div className="workspace-editor asset-app" data-asset data-view="editor" style={assetTheme as CSSProperties} data-history={historyVersion} onDragOver={event => { if (!event.defaultPrevented && !(event.target as Element).closest('.we-chat') && event.dataTransfer.types.includes('Files') && !busy) { event.preventDefault(); setDragging(true); } }} onDragLeave={event => { if (!event.currentTarget.contains(event.relatedTarget as Node)) setDragging(false); }} onDrop={event => { if(event.defaultPrevented || (event.target as Element).closest('.we-chat'))return; event.preventDefault(); setDragging(false); void loadImage(event.dataTransfer.files[0]); }}>
+  return <CommunityRenderErrors.Provider value={communityErrors}><WorkspaceRuntimeContext.Provider value={runtime}><WorkspaceSelectionContext.Provider value={{visual,setVisual}}><div className="workspace-editor asset-app" data-asset data-workspace={studioWorkspace} data-view="editor" style={assetTheme as CSSProperties} data-history={historyVersion} onDragOver={event => { if (!event.defaultPrevented && !(event.target as Element).closest('.we-chat') && event.dataTransfer.types.includes('Files') && !busy) { event.preventDefault(); setDragging(true); } }} onDragLeave={event => { if (!event.currentTarget.contains(event.relatedTarget as Node)) setDragging(false); }} onDrop={event => { if(event.defaultPrevented || (event.target as Element).closest('.we-chat'))return; event.preventDefault(); setDragging(false); void loadImage(event.dataTransfer.files[0]); }}>
     <input ref={upload} type="file" hidden accept="image/png,image/jpeg,image/webp,video/mp4,video/webm,video/ogg,video/quicktime,.asset.json,.json" aria-label="Upload image, video or editable source" onChange={event => { void loadImage(event.target.files?.[0]); event.target.value = ''; }} />
 
     {(error||loadError) && <div className="asset-notice" role="alert"><Icon name="circle-alert" size={16} /><span>{error||loadError}</span><Button variant="ghost" size="sm" aria-label="Dismiss error" onClick={() => {setError('');setLoadError('');}} leadingIcon={<Icon name="x" size={16} />} /></div>}

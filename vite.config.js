@@ -1,7 +1,9 @@
 import { defineConfig } from 'vite';
+import {communityChatPlugin} from './server/communityChat.mjs';
 import { fileURLToPath } from 'node:url';
 
 export default defineConfig({
+  plugins: [communityChatPlugin()],
   optimizeDeps: { include: ['react', 'react-dom/client', 'react-router-dom'] },
   resolve: {
     dedupe: ['react', 'react-dom'],

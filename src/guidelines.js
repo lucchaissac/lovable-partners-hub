@@ -32,11 +32,11 @@ export function guidelines(tier,{icon,formatCard,sections}) {
    <div class="scale-notes"><p>Scale the whole composition. At small sizes, keep the outline at least one screen pixel wide.</p><p>The words and year must stay distinct at actual size. If they merge, enlarge the badge or use a compact format.</p></div>
   </section>
   <section id="motion" class="guide-section">
-   <div class="motion-guides">
-    <div class="motion-rule"><svg viewBox="0 0 280 130" role="img" aria-label="Move quickly, then settle gently"><path class="motion-grid" d="M24 16V110H260"/><path class="motion-curve" d="M24 110C76 20 109 20 260 20"/></svg></div>
-    <div class="motion-rule"><svg viewBox="0 0 280 130" role="img" aria-label="Keep the heart in place and reveal the next two blocks one after another"><path class="motion-bar muted" d="M24 30H260"/><path class="motion-bar" d="M88 65H260M152 100H260"/></svg></div>
-   </div>
    ${heading('Motion','Keep the heart in place. Open each block from the left, one after another. Let it settle.')}
+   <div class="motion-guides">
+    <div class="motion-rule"><svg viewBox="0 0 280 160" role="img" aria-label="Fast start, soft landing. The curve shows progress over time."><path class="motion-grid" d="M24 28V126H260"/><path class="motion-curve" d="M24 126C76 36 109 36 260 36"/><text x="24" y="17">Progress</text><text x="24" y="148">Fast start</text><text x="260" y="20" text-anchor="end">Soft landing</text><text x="260" y="148" text-anchor="end">Time →</text></svg></div>
+    <div class="motion-rule"><svg viewBox="0 0 280 160" role="img" aria-label="Heart stays visible. Status enters first, then tier follows."><text x="24" y="20">Heart stays</text><path class="motion-bar muted" d="M24 34H260"/><text x="88" y="68">Status enters</text><path class="motion-bar" d="M88 82H260"/><text x="152" y="116">Tier follows</text><path class="motion-bar" d="M152 130H260"/></svg></div>
+   </div>
   </section>
   <section id="formats" class="guide-section">
    ${heading('Formats','Four layouts for each family. The construction stays the same.')}

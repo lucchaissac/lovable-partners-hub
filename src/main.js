@@ -1,3 +1,4 @@
+import './navigation.js';
 import { createElement, House, Grid3X3, Moon, Sun, Search, X, ArrowUpRight, ArrowRight, ChevronDown, Download, Check, Copy, Upload, RotateCcw, Pause, Play } from 'lucide';
 import { FORMATS, TIERS, FIGMA_FILE, badgeSvg, badgeGeometry, prepareTypography } from './badges.js';
 import { exportBadge } from './export.js';

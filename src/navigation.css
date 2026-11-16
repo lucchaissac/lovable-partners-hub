@@ -1,0 +1,27 @@
+.section-switcher {
+  position: relative;
+  isolation: isolate;
+}
+.section-switcher::before {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  left: 0;
+  top: var(--segment-inset);
+  bottom: var(--segment-inset);
+  width: var(--segment-width, 0px);
+  transform: translateX(var(--segment-x, 0px));
+  border-radius: var(--radius-pill);
+  background: var(--color-selected);
+  pointer-events: none;
+  opacity: 0;
+}
+.section-switcher[data-indicator-ready]::before {
+  opacity: 1;
+  transition: transform 320ms cubic-bezier(.2,.8,.2,1), width 320ms cubic-bezier(.2,.8,.2,1);
+}
+.section-switcher .text-segment { position: relative; z-index: 1; }
+.section-switcher[data-indicator-ready] .text-segment.is-selected { background: transparent; }
+@media (prefers-reduced-motion: reduce) {
+  .section-switcher[data-indicator-ready]::before { transition: none; }
+}

@@ -77,7 +77,7 @@ function SourceImage({ source }: { source: SourceReference }) {
   </>;
 }
 
-async function imageSource(file: File): Promise<StudioSource> {
+async function imageSource(file: File, preserveTransparency = false): Promise<StudioSource> {
   if (!['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'].includes(file.type)) throw new Error('Choose a PNG, JPG, WebP or SVG image.');
   if (file.size > 20000000) throw new Error('Choose an image smaller than 20 MB.');
   const objectUrl = URL.createObjectURL(file);
@@ -90,21 +90,22 @@ async function imageSource(file: File): Promise<StudioSource> {
     for (let attempt = 0; attempt < 6; attempt++) {
       const scale = Math.min(1, edge / Math.max(image.width, image.height));
       canvas.width = Math.max(1, Math.round(image.width * scale)); canvas.height = Math.max(1, Math.round(image.height * scale));
-      context.fillStyle = '#fff'; context.fillRect(0, 0, canvas.width, canvas.height); context.drawImage(image, 0, 0, canvas.width, canvas.height);
-      const data = canvas.toDataURL('image/jpeg', .86 - attempt * .06);
+      if (!preserveTransparency) { context.fillStyle = '#fff'; context.fillRect(0, 0, canvas.width, canvas.height); }
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      const data = canvas.toDataURL(preserveTransparency ? 'image/webp' : 'image/jpeg', .86 - attempt * .06);
       if (data.length <= sourceLimits.image) return { kind: 'image', name: (file.name || 'Pasted image').slice(0, 160), image: data };
       edge *= .8;
     }
     throw new Error('This image is too detailed. Crop it and try again.');
   } finally { URL.revokeObjectURL(objectUrl); }
 }
-async function fileSource(file: File, presentation=false): Promise<StudioSource> {
+async function fileSource(file: File, presentation=false, preserveTransparency=false): Promise<StudioSource> {
   if(presentation && /\.(pdf|pptx)$/i.test(file.name)){const source=await canvasAgent.readSource(file);return {kind:'text',name:source.name,text:`Attached document: ${source.name}`,fileData:source.data};}
-  if (file.type.startsWith('image/')) return imageSource(file);
+  if (file.type.startsWith('image/')) return imageSource(file, preserveTransparency);
   return textFileSource(file);
 }
 
-export function useStudioSources(disabled: boolean, onError: (message: string) => void, browserConnected = false, browserInstalled = false, presentation = false) {
+export function useStudioSources(disabled: boolean, onError: (message: string) => void, browserConnected = false, browserInstalled = false, presentation = false, preserveTransparency = false) {
   const [sources, setSources] = useState<StudioSource[]>([]);
   const current = useRef(sources); current.current = sources;
   const [dialog, setDialog] = useState<'link' | 'text' | 'linear' | 'extension' | null>(null);
@@ -138,7 +139,7 @@ export function useStudioSources(disabled: boolean, onError: (message: string) =
     if (disabled || working.current || !files.length) return;
     if (files.length + current.current.length > sourceLimits.count) { onError('Add up to six sources per message.'); return; }
     working.current = true; setReading(true); const attempt = epoch.current;
-    try { const additions = await Promise.all(files.map(file=>fileSource(file,presentation))); if (attempt === epoch.current) append(additions); }
+    try { const additions = await Promise.all(files.map(file=>fileSource(file,presentation,preserveTransparency))); if (attempt === epoch.current) append(additions); }
     catch (error) { if (attempt === epoch.current) onError((error as Error).message); }
     finally { if (attempt === epoch.current) { setReading(false); working.current = false; } }
   }

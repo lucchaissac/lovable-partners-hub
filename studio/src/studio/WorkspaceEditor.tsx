@@ -43,7 +43,7 @@ const WorkspaceAIEditContext = createContext({
 });
 export const WorkspaceRuntimeContext = createContext<WorkspaceRuntime | null>(null);
 
-export function WorkspaceChat({ title = 'Lovable', placeholder = 'Ask Lovable to create or edit…', singleAsset = false }: { title?: string; placeholder?: string; singleAsset?: boolean }) {
+export function WorkspaceChat({ title = 'Lovable', placeholder = 'Ask Lovable to create or edit…', singleAsset = false, preserveSourceTransparency = false }: { title?: string; placeholder?: string; singleAsset?: boolean; preserveSourceTransparency?: boolean }) {
   const runtime = useContext(WorkspaceRuntimeContext);
   const selection = useContext(WorkspaceSelectionContext);
   const aiEdit = useContext(WorkspaceAIEditContext);
@@ -57,7 +57,7 @@ export function WorkspaceChat({ title = 'Lovable', placeholder = 'Ask Lovable to
   const presentation = useContext(HtmlSelectionMode);
   const [notice,setNotice] = useState('');
   const [agents,setAgents] = useState<Record<string,string|null>>({});
-  const sourceInput = useStudioSources(!state?.enabled, setNotice, false, false, presentation);
+  const sourceInput = useStudioSources(!state?.enabled, setNotice, false, false, presentation, preserveSourceTransparency);
   const activeId = state?.activeChatId || 'workspace';
   const active = state?.chats.find(chat => chat.id === activeId);
   const prompt = drafts[activeId] || '';

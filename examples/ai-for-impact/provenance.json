@@ -1,0 +1,13 @@
+{
+  "title": "AI for impact",
+  "illustration": "macbook-lovable-editorial.png",
+  "generation": "Built-in image_gen tool, generated separately and attached to the local Community chat",
+  "prompt": "image-prompt.txt",
+  "interfaceReference": "lovable-screen-reference.jpg",
+  "referenceUrl": "https://lovable.dev/",
+  "referenceCaptured": "2026-11-16",
+  "referenceNote": "The official public Lovable homepage, with an unsent draft prompt. The generated laptop uses this capture as its screen reference; it is not a live application inside the image.",
+  "demoPrompt": "demo-prompt.txt",
+  "demoInputs": ["The user's original AI for Impact poster", "macbook-lovable-editorial.png"],
+  "output": "One editable Community composition with separate logo, headline, supporting copy and transparent product image"
+}

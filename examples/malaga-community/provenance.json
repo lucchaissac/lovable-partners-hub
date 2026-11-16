@@ -1,0 +1,43 @@
+{
+  "title": "Let’s build it. · Málaga",
+  "status": "First local proposal, awaiting Luc’s visual feedback",
+  "date": "2026-11-16",
+  "workspace": "ambassadors",
+  "source": {
+    "file": "source-flyer.png",
+    "providedBy": "Luc",
+    "originalFilename": "Screenshot 2026-11-16 at 2.13.16 PM.png",
+    "width": 1142,
+    "height": 1144,
+    "treatment": "Unmodified reference. Only the two supplied partner marks are reused through independent native crops."
+  },
+  "result": {
+    "localAssetId": "b34c2114-e38d-4cd4-ab27-b248b8c3a336",
+    "canvas": [1080, 1080],
+    "background": "#f7f4ed",
+    "ink": "#1b1b1b",
+    "font": "Camera Plain Bold",
+    "nativeLayers": 10,
+    "identity": "Original full Lovable Community lockup",
+    "partnerMarks": ["Startup Oasis", "Málaga Startups"],
+    "editable": true,
+    "replacesStartingTemplate": true,
+    "separateFromAiForImpactCollection": true
+  },
+  "references": {
+    "prompt": "prompt.txt",
+    "visibleChatReview": "chat-review.txt",
+    "observedLayerGeometry": "composition.json"
+  },
+  "uncertainties": [
+    "The source provides 11 December and 19:00–22:00 without a year. No year or weekday was invented.",
+    "Partner marks retain the pixels and light background of the supplied screenshot; original transparent or vector files were not supplied."
+  ],
+  "verification": [
+    "One asset in its own local collection; starter replaced.",
+    "Reloaded the local asset and checked the rendered result at 50% canvas zoom.",
+    "All seven text blocks, the Community signature and the two partner images remain separate native layers.",
+    "No raster illustration was generated and no artwork export was run.",
+    "npm run build passed."
+  ]
+}

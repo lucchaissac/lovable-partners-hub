@@ -1,0 +1,169 @@
+{
+  "title": "Let’s build it. · Málaga",
+  "workspace": "ambassadors",
+  "localUrl": "http://127.0.0.1:5173/#ambassadors/create/b34c2114-e38d-4cd4-ab27-b248b8c3a336",
+  "canvas": {
+    "width": 1080,
+    "height": 1080,
+    "background": "#f7f4ed"
+  },
+  "elements": [
+    {
+      "kind": "image",
+      "frame": {
+        "height": 40.003,
+        "width": 407.025,
+        "x": 43.2,
+        "y": 43.2
+      },
+      "asset": "community-logo",
+      "source": "src/ambassadors/source/brand.mjs"
+    },
+    {
+      "kind": "text",
+      "frame": {
+        "height": 48,
+        "width": 220,
+        "x": 816.8,
+        "y": 36.9
+      },
+      "text": "Málaga",
+      "font": "Camera Plain",
+      "size": 36.675,
+      "weight": 700,
+      "lineHeight": 1.3088,
+      "align": "right",
+      "color": "#1b1b1b"
+    },
+    {
+      "kind": "text",
+      "frame": {
+        "height": 41,
+        "width": 780,
+        "x": 43.2,
+        "y": 143
+      },
+      "text": "The series · Episode 02",
+      "font": "Camera Plain",
+      "size": 32,
+      "weight": 700,
+      "lineHeight": 1.18,
+      "align": "left",
+      "color": "#1b1b1b"
+    },
+    {
+      "kind": "text",
+      "frame": {
+        "height": 367,
+        "width": 993.6,
+        "x": 43.2,
+        "y": 199
+      },
+      "text": "Let’s\nbuild it.",
+      "font": "Camera Plain",
+      "size": 192,
+      "weight": 700,
+      "lineHeight": 0.92,
+      "align": "left",
+      "color": "#1b1b1b"
+    },
+    {
+      "kind": "text",
+      "frame": {
+        "height": 70,
+        "width": 800,
+        "x": 43.2,
+        "y": 608
+      },
+      "text": "Build Lovable.",
+      "font": "Camera Plain",
+      "size": 62,
+      "weight": 700,
+      "lineHeight": 1.05,
+      "align": "left",
+      "color": "#1b1b1b"
+    },
+    {
+      "kind": "text",
+      "frame": {
+        "height": 50,
+        "width": 993.6,
+        "x": 43.2,
+        "y": 692
+      },
+      "text": "Make something people love using.",
+      "font": "Camera Plain",
+      "size": 36,
+      "weight": 700,
+      "lineHeight": 1.2,
+      "align": "left",
+      "color": "#1b1b1b"
+    },
+    {
+      "kind": "text",
+      "frame": {
+        "height": 48,
+        "width": 290,
+        "x": 43.2,
+        "y": 819
+      },
+      "text": "11 December",
+      "font": "Camera Plain",
+      "size": 40,
+      "weight": 700,
+      "lineHeight": 1.15,
+      "align": "left",
+      "color": "#1b1b1b"
+    },
+    {
+      "kind": "text",
+      "frame": {
+        "height": 43,
+        "width": 310,
+        "x": 355,
+        "y": 823
+      },
+      "text": "19:00–22:00",
+      "font": "Camera Plain",
+      "size": 34,
+      "weight": 700,
+      "lineHeight": 1.15,
+      "align": "left",
+      "color": "#1b1b1b"
+    },
+    {
+      "kind": "image",
+      "frame": {
+        "height": 110,
+        "width": 225,
+        "x": 43.2,
+        "y": 927
+      },
+      "asset": "Logo Startup Oasis",
+      "source": "source-flyer.png",
+      "sourceCropPixels": [
+        549.302,
+        1018.16,
+        244.388,
+        106.392
+      ]
+    },
+    {
+      "kind": "image",
+      "frame": {
+        "height": 110,
+        "width": 212,
+        "x": 322,
+        "y": 927
+      },
+      "asset": "Logo Málaga Startups",
+      "source": "source-flyer.png",
+      "sourceCropPixels": [
+        854.216,
+        1003.288,
+        236.39399999999998,
+        115.54400000000001
+      ]
+    }
+  ]
+}

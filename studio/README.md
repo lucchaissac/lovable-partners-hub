@@ -9,3 +9,5 @@ The library inside the editor reuses the eight current partner badges. The edito
 The chat layout is present but explicitly unavailable in this visual integration. No AI service is configured, no AI requests are sent, and no simulated responses are produced.
 
 The original reusable components live in `packages/ui` and `src/studio`. `src/lovable.css` supplies the hub’s dark tokens and removes borders around the workspace panels. `src/assets-tool/starter.ts` contains the editable Lovable starting design.
+
+Verified in the embedded browser at desktop and narrow widths: library search and badge insertion; local video upload, playback, pause and persistence after reload; PNG export with the video poster and editable-source download; title hover, search focus, header blur, and Design collapse/reopen. The frame stays hidden behind a dark shell until React has painted. The Chat composer is visual only and remains disabled until an AI service is connected.

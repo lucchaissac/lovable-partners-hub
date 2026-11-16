@@ -126,7 +126,7 @@ function AssetPageContent() {
     if (!document || controller.current) return;
     const active = new AbortController(); controller.current = active;
     const run = ++operation.current;
-    setBusy(true); setGenerationStage('Designing your asset…'); setError('');  
+    setBusy(true); setGenerationStage('Designing your asset…'); setError('');
     try {
       const reference = await visionReference(document.reference); active.signal.throwIfAborted();
       const result = compositionSchema.parse(await studioApi<Composition>('asset-generate', { reference, format: document.format, instructions }, active.signal));

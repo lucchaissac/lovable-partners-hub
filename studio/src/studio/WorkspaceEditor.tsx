@@ -94,4 +94,3 @@ export function WorkspaceChat({ title = 'Lovable', placeholder = 'Ask Lovable to
     {presentation && sourceInput.dialogs}
   </EditorSidebar>;
 }
-

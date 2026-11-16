@@ -129,4 +129,3 @@ export function ChatMarkdown({ text, preserveLineBreaks = false, links = false }
     </>
   );
 }
-

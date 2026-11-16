@@ -16,6 +16,10 @@ export function guidelines(tier,{icon,formatCard,sections}) {
    <div class="construction-strip"><div><span>Between modules</span><strong>0</strong></div><div><span>Corner radius</span><strong>1⅛x</strong></div><div><span>Outline</span><strong>⅛x</strong></div></div>
    <p class="quiet-note">The block width follows the text, with x on both sides. Logos stay proportional and centered, with at least x around them. Resize the complete badge together.</p>
    <div class="assembly-stage" aria-label="Repeating badge construction">${badgeAssembly({tier})}<div class="motion-footer"><span>The heart stays. Each block opens from the left.</span><div class="assembly-controls"><button class="text-link" data-replay>Replay ${icon('replay')}</button><button class="text-link" data-pause aria-pressed="false">Pause ${icon('pause')}</button></div></div></div>
+   <div class="motion-demos">
+    <figure class="motion-example" data-motion-label="flip"><div class="motion-surface"><div class="demo-rotor flip-rotor"><div class="flip-face">${badge('solution-compact')}</div><div class="flip-face flip-back">${badge('expert-compact')}</div></div></div><figcaption><span>Flip</span><button class="subtle-button" data-demo-pause aria-label="Pause flip" aria-pressed="false">${icon('pause')}</button></figcaption></figure>
+    <figure class="motion-example" data-motion-label="cube"><div class="motion-surface cube-surface"><div class="demo-rotor badge-cube"><div class="cube-face cube-front">${badge('solution-compact')}</div><div class="cube-face cube-right">${badge('expert-compact')}</div><div class="cube-face cube-back">${badge('solution-compact',{tier:'Premier'})}</div><div class="cube-face cube-left">${badge('expert-compact')}</div><div class="cube-face cube-top"><img src="/brand/outlined/1-713-imgVector1.svg" alt="" /></div><div class="cube-face cube-bottom"><img src="/brand/outlined/1-713-imgVector1.svg" alt="" /></div></div></div><figcaption><span>Cube</span><button class="subtle-button" data-demo-pause aria-label="Pause cube" aria-pressed="false">${icon('pause')}</button></figcaption></figure>
+   </div>
   </section>
   <section id="connections" class="guide-section">
    ${heading('Connections','Align the modules. Let their outlines meet as one line.')}
@@ -43,8 +47,8 @@ export function guidelines(tier,{icon,formatCard,sections}) {
    <div class="format-grid guide-format-grid">${FORMATS.map(f=>formatCard(f,true)).join('')}</div>
   </section>
   <section id="color" class="guide-section">
-   <div class="color-examples"><div class="color-sample">${badge('solution-compact')}</div><div class="color-sample color-sample-video"><video class="gallery-video" data-motion="3" poster="/gallery/motion-3.webp" width="960" height="960" muted loop playsinline preload="none" disablepictureinpicture disableremoteplayback aria-hidden="true" tabindex="-1"></video>${badge('solution-compact')}</div></div>
-   ${heading('Color','White artwork, transparent blocks. On a dark surface or a Lovable video background.')}
+   <div class="color-examples"><div class="color-sample">${badge('solution-compact')}</div><div class="color-sample color-sample-video"><video class="gallery-video" data-motion="3" poster="/gallery/motion-3.webp" width="960" height="960" muted loop playsinline preload="none" disablepictureinpicture disableremoteplayback aria-hidden="true" tabindex="-1"></video>${badge('solution-compact')}</div><div class="color-sample color-sample-beige">${badge('solution-compact',{treatment:'dark-filled'})}</div><div class="color-sample color-sample-white">${badge('solution-compact',{treatment:'dark-outline'})}</div></div>
+   ${heading('Color','White on dark or video. Dark outlines on white. Dark blocks on Lovable beige.')}
   </section>
   <section id="typography" class="guide-section">
    ${heading('Typography')}

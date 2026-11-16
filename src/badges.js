@@ -36,18 +36,18 @@ function outline(x,y,w,h,u){const stroke=u/8;return `<rect class="module-outline
 function model(formatId,tier='Select',options={}){
  const format=FORMATS.find(f=>f.id===formatId)||FORMATS[0],solution=format.family==='solution',u=format.layout==='symbol'?21:32,h=5*u;
  const year=options.year||'2026';
- let role=shape(solution?['Solution','Partner']:['Expert',year],3*u),level=solution?shape([tier,year],3*u):null;
- let roleWidth=role.width+2*u,tierWidth=level?level.width+2*u:0;const wordmarkWidth=582.295/105.276*(3*u)+2*u;
+ const role=shape(solution?['Solution','Partner']:['Expert',year],3*u),level=solution?shape([tier,year],3*u):null;
+ const roleWidth=role.width+2*u,tierWidth=level?level.width+2*u:0;const wordmarkWidth=582.295/105.276*(3*u)+2*u;
  const stroke=u/8;
  let width,height,topHeight;
  if(format.layout==='horizontal'||format.layout==='compact'){width=(format.layout==='horizontal'?wordmarkWidth:h)+roleWidth+tierWidth-stroke*(solution?2:1);height=h;topHeight=h;}
  if(format.layout==='stacked'){width=solution?roleWidth+tierWidth-stroke:wordmarkWidth;topHeight=solution?(width-2*u)/(461.0845/83.3618)+2*u:h;height=topHeight+(solution?2:1)*(h-stroke);}
- if(format.layout==='symbol'){width=Math.max(roleWidth,tierWidth);topHeight=h;role=shape(solution?['Solution','Partner']:['Expert',year],role.height*(width-2*u)/role.width);if(solution)level=shape([tier,year],level.height*(width-2*u)/level.width);roleWidth=width;tierWidth=solution?width:0;height=topHeight+role.height+2*u+(solution?level.height+2*u:h)-2*stroke;}
+ if(format.layout==='symbol'){width=h+roleWidth+tierWidth-stroke*(solution?2:1);topHeight=h;height=2*h-stroke;}
  return {format,solution,u,h,width,height,topHeight,role,level,roleWidth,tierWidth,wordmarkWidth,stroke,moduleHeight:h};
 }
 export function badgeGeometry(formatId,tier='Select',options={}){return model(formatId,tier,options);}
 export function badgeSvg(formatId,options={}){
- const {tier='Select',year='2026',partnerName='Logo',partnerImage='',symbolSize='large',guides=false,clearSpace=false}=options;
+ const {tier='Select',year='2026',partnerName='Logo',partnerImage='',symbolSize='large',guides=false,clearSpace=false,treatment='white'}=options;
  const m=model(formatId,tier,options),{format,solution,u,h,width,height,role,level,roleWidth,tierWidth,wordmarkWidth,topHeight,stroke}=m;
  const parts=[],id=`badge-${++instance}`,pad=clearSpace?u:0;
  const wrap=(start,type)=>{const content=parts.splice(start);parts.push(`<g data-module="${type}">${content.join('')}</g>`);};
@@ -82,15 +82,22 @@ export function badgeSvg(formatId,options={}){
   wordmark(width,topHeight,solution?'1-713':'1-177');cell(role,0,topHeight-stroke,roleWidth);
   if(solution){cell(level,roleWidth-stroke,topHeight-stroke,tierWidth);partner(0,topHeight+h-2*stroke,width);}else partner(roleWidth-stroke,topHeight-stroke,width-roleWidth+stroke);
  }else{
-  symbol(0,0,width,topHeight,true);cell(role,0,topHeight-stroke,roleWidth);
-  if(solution)cell(level,0,topHeight+role.height+2*u-2*stroke,width);else partner(0,topHeight+role.height+2*u-2*stroke,width);
+  symbol(0,0,h,h,true);cell(role,h-stroke,0,roleWidth);
+  if(solution)cell(level,h+roleWidth-2*stroke,0,tierWidth);
+  partner(0,h-stroke,width);
  }
  if(guides){
-  const ink='rgba(255,255,255,.38)',x0=format.layout==='compact'?h-stroke:format.layout==='horizontal'?wordmarkWidth-stroke:0,y0=['stacked','symbol'].includes(format.layout)?topHeight-stroke:0;
+  const ink='rgba(255,255,255,.38)',x0=['compact','symbol'].includes(format.layout)?h-stroke:format.layout==='horizontal'?wordmarkWidth-stroke:0,y0=format.layout==='stacked'?topHeight-stroke:0;
   parts.push(`<g fill="none" stroke="${ink}" stroke-width="1"><rect x="${x0+u}" y="${y0+u}" width="${role.width}" height="${role.height}"/><path d="M ${x0} ${y0+u} H ${x0+roleWidth} M ${x0+u} ${y0} V ${y0+role.height+2*u}"/></g>`);
   if(clearSpace)parts.push(`<g fill="none" stroke="${ink}" stroke-width="1"><rect x="${-u}" y="${-u}" width="${width+2*u}" height="${height+2*u}"/><path d="M 0 ${-u} V ${height+u} M ${width} ${-u} V ${height+u} M ${-u} 0 H ${width+u} M ${-u} ${height} H ${width+u}"/></g><g fill="${ink}" font-family="Camera Plain" font-size="${u*.45}" text-anchor="middle"><text x="${width/2}" y="${-u*.35}">x</text><text x="${-u*.5}" y="${height/2+u*.15}">x</text><text x="${width+u*.5}" y="${height/2+u*.15}">x</text><text x="${width/2}" y="${height+u*.68}">x</text></g>`);
  }
- return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${-pad} ${-pad} ${n(width+pad*2)} ${n(height+pad*2)}" class="badge-graphic" role="img" aria-labelledby="${id}-title" data-format="${format.id}" data-figma-node="${format.node}"><title id="${id}-title">${esc(format.name)}${solution?` · ${tier}`:''} · ${esc(year)}</title>${parts.join('')}</svg>`;
+ let artwork=parts.join('');
+ if(treatment==='dark-outline'){
+  artwork=artwork.replaceAll('fill="white"','fill="#1b1b1b"').replaceAll('stroke="white"','stroke="#1b1b1b"').replaceAll('<image ',`<image filter="url(#${id}-dark)" `);
+  artwork=`<defs><filter id="${id}-dark" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0 0 0 0 .105882 0 0 0 0 .105882 0 0 0 0 .105882 0 0 0 1 0"/></filter></defs>${artwork}`;
+ }
+ if(treatment==='dark-filled')artwork=artwork.replaceAll('fill="none" stroke="white"','fill="#1b1b1b" stroke="#1b1b1b"');
+ return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${-pad} ${-pad} ${n(width+pad*2)} ${n(height+pad*2)}" class="badge-graphic" role="img" aria-labelledby="${id}-title" data-format="${format.id}" data-figma-node="${format.node}"><title id="${id}-title">${esc(format.name)}${solution?` · ${tier}`:''} · ${esc(year)}</title>${artwork}</svg>`;
 }
 
 export function paddingDiagram(){

@@ -270,8 +270,8 @@ input[type='checkbox'] { accent-color: #ededed; width: 15px; height: 15px; margi
 .creator-preview { height: 490px; border-radius: 15px; border: 1px solid var(--color-border); background-color: #202020; display: grid; place-items: center; padding: 56px; position: relative; }
 #live-badge { width: 100%; }
 #live-badge.stacked { width: 70%; }
-#live-badge.symbol { width: auto; height: 100%; max-width: 75%; }
-#live-badge.symbol .badge-graphic { height: 100%; width: auto; max-width: 100%; }
+#live-badge.symbol { width: 100%; height: auto; max-width: 100%; }
+#live-badge.symbol .badge-graphic { height: auto; width: 100%; max-width: 100%; }
 .preview-caption { position: absolute; bottom: 20px; left: 24px; color: rgb(255 255 255 / 50%); font-size: 12px; }
 .preview-meta { display: flex; justify-content: space-between; gap: 16px; font-size: 12px; color: var(--color-muted); margin-top: 18px; }
 .preview-meta a { display: flex; align-items: center; gap: 6px; }
@@ -569,3 +569,50 @@ input[type='checkbox'] { accent-color: #ededed; width: 15px; height: 15px; margi
  .motion-footer > span { max-width:160px;font-size:11px; }
 }
 @media (max-width:420px) { .motion-guides,.color-examples { grid-template-columns:1fr; } .color-sample { aspect-ratio:1.7; } }
+
+/* Co-branded symbol formats use the same row scale as compact badges. */
+.format-preview.symbol .badge-graphic { height:calc(100cqw * var(--badge-row-scale) * 1.975);width:auto;max-width:100%;max-height:100%; }
+
+/* Match module scale across every library composition. */
+.format-preview:is(.horizontal,.compact,.stacked,.symbol) .badge-graphic { height:calc(100cqw * var(--badge-row-scale) * var(--badge-height-scale,1) * .8);width:auto;max-width:100%;max-height:100%; }
+#live-badge.symbol { width:100%;height:100%;max-width:100%; }
+#live-badge.symbol .badge-graphic { width:100%;height:100%;max-width:100%;max-height:100%; }
+.color-sample .badge-graphic { width:58%;max-width:240px; }
+.color-sample-white { background:#fff; }
+.color-sample-beige { background:#f7f4ed; }
+.assembly-badge { max-width:440px; }
+.assembly-stage { min-height:210px;padding:28px 40px 52px; }
+.assembly-module,.assembly-module > svg { backface-visibility:hidden;-webkit-backface-visibility:hidden; }
+.motion-demos { display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:20px; }
+.motion-example { min-width:0; }
+.motion-surface { height:220px;display:grid;place-items:center;perspective:900px;background:var(--color-panel);border-radius:14px;overflow:hidden; }
+.motion-example figcaption { display:flex;align-items:center;justify-content:space-between;font-size:14px;line-height:20px;margin-top:10px; }
+.motion-example .subtle-button { width:24px;height:24px; }
+.motion-example .subtle-button .icon { width:14px;height:14px; }
+.demo-rotor { transform-style:preserve-3d;animation-play-state:paused; }
+.flip-rotor { position:relative;width:260px;height:65px;max-width:76%;animation:badge-flip 7s cubic-bezier(.22,1,.36,1) infinite paused; }
+.flip-face { position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden; }
+.flip-face .badge-graphic { width:100%;height:100%;backface-visibility:hidden;-webkit-backface-visibility:hidden; }
+.flip-back { transform:rotateY(180deg); }
+.badge-cube { position:relative;width:148px;height:148px;animation:badge-cube 12s linear infinite paused; }
+.cube-face { position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#1b1b1b;border:1px solid rgb(255 255 255 / 16%);backface-visibility:hidden;-webkit-backface-visibility:hidden; }
+.cube-face .badge-graphic { width:auto;height:30px;max-width:132px; }
+.cube-face img { width:46px;height:46px; }
+.cube-front { transform:translateZ(74px); }
+.cube-back { transform:rotateY(180deg) translateZ(74px); }
+.cube-right { transform:rotateY(90deg) translateZ(74px); }
+.cube-left { transform:rotateY(-90deg) translateZ(74px); }
+.cube-top { transform:rotateX(90deg) translateZ(74px); }
+.cube-bottom { transform:rotateX(-90deg) translateZ(74px); }
+.motion-example.is-playing .demo-rotor { animation-play-state:running; }
+.motion-example.is-paused .demo-rotor { animation-play-state:paused; }
+@keyframes badge-flip { 0%,18% { transform:rotateY(0); } 42%,60% { transform:rotateY(180deg); } 84%,100% { transform:rotateY(360deg); } }
+@keyframes badge-cube { from { transform:rotateY(0); } to { transform:rotateY(360deg); } }
+@media (max-width:680px) {
+ .color-examples { grid-template-columns:1fr; }
+ .color-sample { aspect-ratio:1.7; }
+ .assembly-stage { padding-inline:8px;min-height:190px; }
+ .motion-demos { grid-template-columns:1fr; }
+ .motion-surface { height:210px; }
+}
+@media (prefers-reduced-motion:reduce) { .demo-rotor { animation:none; } }

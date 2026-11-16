@@ -23,6 +23,22 @@ function galleryDesign(width=1080,height=1080){
 }
 const plan={reviews:[],badgeBatch:null,summary:'Created a LinkedIn post.',designs:[galleryDesign()],edits:[],removeIds:[]};
 
+test('Reviewed globe counterparts retain the original motif geometry and editorial type in both palettes',()=>{
+ const dark=structuredClone(plan),design=dark.designs[0];
+ dark.reviews=[{sourceId:'current-canvas',verdict:'on-brand',diagnosis:'Keep the existing editorial hierarchy.',issues:[],keep:['Native type and full Community logo'],remove:[],retainedVisuals:[],uncertainties:[]}];
+ const logo=design.elements[2],headline=design.elements[3];
+ logo.frame.width*=1.25;logo.frame.height*=1.25;
+ headline.fontSize=180;headline.lineHeight=92;headline.frame.height=350;
+ const light=structuredClone(dark);light.designs[0].background='white';light.designs[0].elements[2].color='dark';light.designs[0].elements[3].color='#1b1b1b';
+ const context={...request,preview:'data:image/png;base64,AAAA'};
+ assert.ok(validateChatPlan(dark,context));assert.ok(validateChatPlan(light,context));
+ assert.deepEqual(light.designs[0].elements.slice(0,2),dark.designs[0].elements.slice(0,2));
+ const lower=structuredClone(light);lower.designs[0].elements[1].frame.y=400;assert.ok(validateChatPlan(lower,context));
+ lower.reviews=[];assert.throws(()=>validateChatPlan(lower,context));
+ const wrong=structuredClone(light);wrong.designs[0].elements[1].frame.width*=.5;
+ assert.throws(()=>validateChatPlan(wrong,context),/original globe shape/);
+});
+
 test('Replacing a composition uses its existing slot and respects selected or locked content',()=>{
  const replace={...plan,replaceCurrent:true};
  assert.equal(validateChatPlan(replace,{...request,availablePageSlots:0}).replaceCurrent,true);

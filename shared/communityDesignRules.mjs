@@ -52,27 +52,27 @@ export function validateCommunityDesignRules(plan,request){
   if(design.width>communityWorkingCanvasLimit||design.height>communityWorkingCanvasLimit)reject('Use an editor-sized canvas, at most 2560px on either side. Physical print dimensions do not request print-DPI pixel dimensions. A standard roll-up is 425 × 1000px.');
   if(['banner','poster'].includes(design.reference)&&Math.max(design.width,design.height)>1000&&!/\bpx\b|pixels?/i.test(request.prompt))reject('Use a 1000px long edge for print previews unless the user explicitly supplies pixel dimensions. Preserve the requested proportions; the standard roll-up is 425 × 1000px.');
   const m=communityDesignMetrics(design.reference,design.width,design.height),elements=design.elements;
-  if(design.background!=='ink')reject('Community gallery compositions use the authored #1b1b1b background, including in light UI.');
+  const light=design.background==='white',logoColor=light?'dark':'light';
   const logos=elements.filter(e=>isBrand(e,'community-logo'));
   if(logos.length!==1)reject('Each design needs exactly one original Community lockup.');
   const logo=logos[0],f=logo.frame;
-  const editorial=plan.reviews.length&&design.visualTreatment!=='brand-scene';
+  const editorial=plan.reviews.length>0;
   const logoScale=f.width/m.logoWidth;
   const validLogoSize=editorial?logoScale>=.99&&logoScale<=1.35&&near(f.height,m.logoHeight*logoScale):near(f.width,m.logoWidth)&&near(f.height,m.logoHeight);
-  if(logo.color!=='light'||!near(f.x,m.inset)||!near(f.y,m.inset)||!validLogoSize||f.rotation!==0||f.opacity!==1)reject(`For ${design.reference} at ${design.width}px, use the intact light logo at x=y=${m.inset.toFixed(2)}, width=${m.logoWidth.toFixed(2)}, height=${m.logoHeight.toFixed(2)}, no rotation or opacity change. Reviewed editorial layouts may enlarge it proportionally by up to 1.35 for small-size legibility.`);
+  if(logo.color!==logoColor||!near(f.x,m.inset)||!near(f.y,m.inset)||!validLogoSize||f.rotation!==0||f.opacity!==1)reject(`For ${design.reference} at ${design.width}px, use the intact ${logoColor} logo at x=y=${m.inset.toFixed(2)}, width=${m.logoWidth.toFixed(2)}, height=${m.logoHeight.toFixed(2)}, no rotation or opacity change. Reviewed editorial layouts may enlarge it proportionally by up to 1.35 for small-size legibility.`);
   const x=f.width*communityLogo.heartHeight/communityLogo.width,clear={x:f.x-x,y:f.y-x,width:f.width+2*x,height:f.height+2*x};
   for(const e of elements){
    if(e===logo||isBrand(e,'globe')||isBrand(e,'gradient'))continue;
    if(e.kind==='image'&&e.placement==='background'){
-    if(elements.indexOf(e)>elements.indexOf(logo)||elements.slice(0,elements.indexOf(e)).some(element=>element.kind==='text'))reject('Keep a retained background behind the complete logo and all copy. Place text on a quiet dark part of the photograph for legibility.');
+    if(elements.indexOf(e)>elements.indexOf(logo)||elements.slice(0,elements.indexOf(e)).some(element=>element.kind==='text'))reject('Keep a retained background behind the complete logo and all copy. Place text on a quiet, contrasting part of the photograph for legibility.');
     continue;
    }
    const source='sourceId'in e?request.blocks.find(b=>b.id===e.sourceId):undefined,frame=e.frame??(source?frameOf(source):null);
    if(frame&&boxOverlaps(frame,clear))reject('Keep one actual heart height of clear space around the full Community logo, including its y descender.');
    if(e.kind==='text'){
     if(e.weight!==600&&e.weight!==700)reject('Use Camera Plain Bold 700 for headlines and Semibold 600 for supporting copy.');
-    if(!['#f7f4ed','#ffffff'].includes(e.color.toLowerCase()))reject('Community copy stays light on the authored dark artwork.');
-    const headlineMaximum=m.headlineSize*(plan.reviews.length&&design.visualTreatment!=='brand-scene'?1.6:1.05);
+    if(!(light?['#1b1b1b']:['#f7f4ed','#ffffff']).includes(e.color.toLowerCase()))reject(light?'Use #1b1b1b copy on light Community artwork.':'Community copy stays light on the authored dark artwork.');
+    const headlineMaximum=m.headlineSize*(editorial?1.6:1.05);
     if(e.fontSize>headlineMaximum)reject(`Keep type in the ${design.reference} hierarchy: headline maximum ${headlineMaximum.toFixed(2)}px at this width.`);
     if(e.fontSize>=m.headlineSize*.65&&(e.align!=='left'||e.weight!==700))reject('The gallery headline is left-aligned Camera Plain Bold 700.');
     if(frame.x<m.inset*.8||frame.x+frame.width>design.width-m.inset*.8+2||frame.y<0||frame.y+frame.height>design.height-m.inset*.7+2)reject('Keep text within the reference content grid and canvas bounds.');
@@ -95,7 +95,7 @@ export function validateCommunityDesignRules(plan,request){
    for(const i of [globe,gradient])if(i>elements.indexOf(logo)||elements.slice(0,i).some(e=>e.kind==='text'))reject('The globe and gradient stay behind the logo and all copy.');
    const g=elements[globe];if(!near(g.frame.width,g.frame.height)||g.frame.rotation!==0||g.frame.opacity!==1)reject('Preserve the original globe shape, light and texture: square, unrotated, full opacity.');
    if(Math.abs(g.frame.width-m.globeWidth)>m.globeWidth*.15||Math.abs(g.frame.x-m.globeX)>design.width*.12)reject(`Keep the reference globe scale and edge crop: approximately ${m.globeWidth.toFixed(1)}px wide at x=${m.globeX.toFixed(1)}. Keep its upper crop anchored on custom heights.`);
-   if(Math.abs(g.frame.y-m.globeY)>design.width*.06)reject(`Keep the globe high, near y=${m.globeY.toFixed(1)}px (within 6% of canvas width). Do not add the extra canvas height to its y position.`);
+   if(editorial?(g.frame.y<m.globeY-design.width*.06||g.frame.y>design.height*.55):Math.abs(g.frame.y-m.globeY)>design.width*.06)reject(`Keep the globe high, near y=${m.globeY.toFixed(1)}px (within 6% of canvas width). Do not add the extra canvas height to its y position.`);
    const glow=elements[gradient].frame;
    if(Math.abs(glow.width-m.gradientWidth)>m.gradientWidth*.15||Math.abs(glow.height/glow.width-1.00808)>.01||Math.abs(glow.rotation+9.91)>.2)reject('Preserve the original gradient scale, 1:1.00808 proportions and -9.91 degree rotation.');
   }

@@ -12,9 +12,37 @@
       "file": "impact-collage.png",
       "prompt": "collage-prompt.txt",
       "note": "Generated tactile collage on transparency; all poster headlines and branding remain native editor layers"
+    },
+    {
+      "file": "community-flash-light.png",
+      "prompt": "light-flash-prompt.txt",
+      "reference": "community-flash-inclusive.png",
+      "note": "Built-in image_gen edit: same fictional group with an ivory wall and direct flash; room above the group is reserved for native dark typography."
     }
   ],
   "compositionPrompt": "final-demo-prompt.txt",
   "layoutReference": "User-supplied AI for impact layout screenshot, 2026-11-16 at 13.38.11",
-  "workflow": "Remove the starting template and superseded variants; replace the active composition in place with the main direction and two alternatives, all at 1080 × 1080 px"
+  "workflow": "Remove the starting template and superseded variants; replace the active composition in place with the main direction and two alternatives, all at 1080 × 1080 px",
+  "lightCompositionPrompt": "light-demo-prompt.txt",
+  "lightWorkflow": "Append three editable light counterparts to the existing three dark assets; preserve 1080 × 1080 working dimensions, original collage alpha/scale and the native full Community signature. The light photo title and subtitle move slightly up to remain on quiet light wall.",
+  "materialRefinementPrompt": "material-refinement-prompt.txt",
+  "materialRefinement": "Match the user-refined dark Matière composition: right-aligned support copy with a baseline aligned to the headline, and a larger lower collage with an intentional edge crop.",
+  "currentDirections": [
+    "Community original globe",
+    "Au flash",
+    "Matière"
+  ],
+  "communityDirectionPrompt": "community-direction-prompt.txt",
+  "currentWorkflow": "Replace both redundant Idée collective collages in place with the original Community globe direction, preserving the six-asset collection: three directions in dark and light palettes.",
+  "communityLightDirectionPrompt": "community-light-direction-prompt.txt",
+  "currentAssets": [
+    "community",
+    "au-flash",
+    "matiere",
+    "community-light",
+    "au-flash-light",
+    "matiere-light"
+  ],
+  "currentGlobePlacement": "Original social globe and gradient shifted down 400 px for the explicitly requested bottom-right crop; both palettes share the exact geometry, title size and 92% title line height.",
+  "verification": "Six distinct editable canvases verified in the local studio. Export checks stopped at the user’s request; saved source files are snapshots before any subsequent manual canvas refinements."
 }

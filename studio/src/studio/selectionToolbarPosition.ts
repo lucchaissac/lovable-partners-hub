@@ -32,3 +32,25 @@ export function sectionToolbarPosition(...args: Parameters<typeof selectionToolb
   // document-relative outlines and unpinned controls scroll with the section.
   return { ...position, top, fixed: Math.abs(top - topEdge) < .5 || Math.abs(top - bottomEdge) < .5 };
 }
+
+/** Keep a rotation handle reachable even when its object extends beyond the viewport. */
+export function rotationHandlePosition(bounds:{left:number;top:number;width:number;height:number},visible:{left:number;top:number;width:number;height:number},size:number,inset:number,toolbar?:{left:number;top:number;width:number;height:number}) {
+  const clamp=(n:number,min:number,max:number)=>Math.max(min,Math.min(Math.max(min,max),n));
+  const minX=visible.left+inset,maxX=visible.left+visible.width-inset-size;
+  const minY=visible.top+inset,maxY=visible.top+visible.height-inset-size;
+  let left=clamp(bounds.left+(bounds.width-size)/2,minX,maxX);
+  let top=clamp(bounds.top+bounds.height+inset,minY,maxY);
+  // Clamping a very large object can put the handle on its pivot, making a tiny
+  // pointer movement produce a huge angular jump. Keep a usable lever arm.
+  const cx=bounds.left+bounds.width/2,cy=bounds.top+bounds.height/2;
+  if(Math.hypot(left+size/2-cx,top+size/2-cy)<size+inset*2){
+    left=clamp(Math.abs(minX+size/2-cx)>Math.abs(maxX+size/2-cx)?minX:maxX,minX,maxX);
+  }
+  if(toolbar&&left<toolbar.left+toolbar.width+inset&&left+size>toolbar.left-inset&&top<toolbar.top+toolbar.height+inset&&top+size>toolbar.top-inset){
+    const below=toolbar.top+toolbar.height+inset,above=toolbar.top-inset-size;
+    if(below<=maxY)top=clamp(below,minY,maxY);
+    else if(above>=minY)top=clamp(above,minY,maxY);
+    else return {left:clamp(toolbar.left+toolbar.width+inset,minX,maxX),top};
+  }
+  return {left,top};
+}

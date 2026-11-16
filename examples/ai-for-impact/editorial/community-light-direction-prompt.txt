@@ -1,0 +1,14 @@
+Remplace uniquement l’asset actif « AI for impact · Idée collective · Clair » par « AI for impact · Community · Clair ». C’est le pendant clair de notre nouvelle direction avec le globe. replaceCurrent=true, exactement un design : conserve les six assets et ne touche à aucune autre page, notamment les photos et Matière. Retire totalement le collage de cette seule page. Analyse le canvas actuel comme une référence de hiérarchie, puis compose les cinq calques natifs suivants.
+
+Canvas 1080 × 1080, référence social, visualTreatment:brand-scene, background:white. Cette version claire est explicitement demandée. Conserve les couleurs originales du globe et du gradient transparents : aucune inversion, aucun voile, pas de cœur isolé. Notre motif est le globe avec son cœur intégré, recadré dans le coin inférieur droit, coupe sur la droite et le bas, comme dans la version sombre.
+
+Ordre arrière vers avant :
+1. Gradient original x-700.373025687 y39.858945707 w2340 h2358.9072 rotation-9.91 opacity1.
+2. Globe original x495 y400 w1125 h1125 rotation0 opacity1, city vide, aucune ville affichée. Ce y400 est volontaire pour ce recadrage éditorial.
+3. Community logo complet, dark, x43.2 y43.2 w407.025 h40.003 rotation0 opacity1.
+4. Titre « AI for
+impact », x43.2 y150 w650 h350, Camera Plain Bold700 taille180 interligne92%, aligné gauche, #1b1b1b.
+5. Sous-titre « Build something
+that matters », x43.2 y530 w600 h150, Bold700 taille56 interligne105%, aligné gauche, #1b1b1b.
+
+Garde ces proportions et la zone haute blanche dégagée. Aucun collage, aucune photo, aucun autre calque. Garde l’interligne du titre commun aux six propositions. Réponds brièvement en français.

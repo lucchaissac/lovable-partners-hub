@@ -1,0 +1,10 @@
+Remplace uniquement l’asset actif « AI for impact · Idée collective » par une direction nommée « AI for impact · Community ». replaceCurrent=true, exactement un design, aucun ajout : nous gardons six assets. Les photos et les collages Matière restent intacts. Retire complètement le collage de cette page. Analyse le canvas actuel comme référence de composition approuvée.
+
+1080 × 1080 px, référence social, visualTreatment:brand-scene, fond ink. Réutilise le globe original de nos templates (la sphère avec son cœur intégré), en grand à droite, avec sa coupe sur le bord. Utilise ses coordonnées master social à cette largeur : globe x495 y0 1125×1125, opacity1 rotation0 ; gradient original, mêmes proportions et placement que la référence social, derrière le globe, puis logo et texte. Aucun autre objet, aucune photo, aucun papier, aucun cœur isolé ni texte de ville.
+
+Signature Community intacte light x43.2 y43.2 w407.025 h40.003. Titre « AI for
+impact » x43.2 y150 w650 h350, Camera Plain Bold 700, taille180, interligne92%, aligné gauche, #f7f4ed. Sous-titre « Build something
+that matters » x43.2 y530 w600 h150, taille56, interligne105%, Bold700, aligné gauche, #f7f4ed. Garde cet interligne et cette taille comme les autres versions. La sphère reste le motif de nos templates, pas une illustration réinventée. Seulement cinq calques natifs éditables : gradient, globe, logo, titre, sous-titre. Réponds brièvement en français.
+
+Recadrage final :
+Dans cette seule version Community sombre, descends le globe et son gradient de 400 px pour installer la sphère dans le coin inférieur droit, coupée par le bas du cadre. C’est un recadrage éditorial explicite : conserve les dimensions, la rotation et l’opacité des deux calques, modifie uniquement leur y (+400). Le globe doit donc être x495 y400 et 1125×1125. Le haut reste sobre pour le texte. Garde tous les autres calques exactement tels quels, dont le titre 180px interligne92%. Ne remplace pas la page, ne crée aucun asset, edits uniquement sur les deux images existantes, aucun retrait. Les six pages restent présentes.

@@ -1,0 +1,18 @@
+Ajoute exactement trois versions claires aux trois propositions AI for impact existantes, pour obtenir six assets au total. Garde les trois originaux sombres intacts. Ne remplace pas l’asset actif : replaceCurrent=false. Aucun autre design.
+
+Les pièces idea-collective.png, au-flash.png et matiere.png sont les trois références de composition, à regarder mais jamais à placer comme images aplaties. Elles sont déjà approuvées. Reprends leurs grandes proportions, avec logo Community complet natif, titre et sous-titre éditables. Les deux autres pièces sont les images propres : impact-collage.png (transparence inchangée), community-flash-light.png (nouvelle photo déjà préparée au flash sur mur clair, même groupe fictif, pas une photo documentaire d’un événement réel).
+
+Tous les nouveaux canvases font 1080 × 1080 px, référence social, retained-visual, background:white. Textes #1b1b1b Camera Plain Bold 700. Signature originale Community couleur dark, x=y=43.2, largeur407.025, hauteur40.003. Ne change pas la palette des collages, leur alpha, ni leurs dimensions. Images à 100% d’opacité, sans cadre, coins droits. Aucune autre illustration ni globe.
+
+1. « AI for impact · Idée collective · Clair » : titre « AI for
+impact », x43.2 y300 largeur590 hauteur350 taille180 interligne92%. Sous-titre « Build something
+that matters », x43.2 y700 largeur550 hauteur150 taille64 interligne105%, aligné gauche. Collage x615 y330 largeur750 hauteur750, contain crop:null placement:inset. Conserve sa coupe volontaire à droite.
+2. « AI for impact · Au flash · Clair » : nouvelle photo claire plein cadre x0 y0 largeur1080 hauteur1080, cover crop:null placement:background, premier calque. Logo puis textes foncés. Pour éviter les cheveux et garder les mots sur le mur, remonte légèrement les deux blocs sans réduire leur taille : titre « AI for
+impact » x43.2 y120 largeur650 hauteur350 taille180 interligne92%. Sous-titre « Build something
+that matters » x43.2 y470 largeur600 hauteur130 taille56 interligne105%. Pas de voile : conserve le gros flash et les couleurs de la photo.
+3. « AI for impact · Matière · Clair » : titre « AI for
+impact » x43.2 y150 largeur650 hauteur350 taille180 interligne92%. Sous-titre « Build
+something
+that matters » x720 y250 largeur317 hauteur200 taille52 interligne110%, aligné droite. Collage x150 y520 largeur850 hauteur850 contain crop:null placement:inset, coupé en bas comme dans la référence.
+
+Les sauts de ligne sont explicites. Préserve les grands titres et les images, pas de réduction pour faire entrer les collages entiers. Crée uniquement ces trois variantes claires, en français dans la réponse, et garde les trois sombres. Analyse brièvement les références sans inventer de défauts : l’objectif est la déclinaison claire. Les PNG des affiches restent de simples références visuelles; seuls le collage détouré et la photo claire deviennent des calques images. Chaque affiche doit comporter quatre calques indépendants : image, logo, titre, sous-titre. Aucun doublon d’ancien calque. Réponds brièvement.

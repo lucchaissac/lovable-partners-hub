@@ -1,5 +1,7 @@
 /* Community page navigation uses the studio's tokens; artwork keeps its authored colors. */
 .community-canvas .asset-canvas-scroll{overflow-anchor:none}
+.community-canvas .asset-artwork .hcs-rotate{scale:calc(1 / var(--asset-editor-scale));transform-origin:top left;z-index:var(--ui-z-panel)}
+.community-canvas .hcs-rotate[data-rotating]{cursor:grabbing}
 .community-page-stack{min-width:100%;width:max-content;min-height:100%;display:flex;flex-direction:column;align-items:center;gap:40px;padding:24px 40px 40px;box-sizing:border-box}
 .community-canvas-page{flex:none;display:flex;flex-direction:column;gap:4px;position:relative}
 .community-canvas-page>.asset-scaled-board{margin-bottom:8px}

@@ -39,6 +39,18 @@ test('A clean supplied photo can remain whole; background use preserves signatur
  photo.frame.opacity=1;assert.ok(validateChatPlan(p,request));
  photo.frame.opacity=.25;p.designs[0].elements.push(p.designs[0].elements.shift());assert.throws(()=>validateChatPlan(p,request),/behind/);
 });
+test('Light editorial counterparts keep geometry with dark native identity and type',()=>{
+ const dark=retained(),light=structuredClone(dark);
+ const design=light.designs[0];design.background='white';design.elements[0].color='dark';design.elements[1].color='#1b1b1b';
+ const validated=validateChatPlan(light,request);
+ assert.equal(validated.replaceCurrent,false);
+ assert.deepEqual(validated.designs[0].elements.map(e=>e.frame),dark.designs[0].elements.map(e=>e.frame));
+ assert.equal(validated.designs[0].elements[2].sourceId,dark.designs[0].elements[2].sourceId);
+ const wrongLogo=structuredClone(light);wrongLogo.designs[0].elements[0].color='light';assert.throws(()=>validateChatPlan(wrongLogo,request),/intact dark logo/);
+ const whiteText=structuredClone(light);whiteText.designs[0].elements[1].color='#ffffff';assert.throws(()=>validateChatPlan(whiteText,request),/#1b1b1b copy/);
+ const darkText=structuredClone(dark);darkText.designs[0].elements[1].color='#1b1b1b';assert.throws(()=>validateChatPlan(darkText,request),/stays light/);
+ const typeOnly=clone();typeOnly.designs[0].background='white';typeOnly.designs[0].elements[0].color='dark';typeOnly.designs[0].elements[1].color='#1b1b1b';assert.ok(validateChatPlan(typeOnly,request));
+});
 test('Reviewed layouts preserve whitespace, avoid overlapping copy and do not mix competing scenes',()=>{
  const p=clone();p.designs[0].elements.push({...title,id:'details',text:'Another line',fontSize:32,weight:600,frame:frame(60,280,700,60)});assert.throws(()=>validateChatPlan(p,request),/frames overlap/);
  const mixed=retained();mixed.designs[0].elements.unshift({...logo,id:'globe',asset:'globe',frame:frame(400,100,600,600)});assert.throws(()=>validateChatPlan(mixed,request),/one coherent visual treatment/);

@@ -24,7 +24,7 @@ import { useWorkspaceWidgetHost } from './WorkspaceWidgetHost';
 import type { HtmlBlock, HtmlEditorState, HtmlSection } from './htmlEditorModel';
 import { htmlSectionSelectionAction, htmlSelectionAction, patchHtmlFrames, selectionBounds, type ElementFrame, type Rect, type SelectionAction } from './htmlSelectionOperations';
 import { htmlLayerOrder, layerOrderAvailability, type LayerOrderAction } from './htmlLayerOrder';
-import { selectionToolbarPosition, sectionToolbarPosition } from './selectionToolbarPosition';
+import { selectionToolbarPosition, sectionToolbarPosition, rotationHandlePosition } from './selectionToolbarPosition';
 import './html-canvas-selection.css';
 
 type Save = (state: HtmlEditorState, copies?: Record<string, string>) => void;
@@ -46,6 +46,7 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
 }) {
   const rect = (el: Element) => { const r=el.getBoundingClientRect(); return {left:r.left/zoom,top:r.top/zoom,width:r.width/zoom,height:r.height/zoom,right:r.right/zoom,bottom:r.bottom/zoom}; };
   const mode=useContext(HtmlSelectionMode), enabled=mode&&editable, host=useWorkspaceWidgetHost(), editing=useContext(WorkspaceEditingContext);
+  const communityCanvas=!!root.current?.closest('.community-canvas');
   const insertPanel = useHtmlInsertPanel();
   const [sectionIds,setSectionIds]=useState<string[]>([]);
   const sectionId=sectionIds.length===1?sectionIds[0]:'';
@@ -140,12 +141,12 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
   const measureRef=useRef(measure);measureRef.current=measure;
   useLayoutEffect(()=>{measure();});
   useEffect(()=>{
-    if(!enabled||!insertPanel.enabled||!sectionIds.length&&!editingId)return;
+    if(!enabled||!(insertPanel.enabled&&(sectionIds.length||editingId)||communityCanvas&&ids.length))return;
     let pending=0;
     const scroll=()=>{if(!pending)pending=requestAnimationFrame(()=>{pending=0;measureRef.current();});};
     window.addEventListener('scroll',scroll,true);
     return()=>{window.removeEventListener('scroll',scroll,true);cancelAnimationFrame(pending);};
-  },[enabled,insertPanel.enabled,sectionIds.join(','),editingId]);
+  },[enabled,insertPanel.enabled,sectionIds.join(','),editingId,communityCanvas,ids.join(',')]);
   useEffect(()=>{
     if(!enabled)return;const measureNext=()=>measureRef.current();window.addEventListener('resize',measureNext);
     const observer=new ResizeObserver(measureNext);if(root.current)observer.observe(root.current);if(toolbar.current)observer.observe(toolbar.current);ids.forEach(id=>{const el=element(id);if(el)observer.observe(el);});
@@ -386,8 +387,10 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
   // Outlines follow the document; section controls also recompute their visible side on scroll.
   const bounds=geometry?.bounds,frame=geometry?.frame,visible=geometry?.origin,viewport=geometry?.visible,show=enabled&&bounds&&frame&&visible&&viewport;
   const sectionInset=bounds&&frame?frame.left-bounds.left:0;
-  const rotateTop=bounds&&visible?clamp(bounds.top+bounds.height-visible.top+12,viewport!.top-visible.top+12,viewport!.top+viewport!.height-visible.top-44):0;
-  const rotateLeft=bounds&&visible&&geometry?clamp((Math.abs(geometry.toolbar.top-visible.top-rotateTop)<40?geometry.toolbar.left-visible.left+(toolbar.current?.offsetWidth||204)/2+12:bounds.left+bounds.width/2-visible.left-16),viewport!.left-visible.left+12,viewport!.left+viewport!.width-visible.left-44):0;
+  const rotateSize=32/zoom,rotateInset=12/zoom,toolbarWidth=(toolbar.current?.offsetWidth||204)/zoom;
+  const pinnedRotate=communityCanvas&&bounds&&viewport&&geometry?rotationHandlePosition(bounds,viewport,rotateSize,rotateInset,{left:geometry.toolbar.left-toolbarWidth/2,top:geometry.toolbar.top,width:toolbarWidth,height:(toolbar.current?.offsetHeight||36)/zoom}):undefined;
+  const rotateTop=pinnedRotate&&visible?pinnedRotate.top-visible.top:bounds&&visible?clamp(bounds.top+bounds.height-visible.top+12,viewport!.top-visible.top+12,viewport!.top+viewport!.height-visible.top-44):0;
+  const rotateLeft=pinnedRotate&&visible?pinnedRotate.left-visible.left:bounds&&visible&&geometry?clamp((Math.abs(geometry.toolbar.top-visible.top-rotateTop)<40?geometry.toolbar.left-visible.left+(toolbar.current?.offsetWidth||204)/2+12:bounds.left+bounds.width/2-visible.left-16),viewport!.left-visible.left+12,viewport!.left+viewport!.width-visible.left-44):0;
   const ui=mode&&<>
     {enabled&&geometry&&root.current&&createPortal(<div className="hcs-overlay" onPointerMove={move} onPointerUp={()=>finish()} onPointerCancel={()=>finish(true)}>
       {geometry.spacing.filter(box=>box.width>0&&box.height>0).map((box,index)=><div key={index} className="hcs-spacing-preview" data-spacing={spacingPreview} aria-hidden="true" style={{left:box.left-geometry.origin.left,top:box.top-geometry.origin.top,width:box.width,height:box.height}}/>)}
@@ -405,7 +408,7 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
           const edge=insertPanel.enabled&&(after?page.sections.at(-1)?.id:page.sections[0]?.id)===sectionId;
           return <Tooltip key={String(after)} label={after?'Add section below':'Add section above'}><Button className="hcs-section-add hcs-ui" data-section-edge={edge?(after?'end':'start'):undefined} variant="ghost" size="sm" aria-label={after?'Add section below selection':'Add section above selection'} leadingIcon={<Icon name="plus" size={16}/>} style={{left:frame.left+frame.width/2-visible.left,top:(edge?bounds.top+(after?bounds.height:0):frame.top+(after?frame.height:0))-visible.top}} onClick={event=>onAddSection(sectionId,after,event.currentTarget)}/></Tooltip>;
         })}
-        {!locked&&!sectionSelection&&<Button className="hcs-rotate hcs-ui" size="sm" variant="ghost" aria-label="Rotate selection" leadingIcon={<Icon name="rotate-cw" size={14}/>} style={{left:rotateLeft,top:rotateTop,visibility:gesture.current?.kind==='rotate'?'hidden':undefined}} onPointerDown={e=>begin(e,'rotate')} onKeyDown={e=>{if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();e.stopPropagation();patch({rotation:clamp((one?.editor?.rotation||0)+(e.key==='ArrowRight'?1:-1)*(e.shiftKey?15:1),-360,360)});}}}/>}
+        {!locked&&!sectionSelection&&<Button className="hcs-rotate hcs-ui" size="sm" variant="ghost" aria-label="Rotate selection" data-rotating={gesture.current?.kind==='rotate'||undefined} leadingIcon={<Icon name="rotate-cw" size={14}/>} style={{left:rotateLeft,top:rotateTop,visibility:!communityCanvas&&gesture.current?.kind==='rotate'?'hidden':undefined}} onPointerDown={e=>begin(e,'rotate')} onKeyDown={e=>{if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();e.stopPropagation();patch({rotation:clamp((one?.editor?.rotation||0)+(e.key==='ArrowRight'?1:-1)*(e.shiftKey?15:1),-360,360)});}}}/>}
         <div ref={toolbar} className="hcs-toolbar hcs-ui" data-section={insertPanel.enabled&&sectionSelection||undefined} data-pinned={geometry.toolbar.fixed||undefined} role="toolbar" aria-label="Selected element actions" style={{position:geometry.toolbar.fixed?'fixed':undefined,left:geometry.toolbar.left-(geometry.toolbar.fixed?0:visible.left),top:geometry.toolbar.top-(geometry.toolbar.fixed?0:visible.top),visibility:gesture.current||insertPanel.enabled&&sectionSelection&&!geometry.boxes.some(box=>box.top+box.height>viewport.top&&box.top<viewport.top+viewport.height)?'hidden':undefined}}>
           {sectionSelection&&<div className="hcs-widget-identity"><span className="hcs-widget-label"><Icon name={fixedCanvas?'frame':insertPanel.enabled?'rectangle-horizontal':'layout-template'} size={16}/><span>{multipleSections?`${selectedSections.length} sections`:selectedSection!.name}</span></span></div>}{hasWidgetTools&&<div className="hcs-widget-identity" ref={setWidgetIdentityHost}/>}
           {toolButton(locked?'Unlock selection':'Lock selection',locked?'lock':'lock-open',()=>action(locked?'unlock':'lock'))}
@@ -421,14 +424,14 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
           {!(fixedCanvas&&sectionSelection)&&toolButton('Delete selection','trash-2',()=>action('delete'),locked)}
           {!(fixedCanvas&&sectionSelection)&&<SelectionMenu open={menu} onOpenChange={setMenu} items={[
             ...(one?.kind==='text'?[{id:'bullet',label:one.value.list==='bullet'?'Remove bullet':'Add bullet',leadingIcon:<Icon name="list" size={16}/>,disabled:locked}]:[]),
-            ...(one?.kind==='image'&&!one.badge&&!one.ambassador?[{id:'play-icon',label:one.value.playIcon?'Hide play icon':'Show play icon',disabled:locked}]:[]),
+            ...(!communityCanvas&&one?.kind==='image'&&!one.badge&&!one.ambassador?[{id:'play-icon',label:one.value.playIcon?'Hide play icon':'Show play icon',disabled:locked}]:[]),
             ...(one?[{id:'edit',label:one.kind==='text'?'Edit text':'Edit content',leadingIcon:<Icon name="pencil" size={16}/>,disabled:locked}]:[]),
             ...(layeredSelection?layerItems:[{id:'up',label:'Move up',leadingIcon:<Icon name="arrow-up" size={16}/>,disabled:locked},{id:'down',label:'Move down',leadingIcon:<Icon name="arrow-down" size={16}/>,disabled:locked},{id:'first',label:'Move to beginning',disabled:locked},{id:'last',label:'Move to end',disabled:locked}]),
             {kind:'separator'}, {id:'duplicate',label:'Duplicate',leadingIcon:<Icon name="copy" size={16}/>,disabled:locked},
             {id:locked?'unlock':'lock',label:locked?'Unlock':'Lock',leadingIcon:<Icon name={locked?'lock':'lock-open'} size={16}/>},
             {id:'delete',label:'Delete',leadingIcon:<Icon name="trash-2" size={16}/>,disabled:locked},
             ...(one?[{kind:'separator' as const},{id:'position',label:one.editor?.position==='absolute'?'Return to normal flow':'Absolute position',leadingIcon:<Icon name="move" size={16}/>,disabled:locked}]:[])
-          ]} onChange={value=>{if(value==='bullet'&&one?.kind==='text'&&!locked)changeBlock({...one,value:{...one.value,list:one.value.list==='bullet'?'none':'bullet'}});else if(value==='play-icon'&&one?.kind==='image'&&!locked)changeBlock({...one,value:{...one.value,playIcon:!one.value.playIcon}});else if(value==='edit'&&one)editBlock(one);else if(value==='position'&&one)setAbsolute(one.editor?.position!=='absolute');else if(layeredSelection&&layerItems.some(item=>item.id===value))arrange(value as LayerOrderAction);else action(value as SelectionAction);}} trigger={<Button size="sm" variant="ghost" aria-label="More element options" leadingIcon={<Icon name="ellipsis" size={16}/>}/>}/>}
+          ]} onChange={value=>{if(value==='bullet'&&one?.kind==='text'&&!locked)changeBlock({...one,value:{...one.value,list:one.value.list==='bullet'?'none':'bullet'}});else if(value==='play-icon'&&!communityCanvas&&one?.kind==='image'&&!locked)changeBlock({...one,value:{...one.value,playIcon:!one.value.playIcon}});else if(value==='edit'&&one)editBlock(one);else if(value==='position'&&one)setAbsolute(one.editor?.position!=='absolute');else if(layeredSelection&&layerItems.some(item=>item.id===value))arrange(value as LayerOrderAction);else action(value as SelectionAction);}} trigger={<Button size="sm" variant="ghost" aria-label="More element options" leadingIcon={<Icon name="ellipsis" size={16}/>}/>}/>}
         </div>
       </>}
     </div>,root.current)}

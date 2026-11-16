@@ -109,6 +109,35 @@
     {
       "file": "public/gallery/portrait.webp",
       "bytes": 48670
+    },
+    {
+      "file": "public/gallery/eames-preview-640.webp",
+      "bytes": 32310
+    },
+    {
+      "file": "public/gallery/eames-preview-1280.webp",
+      "bytes": 85340
+    },
+    {
+      "file": "public/gallery/loco-logo.webp",
+      "bytes": 7632
     }
-  ]
+  ],
+  "partnerProfile": {
+    "preview": {
+      "source": "User-supplied Screenshot 2026-11-15 at 18.05.09.png, Eames Institute homepage",
+      "files": [
+        "public/gallery/eames-preview-640.webp",
+        "public/gallery/eames-preview-1280.webp"
+      ],
+      "transform": "Full screenshot preserved; resized and encoded as WebP, quality 86"
+    },
+    "logo": {
+      "source": "https://lovable-partner-directory.lovable.app/partners/lowco-ai",
+      "assetUrl": "https://yzghbdcexqowbyxcalwc.supabase.co/storage/v1/object/public/collateral/logos/86c9cc1d-5ac0-46cf-9364-bb3f9ed634ec.png?t=1789052273836",
+      "file": "public/gallery/loco-logo.webp",
+      "transform": "Original logo resized to 128 × 128, lossless WebP"
+    },
+    "note": "Illustrative profile composition requested by Luc; the Eames screenshot is a chosen visual reference, not an assertion of project authorship."
+  }
 }

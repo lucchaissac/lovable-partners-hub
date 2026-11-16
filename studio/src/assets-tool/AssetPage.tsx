@@ -1,5 +1,8 @@
 import {studioWorkspace,studioLastAssetKey,studioOwner} from './workspace';
 import {ambassadorAsset} from './ambassadorAsset';
+import {ambassadorFormats} from '../../../src/ambassadors/catalog.js';
+import {communityTemplate} from './communityDocument';
+import {CommunityRenderErrors,useCommunityRendering} from './CommunityRendering';
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Button, ColorPickerPaletteProvider, Dropdown, Icon, Input, PageHeader, Tooltip } from '@asset/ui';
@@ -64,6 +67,7 @@ function AssetPageContent() {
   const [error, setError] = useState(''), [busy, setBusy] = useState(false), [reading, setReading] = useState(false);
 
   const [zoom,setZoom]=useState(0);
+  const [changingTemplate,setChangingTemplate]=useState(false);
   const [designOpen,setDesignOpen]=useState(false);
   const [libraryOpen,setLibraryOpen]=useState(() => new URLSearchParams(locationSearch()).get('panel') === 'library');
   const [reviewCandidate,setReviewCandidate]=useState<AssetDocument>();
@@ -98,9 +102,15 @@ function AssetPageContent() {
       if (mounted.current && current.current === next) setSaveState('Saved on this device');
     }).catch(reason => { if (mounted.current) {setSaveState(reason.message);setError(reason.message);} });
   }, [owner]);
+  const communityErrors=useCommunityRendering(asset,current,put,studioWorkspace==='ambassadors');
   useEffect(() => { if (!id && current.current) put(current.current); }, []);
   const change = useCallback((next: AssetDocument) => {
     if (current.current && JSON.stringify(current.current) === JSON.stringify(next)) return;
+    const oldTemplate=communityTemplate(current.current),newTemplate=communityTemplate(next);
+    if(studioWorkspace==='ambassadors'&&oldTemplate&&newTemplate&&next.title===current.current?.title){
+      const oldName=ambassadorFormats.find(format=>format.id===oldTemplate.ambassador.format)!.name;
+      if(next.title===`${oldName} · ${oldTemplate.ambassador.city||'Community'}`)next={...next,title:`${ambassadorFormats.find(format=>format.id===newTemplate.ambassador.format)!.name} · ${newTemplate.ambassador.city||'Community'}`};
+    }
     const parsed = assetSchema.safeParse({ ...next, messages:current.current?.messages ?? next.messages, workspaceChats:current.current?.workspaceChats??next.workspaceChats,workspaceActiveChatId:current.current?.workspaceActiveChatId??next.workspaceActiveChatId, updatedAt: Date.now() });
     if (!parsed.success) { setError(parsed.error.issues[0]?.message || 'Check the asset dimensions.'); return; }
     if (current.current) past.current = [...past.current.slice(-49), current.current];
@@ -257,16 +267,21 @@ function AssetPageContent() {
       const parsed = assetSchema.safeParse(JSON.parse(await file.text()));
       if (!parsed.success) throw new Error('This is not a valid Asset asset source file.');
       const image = new Image(); image.src = parsed.data.reference.src; await image.decode();
-      if (image.naturalWidth !== parsed.data.reference.width || image.naturalHeight !== parsed.data.reference.height) throw new Error('The source image dimensions do not match the file.');
+      if (image.naturalWidth !== parsed.data.reference.width || image.naturalHeight !== parsed.data.reference.height) {
+        if(studioWorkspace==='ambassadors'&&communityTemplate(parsed.data))parsed.data.reference={...parsed.data.reference,width:image.naturalWidth,height:image.naturalHeight};
+        else throw new Error('The source image dimensions do not match the file.');
+      }
       const next = { ...parsed.data, id: crypto.randomUUID(), updatedAt: Date.now() };
-      await saveAsset(owner, next); navigate(`/assets/${next.id}`);
+      await saveAsset(owner, next);
+      if(studioWorkspace==='ambassadors'){try{localStorage.setItem(studioLastAssetKey,next.id);}catch{}}
+      navigate(`/assets/${next.id}`);
     } catch (reason) { setError(reason instanceof Error ? reason.message : 'Could not open this source file.'); }
   };
   const exportImage = async () => {
     if (!asset || !exportBoard.current || exporting) return;
     setExporting(true); setError('');
     try { await exportPng(exportBoard.current, asset); }
-    catch { setError('Could not export the image. Please retry; you can also download the editable source.'); }
+    catch (reason) { setError(studioWorkspace==='ambassadors'&&reason instanceof Error?reason.message:'Could not export the image. Please retry; you can also download the editable source.'); }
     finally { setExporting(false); }
   };
   const newAsset = async () => {
@@ -283,18 +298,30 @@ function AssetPageContent() {
     action:(action,id)=>{if(action==='stop')stop();else if(action==='retry'&&lastRequest.current)void refine(lastRequest.current);else if(action==='dismiss')setError('');else if(action==='remove')setQueued(items=>items.filter(item=>item.id!==id));},
 
   };
+  const template=communityTemplate(asset),templateFormat=ambassadorFormats.find(format=>format.id===template?.ambassador.format);
+  const switchCommunityTemplate=async(formatId:string)=>{
+    const previous=current.current;if(!previous||changingTemplate)return;
+    setChangingTemplate(true);setError('');
+    try{
+      const oldTemplate=communityTemplate(previous),next=await ambassadorAsset(formatId,oldTemplate?.ambassador);
+      if(!mounted.current||current.current?.id!==previous.id)return;
+      const automaticTitle=oldTemplate?`${ambassadorFormats.find(format=>format.id===oldTemplate.ambassador.format)!.name} · ${oldTemplate.ambassador.city||'Community'}`:previous.title;
+      change({...previous,...next,id:previous.id,title:previous.title===automaticTitle?next.title:previous.title,layouts:undefined});setZoom(0);
+    }catch(reason){setError(reason instanceof Error?reason.message:'Could not open this template.');}
+    finally{if(mounted.current)setChangingTemplate(false);}
+  };
   const canvasToolbar = asset && <div className="lovable-canvas-toolbar">
     <Input className="lovable-design-title" aria-label="Asset name" maxLength={100} disabled={busy} value={asset.title} onChange={event=>{if(event.target.value.trim())change({...asset,title:event.target.value});}}/>
     <div className="lovable-canvas-tools">
-      <AssetLibrary open={libraryOpen} onOpenChange={setLibraryOpen} onNew={()=>void newAsset()}/>
+      <AssetLibrary open={libraryOpen} onOpenChange={setLibraryOpen} onNew={()=>void newAsset()} onImport={studioWorkspace==='ambassadors'?()=>upload.current?.click():undefined}/>
       <HtmlPresentationTools primitivesOnly/>
-      <Dropdown align="end" value={asset.format} items={Object.entries(formats).map(([id,item])=>({id,label:item.label,leadingIcon:<Icon name={id==='square'?'square':'rectangle-horizontal'} size={16} style={id==='portrait'?{transform:'rotate(90deg)'}:undefined}/>}))} onChange={value=>{change(resizeAsset({...asset,editor:nativeDocument(asset)},value as AssetFormat));setZoom(0);}} trigger={<Button variant="ghost" disabled={busy} className="asset-format-trigger" aria-label={`Canvas format: ${formats[asset.format].label}`} leadingIcon={<Icon name={asset.format==='square'?'square':'rectangle-horizontal'} size={16} style={asset.format==='portrait'?{transform:'rotate(90deg)'}:undefined}/>} trailingIcon={<Icon name="chevron-down" size={14}/>}/>}/>
+      {studioWorkspace==='ambassadors'?<Dropdown align="end" value={templateFormat?.id} items={ambassadorFormats.map(format=>({id:format.id,label:format.name,leadingIcon:<Icon name={format.width===format.height?'square':'rectangle-horizontal'} size={16} style={format.width<format.height?{transform:'rotate(90deg)'}:undefined}/>}))} onChange={value=>void switchCommunityTemplate(value)} trigger={<Button variant="ghost" disabled={busy||changingTemplate||exporting} className="asset-format-trigger" aria-label={`Community template: ${templateFormat?.name??'Custom'}`} trailingIcon={<Icon name="chevron-down" size={14}/>}>{templateFormat?.name??'Template'}</Button>}/>:<Dropdown align="end" value={asset.format} items={Object.entries(formats).map(([id,item])=>({id,label:item.label,leadingIcon:<Icon name={id==='square'?'square':'rectangle-horizontal'} size={16} style={id==='portrait'?{transform:'rotate(90deg)'}:undefined}/>}))} onChange={value=>{change(resizeAsset({...asset,editor:nativeDocument(asset)},value as AssetFormat));setZoom(0);}} trigger={<Button variant="ghost" disabled={busy} className="asset-format-trigger" aria-label={`Canvas format: ${formats[asset.format].label}`} leadingIcon={<Icon name={asset.format==='square'?'square':'rectangle-horizontal'} size={16} style={asset.format==='portrait'?{transform:'rotate(90deg)'}:undefined}/>} trailingIcon={<Icon name="chevron-down" size={14}/>}/>}/>}
       <span className="asset-tools-divider" aria-hidden="true"/>
       <Button className="lovable-mobile-design-toggle" variant="ghost" aria-label="Open design panel" leadingIcon={<Icon name="sliders-horizontal" size={16}/>} onClick={()=>setDesignOpen(value=>!value)}/>
-      <Dropdown align="end" items={[{id:'png',label:`.png · ${assetDimensions(asset).width} × ${assetDimensions(asset).height}`,leadingIcon:<Icon name="image" size={16}/>},{id:'source',label:'Editable source',leadingIcon:<Icon name="file-text" size={16}/>}]} onChange={value=>{if(value==='png')void exportImage();else exportSource(asset);}} trigger={<Button variant="primary" disabled={busy} loading={exporting}>Export</Button>}/>
+      <Dropdown align="end" items={[{id:'png',label:`.png · ${assetDimensions(asset).width} × ${assetDimensions(asset).height}`,leadingIcon:<Icon name="image" size={16}/>},{id:'source',label:'Editable source',leadingIcon:<Icon name="file-text" size={16}/>}]} onChange={value=>{if(value==='png')void exportImage();else exportSource(asset);}} trigger={<Button variant="primary" disabled={busy||changingTemplate} loading={exporting}>Export</Button>}/>
     </div>
   </div>;
-  return <WorkspaceRuntimeContext.Provider value={runtime}><WorkspaceSelectionContext.Provider value={{visual,setVisual}}><div className="workspace-editor asset-app" data-asset data-view="editor" style={assetTheme as CSSProperties} data-history={historyVersion} onDragOver={event => { if (!event.defaultPrevented && !(event.target as Element).closest('.we-chat') && event.dataTransfer.types.includes('Files') && !busy) { event.preventDefault(); setDragging(true); } }} onDragLeave={event => { if (!event.currentTarget.contains(event.relatedTarget as Node)) setDragging(false); }} onDrop={event => { if(event.defaultPrevented || (event.target as Element).closest('.we-chat'))return; event.preventDefault(); setDragging(false); void loadImage(event.dataTransfer.files[0]); }}>
+  return <CommunityRenderErrors.Provider value={communityErrors}><WorkspaceRuntimeContext.Provider value={runtime}><WorkspaceSelectionContext.Provider value={{visual,setVisual}}><div className="workspace-editor asset-app" data-asset data-view="editor" style={assetTheme as CSSProperties} data-history={historyVersion} onDragOver={event => { if (!event.defaultPrevented && !(event.target as Element).closest('.we-chat') && event.dataTransfer.types.includes('Files') && !busy) { event.preventDefault(); setDragging(true); } }} onDragLeave={event => { if (!event.currentTarget.contains(event.relatedTarget as Node)) setDragging(false); }} onDrop={event => { if(event.defaultPrevented || (event.target as Element).closest('.we-chat'))return; event.preventDefault(); setDragging(false); void loadImage(event.dataTransfer.files[0]); }}>
     <input ref={upload} type="file" hidden accept="image/png,image/jpeg,image/webp,video/mp4,video/webm,video/ogg,video/quicktime,.asset.json,.json" aria-label="Upload image, video or editable source" onChange={event => { void loadImage(event.target.files?.[0]); event.target.value = ''; }} />
 
     {(error||loadError) && <div className="asset-notice" role="alert"><Icon name="circle-alert" size={16} /><span>{error||loadError}</span><Button variant="ghost" size="sm" aria-label="Dismiss error" onClick={() => {setError('');setLoadError('');}} leadingIcon={<Icon name="x" size={16} />} /></div>}
@@ -307,5 +334,5 @@ function AssetPageContent() {
       <div className="asset-export-host" aria-hidden="true"><Artwork ref={exportBoard} asset={reviewCandidate??asset} /></div>
     </>}
     {dragging && <div className="asset-drop-overlay"><Icon name="upload" size={32} /><strong>Drop your image or video</strong></div>}
-  </div></WorkspaceSelectionContext.Provider></WorkspaceRuntimeContext.Provider>;
+  </div></WorkspaceSelectionContext.Provider></WorkspaceRuntimeContext.Provider></CommunityRenderErrors.Provider>;
 }

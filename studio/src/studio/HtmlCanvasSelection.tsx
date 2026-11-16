@@ -1,3 +1,4 @@
+import {editCommunityBlock,needsCommunityRender} from '../assets-tool/communityDocument';
 import {AmbassadorDesign} from '../assets-tool/AmbassadorDesign';
 import { PartnerBadgeDesign } from '../assets-tool/PartnerBadgeDesign';
 import { badgeFormatName, type PartnerBadgeSettings } from '../assets-tool/partnerBadgeSettings';
@@ -82,6 +83,8 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
   const clear=()=>{setSectionId('');setIds([]);setEditingId('');setDesign(false);setMenu(false);onSelect(undefined);};
   const choose=(next:string[])=>{setSectionId('');setIds(next);setEditingId('');onSelect(next.length===1?(element(next[0])||undefined):undefined);};
   useEffect(()=>{clear();},[pageId,mode]);
+  const communityTemplateId=blocks.find(block=>block.kind==='image'&&block.ambassador&&!block.ambassadorElement)?.id;
+  useEffect(()=>{if(!enabled||!communityTemplateId)return;choose([communityTemplateId]);setDesign(true);host.panelChanged('html-selection',true);},[communityTemplateId,enabled]);
   useEffect(()=>{if(!enabled)return;const available=new Set(blocks.map(b=>b.id));setIds(old=>old.some(id=>!available.has(id))?old.filter(id=>available.has(id)):old);},[state,enabled]);
   useEffect(()=>{if(!enabled)return;const available=new Set(page.sections.map(s=>s.id));setSectionIds(old=>old.some(id=>!available.has(id))?old.filter(id=>available.has(id)):old);},[state,enabled]);
   function chooseSection(id:string,range=false,toggle=false){
@@ -424,12 +427,10 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
       </>}
     </div>,root.current)}
     {design&&selectedSection&&host.panelHost&&host.activeId==='html-selection'&&createPortal(<div className="hcs-ui" style={{display:'contents'}}><HtmlSectionDesign fixedCanvas={fixedCanvas} onSpacingPreview={setSpacingPreview} section={selectedSection} onChange={updateSection} onClose={()=>{setDesign(false);host.closePanel();}}/></div>,host.panelHost)}
-    {selectionDesignActive&&one?.kind==='image'&&one.ambassador&&host.panelHost&&host.activeId==='html-selection'&&createPortal(<AmbassadorDesign key={one.id} settings={one.ambassador} src={one.value.src} locked={locked} onChange={(ambassador,image)=>{
+    {selectionDesignActive&&one?.kind==='image'&&one.ambassador&&host.panelHost&&host.activeId==='html-selection'&&createPortal(<AmbassadorDesign key={one.id} id={one.id} settings={one.ambassador} src={one.value.src} locked={locked} element={one.ambassadorElement} pending={needsCommunityRender({...one,ambassador:one.ambassador})} onChange={ambassador=>{
       const current=source.current.pages.flatMap(page=>page.sections.flatMap(section=>section.columns.flat())).find(block=>block.id===one.id);
-      if(current?.kind!=='image'||current.editor?.locked)return;
-      const previousWidth=current.editor?.widthPx||bounds?.width||480,previousHeight=current.editor?.height||bounds?.height||320,ratio=image.width/image.height;
-      const changedFormat=current.ambassador?.format!==ambassador.format,width=changedFormat?Math.min(previousWidth,previousHeight*ratio):previousWidth,height=Math.max(12,Math.min(3000,width/ratio));
-      changeBlock({...current,ambassador,value:{...current.value,src:image.src,alt:'Community '+ambassador.format,crop:undefined,playIcon:undefined},editor:{...current.editor,widthPx:width,height,...(changedFormat&&current.editor?.position==='absolute'?{x:(current.editor.x||0)+(previousWidth-width)/2,y:(current.editor.y||0)+(previousHeight-height)/2}:{}),appearance:{imageFit:'contain'}}});
+      if(current?.kind!=='image'||!current.ambassador||current.editor?.locked)return;
+      changeBlock(editCommunityBlock({...current,ambassador:current.ambassador},ambassador));
     }} onClose={()=>{setDesign(false);host.closePanel();}}/>,host.panelHost)}
     {selectionDesignActive&&one?.kind==='image'&&one.badge&&host.panelHost&&host.activeId==='html-selection'&&createPortal(<PartnerBadgeDesign key={one.id} settings={one.badge} src={one.value.src} locked={locked}
       onChange={(badge:PartnerBadgeSettings,image)=>{

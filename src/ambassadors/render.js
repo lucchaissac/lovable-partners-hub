@@ -22,7 +22,7 @@ class Scene {
   document.body.append(this.frame);return this.ready;
  }
  dispose(){this.frame?.remove();window.removeEventListener('message',this.message);this.ready=undefined;this.lastCity='';}
- async capture(state){
+ async capture(state,pixels=2160){
   await this.mount();this.send({type:'renderer-active',active:true});
   try{
    if(this.spotlight){this.send({type:'avatarMode',on:true});this.send({type:'loop',on:false});this.send({type:'spotlight-details',name:state.name,city:state.city,ambassadorType:state.role});const photo=this.wait('photo-ready');this.send({type:'avatarSrc',src:state.photo});await photo;}
@@ -33,19 +33,28 @@ class Scene {
     this.send({type:'city',name:state.city,lat,lon,requestId});await settled;this.lastCity=state.city;
    }
    const requestId=++this.revision,pending=this.wait(this.spotlight?'render-done':'globe-render-done',data=>data.requestId===requestId);
-   this.send({type:this.spotlight?'render':'render-globe',pixels:2160,requestId});
+   this.send({type:this.spotlight?'render':'render-globe',pixels,requestId});
    const result=await pending;if(!(result.blob instanceof Blob))throw Error('The community artwork could not render.');return toData(result.blob);
   }finally{this.send({type:'renderer-active',active:false});}
  }
 }
 const globe=new Scene(false),spotlight=new Scene(true),globes=new Map();let jobs=Promise.resolve();
-function globeImage(state){const key=state.city.trim().toLowerCase();if(!globes.has(key)){const result=globe.capture(state).catch(error=>{globes.delete(key);throw error;});globes.set(key,result);if(globes.size>8)globes.delete(globes.keys().next().value);}return globes.get(key);}
-export function renderAmbassador(settings,{pixels=1600}={}){
+function globeImage(state,pixels){const key=`${state.city.trim().toLowerCase()}:${pixels}`;if(!globes.has(key)){const result=globe.capture(state,pixels).catch(error=>{globes.delete(key);throw error;});globes.set(key,result);if(globes.size>8)globes.delete(globes.keys().next().value);}return globes.get(key);}
+/** @param {object} settings @param {{pixels?:number,element?:'globe',signal?:AbortSignal}} [options] */
+export function renderAmbassador(settings,{pixels=1600,element=undefined,signal=undefined}={}){
  const run=async()=>{
+  signal?.throwIfAborted();
   const state={...structuredClone(DEFAULTS),...settings,badgeMode:'single'};
+  const globePixels=pixels<=1600?1080:pixels<=2160?2160:4320;
+  if(element==='globe'){
+   if(!state.city.trim())throw Error('Add a city.');
+   const src=await globeImage(state,globePixels);signal?.throwIfAborted();
+   return {src,svg:'',width:globePixels,height:globePixels};
+  }
   const error=validateDetails(state);if(error)throw Error(error);
   const engine=await loadRenderer(),unsupported=engine.unsupported(state);if(unsupported)throw Error(`The brand font does not support: ${unsupported}`);
-  const options=state.format==='spotlight'?{spotlightImage:await spotlight.capture(state)}:state.format==='badge'?{}:{globeImage:await globeImage(state)};
+  const options=state.format==='spotlight'?{spotlightImage:await spotlight.capture(state)}:state.format==='badge'?{}:{globeImage:await globeImage(state,globePixels)};
+  signal?.throwIfAborted();
   const svg=engine.render(state,options),image=new Image();image.src=`data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;await image.decode();
   const canvas=document.createElement('canvas'),scale=pixels/Math.max(image.naturalWidth,image.naturalHeight);canvas.width=Math.round(image.naturalWidth*scale);canvas.height=Math.round(image.naturalHeight*scale);const context=canvas.getContext('2d');context.fillStyle='#1b1b1b';context.fillRect(0,0,canvas.width,canvas.height);context.drawImage(image,0,0,canvas.width,canvas.height);
   return {src:canvas.toDataURL('image/jpeg',.94),svg,width:image.naturalWidth,height:image.naturalHeight};

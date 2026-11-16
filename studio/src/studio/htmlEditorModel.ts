@@ -45,7 +45,7 @@ const editorFrame = z.object({
 export const htmlBlockSchema=z.discriminatedUnion('kind',[
  z.object({id,editor:editorFrame,kind:z.literal('shape'),icon:z.enum(htmlIconNames).optional(),filled:z.boolean().optional(),shape:z.enum(['rectangle','circle','triangle','line'])}).strict(),
  z.object({id,editor:editorFrame,kind:z.literal('text'),value:textValue}).strict(),
- z.object({id,editor:editorFrame,kind:z.literal('image'),value:imageValue,badge:partnerBadgeSchema.optional(),ambassador:ambassadorSchema.optional()}).strict(),
+ z.object({id,editor:editorFrame,kind:z.literal('image'),value:imageValue,badge:partnerBadgeSchema.optional(),ambassador:ambassadorSchema.optional(),ambassadorElement:z.literal('globe').optional(),ambassadorRender:z.object({revision:z.string().max(40),rendered:z.string().max(40)}).strict().optional()}).strict(),
  z.object({id,editor:editorFrame,kind:z.literal('pdf'),name:z.string().max(200),src:safeURL}).strict(),
  z.object({id,editor:editorFrame,kind:z.literal('cta'),color:z.string().max(80).optional(),leadingIcon:z.enum(['play','arrow-right','sparkles','check','video','calendar','book-open','users','message-square','file-text','circle','circle-check','chart-line']).optional(),label:z.string().min(1).max(100),href:z.string().max(2000).refine(value=>/^(?:#[a-zA-Z0-9-]+|\/(?!\/)[^\s<>]*|https?:\/\/[^\s<>]+)$/.test(value))}).strict(),
  z.object({id,editor:editorFrame,kind:z.literal('inventory'),content:htmlInventorySchema.optional()}).strict(),

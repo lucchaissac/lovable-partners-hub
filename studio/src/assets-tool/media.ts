@@ -65,7 +65,7 @@ export async function exportPng(element:HTMLElement, asset:AssetDocument) {
       // Gallery thumbnails make opening instant; downloads regenerate the source artwork at export size.
       clone=element.cloneNode(true) as HTMLElement;clone.removeAttribute('id');element.parentElement!.append(clone);board=clone;
       const {renderAmbassador}=await import('./ambassadorAsset');
-      for(const block of community){if(block.kind!=='image'||!block.ambassador)continue;const image=await renderAmbassador(block.ambassador,{pixels:Math.min(4000,Math.max(width,height,1600))});for(const target of clone.querySelectorAll<HTMLImageElement>('img'))if(target.getAttribute('src')===block.value.src)target.src=image.src;}
+      for(const block of community){if(block.kind!=='image'||!block.ambassador)continue;const image=await renderAmbassador(block.ambassador,{pixels:Math.min(4000,Math.max(width,height,1600)),element:block.ambassadorElement});for(const target of clone.querySelectorAll<HTMLImageElement>('img'))if(target.getAttribute('src')===block.value.src)target.src=image.src;}
     }
     const data=await renderPng(board,asset);
     download(await (await fetch(data)).blob(), `${filename(asset.title)}-${width}x${height}.png`);

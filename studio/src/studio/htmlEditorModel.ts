@@ -38,14 +38,14 @@ export type HtmlIconName = typeof htmlIconNames[number];
 const editorFrame = z.object({
  groupId:id.optional(),
  position:z.enum(['flow','absolute']).optional(),spacingAfter:z.number().min(0).max(400).optional(),appearance:elementAppearance.optional(),
- locked:z.boolean().optional(),width:z.number().min(.1).max(500).optional(),widthPx:z.number().min(1).max(4000).optional(),height:z.number().min(12).max(3000).optional(),
+ locked:z.boolean().optional(),width:z.number().min(.1).max(500).optional(),widthPx:z.number().min(1).max(4000).optional(),height:z.number().min(12).max(4000).optional(),
  x:z.number().min(-4000).max(4000).optional(),y:z.number().min(-4000).max(4000).optional(),rotation:z.number().min(-360).max(360).optional(),
  radius:z.number().min(0).max(160).optional(),opacity:z.number().min(0).max(1).optional(),
 }).strict().optional();
 export const htmlBlockSchema=z.discriminatedUnion('kind',[
  z.object({id,editor:editorFrame,kind:z.literal('shape'),icon:z.enum(htmlIconNames).optional(),filled:z.boolean().optional(),shape:z.enum(['rectangle','circle','triangle','line'])}).strict(),
  z.object({id,editor:editorFrame,kind:z.literal('text'),value:textValue}).strict(),
- z.object({id,editor:editorFrame,kind:z.literal('image'),value:imageValue,badge:partnerBadgeSchema.optional(),ambassador:ambassadorSchema.optional(),ambassadorElement:z.literal('globe').optional(),ambassadorRender:z.object({revision:z.string().max(40),rendered:z.string().max(40)}).strict().optional()}).strict(),
+ z.object({id,editor:editorFrame,kind:z.literal('image'),value:imageValue,badge:partnerBadgeSchema.optional(),ambassador:ambassadorSchema.optional(),ambassadorElement:z.enum(['globe','spotlight-globe','qr']).optional(),ambassadorRender:z.object({revision:z.string().max(40),rendered:z.string().max(40)}).strict().optional()}).strict(),
  z.object({id,editor:editorFrame,kind:z.literal('pdf'),name:z.string().max(200),src:safeURL}).strict(),
  z.object({id,editor:editorFrame,kind:z.literal('cta'),color:z.string().max(80).optional(),leadingIcon:z.enum(['play','arrow-right','sparkles','check','video','calendar','book-open','users','message-square','file-text','circle','circle-check','chart-line']).optional(),label:z.string().min(1).max(100),href:z.string().max(2000).refine(value=>/^(?:#[a-zA-Z0-9-]+|\/(?!\/)[^\s<>]*|https?:\/\/[^\s<>]+)$/.test(value))}).strict(),
  z.object({id,editor:editorFrame,kind:z.literal('inventory'),content:htmlInventorySchema.optional()}).strict(),

@@ -1,7 +1,7 @@
 import {studioWorkspace,studioLastAssetKey,studioOwner} from './workspace';
-import {ambassadorAsset} from './ambassadorAsset';
+import {ambassadorAsset,migrateCommunityAsset} from './ambassadorAsset';
 import {ambassadorFormats} from '../../../src/ambassadors/catalog.js';
-import {communityTemplate} from './communityDocument';
+import {communityTemplate,communitySettings,syncCommunityDocument} from './communityDocument';
 import {CommunityRenderErrors,useCommunityRendering} from './CommunityRendering';
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -106,10 +106,11 @@ function AssetPageContent() {
   useEffect(() => { if (!id && current.current) put(current.current); }, []);
   const change = useCallback((next: AssetDocument) => {
     if (current.current && JSON.stringify(current.current) === JSON.stringify(next)) return;
-    const oldTemplate=communityTemplate(current.current),newTemplate=communityTemplate(next);
+    if(studioWorkspace==='ambassadors')next=syncCommunityDocument(next,current.current);
+    const oldTemplate=communitySettings(current.current),newTemplate=communitySettings(next);
     if(studioWorkspace==='ambassadors'&&oldTemplate&&newTemplate&&next.title===current.current?.title){
-      const oldName=ambassadorFormats.find(format=>format.id===oldTemplate.ambassador.format)!.name;
-      if(next.title===`${oldName} · ${oldTemplate.ambassador.city||'Community'}`)next={...next,title:`${ambassadorFormats.find(format=>format.id===newTemplate.ambassador.format)!.name} · ${newTemplate.ambassador.city||'Community'}`};
+      const oldName=ambassadorFormats.find(format=>format.id===oldTemplate.format)!.name;
+      if(next.title===`${oldName} · ${oldTemplate.city||'Community'}`)next={...next,title:`${ambassadorFormats.find(format=>format.id===newTemplate.format)!.name} · ${newTemplate.city||'Community'}`};
     }
     const parsed = assetSchema.safeParse({ ...next, messages:current.current?.messages ?? next.messages, workspaceChats:current.current?.workspaceChats??next.workspaceChats,workspaceActiveChatId:current.current?.workspaceActiveChatId??next.workspaceActiveChatId, updatedAt: Date.now() });
     if (!parsed.success) { setError(parsed.error.issues[0]?.message || 'Check the asset dimensions.'); return; }
@@ -124,12 +125,12 @@ function AssetPageContent() {
   }, []);
   useEffect(() => {
     let cancelled = false;
-    void listAssets(owner).then(items => {
+    void listAssets(owner).then(async items => {
       if (cancelled) return; setRecent(items);
       if (id && !current.current && !readingFile.current) {
         const found = items.find(item => item.id === id);
         if (!found) { if(studioWorkspace==='ambassadors'){navigate('/assets/new');return;}const next=starterAsset();current.current=next;setAsset(next); }
-        else { current.current = found; setAsset(found); setLoadError(''); setSaveState('Saved on this device'); }
+        else { const opened=studioWorkspace==='ambassadors'?await migrateCommunityAsset(found):found;if(cancelled)return;current.current=opened;setAsset(opened);setLoadError('');setSaveState('Saved on this device');if(opened!==found)put(opened); }
       }
     }).catch(reason => { if (!cancelled) setError(reason.message); }).finally(() => { if (!cancelled) { if (!requestedBadge) setLoading(false); setRecentLoading(false); } });
     return () => { cancelled = true; };
@@ -271,7 +272,8 @@ function AssetPageContent() {
         if(studioWorkspace==='ambassadors'&&communityTemplate(parsed.data))parsed.data.reference={...parsed.data.reference,width:image.naturalWidth,height:image.naturalHeight};
         else throw new Error('The source image dimensions do not match the file.');
       }
-      const next = { ...parsed.data, id: crypto.randomUUID(), updatedAt: Date.now() };
+      const opened=studioWorkspace==='ambassadors'?await migrateCommunityAsset(parsed.data):parsed.data;
+      const next = { ...opened, id: crypto.randomUUID(), updatedAt: Date.now() };
       await saveAsset(owner, next);
       if(studioWorkspace==='ambassadors'){try{localStorage.setItem(studioLastAssetKey,next.id);}catch{}}
       navigate(`/assets/${next.id}`);
@@ -298,14 +300,14 @@ function AssetPageContent() {
     action:(action,id)=>{if(action==='stop')stop();else if(action==='retry'&&lastRequest.current)void refine(lastRequest.current);else if(action==='dismiss')setError('');else if(action==='remove')setQueued(items=>items.filter(item=>item.id!==id));},
 
   };
-  const template=communityTemplate(asset),templateFormat=ambassadorFormats.find(format=>format.id===template?.ambassador.format);
+  const template=communitySettings(asset),templateFormat=ambassadorFormats.find(format=>format.id===template?.format);
   const switchCommunityTemplate=async(formatId:string)=>{
     const previous=current.current;if(!previous||changingTemplate)return;
     setChangingTemplate(true);setError('');
     try{
-      const oldTemplate=communityTemplate(previous),next=await ambassadorAsset(formatId,oldTemplate?.ambassador);
+      const oldTemplate=communitySettings(previous),next=await ambassadorAsset(formatId,oldTemplate);
       if(!mounted.current||current.current?.id!==previous.id)return;
-      const automaticTitle=oldTemplate?`${ambassadorFormats.find(format=>format.id===oldTemplate.ambassador.format)!.name} · ${oldTemplate.ambassador.city||'Community'}`:previous.title;
+      const automaticTitle=oldTemplate?`${ambassadorFormats.find(format=>format.id===oldTemplate.format)!.name} · ${oldTemplate.city||'Community'}`:previous.title;
       change({...previous,...next,id:previous.id,title:previous.title===automaticTitle?next.title:previous.title,layouts:undefined});setZoom(0);
     }catch(reason){setError(reason instanceof Error?reason.message:'Could not open this template.');}
     finally{if(mounted.current)setChangingTemplate(false);}

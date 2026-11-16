@@ -49,6 +49,8 @@ export function createRenderer({bold,regular,qrcode,heartOverlay}) {
   const ink='#f7f4ed';
   const originalQR=makeOriginalQR(qrcode);
   const fonts={bold,regular};
+  let layers=null,layerScale=1;
+  const layer=value=>{if(layers)layers.push({...value,x:value.x*layerScale,y:value.y*layerScale,w:value.w*layerScale,h:value.h*layerScale,...(value.size?{size:value.size*layerScale,leading:value.leading*layerScale}:{} )});};
   const width=(s,size,weight='bold')=>fonts[weight].getAdvanceWidth(s,size,{kerning:true});
   function text(s,x,y,size,maxWidth,weight='bold',color=ink) {
     s=String(s||''); size=Math.min(size,maxWidth?size*maxWidth/Math.max(1,width(s,size,weight)):size);
@@ -69,6 +71,7 @@ export function createRenderer({bold,regular,qrcode,heartOverlay}) {
     if(rows.length>maxLines)rows=[...rows.slice(0,maxLines-1),rows.slice(maxLines-1).join(' ')];
     const font=fonts[weight],opts={kerning:true,letterSpacing:tracking};
     const actual=Math.min(size,...rows.map(row=>size*w/Math.max(1,font.getAdvanceWidth(row,size,opts))));
+    layer({kind:'text',key,text:rows.join('\n'),x,y,w,h:leading*Math.max(1,rows.length),size:actual,leading,weight,tracking,align});
     const body=rows.map((row,i)=>posterText(row,align==='right'?x+w-font.getAdvanceWidth(row,actual,opts):x,y+i*leading,actual,leading,w,weight,tracking)).join('');
     const placeholder=enabled&&!value?`<g class="edit-placeholder">${posterText('Add '+(FIELD_LABELS[key]||'text').toLowerCase(),x,y,Math.min(size,24),leading,w,'regular',0)}</g>`:'';
     return editZone(body+placeholder,key,{x,y,w,h:leading*maxLines,size:actual,leading,weight,tracking,lines:maxLines,align,empty:!value},enabled);
@@ -84,22 +87,28 @@ export function createRenderer({bold,regular,qrcode,heartOverlay}) {
   }
   function posterLogo(x=40,y=40,scale=1) {
     const width=270*scale,height=width*46.1959/470.029;
+    layer({kind:'logo',key:'logo',x,y,w:width,h:height});
     return `<svg data-artwork="lovable-community-logo" x="${x}" y="${y}" width="${width}" height="${height}" viewBox="${COMMUNITY_VIEWBOX}" aria-label="Lovable Community">${COMMUNITY_MARKUP}</svg>`;
   }
   function qr(url,x,y,size) {
     if(!url)return '';
+    layer({kind:'qr',key:'url',x,y,w:size,h:size});
     return `<g transform="translate(${x} ${y}) scale(${size/129})">${originalQR(url).replace('<svg viewBox=', '<svg width="129" height="129" viewBox=')}</g>`;
   }
   function portrait(src,x,y,size,name,id) {
+    layer({kind:'portrait',key:id.startsWith('speaker')?'photo-'+id.slice(7):'photo',src,x,y,w:size,h:size});
     if(src)return `<defs><clipPath id="photo-${id}"><rect x="${x}" y="${y}" width="${size}" height="${size}" rx="${size/2}"/></clipPath></defs><image href="${escape(src)}" x="${x}" y="${y}" width="${size}" height="${size}" preserveAspectRatio="xMidYMid slice" clip-path="url(#photo-${id})"/>`;
     return `<circle data-artwork="portrait-placeholder" cx="${x+size/2}" cy="${y+size/2}" r="${size/2}" fill="#1b1b1b"/>`;
   }
 
   function globeLayer(src,x,y,size,live=false) {
+    layer({kind:'globe',key:'globe',x,y,w:size,h:size});
     if(live)return `<rect class="live-globe-slot" x="${x}" y="${y}" width="${size}" height="${size}" fill="transparent" pointer-events="none"/>`;
     return src?`<g data-artwork="original-3d-globe">${image(src,x,y,size,size)}</g>`:'';
   }
   function foregroundHeart(cx,cy,size) {
+    const angle=-9.91*Math.PI/180,dy=size*.00404;
+    layer({kind:'glow',key:'glow',x:cx-dy*Math.sin(angle)-size/2,y:cy+dy*Math.cos(angle)-size*1.00808/2,w:size,h:size*1.00808,rotation:-9.91});
     return heartOverlay?`<g data-artwork="foreground-heart" transform="translate(${cx} ${cy}) rotate(-9.91)">${image(heartOverlay,-size/2,-size/2,size,size*1.00808)}</g>`:'';
   }
   function tag(state,name=state.name,role=state.role,options={},row=null) {
@@ -170,5 +179,9 @@ export function createRenderer({bold,regular,qrcode,heartOverlay}) {
     return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" role="${options.editable?'group':'img'}" aria-label="${escape(f.label+' — '+city)}"><title>${escape(f.label+' — '+city)}</title>${body}</svg>`;
   }
   function unsupported(state) { const fields=state.format==='badge'?[state.city,state.name,state.role,...parseRoster(state.roster).flatMap(s=>[s.name,s.role])]:state.format==='speakers'?[state.city,state.title,state.date,state.venue,...state.speakers.slice(0,state.count).flatMap(s=>[s.name,s.role])]:state.format==='social'?[state.city,state.title,state.date,state.venue,state.eventFooter]:state.format==='spotlight'?[state.city,state.name,state.role]:[state.city,state.headline,state.intro,state.cta];return [...new Set(Array.from(fields.join('')).filter(c=>!/[\s]/.test(c)&&!bold.charToGlyphIndex(c)))].join(' '); }
-  return {render,unsupported};
+  function layout(state){
+    layers=[];layerScale=state.format==='banner'?FORMATS.banner.w/595:1;
+    try{render(state);return layers;}finally{layers=null;layerScale=1;}
+  }
+  return {render,unsupported,layout};
 }

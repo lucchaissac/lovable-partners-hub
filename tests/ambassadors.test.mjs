@@ -56,3 +56,31 @@ test('A library globe remains independent of the full Community template',()=>{
  assert.equal(communityTemplate(document),template);
  assert.equal(communityBlocks(document).length,2);
 });
+
+test('Native Community layouts preserve original type and image positions',()=>{
+ const event=renderer.layout({...DEFAULTS,format:'social'});
+ assert.deepEqual(event.map(layer=>layer.key),['glow','globe','logo','city','title','event-details','eventFooter']);
+ const title=event.find(layer=>layer.key==='title');
+ assert.deepEqual([title.x,title.y,title.w,title.size,title.leading],[48,166,710,96,88]);
+ const poster=renderer.layout({...DEFAULTS,format:'poster'}),qr=poster.find(layer=>layer.kind==='qr');
+ assert.deepEqual([qr.x,qr.y,qr.w,qr.h],[508,536,122,122]);
+ const banner=renderer.layout({...DEFAULTS,format:'banner'}),headline=banner.find(layer=>layer.key==='headline');
+ assert.equal(headline.x,35*FORMATS.banner.w/595);
+ assert.equal(headline.size,82*FORMATS.banner.w/595);
+ const speakers=renderer.layout({...DEFAULTS,format:'speakers',count:3});
+ assert.equal(speakers.filter(layer=>layer.kind==='portrait').length,3);
+});
+
+const {syncCommunityDocument}=await import('../studio/src/assets-tool/communityDocument.ts');
+test('Native text edits survive source serialization without moving artwork or mutating the prior draft',()=>{
+ const previous=communityFixture(),blocks=previous.editor.pages[0].sections[0].columns[0];
+ blocks[0].ambassadorElement='globe';
+ blocks.push({id:'city',kind:'text',value:{runs:[{text:'Paris'}],size:32},editor:{x:850,y:48,appearance:{fontSize:32}}});
+ previous.community={settings:defaultAmbassador(),bindings:{city:'city'}};
+ const edited=structuredClone(previous);edited.editor.pages[0].sections[0].columns[0][1].value={runs:[{text:'Montréal'}],size:40};
+ const saved=JSON.parse(JSON.stringify(syncCommunityDocument(edited,previous)));
+ assert.equal(saved.community.settings.city,'Montréal');
+ assert.equal(previous.community.settings.city,'Paris');
+ assert.equal(saved.editor.pages[0].sections[0].columns[0][1].editor.appearance.fontSize,40);
+ assert.deepEqual(saved.editor.pages[0].sections[0].columns[0][0],blocks[0]);
+});

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import {ambassadorSchema} from './ambassadorSettings';
 import { conversationSchema, documentSchema } from '../studio/schema.js';
 import { htmlEditorSchema } from '../studio/htmlEditorModel.js';
 import { websiteTokens } from './websiteTokens.js';
@@ -44,6 +45,7 @@ export const assetSchema = compositionSchema.extend({
   version: z.literal(1), id: z.uuid(), format: z.enum(['landscape', 'square', 'portrait']),
   dimensions: z.object({ width: z.number().min(100).max(4000), height: z.number().min(100).max(4000) }).strict().optional(),
   editor: htmlEditorSchema.optional(),
+  community:z.object({settings:ambassadorSchema,bindings:z.record(z.string(),z.string())}).strict().optional(),
   layouts: assetLayoutsSchema.optional(),
   messages: conversationSchema.optional(),
   workspaceChats: documentSchema.shape.workspaceChats,

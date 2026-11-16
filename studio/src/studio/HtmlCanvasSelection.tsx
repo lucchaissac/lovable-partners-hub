@@ -1,3 +1,4 @@
+import {communityImageHit} from '../assets-tool/communityHitTest';
 import {editCommunityBlock,needsCommunityRender} from '../assets-tool/communityDocument';
 import {AmbassadorDesign} from '../assets-tool/AmbassadorDesign';
 import { PartnerBadgeDesign } from '../assets-tool/PartnerBadgeDesign';
@@ -284,13 +285,18 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
     if(!event.shiftKey){clear();setSectionId(section?.getAttribute('data-section')||'');onSelect(section||undefined);}
     capture.setPointerCapture(event.pointerId);
   }
+  function hitElement(target:Element,x:number,y:number){
+    const initial=target.closest<HTMLElement>('.hev-block');
+    if(!initial||communityImageHit(initial,x,y,zoom))return initial;
+    return document.elementsFromPoint(x,y).map(element=>element.closest<HTMLElement>('.hev-block')).find(element=>element&&root.current?.contains(element)&&communityImageHit(element,x,y,zoom))??null;
+  }
   function pointerDown(event:ReactPointerEvent<HTMLDivElement>){
     if(!enabled||event.button!==0)return;
     const target=event.target as HTMLElement;
     if(target.closest(menuSurface))return;
     const tool=root.current?.closest('.hev-review-surface')?.querySelector('.we-review-layer')?.getAttribute('data-tool');
     if(tool&&tool!=='pointer'&&tool!=='none')return;
-    const el=target.closest<HTMLElement>('.hev-block'),id=el?.id.replace('block-',''),block=blocks.find(b=>b.id===id);
+    const el=hitElement(target,event.clientX,event.clientY),id=el?.id.replace('block-',''),block=blocks.find(b=>b.id===id);
     const clickedSection=target.closest<HTMLElement>('.hev-section');
     if(insertPanel.enabled&&clickedSection&&(event.shiftKey||event.metaKey||event.ctrlKey)&&(sectionSelection||!block)&&!target.closest('button,a,input,textarea,[role=tab]')){
       event.preventDefault();event.stopPropagation();root.current?.focus({preventScroll:true});chooseSection(clickedSection.dataset.section!,event.shiftKey,event.metaKey||event.ctrlKey);return;
@@ -458,7 +464,7 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
     spacingAfter={one.editor?.spacingAfter??0} onSpacingAfter={(spacingAfter:number)=>changeBlock({...one,editor:{...one.editor,spacingAfter}})} onSpacingPreview={setSpacingPreview}
     absolutePosition={one.editor?.position==='absolute'} onAbsolutePosition={setAbsolute}/>:null;
   return {mode,enabled,ids,sectionId,sectionIds,selectSection:(id:string,range=false,toggle=false)=>{if(enabled)chooseSection(id,range,toggle);},designSection:(id:string)=>{if(!enabled)return;chooseSection(id);setDesign(true);host.panelChanged('html-selection',true);},editingId,textToolbarHost,widgetToolbarHost,widgetIdentityHost,widgetDesign,rendered,ui,clear,edit:editBlock,designElement:(id:string)=>{if(!enabled||!blocks.some(block=>block.id===id))return;choose([id]);setDesign(true);host.panelChanged('html-selection',true);},transforming:!!draft,select:(el?:Element)=>{if(!enabled)return;const id=el?.closest('.hev-block')?.id.replace('block-','');if(id)choose([id]);},
-    rootProps:enabled?{tabIndex:0,onPointerDownCapture:pointerDown,onPointerMove:move,onPointerUp:()=>finish(),onPointerCancel:()=>finish(true),onClickCapture:(e:React.MouseEvent)=>{const b=(e.target as Element).closest('.hev-block');if(b&&b.id!==`block-${editingId}`){e.preventDefault();e.stopPropagation();}},onDoubleClickCapture:(e:React.MouseEvent)=>{if((e.target as Element).closest('.hev-section[data-locked]')){e.preventDefault();return;}const id=(e.target as Element).closest('.hev-block')?.id.replace('block-',''),block=blocks.find(b=>b.id===id);if(block){e.preventDefault();e.stopPropagation();editBlock(block);}},onContextMenu:(e:React.MouseEvent)=>{const id=(e.target as Element).closest('.hev-block')?.id.replace('block-','');if(id){e.preventDefault();if(!ids.includes(id))choose([id]);setMenu(true);}}}:{}
+    rootProps:enabled?{tabIndex:0,onPointerDownCapture:pointerDown,onPointerMove:move,onPointerUp:()=>finish(),onPointerCancel:()=>finish(true),onClickCapture:(e:React.MouseEvent)=>{const b=(e.target as Element).closest('.hev-block');if(b&&b.id!==`block-${editingId}`){e.preventDefault();e.stopPropagation();}},onDoubleClickCapture:(e:React.MouseEvent)=>{if((e.target as Element).closest('.hev-section[data-locked]')){e.preventDefault();return;}const id=hitElement(e.target as Element,e.clientX,e.clientY)?.id.replace('block-',''),block=blocks.find(b=>b.id===id);if(block){e.preventDefault();e.stopPropagation();editBlock(block);}},onContextMenu:(e:React.MouseEvent)=>{const id=(e.target as Element).closest('.hev-block')?.id.replace('block-','');if(id){e.preventDefault();if(!ids.includes(id))choose([id]);setMenu(true);}}}:{}
   };
 }
 

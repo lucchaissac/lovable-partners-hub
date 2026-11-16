@@ -42,7 +42,7 @@ export const referenceSchema = z.object({
 }).strict();
 export const assetSchema = compositionSchema.extend({
   version: z.literal(1), id: z.uuid(), format: z.enum(['landscape', 'square', 'portrait']),
-  dimensions: z.object({ width: z.number().min(600).max(1350), height: z.number().min(600).max(1350) }).strict().optional(),
+  dimensions: z.object({ width: z.number().min(100).max(4000), height: z.number().min(100).max(4000) }).strict().optional(),
   editor: htmlEditorSchema.optional(),
   layouts: assetLayoutsSchema.optional(),
   messages: conversationSchema.optional(),

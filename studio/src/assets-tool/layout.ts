@@ -1,7 +1,7 @@
 import {z} from 'zod';
 import type {HtmlBlock,HtmlEditorState} from '../studio/htmlEditorModel.js';
 
-const dimensions=z.object({width:z.number().positive().max(1350),height:z.number().positive().max(1350)}).strict();
+const dimensions=z.object({width:z.number().positive().max(4000),height:z.number().positive().max(4000)}).strict();
 const geometry=z.object({id:z.string().max(80),x:z.number(),y:z.number(),w:z.number().positive(),h:z.number().positive(),fontSize:z.number().optional(),textSize:z.number().optional(),radius:z.number().optional()}).strict();
 export const assetLayoutSchema=z.object({reflowVersion:z.literal(2).optional(),contentKey:z.string().max(24).optional(),dimensions,nodes:z.array(geometry).max(40),blocks:z.array(geometry).max(240)}).strict();
 export const assetLayoutsSchema=z.object({landscape:assetLayoutSchema.optional(),square:assetLayoutSchema.optional(),portrait:assetLayoutSchema.optional()}).strict();

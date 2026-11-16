@@ -1,0 +1,15 @@
+.spotlight .city-name{font-weight:700!important;width:952px;max-width:none;white-space:pre;line-height:1.05;transform:none!important;pointer-events:none!important;user-select:none!important;cursor:default!important}
+.spotlight .spotlight-city{position:absolute;left:64px;z-index:3;color:#f7f4ed;font-family:'Camera Plain',sans-serif;font-weight:500;white-space:pre;pointer-events:none}
+.spotlight .city-avatar{left:64px!important;width:560px!important;height:560px!important;box-shadow:none!important;border:none!important;pointer-events:none!important}
+
+.spotlight #globe{pointer-events:none!important}
+
+.spotlight .city-role{display:none!important}
+
+.spotlight .city-logo img{width:100%!important;height:auto!important}.spotlight-type{display:none}.spotlight .spotlight-type{display:block;position:absolute;left:64px;margin:0;z-index:3;color:#f7f4ed;font-family:'Camera Plain',sans-serif;font-weight:500;white-space:pre;pointer-events:none}
+
+
+
+
+
+.spotlight .city-logo{left:64px!important;top:64px!important;width:470.029px!important;height:46.1959px!important}

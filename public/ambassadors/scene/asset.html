@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lovable Community · Spotlight</title>
+  <style>
+    @font-face {
+      font-family: "Camera Plain";
+      src: url("fonts/LovableLabsIncorporatedCameraPlain-Bold.woff2") format("woff2");
+      font-weight: 700;
+      font-style: normal;
+      font-display: block;
+    }
+    @font-face {
+      font-family: "Camera Plain";
+      src: url("fonts/LovableLabsIncorporatedCameraPlain-Black.woff2") format("woff2");
+      font-weight: 900;
+      font-style: normal;
+      font-display: block;
+    }
+    @font-face {
+      font-family: "Camera Plain";
+      src: url("fonts/LovableLabsIncorporatedCameraPlain-Medium.woff2") format("woff2");
+      font-weight: 500;
+      font-style: normal;
+      font-display: block;
+    }
+    /* Regular (400) : tiré de la variable, uniquement pour cette graisse —
+       les statiques 500/700/900 restent prioritaires */
+    @font-face {
+      font-family: "Camera Plain";
+      src: url("fonts/CameraPlainVariable.woff2") format("woff2");
+      font-weight: 400 400;
+      font-style: normal;
+      font-display: block;
+    }
+    @font-face {
+      font-family: "Camera Plain";
+      src: url("fonts/LovableLabsIncorporatedCameraPlain-MediumItalic.woff2") format("woff2");
+      font-weight: 500;
+      font-style: italic;
+      font-display: block;
+    }
+
+    :root {
+      --creme: #f7f4ed;
+      --dark: #1b1b1b;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      height: 100%;
+      background: #000;
+      overflow: hidden;
+    }
+
+    /* ?embed : rendu nu pour le builder — fond assorti au poster, aucune UI */
+    body.embed { background: var(--dark); }
+    .embed .view-picker,
+    .embed .export-ctas { display: none !important; }
+    /* version sans globe (toggle du builder) : la sphère disparaît, tout
+       le reste (rôle, avatar, nom, fond) reste en place */
+    .no-globe #globe { display: none; }
+
+    .stage {
+      position: fixed;
+      inset: 0;
+    }
+
+    .poster {
+      width: 1080px;
+      height: 1350px;
+      background: var(--dark);
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      overflow: hidden;
+      transform-origin: center;
+      /* rien n'est sélectionnable ni cliquable dans le visuel */
+      -webkit-user-select: none;
+      user-select: none;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    /* fond v3 : image DADA (node 5-104) en cover, à la place du heart */
+    .dada {
+      display: none;
+      position: absolute;
+      inset: 0;
+    }
+    .dada img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      /* l'image 5-54 est paysage : on cadre la partie gauche, colorée
+         (le centre/droite est sombre et se confond avec du noir) */
+      object-position: 0% 50%;
+      display: block;
+    }
+    .v3 .dada { display: block; }
+    .v3 .heart { display: none; }
+
+    /* v3 : "Make It" / "Yourself" aux places de WORLD / TOUR (mêmes
+       tailles, mêmes mouvements v2) — en Bold, pas uppercase. "Yourself"
+       (914px) est plus large que TOUR : base décalée pour tenir dans la
+       marge droite */
+    .v3 .world,
+    .v3 .tour {
+      font-weight: 700;
+    }
+    /* état liste : le titre remonte de 60px au-dessus des villes
+       (le zoom compense, la position zoomée ne bouge pas) */
+    .v3 .world { top: 382px; }
+    .v3 .tour { top: 590.82px; }
+    /* v3 : liste réduite à 84% (scale, pas font-size : les retours à la
+       ligne restent identiques à l'export canvas) */
+    .v3 .cities {
+      top: 938px;
+      transform: translateX(-50%) scale(0.84);
+      transform-origin: 50% 0;
+    }
+
+    /* v3 : sous-titre affiché À LA FIN, en même temps que la liste */
+    .subline {
+      display: none;
+      position: absolute;
+      left: calc(50% - 0.5px);
+      bottom: 72px;
+      transform: translateX(-50%);
+      z-index: 2;
+      font-family: "Camera Plain", sans-serif;
+      font-weight: 500;
+      /* 936px de large : mêmes marges sur les côtés (72) et en bas (72) */
+      font-size: 42.4px;
+      letter-spacing: -0.424px;
+      line-height: 1;
+      color: var(--creme);
+      white-space: nowrap;
+      opacity: 0;
+    }
+    .v3 .subline { display: block; }
+    .v3 .subline.on { opacity: 1; }
+
+    /* v3 mode ville : "Make It Yourself" / {Ville} sur deux lignes en haut,
+       sous-titre italique pleine largeur en bas — le JS scale les deux blocs
+       pour occuper exactement la largeur entre les paddings (64.8) */
+    .mi-title,
+    .mi-sub {
+      display: none;
+      position: absolute;
+      left: 64.8px;
+      z-index: 3;
+      font-family: "Camera Plain", sans-serif;
+      color: var(--creme);
+      white-space: pre;
+    }
+    .mi-title {
+      top: 64.8px;
+      font-weight: 700;
+      font-size: 136px;
+      letter-spacing: -4.08px;
+      line-height: 1.05;
+      transform-origin: 0 0;
+    }
+    .mi-sub {
+      bottom: 64.8px;
+      font-weight: 500;
+      font-size: 70.3px;
+      letter-spacing: -0.703px;
+      line-height: 1;
+      transform-origin: 0 100%;
+    }
+    .v3.city-mode .mi-title,
+    .v3.city-mode .mi-sub { display: block; }
+    .v3.city-mode .world,
+    .v3.city-mode .tour,
+    .v3.city-mode .city-name,
+    .v3.city-mode .live-event { display: none; }
+
+    /* Gradient heart glow — node 1:10 */
+    .heart {
+      position: absolute;
+      width: 4058.02px;
+      height: 4058.218px;
+      left: calc(50% - 0.99px);
+      top: calc(50% + 710.11px);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+    .heart img {
+      position: absolute;
+      inset: 0 0 -0.8% 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      max-width: none;
+    }
+
+    /* Globe (remplace le cercle gris — node 1:19) : canvas 1080x1080
+       centré sur le centre du cercle (539.5, 421.5), sphère = 707px */
+    #globe {
+      position: absolute;
+      left: -0.5px;
+      top: -118.5px;
+      width: 1080px;
+      height: 1080px;
+      pointer-events: none;
+      z-index: 1;
+      /* zoom du tour : scale autour du CENTRE de la sphère
+         (539.5, 421.5) poster = (540, 540) dans ce bloc, + translateY */
+      transform-origin: 540px 540px;
+    }
+    #globe canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+    /* v0/v1 : le monde se drag — poster ET banner ville (classe posée
+       par le JS) */
+    #globe.draggable { pointer-events: auto; cursor: grab; }
+    #globe.grabbing { cursor: grabbing; }
+
+    /* conteneur neutre (ordre de peinture TOUR < globe < WORLD) */
+    .scene {
+      position: absolute;
+      inset: 0;
+    }
+
+    /* WORLD — node 1:20 / TOUR — node 1:18 */
+    .world, .tour {
+      position: absolute;
+      font-family: "Camera Plain", sans-serif;
+      font-weight: 900;
+      font-size: 266.617px;
+      letter-spacing: -13.3309px;
+      line-height: normal;
+      color: var(--creme);
+      white-space: nowrap;
+    }
+    /* z-index explicites : les transforms promeuvent ces éléments en
+       layers composités, on fige l'ordre TOUR < globe < WORLD */
+    .world { left: calc(50% - 468px); top: 442px; transform-origin: 0 0; z-index: 3; }
+    .tour  { left: calc(50% - 349px); top: 650.82px; transform-origin: 0 0; z-index: 0; }
+
+    /* CTAs Export (haut droite) — pill reprise de lovable-poster
+       (.print-cta, node Figma 4:15) : primary bleu (Export all) tout à
+       droite, secondary sombre (export individuel) à sa gauche */
+    .export-ctas {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      z-index: 1100; /* au-dessus du lil-gui (Shift+G) */
+      display: flex;
+      gap: 12px;
+    }
+    .export-cta {
+      border: none;
+      border-radius: 999px;
+      padding: 12px 26px;
+      background-color: #1546e3;
+      background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.08));
+      box-shadow:
+        0 2px 2px rgba(34, 0, 152, 0.12),
+        0 4px 4px rgba(34, 0, 152, 0.12),
+        inset 0 1px 0 rgba(245, 249, 255, 0.16),
+        inset 0 -1px 0 rgba(245, 249, 255, 0.08),
+        inset 0 0.5px 0 rgba(255, 255, 255, 0.08),
+        inset 0 -0.5px 0 rgba(0, 0, 0, 0.16);
+      font-family: "Camera Plain", sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: -0.19px;
+      line-height: 1.5;
+      color: #fff;
+      cursor: pointer;
+      -webkit-font-smoothing: antialiased;
+    }
+    .export-cta:hover { opacity: 0.85; }
+    .export-cta:active,
+    .export-cta:focus-visible {
+      opacity: 1;
+      background-image: linear-gradient(to top, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.08));
+      box-shadow:
+        0 1px 1px rgba(34, 0, 152, 0.12),
+        0 2px 2px rgba(34, 0, 152, 0.12),
+        inset 0 -1px 0 rgba(245, 249, 255, 0.16),
+        inset 0 1px 0 rgba(245, 249, 255, 0.08),
+        inset 0 -0.5px 0 rgba(255, 255, 255, 0.08),
+        inset 0 0.5px 0 rgba(0, 0, 0, 0.16),
+        inset 0 2px 6px rgba(2, 15, 80, 0.35);
+      text-shadow: 0 -1px 1px rgba(2, 15, 80, 0.4);
+    }
+    .export-cta.secondary {
+      background-color: #2f2f2f;
+      box-shadow:
+        0 2px 2px rgba(0, 0, 0, 0.18),
+        0 4px 4px rgba(0, 0, 0, 0.18),
+        inset 0 1px 0 rgba(245, 249, 255, 0.12),
+        inset 0 -1px 0 rgba(245, 249, 255, 0.06),
+        inset 0 0.5px 0 rgba(255, 255, 255, 0.06),
+        inset 0 -0.5px 0 rgba(0, 0, 0, 0.2);
+      color: #f7f4ed;
+    }
+    .export-cta.secondary:active,
+    .export-cta.secondary:focus-visible {
+      box-shadow:
+        0 1px 1px rgba(0, 0, 0, 0.18),
+        0 2px 2px rgba(0, 0, 0, 0.18),
+        inset 0 -1px 0 rgba(245, 249, 255, 0.12),
+        inset 0 1px 0 rgba(245, 249, 255, 0.06),
+        inset 0 2px 6px rgba(0, 0, 0, 0.35);
+      text-shadow: 0 -1px 1px rgba(0, 0, 0, 0.4);
+    }
+    .export-cta:disabled { opacity: 0.55; cursor: default; }
+
+    /* /hd : juste la Terre, canvas 1:1 — l'animation du poster tourne
+       (traits, cœurs, rotation) et le CTA exporte la frame en PNG 4320² */
+    .hd .poster { height: 1080px; }
+    .hd .poster > :not(.scene) { display: none; }
+    .hd .world,
+    .hd .tour { display: none; }
+    .hd #globe { top: 0; }
+    /* progression de la boucle : fine barre crème au bas du canvas,
+       draggable (zone de hit élargie au-dessus de la barre) */
+    .hd-progress {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 1080px;
+      height: 28px;
+      z-index: 4;
+      pointer-events: auto;
+      cursor: pointer;
+      touch-action: none;
+    }
+    .hd-progress::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      height: 6px;
+      background: rgba(247, 244, 237, 0.12);
+    }
+    .hd-progress div {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      height: 6px;
+      width: 0;
+      background: var(--creme);
+    }
+
+    /* mode support (sélecteur de vue) : juste le globe sur le fond,
+       tous les textes masqués. Le sélecteur vit hors du poster et
+       n'apparaît jamais dans l'export vidéo (composé en canvas). */
+    /* mode ville = template Figma 3-197 "banner" (400x400 -> x2.7) :
+       canvas 1:1, WORLD TOUR et le heart restent visibles */
+    .city-mode .cities,
+    .city-mode .city-big,
+    .city-mode .logotype,
+    .city-mode .logo-icon,
+    .city-mode .wt {
+      visibility: hidden;
+    }
+    .city-mode .poster { height: 1080px; }
+    /* ordre du template : globe < heart gradient < TOUR < WORLD */
+    .city-mode .heart { z-index: 2; }
+    .city-mode .tour { z-index: 2; }
+
+    /* nom de la ville (node 3:209) : Bold 66px -> 178.2px, ferré à gauche */
+    .city-name {
+      display: none;
+      position: absolute;
+      left: 64.8px;
+      top: 54px;
+      z-index: 3;
+      /* nom trop large (custom) : resize depuis le coin haut-gauche pour
+         garder la même marge à droite qu'à gauche */
+      transform-origin: 0 0;
+      font-family: "Camera Plain", sans-serif;
+      font-weight: 700;
+      font-size: 178.2px;
+      letter-spacing: -5.346px;
+      line-height: 1.1;
+      color: var(--creme);
+      white-space: nowrap;
+    }
+    /* v1 : logo Lovable Community en haut (Figma 1-31 : carré 837, logo
+       501x61 à (60, 47) -> x1.2903), nom ÉDITABLE en bas à la place de
+       WORLD TOUR — Live Event et WORLD/TOUR retirés */
+    .city-mode.v2 .city-name { display: block; }
+    /* ancré en bas-gauche (mêmes paddings que le logo : 64.8) : les
+       lignes supplémentaires poussent vers le HAUT, la base ne bouge pas */
+    .city-mode:not(.v2) .city-name {
+      display: block;
+      top: auto;
+      /* lh 1 + compensation de la descente (~29px sous la baseline dans
+         la line box) : le BAS VISUEL des glyphes est à 80px du bord */
+      bottom: 50.9px;
+      line-height: 1;
+      transform-origin: 0 100%;
+      white-space: pre;
+      pointer-events: auto;
+      -webkit-user-select: text;
+      user-select: text;
+      cursor: text;
+      outline: none;
+    }
+    .city-mode:not(.v2) .world,
+    .city-mode:not(.v2) .tour,
+    .city-mode:not(.v2) .live-event { display: none; }
+
+    /* avatar : cercle sombre cliquable au-dessus du nom — la photo
+       choisie le remplit (cover). Recalé au-dessus du nom par le JS. */
+    .city-avatar {
+      display: none;
+      position: absolute;
+      left: 64.8px;
+      bottom: 268px;
+      width: 240px;
+      height: 240px;
+      border-radius: 50%;
+      background: #1b1b1b;
+      overflow: hidden;
+      z-index: 3;
+      pointer-events: auto;
+      cursor: pointer;
+    }
+    .city-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+    }
+    .city-avatar.filled img { display: block; }
+    .city-mode:not(.v2) .city-avatar { display: block; }
+    .city-mode.no-avatar:not(.v2) .city-avatar { display: none; }
+
+    /* "City Lead" : statique, géant (x4.5) sous le logo, DERRIÈRE le
+       globe (z-index 0 < globe 1 < heart 2) */
+    .city-role {
+      display: none;
+      position: absolute;
+      left: 64.8px;
+      top: 145px;
+      z-index: 0;
+      transform-origin: 0 0;
+      font-family: "Camera Plain", sans-serif;
+      font-weight: 500;
+      font-size: 206.6px;
+      letter-spacing: -2.066px;
+      line-height: 1;
+      color: var(--creme);
+      white-space: nowrap;
+    }
+    .city-mode:not(.v2) .city-role { display: block; }
+
+    /* ---- layouts v1 ----
+       Centered : logo, rôle, avatar et nom centrés.
+       Minimal : le rôle repasse petit (45.9px) sous le logo, devant. */
+    .layout-center .city-logo {
+      left: 50%;
+      margin-left: -303.25px;
+    }
+    .layout-center .city-role {
+      left: 50%;
+      transform: translateX(-50%);
+      transform-origin: 50% 0;
+    }
+    .layout-center .city-avatar {
+      left: 50%;
+      margin-left: -120px;
+    }
+    .city-mode.layout-center:not(.v2) .city-name {
+      left: 50%;
+      text-align: center;
+      transform: translateX(-50%);
+      transform-origin: 50% 100%;
+    }
+    /* Minimal = en-tête sur une ligne : logo réduit à 70% à gauche, rôle
+       ferré à droite (même marge 77.5) sur la même ligne de base. Logo :
+       baseline à 47/61 de sa hauteur -> 60.65 + 55.1 x 0.77 = 103.1 ;
+       rôle Medium 46 (cap 32.8 = cap "Community" réduit), lh 1, Camera
+       Plain asc 46 / desc 14 -> baseline à 39 du haut de la boîte */
+    .layout-minimal .city-logo {
+      width: 424.55px;
+      height: 55.1px;
+    }
+    .layout-minimal .city-role {
+      top: 64.1px;
+      left: auto;
+      right: 77.5px;
+      font-size: 46px;
+      letter-spacing: -0.46px;
+      z-index: 3;
+      /* trop long : rétrécit depuis la droite, la marge droite ne bouge pas */
+      transform-origin: 100% 0;
+    }
+    /* Signature : le rôle reste géant, avatar + nom deviennent discrets
+       en bas-gauche — petit cercle (104) posé à 64.8 du bas (même padding
+       qu'à gauche), nom Regular 44 à sa droite centré sur le cercle (le
+       JS pose bottom du nom) ; le globe descend de 40px */
+    .city-mode.layout-signature:not(.v2) .city-name {
+      left: 192.8px; /* 64.8 + 104 (avatar) + 24 (gap) */
+      bottom: 64.8px;
+      font-weight: 500;
+      font-size: 56px;
+      letter-spacing: -0.56px;
+      line-height: 1.1;
+    }
+    .city-mode.layout-signature.no-avatar:not(.v2) .city-name { left: 64.8px; }
+    /* A = Signature + programme en Bold sur deux lignes (un mot par ligne,
+       même corps) ; le globe descend de 230px (deux lignes) ou 60px
+       (une ligne) pour ne pas mordre le titre */
+    /* A + "Proud ambassador" : pas de photo, le nom revient sur la marge */
+    .city-mode.layout-a.caption-phrase .city-avatar { display: none; }
+    .city-mode.layout-a.caption-phrase:not(.v2) .city-name { left: 64.8px; }
+    .layout-a .city-role {
+      top: 205px; /* 60px plus bas que les autres layouts : air sous le logo */
+      font-weight: 700;
+      white-space: pre;
+      line-height: 0.9;
+    }
+    /* v2 : le nom passe en bas, à la place du WORLD TOUR de v1 */
+    .v2 .city-name { top: 737px; }
+
+    .city-logo {
+      display: none;
+      position: absolute;
+      left: 77.5px;
+      top: 60.65px;
+      /* viewBox recadré à l'encre (470.03x61) : 470.03 x 1.2903 */
+      width: 606.5px;
+      height: 78.7px;
+      z-index: 3;
+    }
+    .city-logo img {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    .city-mode:not(.v2) .city-logo { display: block; }
+
+    /* Live Event (node 3:206) : Medium 17px -> 45.9px, ligne 156.6px,
+       bas du bloc à 1069.2 (-> bottom 10.8px) */
+    .live-event {
+      display: none;
+      position: absolute;
+      left: 64.8px;
+      bottom: 10.8px;
+      z-index: 3;
+      font-family: "Camera Plain", sans-serif;
+      font-weight: 500;
+      font-size: 45.9px;
+      letter-spacing: -0.459px;
+      line-height: 156.6px;
+      color: var(--creme);
+      white-space: nowrap;
+    }
+    .city-mode .live-event { display: block; }
+    /* liste nue : typo du poster (Camera Plain Bold, tracking -3%,
+       crème), actif = opacité 1, inactif = 0.6 — aucun fond */
+    .view-picker {
+      position: fixed;
+      top: 24px;
+      left: 24px;
+      z-index: 50;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: calc(100vh - 48px);
+      overflow-y: auto;
+    }
+    .view-picker button {
+      appearance: none;
+      background: none;
+      border: none;
+      padding: 1px 0;
+      text-align: left;
+      cursor: pointer;
+      font-family: "Camera Plain", sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: -0.54px;
+      color: #f7f4ed;
+      opacity: 0.6;
+    }
+    .view-picker button:hover { opacity: 0.85; }
+    .view-picker button.on { opacity: 1; }
+    /* champ Custom : même typo que la liste, un trait discret dessous */
+    .view-picker input {
+      appearance: none;
+      background: none;
+      border: none;
+      border-bottom: 1px solid rgba(247, 244, 237, 0.25);
+      padding: 1px 0;
+      margin-top: 8px;
+      width: 150px;
+      font-family: "Camera Plain", sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: -0.54px;
+      color: #f7f4ed;
+      opacity: 0.6;
+      outline: none;
+    }
+    .view-picker input::placeholder { color: #f7f4ed; opacity: 0.5; }
+    .view-picker input:focus, .view-picker input.on { opacity: 1; }
+    .view-picker input.err { border-bottom-color: #ff6d6d; }
+    /* titre du panneau, au-dessus de la liste des villes */
+    .view-picker .picker-title {
+      font-family: "Camera Plain", sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: -0.54px;
+      color: #f7f4ed;
+      margin-bottom: 14px;
+    }
+    /* intitulés de section (Layout / Role / City) */
+    .view-picker .picker-label {
+      font-family: "Camera Plain", sans-serif;
+      font-weight: 500;
+      font-size: 12px;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      color: #f7f4ed;
+      opacity: 0.4;
+      margin: 14px 0 2px;
+    }
+
+    /* Ville courante en grand — node 2:136 : 184px Bold, tracking -5.52,
+       même bloc que la liste (top 998, largeur 991, centré). Transition
+       type tableau d'aéroport pilotée par globe.js */
+    .city-big {
+      position: absolute;
+      left: calc(50% - 0.5px);
+      /* node 2-154 : par-dessus le globe, centré sur la sphère zoomée */
+      top: 512px;
+      z-index: 2;
+      transform: translateX(-50%);
+      width: 985px;
+      font-family: "Camera Plain", sans-serif;
+      font-weight: 700;
+      font-size: 182.886px;
+      letter-spacing: -5.4866px;
+      line-height: 1.1;
+      text-align: center;
+      color: var(--creme);
+      white-space: nowrap;
+    }
+
+    /* Cities — node 1:17 */
+    .cities {
+      position: absolute;
+      left: calc(50% - 0.5px);
+      top: 998px;
+      transform: translateX(-50%);
+      width: 991px;
+      font-family: "Camera Plain", sans-serif;
+      font-weight: 700;
+      font-size: 64px;
+      letter-spacing: -1.92px;
+      line-height: 1.1;
+      text-align: center;
+      color: var(--creme);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    /* reveal progressif : chaque ville apparaît quand la comète l'atteint
+       (l'espace est réservé, le layout ne bouge jamais) */
+    .cities span {
+      opacity: 0;
+    }
+    .cities span.on { opacity: 1; }
+
+    /* Lovable logo — node 1:21 */
+    .logotype {
+      position: absolute;
+      inset: 3.56% 73.72% 93.48% 9.66%;
+    }
+    .logo-icon {
+      position: absolute;
+      inset: 3.56% 91.99% 93.54% 4.44%;
+    }
+    .logotype img, .logo-icon img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      max-width: none;
+    }
+
+    /* WT.2026 — node 1:34 */
+    .wt {
+      position: absolute;
+      right: 48px;
+      top: 36px;
+      font-family: "Camera Plain", sans-serif;
+      font-weight: 700;
+      font-size: 50px;
+      letter-spacing: -1.5px;
+      line-height: normal;
+      text-align: right;
+      color: var(--creme);
+      white-space: nowrap;
+    }
+  </style>
+  <link rel="stylesheet" href="spotlight.css?v=21">
+</head>
+<body>
+  <div class="stage">
+    <div class="poster">
+      <!-- ordre de peinture Figma : heart, cities, TOUR, globe, WORLD, logo, WT -->
+
+      <div class="heart"><img src="assets/heart.svg" alt="" /></div>
+      <p class="cities"><span>Miami</span><span> · Atlanta</span><span> · Boston</span><span> · NYC</span><span> Chicago</span><span> · LA</span><span> · SF</span><span> · Austin</span><span> · London</span><span> Madrid</span><span> · Stockholm</span><span> · Paris</span><br /><span>Berlin</span><span> · Amsterdam</span></p>
+      <div class="scene">
+        <p class="tour">TOUR</p>
+        <div id="globe"></div>
+        <p class="world">WORLD</p>
+      </div>
+      <p class="city-big" id="big-a"></p>
+      <p class="city-big" id="big-b"></p>
+      <p class="city-name" contenteditable="true" spellcheck="false"></p>
+      <div class="city-logo"><img src="../assets/lovable-community.svg" alt="Lovable Community" /></div>
+      <p class="city-role">Spotlight</p>
+      <p class="spotlight-city"></p><p class="spotlight-type"></p>
+      <div class="city-avatar"><img alt="" /></div>
+      <p class="live-event">Live Event</p>
+      <p class="subline">A global series of Lovable Community Build Nights</p>
+      <p class="mi-title"></p>
+      <p class="mi-sub">A Lovable Community Build Night</p>
+      <div class="logotype"><img src="assets/logotype.svg" alt="Lovable" /></div>
+      <div class="logo-icon"><img src="assets/icon.svg" alt="" /></div>
+      <p class="wt">WT.2026</p>
+    </div>
+  </div>
+  <script>
+    // fit du poster dans le viewport (scale uniforme, pixel-exact à 1:1)
+    // classe hd posée AVANT le premier fit (le module la lit aussi)
+    const params = new URLSearchParams(location.search);
+    if (params.has('spotlight')) document.body.classList.add('spotlight');
+    // le builder (/) est la seule entrée publique : cette page ne se
+    // sert plus qu'en rendu embarqué (?embed) et en capture (?record)
+    if (!params.has('embed') && !params.has('record')) {
+      // stop propre : blank pendant la (courte) navigation, pas d'erreur console
+      document.documentElement.style.display = 'none';
+      window.stop();
+      location.replace('./');
+    }
+    if (params.has('hd')) {
+      document.body.classList.add('hd');
+    }
+    // ?embed : la page devient un pur rendu piloté par postMessage (builder/)
+    // — pas de picker ni de CTAs, poster plein cadre sans marge
+    if (params.has('embed')) {
+      document.body.classList.add('embed');
+    }
+    // v1 badge : la page s'ouvre directement en mode asset carré, le
+    // poster ne doit jamais flasher au chargement
+    if (!params.has('hd') && !params.has('record') && !params.has('v2') && !params.has('v3')) {
+      document.body.classList.add('city-mode');
+    }
+    const fit = () => {
+      // marge proportionnelle autour du poster : 12% du petit côté,
+      // bornée 60-200px (affichage uniquement, exports pleins formats)
+      const cityMode = document.body.classList.contains('city-mode');
+      const hd = document.body.classList.contains('hd');
+      const ph = cityMode || hd ? 1080 : 1350;
+      const embed = document.body.classList.contains('embed');
+      const m = embed ? 0 : Math.min(200, Math.max(60, Math.min(innerWidth, innerHeight) * 0.12));
+      let s = Math.max(0.05, Math.min((innerWidth - 2 * m) / 1080, (innerHeight - 2 * m) / ph));
+      // preview du mode ville volontairement plus discrète (75%) — sauf en
+      // embed où le builder cadre lui-même l'asset bord à bord
+      if (cityMode && !embed) s *= 0.75;
+      document.querySelector('.poster').style.transform = `translate(-50%, -50%) scale(${s})`;
+    };
+    addEventListener('resize', fit);
+    fit();
+  </script>
+  <script type="importmap">
+    { "imports": { "three": "./vendor/three.module.js", "three/addons/": "./vendor/addons/" } }
+  </script>
+  <script type="module" src="./globe.js?v=41"></script>
+</body>
+</html>

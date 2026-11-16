@@ -13,12 +13,12 @@ function photo(name, width, height, eager = false) {
 }
 
 function website(name, width, height) {
-  return `<img class="gallery-media" src="${media}${name}-1280.webp" srcset="${media}${name}-640.webp 640w, ${media}${name}-1280.webp 1280w" sizes="(max-width: 680px) calc(100vw - 40px), (max-width: 1000px) 80vw, min(58vw, 944px)" width="${width}" height="${height}" alt="" loading="lazy" decoding="async" />`;
+  return `<img class="gallery-media" src="${media}${name}-1280.webp" srcset="${media}${name}-640.webp 640w, ${media}${name}-1280.webp 1280w" sizes="(max-width: 680px) calc(100vw - 40px), (max-width: 1000px) 80vw, min(58vw, 944px)" width="${width}" height="${height}" alt="" loading="eager" decoding="async" />`;
 }
 
 function motion(number, portal = false) {
   // No src until the card enters the viewport. The poster also covers blocked autoplay.
-  return `<img class="gallery-media gallery-poster" src="${media}motion-${number}.webp" width="960" height="960" alt="" loading="lazy" decoding="async" />
+  return `<img class="gallery-media gallery-poster" src="${media}motion-${number}.webp" width="960" height="960" alt="" loading="eager" decoding="async" />
     <video class="gallery-media gallery-video" data-motion="${number}" poster="${media}motion-${number}.webp" width="960" height="960" muted loop playsinline preload="none" disablepictureinpicture disableremoteplayback aria-hidden="true" tabindex="-1"></video>${portal ? '<canvas class="gallery-media gallery-portal-canvas" aria-hidden="true"></canvas>' : ''}`;
 }
 
@@ -47,7 +47,7 @@ function partnerCard() {
 }
 
 function teamPortrait() {
-  return website('team', 2160, 1215) + badge('solution-compact', 'badge-team') + `<div class="gallery-team-foreground" aria-hidden="true"><img src="${media}team-foreground-1280.webp" srcset="${media}team-foreground-640.webp 640w, ${media}team-foreground-1280.webp 1280w" sizes="(max-width: 680px) calc(100vw - 48px), (max-width: 1000px) 80vw, min(58vw, 850px)" width="2160" height="1215" alt="" loading="lazy" decoding="async" /></div>`;
+  return website('team', 2160, 1215) + badge('solution-compact', 'badge-team') + `<div class="gallery-team-foreground" aria-hidden="true"><img src="${media}team-foreground-1280.webp" srcset="${media}team-foreground-640.webp 640w, ${media}team-foreground-1280.webp 1280w" sizes="(max-width: 680px) calc(100vw - 48px), (max-width: 1000px) 80vw, min(58vw, 850px)" width="2160" height="1215" alt="" loading="eager" decoding="async" /></div>`;
 }
 
 export function gallery() {
@@ -60,7 +60,7 @@ export function gallery() {
       ${card('4:154', 'gallery-square gallery-storefront', 'Current Solution Partner badge applied to a shop window', photo('storefront', 1254, 1254) + badge('solution-stacked', 'badge-storefront', { partnerName: 'J&T Promotions', treatment: 'dark-filled' }))}
       ${card('3:27', 'gallery-landscape gallery-portal gallery-portal-alt', 'Outlined Solution Partner badge inside a moving color composition', motion(8, true) + badge('solution-compact', 'badge-portal', { tier: 'Premier' }))}
       ${card('3:101', 'gallery-blanket', 'White outlined partner badge on a charcoal woven blanket', photo('blanket', 1096, 1435) + badge('solution-stacked', 'badge-blanket'))}
-      ${card('4:118', 'gallery-program', 'Grow your business. Partner Program: apply for 2027.', '<img class="gallery-media" src="/gallery/program.webp" width="699" height="377" alt="" loading="lazy" decoding="async" /><p class="gallery-program-copy">Grow your<br />business</p>' + badge('solution-compact', 'badge-program', { year: '2027', roleLines: ['Partner', 'Program'], tierLines: ['Apply', 'for 2027'], ariaLabel: 'Partner Program · Apply for 2027' }))}
+      ${card('4:118', 'gallery-program', 'Grow your business. Partner Program: apply for 2027.', '<img class="gallery-media" src="/gallery/program.webp" width="699" height="377" alt="" loading="eager" decoding="async" /><p class="gallery-program-copy">Grow your<br />business</p>' + badge('solution-compact', 'badge-program', { year: '2027', roleLines: ['Partner', 'Program'], tierLines: ['Apply', 'for 2027'], ariaLabel: 'Partner Program · Apply for 2027' }))}
       ${card('4:209', 'gallery-team', 'Solution Partner signature behind a three-person team portrait', teamPortrait())}
       ${card('1:1417', 'gallery-building', 'Current Solution Partner signature on a dark brick storefront entrance', photo('building', 1090, 1443) + badge('solution-stacked', 'badge-building'))}
       ${card('3:10', 'gallery-landscape gallery-portal', 'Solution Partner badge inside a moving color composition', motion(4, true) + badge('solution-compact', 'badge-portal', { tier: 'Elite' }))}

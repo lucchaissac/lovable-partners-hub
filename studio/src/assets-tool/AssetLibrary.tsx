@@ -1,3 +1,7 @@
+import {studioWorkspace} from './workspace';
+import {ambassadorFormats,ambassadorPreview} from '../../../src/ambassadors/catalog.js';
+import {createAmbassadorBlock} from './ambassadorAsset';
+import {defaultAmbassador,type AmbassadorSettings} from './ambassadorSettings';
 import { useEffect, useRef, useState } from 'react';
 import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, Icon, Input, Tooltip } from '@asset/ui';
 import { useHtmlEditorInsert } from '../studio/HtmlEditorInsert';
@@ -16,14 +20,14 @@ export function AssetLibrary({ open, onOpenChange, onNew }: { open: boolean; onO
   const [adding, setAdding] = useState('');
   useEffect(() => {
     let active = true;
-    loadLibrary().then(items => { if (active) setAssets(items); }).catch(() => { if (active) setError('Could not load the library.'); });
+    (studioWorkspace==='ambassadors'?Promise.resolve(ambassadorFormats.map(f=>({id:f.id,name:f.name,src:ambassadorPreview(f.id)}))):loadLibrary()).then(items => { if (active) setAssets(items); }).catch(() => { if (active) setError('Could not load the library.'); });
     return () => { active = false; };
   }, []);
 
   const add = async (asset: LibraryAsset) => {
     setAdding(asset.id); setError('');
     try {
-      const badge = await createPartnerBadge(defaultPartnerBadge(asset.id as PartnerBadgeSettings['format']));
+      const badge = studioWorkspace==='ambassadors'?await createAmbassadorBlock(defaultAmbassador(asset.id as AmbassadorSettings['format'])):await createPartnerBadge(defaultPartnerBadge(asset.id as PartnerBadgeSettings['format']));
       if (!insert.current) throw new Error('The canvas is still opening.');
       insert.current(badge);
       close();

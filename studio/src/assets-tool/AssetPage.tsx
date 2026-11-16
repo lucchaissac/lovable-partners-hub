@@ -1,3 +1,5 @@
+import {studioWorkspace,studioLastAssetKey,studioOwner} from './workspace';
+import {ambassadorAsset} from './ambassadorAsset';
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Button, ColorPickerPaletteProvider, Dropdown, Icon, Input, PageHeader, Tooltip } from '@asset/ui';
@@ -45,8 +47,8 @@ function AssetPageContent() {
   const { active } = useStudioSession();
   const insert = useHtmlEditorInsert();
   const { id } = useParams(), navigate = useNavigate(), location=useLocation();
-  const owner = readStudioConfig()?.user?.id ?? 'local';
-  const requestedBadge = !id ? new URLSearchParams(location.search).get('badge') : null;
+  const owner = studioOwner(readStudioConfig()?.user?.id);
+  const requestedBadge = !id ? (new URLSearchParams(location.search).get('badge') || (studioWorkspace==='ambassadors'?'social':null)) : null;
   const [asset, setAsset] = useState<AssetDocument | undefined>(() => id || requestedBadge ? undefined : starterAsset()), current = useRef<AssetDocument | undefined>(asset);
   const [recent, setRecent] = useState<AssetDocument[]>([]);
   const [recentLoading, setRecentLoading] = useState(true);
@@ -89,8 +91,8 @@ function AssetPageContent() {
 
 
   const put = useCallback((next: AssetDocument) => {
-    current.current = next; setAsset(next); setLoadError(''); try { localStorage.setItem('lovable-studio-last-asset', next.id); } catch {} setSaveState('Saving…');
-    const ownerAtSave = readStudioConfig()?.user?.id ?? owner;
+    current.current = next; setAsset(next); setLoadError(''); try { localStorage.setItem(studioLastAssetKey, next.id); } catch {} setSaveState('Saving…');
+    const ownerAtSave = owner;
     // Serial writes avoid a slower earlier write overwriting a later edit.
     saves.current = saves.current.catch(() => {}).then(() => saveAsset(ownerAtSave, next)).then(() => {
       if (mounted.current && current.current === next) setSaveState('Saved on this device');
@@ -116,7 +118,7 @@ function AssetPageContent() {
       if (cancelled) return; setRecent(items);
       if (id && !current.current && !readingFile.current) {
         const found = items.find(item => item.id === id);
-        if (!found) { const next=starterAsset();current.current=next;setAsset(next); }
+        if (!found) { if(studioWorkspace==='ambassadors'){navigate('/assets/new');return;}const next=starterAsset();current.current=next;setAsset(next); }
         else { current.current = found; setAsset(found); setLoadError(''); setSaveState('Saved on this device'); }
       }
     }).catch(reason => { if (!cancelled) setError(reason.message); }).finally(() => { if (!cancelled) { if (!requestedBadge) setLoading(false); setRecentLoading(false); } });
@@ -126,7 +128,7 @@ function AssetPageContent() {
     if (!requestedBadge) return;
     let cancelled = false;
     setLoading(true);
-    void badgeAsset(requestedBadge).then(next => { if (!cancelled) put(next); })
+    void (studioWorkspace==='ambassadors'?ambassadorAsset(requestedBadge):badgeAsset(requestedBadge)).then(next => { if (!cancelled) put(next); })
       .catch(reason => { if (!cancelled) setError(reason.message); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
@@ -271,7 +273,7 @@ function AssetPageContent() {
     stop(); lastRequest.current=undefined; setVisual(undefined); await saves.current;
     setLibraryOpen(false);
     if (id) navigate('/assets/new');
-    else { const next=starterAsset(); put(next);  setError(''); setInstructions(''); past.current = []; future.current = []; setRecent(await listAssets(owner)); }
+    else { const next=studioWorkspace==='ambassadors'?await ambassadorAsset():starterAsset(); put(next);  setError(''); setInstructions(''); past.current = []; future.current = []; setRecent(await listAssets(owner)); }
   };
   const runtime:WorkspaceRuntime={
     title:asset?.title??'Asset',content:null,

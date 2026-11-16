@@ -1,0 +1,47 @@
+.hev[data-section-navigation] { --hn-height:56px; }
+.hev[data-section-navigation] .hn-pages { position:sticky; top:0; z-index:var(--ui-z-overlay); }
+.hev[data-section-navigation] > .hev-layout { display:grid; grid-template-columns:minmax(0,1fr); align-items:start; }
+.hev[data-section-navigation] > .hev-layout > .hev-content { grid-area:1 / 1; min-width:0; }
+.hev[data-section-navigation] .hev-section { scroll-margin-top:calc(var(--hn-height) + var(--ui-space-4)); }
+.hs-outline { grid-area:1 / 1; width:var(--ui-space-10); position:sticky; top:calc(var(--hn-height) + var(--ui-space-4)); align-self:start; margin-top:var(--ui-space-4); min-width:0; overflow:auto; padding:var(--ui-space-2); margin-left:var(--ui-space-4); scrollbar-width:thin; color:var(--ui-text-muted); z-index:var(--ui-z-panel); }
+.hs-outline > nav { display:flex; flex-direction:column; gap:var(--ui-space-1); }
+/* The compact rail expands over the canvas instead of reserving page width. */
+.hs-outline { background:var(--ui-bg); border-radius:calc(var(--ui-radius-section) + var(--ui-space-1) + var(--ui-space-2)); box-shadow:var(--ui-shadow-surface); }
+.hs-outline:is([data-auto-expanded],:hover,:has(:focus-visible),:has(.ui-btn[data-active],.hs-row[data-dragging])) { width:max-content; max-width:calc(100% - var(--ui-space-8)); }
+.hs-outline:not([data-auto-expanded]):not(:hover):not(:has(:focus-visible)):not(:has(.ui-btn[data-active],.hs-row[data-dragging])) .hs-link { padding:0; font-size:0; }
+.hs-outline:not([data-auto-expanded]):not(:hover):not(:has(:focus-visible)):not(:has(.ui-btn[data-active],.hs-row[data-dragging])) .hs-row > :is(.ui-dropdown-root,.hs-grip) { display:none; }
+.hs-outline:not([data-auto-expanded]):not(:hover):not(:has(:focus-visible)):not(:has(.ui-btn[data-active],.hs-row[data-dragging])) .hs-add.ui-btn[data-size] { width:var(--ui-space-6); padding:0; margin-left:0; justify-content:center; gap:0; }
+.hs-outline:not([data-auto-expanded]):not(:hover):not(:has(:focus-visible)):not(:has(.ui-btn[data-active],.hs-row[data-dragging])) .hs-add > span:not(.ui-btn-icon) { display:none; }
+
+.hs-row { position:relative; display:flex; align-items:center; min-height:var(--ui-space-8); padding:var(--ui-space-1); border-radius:calc(var(--ui-radius-section) + var(--ui-space-1)); isolation:isolate; }
+.hs-row::before { content:''; position:absolute; left:calc(var(--ui-space-3) - 1px); top:var(--ui-space-2); bottom:var(--ui-space-2); width:2px; border-radius:var(--ui-segmented-radius); background:var(--ui-border); pointer-events:none; }
+.hs-row[data-active]::before,.hs-row[data-selected]::before { background:var(--hs-indicator,var(--ui-text)); }
+.hs-row[data-active],.hs-row[data-selected] { color:var(--hs-active-text,var(--ui-text)); background:var(--hs-active-bg,transparent); }
+.hs-row[data-hidden] .hs-link { opacity:.55; }
+.hs-row::after { content:''; position:absolute; inset:0; border-radius:inherit; z-index:-1; pointer-events:none; }
+.hs-row:is(:hover,:focus-within,:has([data-active]))::after { background:var(--hs-hover-bg,var(--ui-item-bg-selected)); }
+.hs-link { display:block; flex:1; min-width:0; min-height:var(--ui-space-6); padding:0 var(--ui-space-2) 0 var(--ui-space-6); white-space:normal; overflow-wrap:anywhere; text-align:left; font:var(--ui-fs-item)/var(--ui-space-6) var(--ui-font); }
+.hs-row > .ui-dropdown-root { display:flex; align-items:center; flex:none; opacity:0; }
+.hs-row:is(:hover,:focus-within,:has([data-active])) > .ui-dropdown-root { opacity:1; }
+.hs-row .hs-options.ui-btn[data-size] { width:var(--ui-space-6); min-width:var(--ui-space-6); height:var(--ui-space-6); padding:0; border-radius:var(--ui-radius-section); }
+.hs-row .hs-grip.ui-btn[data-size] { position:absolute; left:var(--ui-space-1); top:50%; transform:translateY(-50%); width:var(--ui-space-4); min-width:var(--ui-space-4); height:var(--ui-space-6); padding:0; opacity:0; cursor:grab; border:1px solid var(--ui-border-default); border-radius:var(--ui-segmented-radius); background:var(--ui-bg); box-shadow:var(--ui-shadow-pin); }
+.hs-row .hs-grip:active { cursor:grabbing; }
+.hs-row:is(:hover,:focus-within) .hs-grip.ui-btn[data-size] { opacity:1; }
+.hs-row:has(.hs-grip):is(:hover,:focus-within)::before { opacity:0; }
+.hs-row[data-dragging] { opacity:.4; }
+.hs-drop-line { position:absolute; left:0; right:0; top:calc(-1 * var(--ui-space-1) / 2); height:2px; border-radius:0; background:var(--ui-accent); opacity:0; pointer-events:none; z-index:1; }
+.hs-row[data-drop] > .hs-drop-line { opacity:1; }
+.hs-row[data-drop=after] > .hs-drop-line { top:auto; bottom:calc(-1 * var(--ui-space-1) / 2); }
+.hs-outline .hs-add.ui-btn[data-size] { justify-content:flex-start; height:var(--ui-space-8); margin-top:var(--ui-space-2); padding-inline:var(--ui-space-1) var(--ui-space-3); gap:var(--ui-space-2); color:var(--ui-text-muted); font-size:var(--ui-fs-item); border-radius:calc(var(--ui-radius-section) + var(--ui-space-1)); }
+/* Match the compact icon center without moving the expanded label. */
+.hs-outline .hs-add > .ui-btn-icon { position:relative; left:calc(-1 * var(--ui-space-1) / 2); }
+.hs-outline:not([data-auto-expanded]):not(:hover):not(:has(:focus-visible)):not(:has(.ui-btn[data-active],.hs-row[data-dragging])) .hs-add > .ui-btn-icon { left:0; }
+.hs-options-list { display:flex; flex-direction:column; gap:var(--ui-space-3); }
+.hs-options-list > button { justify-content:flex-start; }
+.hs-notice { margin-top:var(--ui-space-3); font-size:var(--ui-fs-helper); line-height:1.5; }
+@media print {
+ .hev[data-section-navigation] .hn-pages { position:static; }
+ .hev[data-section-navigation] > .hev-layout { display:block; padding:0; }
+ .hs-outline { display:none!important; }
+}
+

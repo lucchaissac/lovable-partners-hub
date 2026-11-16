@@ -1,0 +1,10 @@
+Asset Studio includes third-party open-source libraries installed through npm.
+Their individual licenses remain applicable. Dependency versions and integrity
+hashes are recorded in package-lock.json.
+
+The embedded Lucide vector catalog is distributed under the ISC license.
+See src/studio/generated/LUCIDE-LICENSE.
+
+The included local React components and sample screen illustrations are editable
+project assets. Sample company names are fictional. This adaptation uses the Camera Plain font already bundled with the partner hub.
+No API credentials, hosted-service sessions or user documents are bundled.

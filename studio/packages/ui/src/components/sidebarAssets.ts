@@ -1,0 +1,5 @@
+// Neutral application marks.
+export const sidebarAssets:Record<string,string> = {
+  'logo-asset-full': 'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20180%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%228%22%20fill%3D%22%230068f9%22%2F%3E%3Cpath%20d%3D%22m8%2024%208-16%208%2016m-12-6h8%22%20fill%3D%22none%22%20stroke%3D%22white%22%20stroke-width%3D%222%22%2F%3E%3Ctext%20x%3D%2243%22%20y%3D%2222%22%20font-family%3D%22Arial%2Csans-serif%22%20font-size%3D%2218%22%20fill%3D%22%23121722%22%3EAsset%20Studio%3C%2Ftext%3E%3C%2Fsvg%3E',
+  'logo-asset-mark': 'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20x%3D%224%22%20y%3D%224%22%20width%3D%2224%22%20height%3D%2224%22%20rx%3D%226%22%20fill%3D%22%230068f9%22%2F%3E%3Cpath%20d%3D%22m9%2023%207-14%207%2014m-11-5h8%22%20fill%3D%22none%22%20stroke%3D%22white%22%20stroke-width%3D%222%22%2F%3E%3C%2Fsvg%3E'
+};

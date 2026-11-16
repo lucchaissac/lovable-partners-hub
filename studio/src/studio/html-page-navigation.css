@@ -1,0 +1,50 @@
+.hev-pages.hn-pages { border-bottom:0; position:relative; min-height:56px; padding:0 24px; gap:0; }
+.hev-pages.hn-pages > .ui-tabs { --hn-pad-start:16px; --hn-pad-end:16px; --hn-action-size:24px; --hn-action-inset:4px; --hn-label-cover:calc(var(--hn-action-size) + var(--hn-action-inset) - var(--hn-pad-end)); width:max-content; max-width:100%; height:56px; gap:8px; background:transparent; box-shadow:none; align-items:stretch; scrollbar-width:thin; }
+.hn-pages .hn-page-tab { position:relative; display:flex; align-items:center; flex:none; min-width:0; }
+.hn-pages .hn-page-tab > .ui-tab { align-self:stretch; height:100%; gap:8px; padding-inline:var(--hn-pad-start) var(--hn-pad-end); color:var(--hn-text); transition:none; }
+.hn-pages .hn-page-label { white-space:nowrap; }
+.hn-pages .hn-page-tab > .ui-tab .ui-tab-leading { color:inherit; }
+.hn-pages .hn-page-tab[data-default-icon] > .ui-tab .ui-tab-leading { color:var(--ui-border); }
+.hn-pages .hn-page-tab[data-hidden] > .ui-tab, .hn-pages .hn-page-visibility[data-page-hidden="true"] { color:var(--ui-text-muted); }
+.hn-pages .hn-page-tab > .ui-tab[data-state="active"] { color:var(--hn-active-text); }
+.hn-pages .ui-tab[data-state="active"]::after { background:var(--hn-indicator); }
+.hev-pages.hn-pages > .ui-tabs[data-variant="chip"] { --hn-pad-start:10px; --hn-pad-end:12px; padding-block:8px; }
+.hn-pages .ui-tabs[data-variant="chip"] .hn-page-tab > .ui-tab { background:var(--hn-pill-bg); border-radius:var(--ui-segmented-radius); }
+.hn-pages .ui-tabs[data-variant="chip"] .hn-page-tab:hover > .ui-tab[data-state="inactive"] { background:color-mix(in srgb,var(--ui-text) 4%,var(--hn-pill-bg)); }
+.hn-pages .ui-tabs[data-variant="chip"] .hn-page-tab > .ui-tab[data-state="active"],.hn-pages .ui-tabs[data-variant="card"] .hn-page-tab > .ui-tab[data-state="active"] { background:var(--hn-active-bg); }
+.hev-pages.hn-pages > .ui-tabs[data-variant="card"] { --hn-pad-start:20px; --hn-pad-end:20px; --hn-action-inset:15px; --hn-label-cover:23px; gap:0; }
+.hn-pages .hn-page-options,.hn-pages .hn-page-options .ui-dropdown-root { display:flex; align-items:center; }
+.hn-pages .hn-page-options { position:absolute; left:calc(var(--hn-pad-start) - 5px); top:50%; transform:translateY(-50%); height:24px; opacity:0; pointer-events:none; }
+.hn-pages .hn-page-options .ui-btn,.hn-pages .hn-page-visibility { display:flex; align-items:center; justify-content:center; width:24px; min-width:24px; height:24px; padding:0; margin:0; border-radius:var(--ui-radius-item); background:transparent; transition:none; }
+.hn-pages .hn-page-options svg,.hn-pages .hn-page-visibility svg { display:block; width:14px; height:14px; }
+.hn-pages .hn-page-visibility { position:absolute; right:var(--hn-action-inset); top:50%; transform:translateY(-50%); opacity:0; pointer-events:none; }
+.hn-pages .hn-page-options .ui-btn:is(:hover,[data-active]),.hn-pages .hn-page-visibility:hover { background:color-mix(in srgb,var(--ui-text) 8%,transparent); }
+.hn-pages .hn-page-tab:is(:hover,:has(:focus-visible),:has(.hn-page-options [data-active])) .hn-page-options,
+.hn-pages .hn-page-tab:is(:hover,:has(:focus-visible),:has(.hn-page-options [data-active])) .hn-page-visibility,
+.hn-pages .hn-page-visibility[data-page-hidden="true"] { opacity:1; pointer-events:auto; }
+.hn-pages .hn-page-tab:has(.hn-page-options):is(:hover,:has(:focus-visible),:has(.hn-page-options [data-active])) .ui-tab-leading { opacity:0; }
+.hn-pages .hn-page-tab:has(.hn-page-visibility):is(:hover,:has(:focus-visible),:has(.hn-page-options [data-active]),[data-hidden]) .hn-page-label { mask-image:linear-gradient(to right,black calc(100% - var(--hn-label-cover) - 8px),transparent calc(100% - var(--hn-label-cover)),transparent 100%); }
+.hn-pages .hn-page-add { flex:none; width:var(--ui-space-8); min-width:var(--ui-space-8); height:var(--ui-space-8); color:var(--ui-text); padding:0; }
+.hev-pages.hn-pages .ui-btn.hn-page-add:is(:hover,[data-active]) { background:transparent; }
+.hn-pages > .ui-tabs > .ui-dropdown-root { display:flex; align-items:center; }
+.hn-notice { position:absolute; z-index:25; right:24px; margin-top:8px; display:flex; align-items:center; gap:12px; padding:8px 12px; background:var(--ui-bg); border:1px solid var(--ui-border); border-radius:8px; box-shadow:var(--ui-shadow-sm); font-size:13px; }
+.hn-icon-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:12px; }
+.hn-options,.hn-design-fields { display:flex; flex-direction:column; gap:16px; }
+.hn-options > .ui-btn { justify-content:flex-start; }
+.hn-help { color:var(--ui-text-muted); font-size:13px; line-height:1.5; margin:0 0 16px; }
+.hn-design-fields .ui-trigger-field { width:100%; }
+.hn-design-actions { display:flex; flex-wrap:wrap; gap:8px; }
+.hn-empty { padding:64px 24px; text-align:center; color:var(--ui-text-muted); }
+@media (hover:none) {
+ .hn-pages .hn-page-visibility { opacity:1; pointer-events:auto; }
+ .hn-pages .hn-page-tab:has(.hn-page-visibility) .hn-page-label { mask-image:linear-gradient(to right,black calc(100% - var(--hn-label-cover) - 8px),transparent calc(100% - var(--hn-label-cover)),transparent 100%); }
+}
+@media print { .hn-page-options,.hn-page-visibility,.hn-page-add,.hn-notice { display:none!important; } .hn-pages .hn-page-label { mask-image:none!important; } .hn-pages .ui-tab-leading { opacity:1!important; } }
+@media print {
+ :is(.studio-renderer,.studio-workspace-prototype,.workspace-editor,.we-body,.we-main,.hev-review-surface,.studio-workspace-scroll,.studio-workspace-content):has(.hn-pages) { height:auto!important; max-height:none!important; overflow:visible!important; display:block!important; }
+ .hev:has(.hn-pages),.hev:has(.hn-pages) * { visibility:visible; }
+ .hev:has(.hn-pages) { position:absolute; inset:0; height:auto; min-height:0; }
+ .hev:has(.hn-pages) :is(.hn-page-options,.hn-page-visibility,.hn-page-add,.hn-notice,.hev-add-section,.hev-insert,.hev-block-tools,.hev-section-tools,.hev-column-resizer,.hcs-ui,.ewb-toolbar,.ewt-toolbar) { display:none!important; }
+ .hev:has(.hn-pages) :is(.hev-block,.hev-section) { outline:none!important; }
+ .hev:has(.hn-pages) .hev-block { break-inside:avoid; }
+}

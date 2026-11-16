@@ -1,0 +1,112 @@
+/* Shared app navigation: 230px maximum expanded width, 64px compact rail. */
+.ui-sidebar.ui-app-sidebar { max-width: var(--ui-app-sidebar-w); --app-sidebar-hover: var(--ui-sidebar-hover); --app-sidebar-selected: var(--ui-sidebar-selected); --app-sidebar-border: var(--ui-sidebar-border); --app-sidebar-text: #121722; --app-sidebar-muted: rgba(18,23,34,.68); padding: 8px 12px 0; background: var(--ui-bg); border-right: 1px solid var(--app-sidebar-border); flex-shrink: 0; min-height: 0; color: var(--app-sidebar-text); }
+.ui-app-sidebar button { border: 0; background: none; padding: 0; color: inherit; font: inherit; cursor: pointer; }
+.ui-app-sidebar button:focus-visible { outline: 2px solid var(--ui-accent); outline-offset: -2px; }
+.ui-app-sidebar-header { display: flex; align-items: center; justify-content: space-between; padding: 4px 4px 10px 8px; flex-shrink: 0; }
+.ui-app-sidebar-header-actions { display: flex; align-items: center; gap: 2px; }
+.ui-app-logo img { width: 76px; height: 16px; display: block; }
+.ui-app-sidebar .ui-app-sidebar-toggle { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.ui-app-sidebar-toggle :is(img, svg) { width: 16px; height: 16px; }
+.ui-app-sidebar .ui-app-sidebar-toggle:hover, .ui-app-sidebar .ui-app-sidebar-expand:hover { background: var(--app-sidebar-hover); }
+.ui-app-sidebar-nav { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; overscroll-behavior: contain; }
+.ui-app-nav-group { flex-shrink: 0; }
+.ui-app-nav-parent { position: relative; }
+.ui-app-sidebar .ui-app-nav-row { display: flex; align-items: center; gap: 10px; height: 36px; width: 100%; padding: 0 12px; border-radius: 10px; font-size: 14px; line-height: 20px; white-space: nowrap; text-align: left; transition: none; }
+.ui-app-sidebar .ui-app-nav-row:hover { background: var(--app-sidebar-hover); }
+.ui-app-sidebar .ui-app-nav-row[data-selected] { background: var(--app-sidebar-selected); }
+.ui-app-nav-icon { position: relative; display: flex; flex-shrink: 0; }
+.ui-app-nav-icon :is(img, svg) { width: 16px; height: 16px; display: block; }
+.ui-app-nav-label { overflow: hidden; text-overflow: ellipsis; }
+.ui-app-nav-group > .ui-app-nav-parent .ui-app-nav-row { padding-right: 36px; }
+/* Reserve the full trailing 36px for disclosure, including the invisible
+   space around the glyph, so nearby clicks never navigate the parent row. */
+.ui-app-sidebar .ui-app-nav-caret { position: absolute; right: 0; top: 0; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; opacity: 0; }
+.ui-app-nav-caret::before { content: ''; position: absolute; inset: 8px; border-radius: 6px; pointer-events: none; }
+.ui-app-nav-parent:hover .ui-app-nav-caret, .ui-app-nav-parent:focus-within .ui-app-nav-caret { opacity: 1; }
+.ui-app-sidebar .ui-app-nav-caret:hover::before { background: var(--app-sidebar-selected); }
+.ui-app-nav-caret :is(img, svg) { width: 14px; height: 14px; opacity: .6; }
+.ui-app-nav-caret[aria-expanded='false'] :is(img, svg) { transform: rotate(-90deg); }
+.ui-app-nav-children { display: flex; flex-direction: column; gap: 2px; margin-left: 18px; padding-left: 8px; border-left: 1px solid var(--app-sidebar-border); }
+.ui-app-nav-children[hidden] { display: none; }
+.ui-app-sidebar .ui-app-nav-child { color: var(--app-sidebar-text); }
+.ui-app-nav-child :is(img, svg) { opacity: 1; }
+.ui-app-sidebar-footer { box-sizing: border-box; display: flex; align-items: center; gap: 4px; margin: 0 -12px; padding: 8px 12px; border-top: 1px solid var(--app-sidebar-border); min-height: var(--ui-app-footer-height); flex-shrink: 0; }
+.ui-app-user-menu { flex: 1; min-width: 0; }
+.ui-app-user-menu .ui-dropdown-root, .ui-app-user-menu .ui-dropdown-trigger { width: 100%; }
+.ui-app-sidebar .ui-app-user-button { display: flex; align-items: center; gap: 8px; width: 100%; min-width: 0; height: 36px; border-radius: 10px; padding: 0 10px; text-align: left; }
+.ui-app-sidebar .ui-app-user-button:hover { background: var(--app-sidebar-hover); }
+.ui-app-sidebar .ui-app-user-button[aria-expanded='true'], .ui-app-sidebar-footer .ui-app-sidebar-toggle[aria-expanded='true'] { background: var(--app-sidebar-selected); }
+.ui-app-avatar { width: 20px; height: 20px; border-radius: 50%; background: #26251e; color: #fff; font-size: 9px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.ui-app-user { min-width: 0; }
+.ui-app-user-name { display: block; font-size: 12px; line-height: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ui-app-user-sub { display: block; font-size: 12px; line-height: 13px; color: var(--app-sidebar-text); }
+.ui-app-notification { position: absolute; right: -2px; top: -2px; width: 6px; height: 6px; background: var(--ui-accent); border-radius: 50%; }
+/* Keep the logo center and first navigation row aligned when the rail folds. */
+.ui-app-sidebar[data-collapsed] .ui-app-sidebar-header { padding: 2px 0 8px; flex-direction: column; align-items: flex-start; gap: 2px; }
+.ui-app-sidebar[data-collapsed] .ui-app-sidebar-header-actions { display: none; }
+.ui-app-sidebar .ui-app-sidebar-expand { width: 40px; height: 36px; flex-shrink: 0; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+.ui-app-logo-mark { width: 24px; height: 16px; }
+.ui-app-logo-open { display: none; width: 16px; height: 16px; }
+.ui-app-sidebar-expand:hover .ui-app-logo-mark { display: none; }
+.ui-app-sidebar-expand:hover .ui-app-logo-open { display: block; }
+.ui-app-sidebar[data-collapsed] .ui-sidebar-item-label, .ui-app-sidebar[data-collapsed] .ui-app-user { display: none; }
+.ui-app-sidebar[data-collapsed] .ui-app-nav-row { width: 40px; padding: 0; justify-content: center; }
+.ui-app-sidebar[data-collapsed] .ui-app-sidebar-footer { flex-direction: column; align-items: stretch; gap: 0; }
+.ui-app-sidebar[data-collapsed] .ui-app-help-menu { order: -1; }
+.ui-app-sidebar[data-collapsed] .ui-app-sidebar-footer button { width: 40px; height: 36px; padding: 0; justify-content: center; }
+.ui-sidebar.ui-app-sidebar[data-tone='dark'] { --app-sidebar-text: #f5f5f5; --app-sidebar-muted: rgba(255,255,255,.6); background: #131417; }
+.ui-app-sidebar[data-tone='dark'] img { filter: brightness(0) invert(1); }
+@media (hover: none) { .ui-app-sidebar .ui-app-nav-caret { opacity: 1; } }
+
+.ui-app-sidebar-footer .ui-app-sidebar-toggle { width: 40px; height: 36px; border-radius: 10px; }
+/* Optional row actions stay discoverable with pointer, keyboard and touch. */
+.ui-app-nav-action-row { position: relative; }
+.ui-app-nav-action-row .ui-app-nav-row { padding-right: 40px; }
+.ui-app-nav-item-actions { position: absolute; top: 50%; right: 4px; transform: translateY(-50%); opacity: 0; pointer-events: none; }
+.ui-app-nav-action-row:hover .ui-app-nav-item-actions,
+.ui-app-nav-action-row:focus-within .ui-app-nav-item-actions,
+.ui-app-nav-item-actions:has([aria-expanded="true"]) { opacity: 1; pointer-events: auto; }
+@media (hover: none) { .ui-app-nav-item-actions { opacity: 1; pointer-events: auto; } }
+
+/* Saved Studio navigation sections. */
+.ui-app-nav-group[data-section] { margin-top: var(--ui-space-4, 16px); }
+.ui-app-nav-section-title { margin: 0; height: 28px; color: var(--ui-text-muted); font-size: var(--ui-fs-section-header); font-weight: var(--ui-font-weight-medium); line-height: 20px; }
+.ui-app-nav-section-title > button { font-size: var(--ui-fs-section-header); font-weight: var(--ui-font-weight-medium); display: flex; align-items: center; gap: 6px; width: fit-content; max-width: calc(100% - 36px); height: 100%; padding: 0 4px 0 12px; text-align: left; }
+.ui-app-nav-section-title > button > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ui-app-nav-section-chevron { width: 14px; height: 14px; flex-shrink: 0; opacity: .6; }
+.ui-app-nav-section-title > button[aria-expanded="false"] > .ui-app-nav-section-chevron { transform: rotate(-90deg); }
+.ui-app-nav-group[data-section] > .ui-app-nav-parent > .ui-app-nav-item-actions { right: 4px; }
+.ui-app-nav-group[data-section] > .ui-app-nav-children { margin-left: 0; padding-left: 0; }
+.ui-app-nav-group[data-section] .ui-app-nav-children { border-left: 0; }
+.ui-app-sidebar-fixed { flex-shrink: 0; padding-bottom: 8px; border-bottom: .5px solid transparent; }
+.ui-app-sidebar[data-scroll-separators] .ui-app-sidebar-footer { border-top: .5px solid transparent; }
+.ui-app-sidebar[data-scroll-separators][data-scroll-top] .ui-app-sidebar-fixed { border-bottom-color: var(--app-sidebar-border); }
+.ui-app-sidebar[data-scroll-separators][data-scroll-bottom] .ui-app-sidebar-footer { border-top-color: var(--app-sidebar-border); }
+.ui-app-sidebar-nav-content > .ui-app-nav-group[data-section]:first-child { margin-top: var(--ui-space-1); }
+.ui-app-sidebar:not([data-collapsed]) .ui-app-nav-section-title { flex: 1; min-width: 0; }
+
+/* Group creation actions share the existing hover/focus controls, beside disclosure. */
+.shell-nav .ui-app-nav-item-actions { display: flex; align-items: center; gap: 2px; }
+.shell-nav .ui-app-nav-parent:hover > .ui-app-nav-item-actions,
+.shell-nav .ui-app-nav-parent:focus-within > .ui-app-nav-item-actions { opacity: 1; pointer-events: auto; }
+.shell-nav .ui-app-nav-group > .ui-app-nav-parent > .ui-app-nav-item-actions { right: 36px; }
+.shell-nav.ui-app-sidebar[data-collapsed] .ui-app-nav-item-actions { display: none; }
+
+
+/* Actions take their actual width only while visible; labels yield immediately. */
+.shell-nav.ui-app-sidebar:not([data-collapsed]) .ui-app-nav-parent { display: flex; align-items: center; border-radius: 10px; }
+.shell-nav.ui-app-sidebar:not([data-collapsed]) .ui-app-nav-parent > .ui-app-nav-row { flex: 1; min-width: 0; width: 0; transition: none; }
+.shell-nav.ui-app-sidebar .ui-app-nav-row > .ui-sidebar-item-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: none; }
+.shell-nav.ui-app-sidebar:not([data-collapsed]) .ui-app-nav-parent > .ui-app-nav-item-actions,
+.shell-nav.ui-app-sidebar:not([data-collapsed]) .ui-app-nav-parent > .ui-app-nav-caret { position: static; flex-shrink: 0; transform: none; display: none; opacity: 1; pointer-events: auto; transition: none; }
+.shell-nav.ui-app-sidebar:not([data-collapsed]) .ui-app-nav-parent > .ui-app-nav-item-actions { order: 1; margin-right: var(--ui-space-1); }
+.shell-nav.ui-app-sidebar:not([data-collapsed]) .ui-app-nav-parent > .ui-app-nav-caret { order: 2; position: relative; }
+.shell-nav.ui-app-sidebar:not([data-collapsed]) .ui-app-nav-parent:has(> .ui-app-nav-caret) > .ui-app-nav-item-actions { margin-right: 0; }
+.shell-nav.ui-app-sidebar:not([data-collapsed]) .ui-app-nav-parent:is(:hover, :focus-within, :has(.ui-app-nav-item-actions [aria-expanded="true"])) > :is(.ui-app-nav-item-actions, .ui-app-nav-caret) { display: flex; }
+.shell-nav.ui-app-sidebar:not([data-collapsed]) .ui-app-nav-parent:has(> .ui-app-nav-row):is(:hover, :focus-within, :has(.ui-app-nav-item-actions [aria-expanded="true"])) { background: var(--app-sidebar-hover); }
+.shell-nav.ui-app-sidebar:not([data-collapsed]) .ui-app-nav-parent:has(> .ui-app-nav-row[data-selected]) { background: var(--app-sidebar-selected); }
+.shell-nav.ui-app-sidebar:not([data-collapsed]) .ui-app-nav-parent > .ui-app-nav-row { background: transparent; }
+.shell-nav.ui-app-sidebar:not([data-collapsed]) .ui-app-nav-section-title { flex: 1; min-width: 0; }
+@media (hover: none) {
+  .shell-nav.ui-app-sidebar:not([data-collapsed]) .ui-app-nav-parent > :is(.ui-app-nav-item-actions, .ui-app-nav-caret) { display: flex; }
+}

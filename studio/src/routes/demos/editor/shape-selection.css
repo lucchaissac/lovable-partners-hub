@@ -1,0 +1,28 @@
+.we-editable-shape { position: absolute; min-width: 6px; min-height: 6px; pointer-events: none; }
+.we-editable-shape[data-interactive] { pointer-events: auto; cursor: move; touch-action: none; }
+.we-editable-shape:focus-visible { outline: 2px solid var(--ui-accent); outline-offset: 3px; }
+.we-shape-generated { width: 100%; height: 100%; overflow: hidden; border-radius: inherit; animation: we-shape-reveal 350ms ease both; }
+.we-shape-generated > svg { width: 100%; height: 100%; display: block; }
+.we-shape-selection { position: absolute; pointer-events: none; outline: 2px solid var(--ui-accent); }
+.we-shape-handle { position: absolute; width: 9px; height: 9px; padding: 0; border: 2px solid var(--ui-accent); border-radius: 1px; background: var(--ui-bg); pointer-events: auto; touch-action: none; }
+.we-shape-handle[data-corner='nw'] { left: -5px; top: -5px; cursor: nwse-resize; }
+.we-shape-handle[data-corner='ne'] { right: -5px; top: -5px; cursor: nesw-resize; }
+.we-shape-handle[data-corner='sw'] { left: -5px; bottom: -5px; cursor: nesw-resize; }
+.we-shape-handle[data-corner='se'] { right: -5px; bottom: -5px; cursor: nwse-resize; }
+.we-shape-ui { position: absolute; z-index: 45; color: var(--ui-text); font-family: var(--ui-font); }
+.we-shape-inspector { display: flex; align-items: center; gap: 2px; height: 40px; padding: var(--ui-space-1); box-sizing: border-box; border-radius: var(--ui-space-3); background: var(--ui-bg); box-shadow: var(--ui-shadow-md), 0 0 0 .5px var(--ui-border); }
+.we-shape-inspector .ui-btn[data-size] { width: 32px; min-width: 32px; height: 32px; min-height: 32px; padding: 0; border-radius: var(--ui-space-2); }
+.we-shape-inspector .we-review-divider { height: 20px; margin-inline: var(--ui-space-1); }
+.we-shape-swatch { width: 18px; height: 18px; border: .5px solid var(--ui-border); border-radius: 5px; }
+.we-shape-comment { width: 340px; max-width: calc(100% - 24px); padding: var(--ui-space-3); border-radius: var(--ui-space-4); background: var(--ui-bg); box-shadow: var(--ui-shadow-md), 0 0 0 .5px var(--ui-border); }
+.we-shape-comment-avatar { position: absolute; left: -40px; top: 8px; padding: 3px; background: var(--ui-bg); border-radius: 50%; box-shadow: 0 0 0 2px var(--ui-accent); }
+.we-shape-comment header { display: flex; justify-content: space-between; align-items: center; gap: var(--ui-space-2); }
+.we-shape-comment header > span { display: flex; align-items: center; gap: var(--ui-space-1); font-size: 12px; color: var(--ui-text-muted); }
+.we-shape-comment header .ui-btn[data-size] { flex: 0 0 24px; padding: 0; width: 24px; min-width: 24px; height: 24px; min-height: 24px; }
+.we-shape-comment footer { display: flex; align-items: center; justify-content: space-between; gap: var(--ui-space-2); margin-top: var(--ui-space-2); }
+.we-shape-send-toggle { display: flex; align-items: center; gap: var(--ui-space-2); font-size: 13px; line-height: 20px; }
+.we-shape-send-toggle > span { cursor: pointer; }
+.we-shape-building { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: var(--ui-space-2); background: color-mix(in srgb, var(--ui-bg) 92%, transparent); font-size: 14px; color: var(--ui-text-muted); }
+.we-shape-building svg { animation: we-drawing-spin 1s linear infinite; }
+@keyframes we-shape-reveal { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .we-shape-generated, .we-shape-building svg { animation: none; } }

@@ -1,0 +1,7 @@
+.we-review-comment-input { display: flex; flex-direction: column; align-items: stretch; gap: 6px; margin-block: var(--ui-space-2); padding: var(--ui-space-3); border-radius: 10px; background: var(--ui-bg-subtle); }
+.we-review-comment-input:focus-within { box-shadow: inset 0 0 0 1px var(--ui-accent); }
+.we-review-comment-input textarea { flex: 1; width: 100%; min-width: 0; min-height: 64px; max-height: 160px; field-sizing: content; resize: none; box-sizing: border-box; margin: 0; padding: 0; border: 0; border-radius: 0; outline: none; background: transparent; color: var(--ui-text); font: 14px/20px var(--ui-font); }
+.we-review-comment-input textarea::placeholder { color: var(--ui-text-muted); }
+.we-review-comment-mention { align-self: flex-start; flex-shrink: 0; padding: 2px 6px; border-radius: var(--ui-radius-item); color: var(--ui-accent); background: color-mix(in srgb, var(--ui-accent) 8%, transparent); font: 500 12px/16px var(--ui-font); }
+.we-review-comment-send.ui-btn[data-size] { flex: 0 0 28px; width: 28px; min-width: 28px; max-width: 28px; height: 28px; min-height: 28px; max-height: 28px; aspect-ratio: 1; padding: 0; border-radius: 50%; }
+.we-review-comment-send.ui-btn[data-size] .ui-btn-icon { width: 16px; height: 16px; }

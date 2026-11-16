@@ -1,0 +1,86 @@
+.workspace-contact-card { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 24px; min-width: 0; padding: 32px; border: 1px solid var(--ui-divider); border-radius: var(--ui-radius-section); background: var(--ui-bg); color: var(--ui-text); font: inherit; overflow-wrap: anywhere; }
+.workspace-contact-card[data-brand='ramp'] { color: var(--ramp-text, #171714); background: var(--ramp-soft, #f4f3f0); border-color: var(--ramp-border, #d9d7d2); border-radius: var(--ramp-panel-radius, 16px); font-family: var(--ramp-font, Arial, sans-serif); }
+.workspace-contact-card[data-layout='horizontal'] { flex-direction: row; }
+.workspace-contact-card > .ui-avatar { flex-shrink: 0; }
+.workspace-contact-card[data-brand='ramp'] > .ui-avatar { background: var(--ramp-dark, #252521); color: var(--ramp-solar, #e2f5a0); }
+.workspace-contact-card .workspace-contact-copy { min-width: 0; flex: 1; }
+.workspace-contact-card .workspace-contact-copy h3 { font: inherit; font-size: 24px; font-weight: 400; line-height: 1.2; margin: 0 0 8px; color: inherit; }
+.workspace-contact-card .workspace-contact-copy p { font-size: 16px; line-height: 1.5; margin: 8px 0 0; }
+.workspace-contact-card .workspace-contact-role { opacity: .65; }
+.workspace-contact-links { display: flex; flex-wrap: wrap; gap: 12px 24px; margin-top: 24px; }
+.workspace-contact-links a { display: inline-flex; align-items: center; gap: 8px; color: inherit; font-size: 14px; text-decoration: none; }
+.workspace-contact-links a:hover { text-decoration: underline; }
+.workspace-contact-card .workspace-contact-cta { display: inline-flex; align-items: center; justify-content: space-between; gap: 24px; margin-top: 24px; padding: 14px 20px; min-height: 48px; border-radius: 8px; background: var(--ramp-solar, #e2f5a0); color: var(--ramp-text, #171714); font-size: 16px; text-decoration: none; }
+.workspace-contact-card:focus-visible { outline: 2px solid var(--ui-accent); outline-offset: 3px; }
+.workspace-widget-toolbar { z-index: var(--ui-z-sticky); font-family: var(--ui-font); color: var(--ui-text); }
+.workspace-contact-fields { display: grid; grid-template-columns: 1fr 1fr; gap: var(--ui-space-4); }
+.workspace-review-surface { position: relative; flex: 1; min-height: 0; min-width: 0; display: flex; overflow: clip; }
+.workspace-review-surface > .we-review-layer[data-selectable][data-tool='pointer'] .we-review-drawing { pointer-events: auto; cursor: crosshair; }
+.workspace-review-surface .studio-workspace-scroll > .studio-selected-element { z-index: 9; border-width: 1px; background: transparent; }
+.workspace-review-surface > .we-review-asset { z-index: 40; }
+.workspace-review-surface[data-capturing] .we-review-layer, .workspace-review-surface[data-capturing] .we-review-asset, .workspace-review-surface[data-capturing] .studio-selected-element { visibility: hidden; }
+.workspace-review-error { position: absolute; bottom: 80px; left: 24px; right: 24px; padding: var(--ui-space-3); border-radius: var(--ui-radius-section); background: var(--ui-bg); color: var(--ui-text); z-index: 10; }
+@media (max-width: 600px) { .workspace-contact-card { padding: 24px; } .workspace-contact-card[data-layout='horizontal'] { flex-direction: column; } .workspace-contact-fields { grid-template-columns: 1fr; } }
+
+.workspace-contact-dialog { max-height: calc(100dvh - 48px); }
+.workspace-contact-dialog > form { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+.workspace-contact-dialog > form > .ui-dialog-body { overflow-y: auto; min-height: 0; }
+.workspace-contact-dialog > form > .ui-dialog-footer { flex-shrink: 0; }
+
+.studio-workspace-blocks { min-height: inherit; }
+
+.workspace-widget-layout { display:flex; flex:1; min-width:0; min-height:0; overflow:hidden; }
+.workspace-widget-layout > .studio-workspace-scroll { flex:1; min-width:0; }
+.workspace-widget-panelhost { flex-shrink:0; display:none; }
+.workspace-widget-panelhost[data-open] { display:flex; width:280px; }
+.workspace-widget-panelhost > .ewb-settings-panel { height:100%; min-height:0; }
+.workspace-inventory-contact { position:relative; min-width:0; width:100%; max-width:100%; }
+.workspace-inventory-contact .ewb-contact-card { overflow-wrap:anywhere; }
+.workspace-inventory-contact .ewb-contact-card .ewb-contact-copy { min-width:0; }
+.workspace-inventory-contact .ewb-contact-widget { padding:0; }
+.studio-workspace-content [data-workspace-contact-fill] { width:100%!important; max-width:none!important; }
+.workspace-inventory-contact[data-resized] .ewb-contact-grid { grid-template-columns:repeat(var(--ewb-card-columns),minmax(0,1fr)); }
+.workspace-inventory-contact[data-resized] .ewb-contact-card { max-width:none; }
+.workspace-contact-resize { position:absolute; right:-5px; top:50%; transform:translateY(-50%); z-index:10; width:10px; height:28px; padding:0; border:1px solid var(--ui-accent); border-radius:0; background:var(--ui-bg); cursor:ew-resize; touch-action:none; }
+.workspace-contact-resize:focus-visible { outline:2px solid var(--ui-accent); outline-offset:2px; }
+@container (max-width:420px) { .workspace-inventory-contact[data-resized] .ewb-contact-grid { grid-template-columns:minmax(0,1fr); } }
+.workspace-insert-hint { position:absolute; left:50%; bottom:84px; transform:translateX(-50%); display:flex; align-items:center; gap:var(--ui-space-3); max-width:calc(100% - 32px); padding:var(--ui-space-2) var(--ui-space-3); background:var(--ui-bg); color:var(--ui-text); border:1px solid var(--ui-border); border-radius:var(--ui-radius-item); box-shadow:var(--ui-shadow-sm); font:14px/1.4 var(--ui-font); z-index:20; }
+
+/* Selection chrome belongs to the inner editor, not ordinary content hover. */
+.workspace-review-surface .studio-workspace-content [contenteditable='true']:is(:hover,:focus) { outline:none; }
+.workspace-review-surface:not([data-pointer]) .workspace-inventory-contact:not([data-selected]) .ewb-contact-widget:not([data-selected]) { outline-color:transparent; }
+.workspace-review-surface:not([data-pointer]) .workspace-inventory-contact:not([data-selected]) .ewb-contact-widget:not([data-selected]) > .ewb-contacts-toolbar { opacity:0; pointer-events:none; }
+.workspace-inventory-contact[data-selected] .ewb-contact-widget > .ewb-contacts-toolbar { opacity:1; pointer-events:auto; }
+.workspace-review-surface .studio-workspace-content details > summary { display:flex!important; align-items:center; gap:8px; list-style:none!important; cursor:pointer; outline:none!important; }
+.workspace-review-surface .studio-workspace-content details > summary::marker { content:''; }
+.workspace-review-surface .studio-workspace-content details > summary::-webkit-details-marker { display:none; }
+.workspace-review-surface .studio-workspace-content details > summary > :not(.workspace-disclosure-chevron) { margin-block:0!important; min-width:0; }
+.workspace-review-surface .workspace-disclosure-chevron { order:-1; display:inline-flex!important; align-items:center; justify-content:center; flex:0 0 24px; width:24px!important; height:24px!important; padding:0!important; margin:0!important; border:1px solid var(--ui-border)!important; border-radius:4px!important; color:var(--ui-text)!important; background:var(--ui-bg)!important; }
+.workspace-review-surface .workspace-disclosure-chevron svg { display:block!important; width:14px!important; height:14px!important; }
+.workspace-review-surface summary:hover > .workspace-disclosure-chevron { background:var(--ui-bg-muted)!important; }
+.workspace-review-surface summary:focus-visible > .workspace-disclosure-chevron { outline:2px solid var(--ui-accent); outline-offset:2px; }
+.workspace-review-surface details[open] > summary > .workspace-disclosure-chevron svg { transform:rotate(90deg)!important; }
+
+.workspace-review-surface:not([data-pointer]) .workspace-inventory-contact:not([data-selected]) .ewb-contact-widget:not([data-selected]) .ewb-contact-insert { visibility:hidden; pointer-events:none; }
+.workspace-review-surface:not([data-pointer]) .workspace-inventory-contact:not([data-selected]) .ewb-contact-widget:not([data-selected]) .ewb-contact-add-line { opacity:0; pointer-events:none; }
+.workspace-inventory-tasks {position:relative;min-width:0;width:100%;max-width:100%;}
+.workspace-widget-panelhost[data-open]:has(>.ewt-panel) {width:min(512px,48vw);}
+
+/* One stationary sidebar for native widgets and generated block settings. */
+.workspace-widget-panelhost[data-open] {border-left:1px solid var(--ui-divider);background:var(--ui-bg);animation:none;transition:none;}
+.workspace-widget-panelhost > :is(.ewb-settings-panel,.ewt-panel) {border-left:0;animation:none;transition:none;}
+.workspace-widget-panelhost :is(.ewb-settings-panel,.ewt-panel) {max-height:100%;}
+.ewt-layout[data-branded] .ewt-checklist {padding:24px 0;}
+:is(.ewt-layout,.ewt-panel)[data-branded] {font-family:var(--ui-font);}
+:is(.ewt-layout,.ewt-panel)[data-branded] .ui-btn[data-variant='primary'] {background:var(--workspace-task-lime);color:var(--ui-text);box-shadow:none;}
+:is(.ewt-layout,.ewt-panel)[data-branded] .ui-btn[data-variant='primary']:hover {background:color-mix(in srgb,var(--workspace-task-lime) 90%,var(--ui-text));}
+:is(.ewt-layout,.ewt-panel)[data-branded] .ui-segmented-indicator {transition:none;}
+.ewt-layout[data-branded] .ewt-checklist .ewt-checklist-title {font-weight:400;}
+.workspace-widget-panelhost:has(>.ewt-panel[data-branded]) {border-left-color:var(--ramp-border,#d9d7d2);}
+
+.workspace-review-surface .studio-selected-element[data-synced] {border-color:#43a5ff;}
+
+/* The inspector shares the outer Threads sidebar, independently of the page. */
+.workspace-widget-panelhost--external[data-open],
+.workspace-widget-panelhost--external[data-open]:has(>.ewt-panel) {width:100%;height:100%;min-height:0;flex:1;border:0;}
+.workspace-widget-panelhost--external > :is(.ewb-settings-panel,.ewt-panel) {width:100%;min-width:0;max-width:none;height:100%;flex:1;}

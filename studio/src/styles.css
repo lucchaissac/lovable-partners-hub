@@ -1,0 +1,1028 @@
+@import url('/studio/fonts/asset-fonts.css');
+/* Drop your Arial woff2 files at apps/playground/public/fonts/ then these load automatically. */
+/* :root vars come from @asset/ui (tokens.css), imported via the package. */
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; margin: 0; }
+body {
+  font-family: var(--ui-font);
+  color: var(--ui-text);
+  background: var(--ui-bg);
+  -webkit-font-smoothing: antialiased;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+button { font-family: inherit; cursor: pointer; border: 0; background: none; padding: 0; color: inherit; }
+
+/* The Editor frame also renders inside Studio's isolated preview documents. */
+.shell, .studio-renderer { --playground-frame-outline: inset 0 0 0 .5px rgba(0,0,0,.15); }
+
+/* Shell */
+.shell { --playground-chrome-bg: color-mix(in srgb, var(--ui-bg-muted) 70%, var(--ui-bg)); --playground-frame-radius: 14px; display: grid; grid-template-columns: 264px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); height: 100dvh; overflow: hidden; }
+.shell[data-sidebar-collapsed] { grid-template-columns: 64px minmax(0, 1fr); }
+.shell[data-focus-mode] { grid-template-columns: minmax(0, 1fr); }
+.shell[data-focus-mode] > .shell-nav { display: none; }
+.shell-main { min-width: 0; min-height: 0; overflow: auto; }
+.page { max-width: 920px; margin: 0 auto; padding: 56px 48px 96px; }
+.page--full { max-width: none; margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; }
+.page--full .fullscreen-frame { flex: 1; display: flex; min-height: 0; background: var(--ui-bg); }
+
+.page-eyebrow { font-size: 12px; color: var(--ui-text-muted); font-weight: 500; }
+.page-title { font-size: 28px; font-weight: 600; letter-spacing: normal; margin: 6px 0 8px; }
+.page-lede { font-size: 16px; font-weight: 600; color: var(--ui-text-muted); margin: 0 0 40px; max-width: 60ch; }
+
+.section { margin-bottom: 48px; }
+.section-title {
+  font-size: 13px; font-weight: 600; text-transform: none; letter-spacing: normal;
+  color: var(--ui-text-muted); margin: 0 0 12px;
+}
+.section-lede { font-size: 13px; color: var(--ui-text-muted); margin: 0 0 var(--ui-space-3); }
+
+.agent-thread {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-space-4);
+  padding: var(--ui-space-5) 0 var(--ui-space-3);
+  max-width: 640px;
+  margin: 0 auto;
+  width: 100%;
+}
+.agent-blocks-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-space-4);
+  max-width: 520px;
+}
+
+.canvas {
+  background: #f7f7f7;
+  border: 1px solid #f1f1f1;
+  border-radius: 12px;
+  padding: 32px;
+  display: flex; flex-wrap: wrap; gap: 24px;
+}
+.canvas--dark { background: var(--ui-text); border-color: var(--ui-border-dark); }
+
+.specimen { display: flex; flex-direction: column; gap: 8px; }
+.specimen-label { font-size: 11px; color: var(--ui-text-muted); font-family: var(--ui-font-mono); }
+
+.code {
+  font-family: var(--ui-font-mono); font-size: 12.5px;
+  background: #f7f7f7;
+  border: 1px solid #f1f1f1;
+  border-radius: 8px;
+  padding: 14px 16px;
+  color: var(--ui-text);
+  white-space: pre;
+  overflow-x: auto;
+}
+
+.kbd {
+  font-family: var(--ui-font-mono); font-size: 11px;
+  background: #f7f7f7;
+  border: 1px solid #f1f1f1;
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 1px 5px;
+  color: var(--ui-text-muted);
+}
+
+
+.ui-avatar-trigger {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 4px;
+  margin-top: 2px;
+  margin-right: -4px;
+  border-radius: 4px;
+  background: transparent;
+  transition: background-color var(--ui-duration-fast) var(--ui-ease);
+}
+.ui-avatar-trigger:hover,
+.ui-avatar-trigger[data-active] {
+  background: var(--ui-item-bg-selected);
+}
+
+/* Chat row in the Asset AI sidebar — pairs a SidebarItem (click selects the
+   chat) with a hover-only "..." button that opens an actions menu. The
+   button matches the standard SidebarItem `hoverTrailingIcon` style so the
+   row reads like every other sidebar row; it overlays the label's right
+   edge instead of reserving extra padding, so long titles still truncate
+   with the native ellipsis. */
+.asset-chat-row {
+  position: relative;
+}
+/* The Dropdown wrapper is `inline-block, position: relative` by default.
+   Two side-effects to neutralize: (1) inline-block claims a line-height of
+   vertical space even with an absolutely-positioned child, so we force it
+   to block + line-height 0 to collapse to zero in the flow; (2) the absolute
+   trigger inside should anchor to the chat row (28px tall), not the wrapper
+   (0px tall), so we strip the wrapper's positioning context. */
+.asset-chat-row > .ui-dropdown-root {
+  display: block;
+  line-height: 0;
+  position: static;
+}
+/* SidebarItem's label is `display: flex` to vertically center its content,
+   but `text-overflow: ellipsis` is silently ignored on flex containers.
+   Chat rows need real ellipsis since titles are long, so swap to `block`
+   and let line-height do the centering. */
+.asset-chat-row .ui-sidebar-item-label {
+  display: block;
+  line-height: 16px;
+  padding: 0 4px;
+}
+/* On hover the kebab "..." appears at the right edge; reserve space for it
+   in the label so the title truncates with ellipsis before it can slide
+   under the menu button. */
+.asset-chat-row:hover .ui-sidebar-item-label,
+.asset-chat-row:has(.asset-chat-row__menu[aria-expanded='true']) .ui-sidebar-item-label {
+  padding-right: 22px;
+}
+.asset-chat-row__menu {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ui-text);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 80ms ease;
+}
+.asset-chat-row:hover .asset-chat-row__menu,
+.asset-chat-row__menu[aria-expanded='true'] {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ============================================================
+   Asset AI — composer @-mention flow
+   ============================================================ */
+
+.asset-ai-composer-wrap .ui-composer-selection { --ui-composer-leading-inset: 12px; --ui-composer-selection-icon-width: 16px; --ui-composer-selection-icon-offset-y: 1px; }
+.asset-ai-composer-wrap .ui-btn.asset-ai-pick-agent .ui-btn-icon { width: var(--ui-composer-selection-icon-width); height: 14px; transform: translateY(var(--ui-composer-selection-icon-offset-y)); }
+.asset-ai-composer-wrap .ui-btn.asset-ai-pick-agent svg { width: 16px; height: 14px; flex-shrink: 0; }
+.ui-composer-actions .ui-btn.asset-ai-pick-agent[data-size]:not([data-icon-only]):has(> .ui-btn-icon:first-child) { padding-inline: var(--ui-composer-leading-inset) 16px; }
+
+/* Legacy floating tag used by the isolated asset-ai-clean prototype. */
+.asset-ai-agent-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  padding: 3px 4px 3px 8px;
+  border-radius: 8px;
+  background: var(--ui-bg);
+  border: 1px solid var(--ui-bg-muted);
+  box-shadow: 0 1px 2px rgba(18, 23, 34, 0.04);
+  margin-bottom: 8px;
+  font-family: var(--ui-font);
+}
+.asset-ai-agent-tag-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  background: var(--ui-text);
+  color: var(--ui-bg);
+}
+.asset-ai-agent-tag-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ui-text);
+  line-height: 1;
+  padding-right: 2px;
+}
+.asset-ai-agent-tag-dismiss {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  color: var(--ui-text-muted);
+  cursor: pointer;
+  transition: background-color 80ms ease, color 80ms ease;
+}
+.asset-ai-agent-tag-dismiss:hover {
+  background: var(--ui-bg-muted);
+  color: var(--ui-text);
+}
+
+/* @-mention popover — pixel-anchored under the @ caret via a JS
+   measurement. `top`/`left` are set inline by the component; the rule
+   only owns the visual chrome and z-index. */
+.asset-ai-mention-pop {
+  position: absolute;
+  z-index: 30;
+  min-width: 220px;
+  background: var(--ui-bg);
+  border: 1px solid var(--ui-bg-muted);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(18, 23, 34, 0.10),
+              0 1px 2px rgba(18, 23, 34, 0.06);
+  padding: 4px;
+}
+.asset-ai-mention-empty {
+  padding: 10px 10px 12px;
+  font-family: var(--ui-font);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ui-text);
+}
+
+/* Asset AI chat — tighter vertical rhythm for grouped same-role turns. */
+.ui-msg.asset-ai-msg[data-grouped] {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.ui-msg.asset-ai-msg[data-role='assistant'] .ui-msg-bubble {
+  font-size: var(--ui-chat-font-size);
+  line-height: 1.6;
+  gap: var(--ui-space-3);
+}
+.ui-msg.asset-ai-msg[data-role='assistant'] .ui-msg-bubble strong {
+  color: var(--ui-text);
+  font-weight: 600;
+}
+.ui-msg.asset-ai-msg[data-role='assistant'] .ui-msg-bubble em {
+  font-style: italic;
+}
+/* Bubbleless variant — used for attachment-only rows so the chip floats
+   without the gray pill backdrop. The Message still owns the right-/left-
+   alignment via data-role; we just strip the surface and pull the row
+   tight against the next message so the file context reads as a single
+   "<file> + prompt" unit (Claude/ChatGPT pattern). */
+.ui-msg.asset-ai-msg-bubbleless .ui-msg-bubble {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+}
+.ui-msg.asset-ai-msg-bubbleless {
+  padding-top: var(--ui-space-2);
+  padding-bottom: 2px;
+}
+
+/* Sticky top actions in the Chat sidebar — keeps "New chat" and
+   "Search chats" pinned at the top while Agents/Recents scroll below.
+   The bottom border separates the sticky band from scrolled content. */
+.asset-chat-sticky-top {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--ui-bg);
+  border-bottom: 1px solid var(--ui-bg-muted);
+}
+
+/* Persistent favorite mark on a row — sits at the right edge, in the
+   trailing actions cell. Visible only when the row isn't hovered: on
+   hover the action pill takes its place, so the star and the editable
+   star button appear in roughly the same spot. */
+.lib-row-fav-mark {
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  color: var(--ui-text);
+  pointer-events: none;
+  transition: opacity var(--ui-duration-fast) var(--ui-ease);
+}
+.ui-table tbody tr:hover .lib-row-fav-mark { opacity: 0; }
+
+/* Highlight the row whose asset is currently shown in the side panel —
+   gives a visual anchor in the table while the panel is open. Sticks
+   when the row isn't hovered so it stays visible if the cursor moves
+   to the panel. Uses the same hover-bg token as natural row hover. */
+.ui-table tbody tr[data-panel-active] td {
+  background: var(--ui-item-bg-selected);
+}
+
+/* ============================================================
+   Library — Create View dialog form polish
+   ============================================================ */
+.lib-create-view__name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.lib-create-view__name-row > :last-child { flex: 1; }
+
+.lib-create-view__radio-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+/* Sized to optically match the two-line text block (title + meta) so the
+   icon anchors the row instead of floating next to it. */
+.lib-create-view__radio-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--ui-radius-section);
+  background: var(--ui-bg-muted);
+  color: var(--ui-text-muted);
+  flex-shrink: 0;
+}
+.lib-create-view__radio-title {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ui-text);
+  line-height: 1.3;
+}
+.lib-create-view__radio-meta {
+  display: block;
+  font-size: 12px;
+  color: var(--ui-text-muted);
+  line-height: 1.3;
+}
+
+/* ============================================================
+   Library — All filters panel (root + detail with slide)
+   Linear-grade interactions: tight rows, calm hover, decisive focus.
+   ============================================================ */
+.lib-filters__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ui-space-3);
+  width: 100%;
+  min-width: 0;
+}
+.lib-filters__title {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ui-text);
+  letter-spacing: normal;
+}
+.lib-filters__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--ui-accent);
+  color: var(--ui-bg);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.lib-filters__clear {
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  color: var(--ui-text-muted);
+  cursor: pointer;
+  padding: 4px 6px;
+  margin-right: 4px;
+  border-radius: 6px;
+  transition: background-color 80ms ease, color 80ms ease;
+}
+.lib-filters__clear:hover {
+  background: var(--ui-bg-muted);
+  color: var(--ui-text);
+}
+
+.lib-filters__viewport {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.lib-filters__pane {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  transition: transform 260ms cubic-bezier(0.32, 0.72, 0, 1),
+              opacity 200ms ease;
+  background: var(--ui-bg);
+}
+.lib-filters__viewport[data-stage='root'] .lib-filters__pane:nth-child(1) {
+  transform: translateX(0);
+  opacity: 1;
+}
+.lib-filters__viewport[data-stage='root'] .lib-filters__pane:nth-child(2) {
+  transform: translateX(100%);
+  pointer-events: none;
+  opacity: 0;
+}
+.lib-filters__viewport[data-stage='detail'] .lib-filters__pane:nth-child(1) {
+  transform: translateX(-8%);
+  pointer-events: none;
+  opacity: 0;
+}
+.lib-filters__viewport[data-stage='detail'] .lib-filters__pane:nth-child(2) {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+/* Filter panel search uses <SearchInput variant="embedded" /> directly —
+   the input owns its padding and bottom divider. */
+
+.lib-filters__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 4px 0 var(--ui-space-4);
+}
+.lib-filters__body--detail {
+  padding: var(--ui-space-2) 0 var(--ui-space-2);
+}
+
+.lib-filters__section-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--ui-text-muted);
+  padding: var(--ui-space-3) calc(var(--ui-space-3) + 2px) 6px;
+}
+.lib-filters__section-label + .lib-filters__list { margin-top: 0; }
+.lib-filters__list + .lib-filters__section-label {
+  border-top: 1px solid var(--ui-bg-muted);
+  margin-top: 8px;
+  padding-top: var(--ui-space-4);
+}
+
+.lib-filters__list {
+  list-style: none;
+  margin: 0;
+  padding: 0 var(--ui-space-2);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.lib-filters__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  font-size: 13px;
+  color: var(--ui-text);
+  transition: background-color 80ms ease;
+}
+.lib-filters__row:hover { background: var(--ui-bg-muted); }
+.lib-filters__row:focus-visible {
+  outline: none;
+  background: var(--ui-bg-muted);
+  box-shadow: 0 0 0 var(--ui-ring-width) var(--ui-ring);
+}
+.lib-filters__row[data-applied] { color: var(--ui-text); }
+
+.lib-filters__row-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: var(--ui-bg-muted);
+  color: var(--ui-text-muted);
+  flex-shrink: 0;
+  transition: background-color 80ms ease, color 80ms ease;
+}
+.lib-filters__row:hover .lib-filters__row-icon {
+  background: var(--ui-bg);
+  color: var(--ui-text);
+}
+.lib-filters__row-icon[data-tone='favorite'] {
+  color: #B68A00;
+  background: color-mix(in srgb, #FFB000 14%, transparent);
+}
+.lib-filters__row[data-applied] .lib-filters__row-icon[data-tone='favorite'] {
+  color: #FFFFFF;
+  background: #FFB000;
+}
+.lib-filters__row-label {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lib-filters__row-meta {
+  font-size: 11px;
+  color: var(--ui-text-muted);
+  letter-spacing: normal;
+  flex-shrink: 0;
+}
+.lib-filters__row[data-applied] .lib-filters__row-meta {
+  color: var(--ui-accent);
+  font-weight: 500;
+}
+.lib-filters__row-applied {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--ui-accent);
+  color: var(--ui-bg);
+  flex-shrink: 0;
+}
+.lib-filters__row-chevron {
+  color: var(--ui-text-muted);
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 80ms ease, transform 120ms ease;
+  transform: translateX(-2px);
+}
+.lib-filters__row:hover .lib-filters__row-chevron,
+.lib-filters__row:focus-visible .lib-filters__row-chevron {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.lib-filters__empty {
+  padding: var(--ui-space-6) var(--ui-space-4);
+  text-align: center;
+  color: var(--ui-text-muted);
+  font-size: 13px;
+}
+
+/* ── Detail pane ── */
+
+.lib-filters__breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px var(--ui-space-3) 10px 6px;
+  border-bottom: 1px solid var(--ui-bg-muted);
+  font-size: 13px;
+  color: var(--ui-text);
+  flex-shrink: 0;
+}
+.lib-filters__back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ui-text-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 80ms ease, color 80ms ease;
+}
+.lib-filters__back:hover {
+  background: var(--ui-bg-muted);
+  color: var(--ui-text);
+}
+.lib-filters__back:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 var(--ui-ring-width) var(--ui-ring);
+}
+.lib-filters__breadcrumb-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  background: var(--ui-bg-muted);
+  color: var(--ui-text-muted);
+  flex-shrink: 0;
+}
+.lib-filters__crumb-current {
+  color: var(--ui-text);
+  font-weight: 600;
+  letter-spacing: normal;
+}
+
+.lib-filters__op-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px var(--ui-space-3);
+  border-radius: 8px;
+  margin: 0 var(--ui-space-2);
+  transition: background-color 100ms ease;
+}
+.lib-filters__op-row[data-active] { background: var(--ui-bg-muted); }
+.lib-filters__op-value {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-space-2);
+  padding: 4px 0 4px 26px;
+}
+
+.lib-filters__date-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.lib-filters__date-sep {
+  font-size: 12px;
+  color: var(--ui-text-muted);
+}
+
+.lib-filters__chip-row {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ui-space-3);
+  font-size: 12px;
+}
+.lib-filters__inline-action {
+  background: transparent;
+  border: 0;
+  font: inherit;
+  font-size: 12px;
+  color: var(--ui-accent);
+  cursor: pointer;
+  padding: 0;
+}
+.lib-filters__inline-action:hover { text-decoration: underline; }
+.lib-filters__inline-action:disabled {
+  color: var(--ui-text-muted);
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
+.lib-filters__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.lib-filters__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 4px 2px 8px;
+  border-radius: 999px;
+  background: var(--ui-bg-muted);
+  font-size: 12px;
+  color: var(--ui-text);
+}
+.lib-filters__chip > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ui-text-muted);
+  cursor: pointer;
+  padding: 0;
+}
+.lib-filters__chip > button:hover {
+  background: var(--ui-bg);
+  color: var(--ui-text);
+}
+
+.lib-filters__footer {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ui-space-2);
+  padding: 10px var(--ui-space-3);
+  border-top: 1px solid var(--ui-bg-muted);
+  background: var(--ui-bg);
+}
+.lib-filters__footer-back {
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  color: var(--ui-text-muted);
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 6px;
+  transition: background-color 80ms ease, color 80ms ease;
+}
+.lib-filters__footer-back:hover {
+  background: var(--ui-bg-muted);
+  color: var(--ui-text);
+}
+.lib-filters__kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 11px;
+  line-height: 1;
+  font-family: var(--ui-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+}
+
+/* Compact (minified) Library search: the Search/AI toggle sits where the
+   leading icon would be, so tighten the field's left padding to seat the
+   toggle closer to the edge. */
+.ui-input.lib-discovery-input--compact[data-size='lg']:has(> .ui-input-icon:first-child) {
+  padding-left: 8px;
+}
+/* Breathing room on the right so the send circle isn't flush to the edge —
+   matters most in AI mode where the trailing group is widest. */
+.ui-input.lib-discovery-input[data-size='lg']:has(> .ui-input-icon:last-child) {
+  padding-right: 8px;
+}
+
+/* The discovery field is ALWAYS borderless — the .lib-composer card around it
+   is the single owner of the border, radius, background and focus state. One
+   border, one layer, in both Search and AI. The :hover selector mirrors the
+   base .ui-input:hover specificity (:not chain) so it can't re-add a border. */
+.ui-input.lib-discovery-input,
+.ui-input.lib-discovery-input:focus-within,
+.ui-input.lib-discovery-input:hover:not([data-disabled]):not(:focus-within) {
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+}
+/* The lg field is 48px tall but the <input> only spans its text line, leaving
+   dead padding above/below where clicks don't focus. Stretch it to fill the
+   height so the whole row is a focus target (everything that isn't a CTA). */
+.ui-input.lib-discovery-input .ui-input-field {
+  align-self: stretch;
+}
+
+/* ── Composer card: the one bordered surface, identical in both modes ───── */
+.lib-composer {
+  width: 100%;
+  border: 1px solid var(--ui-border);
+  border-radius: 14px;
+  background: var(--ui-bg);
+  box-shadow: 0 1px 2px rgba(15, 20, 30, 0.04);
+  transition: border-color 120ms ease,
+              border-radius 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+/* AI mode, single row → full pill. Use the *actual* pill radius (half the 50px
+   row height = 25px) rather than 999px, so the Search→AI radius morph stays
+   smooth instead of snapping. Once it grows (tray) drop to a rounded rect. */
+.lib-composer[data-ai] {
+  border-radius: 25px;
+}
+.lib-composer[data-ai][data-has-tray] {
+  border-radius: 24px;
+}
+.lib-composer:focus-within {
+  border-color: var(--ui-accent);
+}
+
+.lib-composer-tray {
+  align-self: stretch;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  /* Left inset matches the top inset (symmetric), not the wider field padding. */
+  padding: 10px 10px 6px;
+}
+
+/* File attachment card */
+.lib-file-card {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 240px;
+  padding: 6px 12px 6px 6px;
+  border-radius: 12px;
+  background: var(--ui-bg);
+  border: 1px solid var(--ui-bg-muted);
+  box-shadow: 0 1px 2px rgba(15, 20, 30, 0.04);
+}
+.lib-file-card__tile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  background: var(--ui-bg-muted);
+  color: var(--ui-text-muted);
+}
+.lib-file-card__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.3;
+}
+.lib-file-card__name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ui-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lib-file-card__meta {
+  font-size: 11px;
+  color: var(--ui-text-muted);
+}
+.lib-file-card__remove {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: var(--ui-text);
+  color: #fff;
+  cursor: pointer;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 100ms ease, transform 100ms ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+.lib-file-card:hover .lib-file-card__remove,
+.lib-file-card__remove:focus-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Picked-agent chip */
+/* Inline selected-agent pill — replaces the picker button in the toolbar.
+   Same 30px height as the CTAs; click to swap, × to clear. */
+.lib-agent-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  max-width: 180px;
+  padding: 0 4px 0 8px;
+  border-radius: 999px;
+  border: 0.5px solid var(--ui-border);
+  background: var(--ui-bg);
+  color: var(--ui-text);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 120ms ease;
+}
+.lib-agent-inline:hover {
+  background: var(--ui-bg-muted);
+}
+.lib-agent-inline__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+}
+.lib-agent-inline__remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-left: -4px; /* tighten the gap before the × to ~2px */
+  border-radius: 999px;
+  color: var(--ui-text-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 100ms ease, color 100ms ease;
+}
+.lib-agent-inline__remove:hover {
+  color: var(--ui-text);
+}
+
+/* ChatGPT-style dark tooltip for the AI composer CTAs (+ / agent). Pure CSS,
+   no caret, reveals instantly on hover. */
+.lib-ai-cta {
+  position: relative;
+}
+.lib-ai-cta::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%);
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: var(--ui-text);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.25;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(15, 20, 30, 0.22);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 40;
+}
+.lib-ai-cta:hover::after,
+.lib-ai-cta:focus-visible::after {
+  opacity: 1;
+}
+
+@media (max-width: 600px) {
+  .ui-panel[data-side='right'] {
+    width: 100vw !important;
+  }
+}
+
+
+/* Global search trigger uses Button; the palette lives in @asset/ui. */
+.ui-app-sidebar .component-search-trigger { width: 100%; height: 36px; padding: 0 12px; gap: 10px; flex-shrink: 0; margin-bottom: 8px; border-radius: 10px; background: var(--app-sidebar-hover); }
+.component-search-trigger .ui-sidebar-item-label { font-size: 14px; }
+.component-search-trigger kbd { font: inherit; font-size: 10px; color: var(--ui-text-muted); white-space: nowrap; }
+
+/* Library chrome reuses AppSidebar with the signed-in Studio account. */
+.ui-app-sidebar.shell-nav { --ui-app-sidebar-w: var(--ui-sidebar-w); height: 100%; min-height: 0; overflow: hidden; padding-top: 12px; padding-bottom: 12px; }
+.shell-nav .ui-app-sidebar-nav { min-height: 0; overflow-y: auto; scrollbar-width: thin; }
+.shell-nav .ui-app-sidebar-nav > .ui-app-nav-group:first-child { margin-top: 0; }
+.shell-nav .ui-app-sidebar-nav:not([data-overflow-bottom]) ~ .ui-app-sidebar-footer { border-top-color: transparent; }
+.assety-gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin: 28px 0; }
+.assety-specimen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 220px; border: 1px solid var(--ui-border); border-radius: 12px; background: var(--ui-bg); }
+.assety-specimen > span { font-size: 12px; color: var(--ui-text-muted); text-transform: capitalize; }
+.icons-library-note { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; color: var(--ui-text-muted); font-size: 12px; margin-bottom: 28px; }
+.icons-library-note a { margin-left: auto; color: var(--ui-text); text-decoration: none; }
+.icons-toolbar { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+.icons-toolbar > .ui-search { flex: 1; }
+.icons-toolbar > div { display: flex; gap: 2px; }
+.icons-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(115px, 1fr)); gap: 10px; margin-bottom: 20px; }
+.icons-tile { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; min-width: 0; height: 112px; padding: 12px 8px; border: 1px solid var(--ui-border); border-radius: 10px; background: var(--ui-bg); }
+.icons-tile:hover { background: var(--ui-bg-subtle, #f7f7f7); border-color: var(--ui-text-muted); }
+.icons-tile code { max-width: 100%; font-size: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ui-text-muted); }
+.icons-empty { display: grid; justify-items: center; padding: 32px; color: var(--ui-text-muted); }
+
+.demo-courses-toolbar { flex-wrap: wrap; }
+.demo-courses-toolbar .ui-toolbar-leading { flex-wrap: wrap; }
+.demo-courses-toolbar .ui-toolbar-trailing { margin-left: auto; min-width: 200px; }
+
+.ui-sidebar.ui-app-sidebar.shell-nav { background: var(--playground-chrome-bg); border-right: 0; }
+
+.shell-nav-tools { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-shrink: 0; }
+.shell-nav-tools .component-search-trigger { flex: 1; min-width: 0; width: auto; margin-bottom: 0; }
+.shell-nav-tools .shell-nav-toggle { flex-shrink: 0; }
+.shell-nav[data-collapsed] .shell-nav-tools { flex-direction: column; gap: 2px; }
+.shell-nav[data-collapsed] .shell-nav-toggle { order: -1; width: 40px; height: 36px; }
+.shell-nav[data-collapsed] .component-search-trigger { flex: none; width: 40px; height: 36px; padding: 0; justify-content: center; }
+
+.shell-nav[data-collapsed] .component-search-trigger { background: transparent; }
+.shell-nav[data-collapsed] .component-search-trigger:hover { background: var(--app-sidebar-hover); }
+
+.shell-page-content { min-height: 100%; }
+.shell[data-preview] { background: var(--playground-chrome-bg); }
+.shell[data-preview] .shell-main { position: relative; isolation: isolate; margin: 4px 4px 4px 0; border-radius: var(--playground-frame-radius); overflow: hidden; background: var(--ui-bg); }
+.shell[data-preview] .shell-page-content { position: relative; z-index: 0; height: 100%; min-height: 0; overflow: auto; }
+.shell[data-preview] .shell-page-content > * { height: 100%; min-height: 0; }
+.shell[data-preview] .shell-main::after { content: ''; position: absolute; inset: 0; z-index: 20; pointer-events: none; border-radius: inherit; box-shadow: var(--playground-frame-outline); }
+
+.editor-in-progress { display: grid; place-items: center; min-height: 100%; background: var(--ui-bg); color: var(--ui-text-muted); font-size: 15px; }
+
+/* Library can expose the same search in the header without a second hero. */
+.lib-page-header-search.ui-page-header { display: flex; flex-wrap: wrap; height: auto; min-height: 60px; gap: var(--ui-space-3); }
+.lib-page-header-search > .ui-page-header-title { flex: 0 1 auto; }
+.lib-page-header-search > .ui-page-header-center { flex: 1 1 220px; min-width: 180px; max-width: 400px; }
+.lib-page-header-search > .ui-page-header-center > div { width: 100%; }
+.lib-page-header-search > .ui-page-header-actions { margin-left: auto; }
+.lib-header-composer { width: 100%; }
+.lib-header-composer .ui-input[data-size] > .ui-input-icon { width: auto; height: auto; }
+@media (max-width: 700px) {
+  .lib-page-header-search > .ui-page-header-center { order: 3; flex-basis: 100%; max-width: none; }
+}
+
+.shell-nav .studio-project-drop-active { border-radius: var(--ui-radius-item); outline: 1px solid var(--ui-accent); outline-offset: -1px; background: color-mix(in srgb, var(--ui-accent) 8%, var(--ui-bg)); }
+.shell-nav [draggable="true"], .studio-prototype-card[draggable="true"], .studio-prototype-list [draggable="true"] { cursor: grab; }
+.shell-nav [draggable="true"]:active, .studio-prototype-card[draggable="true"]:active { cursor: grabbing; }
+
+/* Match the profile button’s bottom inset to the sidebar’s side inset. */
+.shell-nav .ui-app-sidebar-footer { min-height: 0; padding-bottom: 0; }

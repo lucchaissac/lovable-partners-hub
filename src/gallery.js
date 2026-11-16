@@ -29,7 +29,7 @@ function partnerCard() {
   const icon = (shape, className) => createElement(shape, { class: className, width: 20, height: 20, 'stroke-width': 1.8, 'aria-hidden': 'true' }).outerHTML;
   return `<figure class="gallery-item gallery-partner-demo" data-gallery-example="partner-card" role="img" aria-label="Partner profile illustration: LoCo AI Solutions, Expert 2026, United States, rated 5.0, with an Eames Institute website preview.">
     <div class="partner-card">
-      <div class="partner-preview"><img src="${media}eames-preview-1280.webp" srcset="${media}eames-preview-640.webp 640w, ${media}eames-preview-1280.webp 1280w" sizes="${sizes}" width="3392" height="1788" alt="" decoding="async" /></div>
+      <div class="partner-preview">${motion(4)}<img class="partner-site-preview" src="${media}eames-preview-1280.webp" srcset="${media}eames-preview-640.webp 640w, ${media}eames-preview-1280.webp 1280w" sizes="${sizes}" width="3392" height="1788" alt="" decoding="async" /></div>
       <div class="partner-summary">
         <div class="partner-avatar"><img src="${media}loco-logo.webp" width="128" height="128" alt="" decoding="async" /></div>
         <div class="partner-name">LoCo AI Solutions</div>

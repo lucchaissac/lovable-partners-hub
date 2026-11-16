@@ -1,0 +1,528 @@
+.ecw-layout {
+  display: flex;
+  container: complex-widget / inline-size;
+  align-items: stretch;
+  min-width: 0;
+  max-width: 100%;
+  color: var(--ui-text);
+  font: 14px/1.4 var(--ui-font);
+}
+.ecw-project,
+.ecw-timeline,
+.ecw-quote {
+  flex: 1;
+  min-width: 0;
+  background: var(--ui-bg);
+  font: 14px/1.4 var(--ui-font);
+  color: var(--ui-text);
+  padding: var(--ui-space-6);
+}
+.ecw-heading {
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-3);
+  margin-bottom: var(--ui-space-5);
+}
+.ecw-heading > .ui-input,
+.ecw-heading > .ecw-project-title {
+  flex: 1;
+  min-width: 0;
+}
+.ecw-heading input {
+  font-size: 24px;
+  font-weight: 600;
+}
+.ecw-heading .ui-input,
+.ecw-stage .ui-input {
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+}
+.ecw-heading .ui-input:focus-within,
+.ecw-stage .ui-input:focus-within {
+  border-color: var(--ui-accent);
+}
+.ecw-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ui-space-3);
+  margin: var(--ui-space-5) 0;
+}
+.ecw-summary > div {
+  border-left: 3px solid var(--ui-accent);
+  padding-left: var(--ui-space-2);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+.ecw-summary > div:last-child {
+  border-left: 0;
+  border-right: 3px solid var(--ui-accent);
+  padding-left: 0;
+  padding-right: var(--ui-space-2);
+  align-items: flex-end;
+}
+.ecw-summary small,
+.ecw-muted {
+  color: var(--ui-text-muted);
+}
+.ecw-summary > span {
+  background: var(--ui-accent);
+  color: var(--ui-bg);
+  border-radius: 999px;
+  padding: 4px 10px;
+  white-space: nowrap;
+  font-size: 12px;
+}
+.ecw-project-filters {
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-2);
+  flex-wrap: wrap;
+  margin-bottom: var(--ui-space-3);
+}
+.ecw-project-filters > span {
+  flex: 1;
+}
+.ecw-project-filters .ui-tabs {
+  flex-shrink: 0;
+}
+.ecw-subplan {
+  margin-bottom: var(--ui-space-4);
+}
+.ecw-subplan .ewt-checklist {
+  padding: 0;
+}
+.ecw-subplan .ewt-checklist > header {
+  padding: var(--ui-space-2) 0;
+}
+.ecw-subplan .ewt-checklist .ewt-checklist-title {
+  font-size: 20px;
+}
+.ecw-panel-host:empty {
+  display: none;
+}
+.ecw-panel-host {
+  width: 360px;
+  flex-shrink: 0;
+  max-width: 50%;
+  border-left: 1px solid var(--ui-divider);
+}
+.ecw-panel-host > .ewt-panel {
+  width: 100%;
+  height: 680px;
+  border: 0;
+}
+.ecw-filter-empty,
+.ecw-source {
+  color: var(--ui-text-muted);
+  font-size: 12px;
+  margin: var(--ui-space-2) 0;
+}
+.ecw-source {
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-2);
+}
+.ecw-picker > div {
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-3);
+  padding: var(--ui-space-4) 0;
+  border-bottom: 1px solid var(--ui-divider);
+}
+.ecw-picker > div > div {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 4px;
+}
+.ecw-picker small {
+  color: var(--ui-text-muted);
+}
+.ecw-empty {
+  padding: var(--ui-space-6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ui-space-3);
+}
+.ecw-stages {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-space-4);
+}
+.ecw-stage {
+  position: relative;
+  padding: var(--ui-space-6) var(--ui-space-4) var(--ui-space-3);
+  border: 1px solid var(--ui-divider);
+  border-radius: var(--ui-radius-item);
+}
+.ecw-stage[data-drop] {
+  outline: 2px solid var(--ui-accent);
+}
+.ecw-stage-actions {
+  display: flex;
+  position: absolute;
+  right: 4px;
+  top: 2px;
+  opacity: 0;
+}
+.ecw-stage:hover .ecw-stage-actions,
+.ecw-stage:focus-within .ecw-stage-actions {
+  opacity: 1;
+}
+.ecw-stage-progress {
+  width: 100%;
+  height: 6px;
+  accent-color: var(--ui-accent);
+  margin: var(--ui-space-4) 0;
+  cursor: pointer;
+}
+.ecw-inline-title {
+  display:block;
+  width:100%;
+  min-width:0;
+  border:0;
+  border-radius:0;
+  outline:0;
+  padding:4px 8px;
+  resize:none;
+  overflow:hidden;
+  overflow-wrap:anywhere;
+  background:transparent;
+  color:inherit;
+  font:inherit;
+  line-height:1.4;
+}
+.ecw-inline-title:focus {box-shadow:0 1px var(--ui-accent);}
+.ecw-project-title {font-size:24px;font-weight:600;}
+.ecw-stage-title {
+  font-size: 20px;
+  font-weight: 600;
+}
+.ecw-stage-dates {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--ui-space-3);
+  margin: var(--ui-space-2) 0;
+}
+.ecw-description {
+  font: inherit;
+  color: inherit;
+  width: 100%;
+  min-height: 64px;
+  resize: vertical;
+  background: transparent;
+  border: 1px solid transparent;
+  padding: var(--ui-space-2);
+  border-radius: var(--ui-radius-item);
+}
+.ecw-description:focus {
+  outline: 1px solid var(--ui-accent);
+}
+.ecw-timeline > .ui-btn {
+  margin-top: var(--ui-space-3);
+}
+@media (max-width: 760px) {
+  .ecw-layout:has(.ecw-panel-host:not(:empty)) > .ecw-project {
+    display: none;
+  }
+  .ecw-panel-host {
+    max-width: none;
+    width: 100%;
+  }
+  .ecw-project,
+  .ecw-timeline,
+  .ecw-quote {
+    padding: var(--ui-space-4);
+  }
+}
+.ecw-quote-empty {
+  position: relative;
+  min-height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top: 1px solid var(--ui-divider);
+}
+.ecw-quote-skeleton {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  pointer-events: none;
+}
+.ecw-quote-skeleton i {
+  border-right: 1px solid var(--ui-divider);
+  height: 130px;
+  background: linear-gradient(var(--ui-bg-subtle) 36px, transparent 36px);
+}
+.ecw-quote-empty > .ui-btn {
+  position: relative;
+}
+.ecw-quote-table-wrap {
+  overflow: auto;
+  max-width: 100%;
+}
+.ecw-quote-table {
+  width: 100%;
+  border-collapse: collapse;
+  font: 14px/1.4 var(--ui-font);
+  color: var(--ui-text);
+}
+.ecw-quote-table th {
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--ui-text-muted);
+}
+.ecw-quote-table :is(th, td) {
+  padding: 12px 8px;
+  text-align: left;
+  border-bottom: 1px solid var(--ui-divider);
+}
+.ecw-quote-table :is(th, td):last-child {
+  text-align: right;
+}
+.ecw-quote-table small {
+  display: block;
+  color: var(--ui-text-muted);
+  font-size: 12px;
+}
+.ecw-quote-table--editing {
+  min-width: 720px;
+}
+.ecw-quote-table--editing th:first-child {
+  width: 28%;
+}
+.ecw-quote-table--editing .ui-input {
+  width: 100%;
+  min-width: 70px;
+}
+.ecw-quote-table--editing .ui-input input {
+  width: 100%;
+}
+.ecw-quote-total {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--ui-space-6);
+  padding: var(--ui-space-4);
+}
+.ecw-quote-dialog {
+  height: 94vh;
+  font: 14px/1.4 var(--ui-font);
+}
+.ecw-quote-editor-header {
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-3);
+  padding: var(--ui-space-3) var(--ui-space-4);
+  border-bottom: 1px solid var(--ui-divider);
+  flex-shrink: 0;
+}
+.ecw-quote-editor-header > span:nth-of-type(2) {
+  flex: 1;
+}
+.ecw-quote-editor-header > .ui-input {
+  max-width: 250px;
+}
+.ecw-quote-editor {
+  padding: var(--ui-space-4);
+  color: var(--ui-text);
+}
+.ecw-quote-settings {
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-3);
+  margin: var(--ui-space-5) 0;
+}
+.ecw-quote-settings > span:nth-of-type(2) {
+  flex: 1;
+}
+.ecw-quote-section {
+  margin-top: var(--ui-space-5);
+  border-bottom: 1px solid var(--ui-divider);
+  padding-bottom: var(--ui-space-4);
+}
+.ecw-quote-section > header {
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-2);
+  margin-bottom: var(--ui-space-3);
+}
+.ecw-quote-section > header > .ui-input,
+.ecw-quote-section > header > span {
+  flex: 1;
+}
+.ecw-adjustment {
+  display: flex;
+  gap: 4px;
+  max-width: 160px;
+}
+.ecw-adjustment > .ui-input {
+  width: 80px;
+  min-width: 60px;
+}
+.ecw-totals {
+  border: 1px solid var(--ui-divider);
+  border-radius: var(--ui-radius-item);
+  width: 300px;
+  max-width: 100%;
+  margin: var(--ui-space-4) 0 0 auto;
+  overflow: hidden;
+}
+.ecw-totals > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ui-space-3);
+  padding: var(--ui-space-3);
+}
+.ecw-totals > .ui-btn {
+  margin: 4px 8px;
+}
+.ecw-totals > div > .ui-input {
+  max-width: 100px;
+}
+.ecw-totals .ecw-total-final {
+  border-top: 1px solid var(--ui-divider);
+  background: var(--ui-bg-subtle);
+}
+.ecw-totals-toggle {
+  display: flex;
+  justify-content: flex-end;
+}
+.ecw-add-section {
+  width: 100%;
+  margin: var(--ui-space-4) 0;
+  border-style: solid;
+}
+.ecw-terms-list {
+  margin: var(--ui-space-4) 0;
+}
+.ecw-terms-list > div {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  align-items: center;
+  min-height: 42px;
+}
+.ecw-terms-list dt {
+  color: var(--ui-text-muted);
+}
+.ecw-terms-list dd {
+  margin: 0;
+}
+.ecw-marketing {
+  display: flex;
+  gap: var(--ui-space-2);
+  margin-bottom: var(--ui-space-4);
+}
+.ecw-terms-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-space-4);
+}
+@media (max-width: 760px) {
+  .ecw-quote-editor-header {
+    flex-wrap: wrap;
+  }
+  .ecw-quote-settings {
+    flex-wrap: wrap;
+  }
+  .ecw-quote-editor {
+    padding: 0;
+  }
+  .ecw-project-filters {
+    align-items: flex-start;
+  }
+  .ecw-summary {
+    gap: 4px;
+  }
+  .ecw-summary .ui-btn {
+    white-space: normal;
+    height: auto;
+  }
+}
+
+/* Keep portaled menus above the quote and project dialog surfaces. */
+.ui-dialog-overlay.ecw-dialog-overlay,
+.ui-dialog-overlay.ecw-quote-overlay {
+  z-index: var(--ui-z-panel);
+}
+
+.ecw-project,
+.ecw-timeline,
+.ecw-quote {
+  container: project-content / inline-size;
+}
+.ecw-stage-grip {
+  touch-action: none;
+  cursor: grab;
+}
+.ecw-stage-grip:active {
+  cursor: grabbing;
+}
+@container project-content (max-width: 480px) {
+  .ecw-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    row-gap: var(--ui-space-3);
+  }
+  .ecw-summary > span {
+    grid-row: 2;
+    grid-column: 1 / -1;
+    justify-self: center;
+  }
+  .ecw-summary > div:last-child {
+    grid-column: 2;
+    grid-row: 1;
+  }
+}
+
+/* Keep dense desktop filters together; compact layouts expose them on demand. */
+.ecw-project-filters > .ui-tabs {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+}
+.ecw-project-filters .ui-tabs-list { width: max-content; }
+.ecw-compact-filters { display:none; margin-bottom:var(--ui-space-4); }
+.ecw-compact-filter-bar { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:var(--ui-space-2); }
+.ecw-compact-filter-bar .ui-btn { min-height:36px; }
+.ecw-active-filters { margin:var(--ui-space-2) 0 0; color:var(--ui-text-muted); font-size:12px; overflow-wrap:anywhere; }
+.ecw-filter-popover { padding:var(--ui-space-4); max-height:min(520px,80vh); max-width:calc(100vw - 16px); overflow-y:auto; }
+.ecw-filter-popover>strong { display:block; font-size:12px; font-weight:500; color:var(--ui-text-muted); margin-bottom:var(--ui-space-2); }
+.ecw-filter-popover>.ui-radio-group { margin-bottom:var(--ui-space-4); gap:0; }
+.ecw-filter-popover .ui-radio-label { min-height:36px; }
+.ecw-filter-popover footer { display:flex; justify-content:space-between; gap:var(--ui-space-2); padding-top:var(--ui-space-3); border-top:1px solid var(--ui-divider); }
+@container project-content (max-width:720px) {
+  .ecw-project-filters { display:none; }
+  .ecw-compact-filters { display:block; }
+}
+@container complex-widget (max-width:480px) {
+  .ecw-project { padding:var(--ui-space-4); }
+}
+@container complex-widget (max-width:320px) {
+  .ecw-project { padding-inline:0; }
+}
+@container project-content (max-width: 480px) {
+  .ecw-project-filters > .ui-tabs { flex-basis: 100%; }
+  .ecw-stage-actions { opacity: 1; }
+}
+@container project-content (max-width: 299px) {
+  .ecw-summary { grid-template-columns: minmax(0,1fr); }
+  .ecw-summary > div:last-child {
+    grid-column: 1;
+    grid-row: 2;
+    border-right: 0;
+    border-left: 3px solid var(--ui-accent);
+    padding-left: var(--ui-space-2);
+    padding-right: 0;
+    align-items: flex-start;
+  }
+  .ecw-summary > span { grid-row: 3; justify-self: start; }
+  .ecw-stage-dates { flex-direction: column; gap: var(--ui-space-2); }
+  .ecw-stage-dates > .ui-btn { justify-content: flex-start; align-self: flex-start; }
+}

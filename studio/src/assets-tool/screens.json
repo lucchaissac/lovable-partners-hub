@@ -1,0 +1,98 @@
+[
+  {
+    "id": "courses",
+    "title": "Courses",
+    "width": 960,
+    "height": 604,
+    "src": "/studio/assets/asset-screens/courses.jpg",
+    "source": "/studio/assets/asset-screens/source/courses.html"
+  },
+  {
+    "id": "playbooks",
+    "title": "Playbooks",
+    "width": 960,
+    "height": 604,
+    "src": "/studio/assets/asset-screens/playbooks.jpg",
+    "source": "/studio/assets/asset-screens/source/playbooks.html"
+  },
+  {
+    "id": "agents",
+    "title": "Agents",
+    "width": 960,
+    "height": 604,
+    "src": "/studio/assets/asset-screens/agents.jpg",
+    "source": "/studio/assets/asset-screens/source/agents.html"
+  },
+  {
+    "id": "presentations",
+    "title": "Presentations",
+    "width": 960,
+    "height": 604,
+    "src": "/studio/assets/asset-screens/presentations.jpg",
+    "source": "/studio/assets/asset-screens/source/presentations.html"
+  },
+  {
+    "id": "learning",
+    "title": "My learning",
+    "width": 960,
+    "height": 604,
+    "src": "/studio/assets/asset-screens/learning.jpg",
+    "source": "/studio/assets/asset-screens/source/learning.html"
+  },
+  {
+    "id": "train",
+    "title": "Train",
+    "width": 960,
+    "height": 604,
+    "src": "/studio/assets/asset-screens/train.jpg",
+    "source": "/studio/assets/asset-screens/source/train.html"
+  },
+  {
+    "id": "pricing",
+    "title": "Pricing viewer",
+    "width": 960,
+    "height": 604,
+    "src": "/studio/assets/asset-screens/pricing.jpg",
+    "source": "/studio/assets/asset-screens/source/pricing.html"
+  },
+  {
+    "id": "roleplay",
+    "title": "AI roleplay",
+    "width": 960,
+    "height": 604,
+    "src": "/studio/assets/asset-screens/roleplay.jpg",
+    "source": "/studio/assets/asset-screens/source/roleplay.html"
+  },
+  {
+    "id": "certification",
+    "title": "Certification",
+    "width": 960,
+    "height": 604,
+    "src": "/studio/assets/asset-screens/certification.jpg",
+    "source": "/studio/assets/asset-screens/source/certification.html"
+  },
+  {
+    "id": "editor",
+    "title": "Editor",
+    "width": 960,
+    "height": 604,
+    "src": "/studio/assets/asset-screens/editor.jpg",
+    "source": "/studio/assets/asset-screens/source/editor.html"
+  },
+  {
+    "id": "collaborate",
+    "title": "Collaborate",
+    "width": 960,
+    "height": 604,
+    "src": "/studio/assets/asset-screens/collaborate.jpg",
+    "source": "/studio/assets/asset-screens/source/collaborate.html"
+  },
+  {
+    "id": "organize",
+    "title": "Organize",
+    "width": 960,
+    "height": 604,
+    "src": "/studio/assets/asset-screens/organize.jpg",
+    "source": "/studio/assets/asset-screens/source/organize.html"
+  }
+]

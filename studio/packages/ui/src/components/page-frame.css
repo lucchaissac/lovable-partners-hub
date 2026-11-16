@@ -1,0 +1,6 @@
+.ui-page-frame { display: flex; width: 100%; height: 100%; min-height: 0; overflow: hidden; background: var(--ui-bg); color: var(--ui-text); font-family: var(--ui-font); }
+.ui-page-frame-sidebar { display: flex; flex: 0 0 auto; min-height: 0; }
+.ui-page-frame-sidebar > .ui-sidebar { height: 100%; }
+.ui-page-frame-main { display: flex; flex: 1; flex-direction: column; min-width: 0; min-height: 0; }
+.ui-page-frame-main > .ui-page-header { flex-shrink: 0; }
+.ui-page-frame-content { flex: 1; min-height: 0; overflow: auto; padding: var(--ui-space-6); }

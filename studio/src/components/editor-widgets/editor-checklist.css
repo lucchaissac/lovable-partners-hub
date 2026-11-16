@@ -1,0 +1,152 @@
+.ewt-layout { display:flex; min-width:0; min-height:520px; background:var(--ui-bg); color:var(--ui-text); font:14px/1.4 var(--ui-font); position:relative; border:1px solid var(--ui-divider); border-radius:var(--ui-radius-section); overflow:clip; }
+.ewt-layout * {box-sizing:border-box;}
+.ewt-checklist {flex:1;min-width:0;padding:var(--ui-space-6);align-self:flex-start;container:task-list / inline-size;}
+.ewt-checklist>header {display:flex;flex-wrap:wrap;gap:var(--ui-space-2);align-items:center;margin-bottom:var(--ui-space-4);}
+.ewt-heading {display:flex;align-items:flex-start;gap:var(--ui-space-2);flex:1 1 180px;min-width:0;}
+.ewt-heading>.ui-btn {flex-shrink:0;}
+.ewt-checklist-title {display:block;flex:1;width:100%;min-width:0;font-size:24px;font-weight:600;line-height:1.3;padding:0;resize:none;overflow:hidden;}
+.ewt-checklist input,.ewt-checklist-title,.ewt-task-name,.ewt-panel-title {font-family:inherit;color:inherit;background:transparent;border:0;outline:none;}
+.ewt-checklist input:focus,.ewt-checklist-title:focus,.ewt-task-name:focus,.ewt-panel-title:focus {box-shadow:0 1px var(--ui-accent);}
+.ewt-header-controls {display:flex;align-items:center;justify-content:flex-end;gap:var(--ui-space-2);flex:0 0 auto;max-width:100%;margin-left:auto;}
+.ewt-view-menu {display:none;}
+.ewt-status.ui-btn {width:112px;justify-content:space-between;}
+.ewt-progress {display:flex;align-items:center;gap:var(--ui-space-2);font-size:12px;color:var(--ui-text-muted);white-space:nowrap;}
+.ewt-progress progress {width:40px;height:5px;accent-color:var(--ui-accent);}
+.ewt-row {display:grid;grid-template-columns:32px minmax(0,1fr) auto;align-items:start;column-gap:var(--ui-space-2);row-gap:var(--ui-space-1);min-height:56px;padding:var(--ui-space-3) var(--ui-space-6);border-bottom:1px solid var(--ui-divider);}
+.ewt-row>.ui-checkbox {justify-self:center;margin-top:8px;position:relative;}
+.ewt-row>.ui-checkbox::before {content:"";position:absolute;inset:-8px;}
+.ewt-row-actions {display:flex;align-items:center;gap:var(--ui-space-1);white-space:nowrap;}
+.ewt-details.ui-btn[data-size] {flex-shrink:0;gap:0;padding-inline:var(--ui-space-2);}
+.ewt-details > span:not(.ui-btn-icon) {margin-right:var(--ui-space-1);}
+.ewt-row-actions .ui-btn,.ewt-checklist>header .ui-btn {min-width:32px;min-height:32px;}
+.ewt-row:hover,.ewt-row:focus-within {background:var(--ui-bg-subtle);}
+.ewt-task-main {min-width:0;}
+.ewt-task-open,.ewt-mobile-options {display:none;}
+.ewt-task-open {width:100%;min-height:36px;padding:3px 0;border:0;background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer;}
+.ewt-task-open-title {display:block;overflow-wrap:anywhere;font-size:var(--ewt-task-size,16px);font-weight:var(--ewt-task-weight,400);line-height:1.4;}
+.ewt-task-meta {display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:4px;color:var(--ui-text-muted);font-size:12px;font-weight:400;line-height:1.4;}
+.ewt-task-meta>span {display:inline-flex;align-items:center;gap:4px;min-width:0;overflow-wrap:anywhere;}
+.ewt-task-meta svg {flex-shrink:0;}
+.ewt-task-open:focus-visible {outline:2px solid var(--ui-accent);outline-offset:2px;border-radius:var(--ui-radius-item);}
+.ewt-row[data-complete] .ewt-task-open-title {text-decoration:line-through;color:var(--ui-text-muted);}
+.ewt-task-name {display:block;width:100%;min-width:0;padding:5px 0;resize:none;overflow:hidden;overflow-wrap:anywhere;font-size:16px;line-height:1.4;}
+.ewt-row[data-complete] .ewt-task-name {text-decoration:line-through;color:var(--ui-text-muted);}
+.ewt-row .ewt-details,.ewt-row-options {opacity:0;}
+.ewt-row:hover .ewt-details,.ewt-row:focus-within .ewt-details,.ewt-row:hover .ewt-row-options,.ewt-row:focus-within .ewt-row-options {opacity:1;}
+.ewt-add {margin-top:var(--ui-space-3);}
+.ewt-board {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--ui-space-3);}
+.ewt-board>section {background:var(--ui-bg-subtle);padding:var(--ui-space-3);border-radius:var(--ui-radius-item);min-width:0;}
+.ewt-board h4 {display:flex;align-items:center;gap:var(--ui-space-2);font-size:14px;font-weight:500;margin:0 0 var(--ui-space-3);}
+.ewt-board h4>span {color:var(--ui-text-muted);font-size:12px;font-weight:400;}
+.ewt-board-empty {margin:0 0 var(--ui-space-3);padding:var(--ui-space-3) 0;color:var(--ui-text-muted);font-size:14px;}
+.ewt-board-compact-controls {display:none;margin:var(--ui-space-4) 0 var(--ui-space-3);}
+.ewt-board-compact-controls .ui-dropdown-root {max-width:100%;}
+.ewt-board-compact-controls .ui-btn {width:160px;max-width:100%;min-height:32px;justify-content:space-between;}
+.ewt-task-card {display:flex;flex-direction:column;gap:var(--ui-space-3);width:100%;padding:var(--ui-space-4);margin-bottom:var(--ui-space-3);border:1px solid var(--ui-divider);border-radius:var(--ui-radius-item);background:var(--ui-bg);color:inherit;font:inherit;text-align:left;cursor:pointer;overflow-wrap:anywhere;}
+.ewt-task-card strong {font-weight:500;}
+.ewt-panel {display:flex;flex-direction:column;width:512px;max-width:100%;flex-shrink:0;border-left:1px solid var(--ui-divider);background:var(--ui-bg);height:640px;}
+.ewt-panel>header {display:flex;align-items:center;gap:var(--ui-space-2);padding:var(--ui-space-3) var(--ui-space-4);border-bottom:1px solid var(--ui-divider);flex-shrink:0;}
+.ewt-panel>header>span {flex:1;}
+.ewt-panel-body {padding:var(--ui-space-4);overflow-y:auto;flex:1;min-height:0;container:task-list / inline-size;}
+.ewt-panel-title {display:block;resize:none;overflow:hidden;width:100%;font-size:16px;line-height:1.5;margin-bottom:var(--ui-space-3);padding:0;}
+.ewt-property {display:flex;align-items:center;min-height:28px;gap:var(--ui-space-2);}
+.ewt-property>span {width:64px;flex-shrink:0;color:var(--ui-text-muted);font-size:12px;}
+.ewt-property>.ui-button {justify-content:flex-start;max-width:calc(100% - 72px);overflow:hidden;}
+.ewt-field-label {display:block;font-size:12px;color:var(--ui-text-muted);margin:var(--ui-space-4) 0 var(--ui-space-2);}
+.ewt-description {display:block;width:100%;min-height:40px;resize:vertical;padding:var(--ui-space-2);border:1px solid var(--ui-border);border-radius:var(--ui-radius-item);background:var(--ui-bg);color:var(--ui-text);font:inherit;}
+.ewt-subtasks-label {margin-top:var(--ui-space-8);}
+.ewt-panel .ewt-row :is(.ewt-details,.ewt-row-options) {opacity:1;}
+.ewt-comment-footer {padding:var(--ui-space-4);border-top:1px solid var(--ui-divider);background:var(--ui-bg-subtle);flex-shrink:0;}
+.ewt-comment-footer>div {display:flex;align-items:flex-start;gap:var(--ui-space-2);}
+.ewt-composer {flex:1;min-width:0;border:1px solid var(--ui-border);border-radius:var(--ui-radius-item);background:var(--ui-bg);padding:var(--ui-space-2);}
+.ewt-composer:focus-within {border-color:var(--ui-accent);}
+.ewt-composer textarea {display:block;width:100%;min-height:48px;border:0;background:transparent;color:inherit;font:inherit;resize:vertical;outline:none;}
+.ewt-composer>div,.ewt-popup-footer {display:flex;align-items:center;gap:var(--ui-space-2);}
+.ewt-composer>div>span {flex:1;}
+.ewt-composer>small {display:flex;align-items:center;justify-content:space-between;}
+.ewt-composer-actions>.ui-btn[data-variant="ghost"] {background:transparent;}
+.ewt-comment {display:flex;align-items:flex-start;gap:var(--ui-space-2);margin-top:var(--ui-space-5);}
+.ewt-comment strong {font-size:12px;font-weight:500;}
+.ewt-comment p {white-space:pre-wrap;overflow-wrap:anywhere;margin:var(--ui-space-1) 0;}
+.ewt-comment small {display:block;color:var(--ui-text-muted);}
+.ewt-popup-footer {justify-content:flex-end;margin-top:var(--ui-space-3);padding-top:var(--ui-space-3);border-top:1px solid var(--ui-divider);}
+.ewt-popup-footer>span {font-size:12px;color:var(--ui-text-muted);margin-right:auto;}
+.ewt-date-popup {padding:var(--ui-space-4);font:14px/1.4 var(--ui-font);}
+.ewt-calendar-heading {display:flex;gap:var(--ui-space-2);justify-content:space-between;}
+.ewt-calendar {display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin:var(--ui-space-3) 0;}
+.ewt-calendar>span {text-align:center;font-size:10px;color:var(--ui-text-muted);padding:var(--ui-space-1) 0;}
+.ewt-calendar .ui-button {padding:0;min-width:0;}
+.ewt-date-relative {display:flex;flex-direction:column;gap:var(--ui-space-3);margin-top:var(--ui-space-4);}
+.ewt-assignees {max-height:280px;overflow:auto;padding-top:var(--ui-space-3);}
+.ewt-assignees small {display:block;color:var(--ui-text-muted);padding:var(--ui-space-2);}
+.ewt-assignee {display:flex;align-items:center;gap:var(--ui-space-2);width:100%;padding:var(--ui-space-2);font:inherit;color:inherit;background:transparent;border:0;border-radius:var(--ui-radius-item);cursor:pointer;}
+.ewt-assignee:hover {background:var(--ui-bg-subtle);}
+.ewt-assignee>span {flex:1;text-align:left;}
+.ewt-action,.ewt-notice {display:flex;align-items:center;gap:var(--ui-space-2);}
+.ewt-notice {padding:var(--ui-space-3);font-size:12px;color:var(--ui-text-muted);}
+.ewt-action-dialog .ui-dialog-body {display:flex;flex-direction:column;gap:var(--ui-space-4);}
+.ewt-layout[data-compact] .ewt-checklist {padding:var(--ui-space-4);}
+.ewt-layout[data-compact]:has(.ewt-panel)>.ewt-checklist {display:none;}
+.ewt-layout[data-compact] .ewt-panel {width:100%;border-left:0;}
+@media(max-width:900px){.ewt-layout:has(.ewt-panel)>.ewt-checklist{display:none;}.ewt-panel{width:100%;border-left:0;}}
+.ewt-layout {min-height:0;border:0;border-radius:0;overflow:visible;container:task-widget / inline-size;}
+.ewt-checklist {padding:var(--ewt-inset,var(--ui-space-6));}
+.ewt-checklist>header {padding-bottom:var(--ui-space-3);margin-bottom:0;border-bottom:1px solid var(--ui-divider);}
+.ewt-board {padding-top:var(--ui-space-5);}
+.ewt-board>section {background:transparent;padding:var(--ui-space-2);}
+.ewt-board>section>.ui-button {width:100%;justify-content:flex-start;background:var(--ui-bg-subtle);}
+.workspace-widget-panelhost>.ewt-panel {width:100%;height:100%;border:0;font:14px/1.4 var(--ui-font);color:var(--ui-text);}
+.ewt-panel .ewt-panel-title {margin:0 0 var(--ui-space-3);}
+@container task-widget (max-width:320px) {
+ .ewt-checklist {padding-inline:0;}
+}
+/* Respond to each list's usable width, including subtasks in a portaled drawer.
+   Keep controls together; only create a second row when a title would be squeezed. */
+@container task-list (max-width:640px) {
+ .ewt-row {padding-inline:0;}
+ .ewt-details > span:not(.ui-btn-icon) {display:none;}
+ .ewt-row :is(.ewt-details,.ewt-row-options) {opacity:1;}
+ .ewt-board {grid-template-columns:1fr;padding-top:0;}
+ .ewt-board>section {padding:0;}
+ .ewt-board>section:not([data-active]),.ewt-board h4 {display:none;}
+ .ewt-board-compact-controls {display:flex;}
+}
+@container task-list (max-width:520px) {
+ .ewt-header-controls {flex:1 0 auto;}
+ .ewt-view-tabs,.ewt-progress progress {display:none;}
+ .ewt-view-menu {display:block;margin-right:auto;}
+}
+@container task-list (max-width:520px) {
+ .ewt-row {grid-template-columns:36px minmax(0,1fr) 36px;min-height:56px;padding-block:8px;column-gap:var(--ui-space-1);}
+ .ewt-task-name,.ewt-row-actions {display:none;}
+ .ewt-task-open,.ewt-mobile-options {display:block;}
+ .ewt-mobile-options .ui-btn {width:36px;min-height:36px;}
+ .ewt-row>.ui-checkbox {margin-top:8px;}
+ .ewt-row>.ui-checkbox::before {inset:-14px;}
+ .ewt-checklist>header[data-view-switch="off"] .ewt-heading {flex-basis:0;}
+ .ewt-checklist>header[data-view-switch="off"] .ewt-header-controls {flex:0 0 auto;}
+ .ewt-checklist>header[data-view-switch="off"] .ewt-progress {display:none;}
+}
+@media (hover:none) {
+ .ewt-row :is(.ewt-details,.ewt-row-options) {opacity:1;}
+}
+
+.ewt-editor {position:relative;min-width:0;width:100%;}
+.ewt-editor[data-hover-controls]:hover>.ewt-widget-toolbar,.ewt-editor:focus-within>.ewt-widget-toolbar,.ewt-editor[data-selected]>.ewt-widget-toolbar {opacity:1;pointer-events:auto;}
+.ewt-editor:has(.ewt-widget-toolbar):is(:focus-within,[data-selected]) {outline:1px solid var(--ui-accent);outline-offset:0;}
+.ewt-design-group {display:flex;flex-direction:column;gap:var(--ui-space-4);padding-top:var(--ui-space-4);border-top:1px solid var(--ui-divider);}
+.ewt-design-label {font-size:12px;color:var(--ui-text-muted);}
+.ewt-design-panel strong {font-weight:400;}
+.ewt-layout .ewt-task-name,.ewt-layout .ewt-task-card strong {font-size:var(--ewt-task-size,16px);font-weight:var(--ewt-task-weight,400);}
+.ewt-layout:has(>.ewt-design-panel)>.ewt-checklist {flex:1;}
+
+/* Native task drawer dimensions: fixed typography, independent of widget styling. */
+.ewt-panel {font:14px/1.4 var(--ui-font);color:var(--ui-text);}
+.ewt-panel>header .ui-btn {font-size:14px;min-height:36px;}
+.ewt-panel .ewt-description {font-size:16px;}
+.ewt-widget-toolbar:not(.hcs-native-widget-toolbar) .ui-btn,.ewt-widget-toolbar:not(.hcs-native-widget-toolbar) .ui-btn svg {color:white;}
+
+.ewt-property>[role="switch"] {margin-left:var(--ui-space-2);}
+
+/* Preserve the native Asset arrow glyph when the widget uses a brand font. */
+.ewt-details-arrow {font-family:Arial,sans-serif;}

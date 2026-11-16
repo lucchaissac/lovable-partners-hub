@@ -1,0 +1,23 @@
+/* Presentation's rotating border and image dot wave, on the actual HTML bounds. */
+@property --studio-border-angle { syntax:'<angle>'; inherits:false; initial-value:0deg; }
+@property --studio-image-wave { syntax:'<percentage>'; inherits:false; initial-value:0%; }
+.hev[data-selection-mode] :is(.hev-section,.hev-block,.hcs-image-pending)[data-generating]::after {
+  content:'';position:absolute;inset:0;z-index:12;pointer-events:none;border-radius:inherit;padding:2px;
+  background:conic-gradient(from var(--studio-border-angle),transparent 0deg,transparent 200deg,color-mix(in srgb,var(--ui-accent) 35%,white) 250deg,var(--ui-accent) 290deg,transparent 350deg);
+  mask:linear-gradient(white 0 0) content-box,linear-gradient(white 0 0);mask-composite:exclude;
+  animation:studio-border-shimmer 2s linear infinite;
+}
+@keyframes studio-border-shimmer { to { --studio-border-angle:360deg; } }
+.hcs-image-pending {position:relative;width:100%;margin-block:var(--ui-space-3);}
+.hcs-image-progress {position:absolute;inset:0;z-index:11;overflow:hidden;pointer-events:none;border-radius:inherit;background:linear-gradient(100deg,var(--ui-bg-muted) 30%,var(--ui-bg) 50%,var(--ui-bg-muted) 70%);background-size:240% 100%;animation:studio-image-shimmer 2.4s linear infinite;}
+.hcs-image-progress[data-editing] {background-image:linear-gradient(100deg,color-mix(in srgb,var(--ui-bg-muted) 18%,transparent) 30%,color-mix(in srgb,var(--ui-bg) 45%,transparent) 50%,color-mix(in srgb,var(--ui-bg-muted) 18%,transparent) 70%);}
+.hcs-image-progress::before,.hcs-image-progress::after {content:'';position:absolute;inset:0;background:radial-gradient(circle,var(--ui-text-muted) .5px,transparent .5px) center/var(--ui-space-4) var(--ui-space-4);}
+.hcs-image-progress::before {opacity:.3;}
+.hcs-image-progress::after {background-image:radial-gradient(circle,var(--ui-text-muted) 1px,transparent 1px);mask:radial-gradient(circle at 50% 100%,transparent calc(var(--studio-image-wave) - 48px),white calc(var(--studio-image-wave) - 24px),transparent var(--studio-image-wave));animation:studio-image-wave 2.4s linear infinite;}
+.hcs-image-progress[data-editing]::after {background-image:radial-gradient(circle,white 1px,transparent 1px);}
+@keyframes studio-image-shimmer {from {background-position-x:100%;}to {background-position-x:-100%;}}
+@keyframes studio-image-wave {from {--studio-image-wave:0%;}to {--studio-image-wave:140%;}}
+@media (prefers-reduced-motion:reduce) {
+  .hev[data-selection-mode] [data-generating]::after,.hcs-image-progress,.hcs-image-progress::after {animation:none;}
+  .hcs-image-progress::after {display:none;}
+}

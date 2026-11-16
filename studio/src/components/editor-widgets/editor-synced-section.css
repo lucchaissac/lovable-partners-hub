@@ -1,0 +1,36 @@
+.ess-example{position:relative;min-width:0;color:var(--ui-text);font:14px/1.5 var(--ui-font)}
+.ess-section{background:var(--ui-bg);border:1px solid var(--ui-border);border-radius:8px;overflow:hidden}
+.ess-header{display:flex;justify-content:space-between;align-items:center;gap:16px;background:var(--ui-bg-subtle);border-bottom:1px solid var(--ui-divider);padding:12px 20px;font-size:13px}
+.ess-header>span{display:flex;align-items:center;gap:8px;flex-wrap:wrap;color:var(--ui-text-muted)}
+.ess-header span button{border:0;background:none;padding:0;font:inherit;color:var(--ui-accent);text-decoration:underline;cursor:pointer}
+.ess-header span button:disabled{color:inherit;text-decoration:none;cursor:default}
+.ess-content{padding:32px}.ess-content h2{font:600 28px/1.2 var(--ui-font);margin:0 0 16px}.ess-content h3{font:500 18px/1.4 var(--ui-font);margin:0 0 8px}.ess-content p{margin:0;color:var(--ui-text-muted)}.ess-resource{margin-top:28px}
+.ess-content textarea,.ess-source-panel textarea{width:100%;font:14px/1.5 var(--ui-font);color:var(--ui-text);background:var(--ui-bg);border:1px solid var(--ui-border);border-radius:4px;padding:12px;resize:vertical}.ess-content textarea{margin-top:16px}
+.ess-source-notice{display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--ui-text-muted);margin:0 0 24px}.ess-source-notice svg{flex-shrink:0;margin-top:2px}
+.ess-message{font:13px var(--ui-font);color:var(--ui-text-muted);margin:12px 0}
+.ess-template{display:flex;gap:16px;align-items:center;padding:20px;background:var(--ui-bg-subtle);border:1px solid var(--ui-border);border-radius:8px;margin-bottom:24px}.ess-template p{margin:4px 0 0;color:var(--ui-text-muted)}
+.ess-insert-choices{border:0;padding:0;margin:0}.ess-insert-choices legend{font-weight:500;margin-bottom:12px}.ess-insert-choices label{display:flex;align-items:flex-start;gap:12px;padding:16px;border:1px solid var(--ui-border);border-radius:8px;margin-top:8px;cursor:pointer}.ess-insert-choices label:has(input:checked){border-color:var(--ui-accent)}.ess-insert-choices input{margin-top:4px;accent-color:var(--ui-accent)}.ess-insert-choices small{display:block;color:var(--ui-text-muted);font-size:13px;margin-top:4px}
+.workspace-inserted-sections{padding:32px max(24px,calc((100% - 1184px)/2)) 80px}.workspace-inserted-sections:empty{display:none}.workspace-inserted-sections .ess-example+.ess-example{margin-top:32px}
+.workspace-pages .ess-example{--ui-font:var(--ramp-font,Arial,sans-serif);--ui-accent:var(--ramp-dark,#252521);--ui-text:var(--ramp-text,#11110e);--ui-text-muted:var(--ramp-muted,#6b6b65);--ui-bg-subtle:var(--ramp-soft,#f4f3f0);--ui-divider:var(--ramp-border,#d9d7d2);--ui-border:var(--ramp-border,#d9d7d2)}.workspace-pages .ess-content{padding:40px}.workspace-pages .ess-content h2{font-weight:500}
+
+/* In Design mode, synced status is editor chrome above the content. */
+.ess-section[data-contextual] {position:relative;overflow:visible;--ess-control-color:var(--ui-accent);}
+.ess-section[data-contextual][data-linked="true"] {--ess-control-color:var(--workspace-synced-accent);}
+.ess-section[data-contextual]>.ess-header {position:absolute;bottom:calc(100% + 3px);left:-1px;z-index:12;max-width:calc(100% + 2px);height:30px;padding:0 0 0 8px;gap:8px;border:0;border-radius:var(--ui-radius-section);background:var(--ess-control-color);color:white;font:14px/1.4 Arial,sans-serif;opacity:0;pointer-events:none;}
+.ess-section[data-contextual]>.ess-header::after {content:"";position:absolute;top:100%;left:0;right:0;height:4px;}
+.ess-section[data-contextual]>.ess-header>span {color:inherit;flex-wrap:nowrap;white-space:nowrap;min-width:0;gap:6px;}
+.ess-section[data-contextual]>.ess-header>span>svg {flex-shrink:0;}
+.ess-section[data-contextual]>.ess-header span button {color:inherit;text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ess-section[data-contextual]>.ess-header>.ui-dropdown-root {flex-shrink:0;}
+.ess-section[data-contextual]>.ess-header .ui-btn {color:inherit;}
+.ess-section[data-contextual]>.ess-header .ui-btn:is(:hover,:focus-visible,[data-active]) {background:color-mix(in srgb,var(--ess-control-color) 80%,black);}
+.ess-section[data-contextual]:is(:hover,:focus-within,[data-selected],:has(.ess-header [data-active])) {outline:1px solid var(--ess-control-color);outline-offset:0;}
+.ess-section[data-contextual]:is(:hover,:focus-within,[data-selected],:has(.ess-header [data-active]))>.ess-header {opacity:1;pointer-events:auto;}
+
+/* The synced section blue is sampled from Asset staging's source notice. */
+.workspace-synced-section{position:relative;min-width:0;max-width:100%;--workspace-synced-accent:#43a5ff;}
+.workspace-synced-section[data-linked="true"]{--workspace-resize-color:var(--workspace-synced-accent);}
+.workspace-synced-section .ess-section[data-contextual]>.ess-content{position:relative;}
+.workspace-synced-section .ess-section[data-contextual][data-linked="true"]:is(:hover,:focus-within,[data-selected])>.ess-content::after{content:"";position:absolute;inset:0;border-radius:inherit;background:rgb(67 165 255 / 16%);pointer-events:none;}
+.workspace-synced-section .workspace-contact-resize{border-color:var(--workspace-resize-color,var(--ui-accent));}
+.workspace-synced-section+.workspace-synced-section{margin-top:48px;}

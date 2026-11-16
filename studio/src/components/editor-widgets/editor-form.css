@@ -1,0 +1,336 @@
+.efm-root {
+  container-type: inline-size;
+  min-width: 0;
+  color: var(--ui-text);
+  font-family: var(--ui-font);
+}
+.efm-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.efm-runner {
+  border: 1px solid var(--ui-divider);
+  border-radius: 12px;
+  background: var(--ui-bg);
+  padding: clamp(20px, 5cqi, 56px);
+}
+.efm-intro,
+.efm-question {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  min-height: 280px;
+}
+.efm-intro {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 20px;
+}
+.efm-root h2 {
+  margin: 0;
+  font-size: clamp(22px, 3.5cqi, 32px);
+  line-height: 1.25;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.efm-root h2:focus {
+  outline: none;
+}
+.efm-root p {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ui-text-muted);
+}
+.efm-root small {
+  color: var(--ui-text-muted);
+  font-size: 13px;
+}
+.efm-question {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.efm-question-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.efm-question-copy h2 span {
+  font-size: 18px;
+  color: var(--ui-text-muted);
+}
+.efm-question > .ui-input-wrap,
+.efm-question > .ui-textarea {
+  width: 100%;
+}
+.efm-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.efm-options label {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--ui-divider);
+  border-radius: 8px;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+.efm-options label:has([aria-checked="true"]) {
+  border-color: var(--ui-accent);
+  background: var(--ui-bg-subtle);
+}
+.efm-options .ui-radio {
+  padding: 12px;
+  border: 1px solid var(--ui-divider);
+  border-radius: 8px;
+}
+.efm-runner-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 12px;
+}
+.efm-runner-nav > span {
+  color: var(--ui-text-muted);
+  font-size: 13px;
+  flex: 1;
+}
+.efm-question .efm-error {
+  color: var(--ui-danger, #c83232);
+  font-size: 14px;
+}
+.efm-success {
+  display: grid;
+  place-items: center;
+  height: 48px;
+  width: 48px;
+  border-radius: 50%;
+  background: var(--ui-bg-subtle);
+}
+.efm-drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid var(--ui-border);
+  padding: 24px 16px;
+  border-radius: 8px;
+  text-align: center;
+}
+.efm-drop > span {
+  font-size: 12px;
+  color: var(--ui-text-muted);
+}
+.efm-file {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.efm-file > span {
+  overflow-wrap: anywhere;
+  min-width: 0;
+  flex: 1;
+  font-size: 14px;
+}
+.efm-editor-dialog {
+  height: min(800px, calc(100dvh - 48px));
+}
+.efm-editor-body {
+  padding: 0 !important;
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  min-height: 0;
+  overflow: hidden !important;
+}
+.efm-outline {
+  border-right: 1px solid var(--ui-divider);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 20px 12px;
+  overflow-y: auto;
+  min-width: 0;
+}
+.efm-outline > strong {
+  padding: 0 12px 12px;
+}
+.efm-outline > .ui-btn {
+  justify-content: flex-start;
+  flex-shrink: 0;
+}
+.efm-outline > .ui-btn span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.efm-editor-fields {
+  overflow-y: auto;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  align-items: stretch;
+}
+.efm-editor-fields > label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.efm-editor-fields label.efm-setting {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.efm-settings {
+  display: flex;
+  gap: 32px;
+}
+.efm-editor-question-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.efm-editor-question-head > span {
+  color: var(--ui-text-muted);
+}
+.efm-edit-options,
+.efm-rules {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-top: 1px solid var(--ui-divider);
+  padding-top: 24px;
+}
+.efm-edit-options > div {
+  display: flex;
+  gap: 8px;
+}
+.efm-edit-options > div > :first-child {
+  flex: 1;
+}
+.efm-edit-options > button,
+.efm-rules > button {
+  align-self: flex-start;
+}
+.efm-rule {
+  display: grid;
+  grid-template-columns: minmax(100px, 1fr) minmax(100px, 1fr);
+  gap: 12px;
+  align-items: center;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--ui-divider);
+}
+.efm-rule > span {
+  grid-column: 1 / -1;
+  font-size: 14px;
+  color: var(--ui-text-muted);
+}
+.efm-editor-note {
+  color: var(--ui-text-muted);
+  font-size: 12px;
+  margin-right: auto;
+}
+.efm-response {
+  padding: 24px 0;
+  border-bottom: 1px solid var(--ui-divider);
+}
+.efm-response h3 {
+  margin: 0 0 4px;
+}
+.efm-response small {
+  color: var(--ui-text-muted);
+}
+.efm-response dl {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.efm-response dt {
+  font-weight: 500;
+}
+.efm-response dd {
+  margin: 4px 0 0;
+  color: var(--ui-text-muted);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.efm-empty {
+  padding: 40px 16px;
+  text-align: center;
+}
+@container (max-width: 380px) {
+  .efm-runner-nav {
+    flex-wrap: wrap;
+  }
+  .efm-runner-nav > button:last-child {
+    margin-left: auto;
+  }
+  .efm-runner {
+    padding: 20px 16px;
+  }
+}
+@media (max-width: 700px) {
+  .efm-editor-body {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .efm-outline {
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 12px;
+    border-right: 0;
+    border-bottom: 1px solid var(--ui-divider);
+  }
+  .efm-outline > strong {
+    display: none;
+  }
+  .efm-outline > button {
+    max-width: 180px;
+  }
+  .efm-editor-fields {
+    padding: 20px;
+  }
+  .efm-editor-dialog {
+    height: calc(100dvh - 24px);
+  }
+}
+
+.efm-outline > .ui-btn {
+  min-width: 0;
+  text-align: left;
+}
+.efm-outline > .ui-btn > span {
+  min-width: 0;
+}
+.efm-outline > .ui-btn {
+  width: 100%;
+}
+.efm-outline > .ui-btn > span {
+  display: block;
+  flex: 1;
+}
+.efm-settings .efm-setting {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+@media (max-width: 700px) {
+  .efm-outline > .ui-btn {
+    width: auto;
+    min-width: 130px;
+  }
+}

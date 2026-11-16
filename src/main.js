@@ -1,3 +1,5 @@
+import {brandHub,mountBrandHub} from './brand.js';
+import {updateWorkspaceMetadata} from './workspaceMetadata.js';
 import {warmGallery} from './galleryLoading.js';
 import './navigation.js';
 import {ambassadorFormats,ambassadorSections} from './ambassadors/catalog.js';
@@ -14,7 +16,7 @@ export const icon=name=>`<i data-icon="${name}" aria-hidden="true"></i>`;
 export const sections=[['overview','Overview'],['construction','Construction'],['connections','Connections'],['clear-space','Clear space'],['scale','Scale'],['motion','Motion'],['formats','Formats'],['color','Color'],['typography','Typography'],['usage','Usage']];
 const app=document.querySelector('#app');
 const state={workspace:'partners',view:'guidelines',filter:'all',tier:'Select',format:'solution-compact',year:'2026',partnerName:'',partnerImage:'',symbolSize:'large',guides:false,background:'dark',scale:2};
-let observer,assemblyObserver,toastTimer,cleanupGallery,cleanupAmbassadors;
+let observer,assemblyObserver,toastTimer,cleanupGallery,cleanupAmbassadors,cleanupBrand;
 const currentSections=()=>state.workspace==='ambassadors'?ambassadorSections:sections;
 const currentFormats=()=>state.workspace==='ambassadors'?ambassadorFormats:FORMATS;
 const route=(view,section)=>`#${state.workspace==='ambassadors'?'ambassadors/':''}${view}${section?`/${section}`:''}`;
@@ -59,11 +61,12 @@ window.addEventListener('scroll',()=>{if(scrollFrame)return;scrollFrame=requestA
 function render(view=state.view,{reset=true}={}){
  const showLibrary=view==='library';if(showLibrary||view==='badge')view='create';
  const requestedBadge=parseRoute().section,badge=currentFormats().some(format=>format.id===requestedBadge)?requestedBadge:undefined;
- requestedSection=undefined;state.view=view;observer?.disconnect();assemblyObserver?.disconnect();cleanupGallery?.();cleanupGallery=undefined;cleanupAmbassadors?.();cleanupAmbassadors=undefined;
+ requestedSection=undefined;state.view=view;observer?.disconnect();assemblyObserver?.disconnect();cleanupGallery?.();cleanupGallery=undefined;cleanupAmbassadors?.();cleanupAmbassadors=undefined;cleanupBrand?.();cleanupBrand=undefined;
  const brand=view==='brand',ambassadors=state.workspace==='ambassadors';
- app.innerHTML=brand?`<section class="brand-hub-page" aria-label="Lovable brand hub"><a class="primary-button" href="https://lovablebrand.lovable.app/" target="_blank" rel="noopener noreferrer">Visit brand hub ${icon('arrow')}</a></section>`:view==='gallery'?(ambassadors?ambassadorGallery():gallery()):view==='create'?studio({library:showLibrary,badge,workspace:state.workspace}):ambassadors?ambassadorGuidelines({icon}):guidelines(state.tier,{icon,formatCard,sections});
+ app.innerHTML=brand?brandHub():view==='gallery'?(ambassadors?ambassadorGallery():gallery()):view==='create'?studio({library:showLibrary,badge,workspace:state.workspace}):ambassadors?ambassadorGuidelines({icon}):guidelines(state.tier,{icon,formatCard,sections});
  document.querySelectorAll('[data-workspace]').forEach(button=>{const selected=!brand&&button.dataset.workspace===state.workspace;button.classList.toggle('is-selected',selected);if(button.dataset.workspace!=='lovable')button.setAttribute('aria-pressed',String(selected));});
- document.title=brand?'Lovable brand hub':ambassadors?'Lovable Ambassadors':'Lovable Partners';
+ updateWorkspaceMetadata(brand?'lovable':state.workspace);
+ if(brand)cleanupBrand=mountBrandHub(app);
  document.querySelector('.section-switcher').hidden=brand;document.querySelector('#search-toggle').hidden=brand;
  const brandLink=document.querySelector('[data-brand-link]');brandLink.classList.toggle('is-selected',brand);if(brand)brandLink.setAttribute('aria-current','page');else brandLink.removeAttribute('aria-current');
  document.querySelector('#search-input').placeholder=ambassadors?'Search assets, spacing, guidelines…':'Search badges, spacing, guidelines…';

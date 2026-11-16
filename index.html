@@ -8,8 +8,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#1b1b1b" />
     <meta name="description" content="The Lovable partner hub." />
-    <title>Partners</title>
-    <link rel="icon" href="data:," />
+    <title>Lovable Partners</title>
+    <meta property="og:title" content="Lovable Partners" />
+    <link id="workspace-favicon" rel="icon" type="image/svg+xml" href="/brand/favicon-partners.svg" />
+    <script>(()=>{const key=location.hash.slice(1).split('/')[0]==='brand'?'lovable':location.hash.startsWith('#ambassadors')?'ambassadors':'partners',title={lovable:'Lovable',partners:'Lovable Partners',ambassadors:'Lovable Community'}[key];document.title=title;document.querySelector('#workspace-favicon').href='/brand/favicon-'+key+'.svg';document.querySelector('meta[property="og:title"]').content=title;})()</script>
     <link rel="preload" href="/fonts/CameraPlainVariable.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="/src/styles.css" />
   </head>

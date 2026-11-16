@@ -1,4 +1,4 @@
-import { COMMUNITY_MARKUP, COMMUNITY_VIEWBOX } from './brand.mjs?v=12';
+import { COMMUNITY_MARKUP, COMMUNITY_VIEWBOX } from './brand.mjs';
 import { makeOriginalQR } from './original-qr.mjs';
 export const FORMATS = {
   banner: { label: 'Roll-up', w: 850, h: 2000, mm: [850, 2000], detail: '85 × 200 cm', print: true },

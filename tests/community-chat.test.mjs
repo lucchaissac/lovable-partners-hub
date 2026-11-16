@@ -3,16 +3,28 @@ import {z} from 'zod';
 import assert from 'node:assert/strict';
 import {createServer} from 'node:http';
 import {once} from 'node:events';
-import {communityChatPlugin,localRequestAllowed,runProcess} from '../server/communityChat.mjs';
+import {communityChatPlugin,localRequestAllowed,runProcess,validatedCommunityGeneration} from '../server/communityChat.mjs';
 import {chatPlanSchema,validateChatPlan} from '../shared/communityChat.mjs';
+import {communityDesignMetrics,communityCompositionRules} from '../shared/communityDesignRules.mjs';
+import {loadCommunityDesignReferences} from '../server/communityDesignReferences.mjs';
 
 const frame={x:64,y:64,width:700,height:120,rotation:0,opacity:1};
 const text={id:'title',kind:'text',frame,text:'Build together.',fontSize:80,weight:700,align:'left',color:'#f7f4ed',lineHeight:105};
 const request={prompt:'Make a square LinkedIn post',title:'Demo',width:1200,height:630,blocks:[{id:'title',kind:'text',text:'Original'}],conversation:[],sources:[]};
-const plan={summary:'Created a LinkedIn post.',designs:[{title:'Community meetup',width:1080,height:1080,background:'ink',elements:[text]}],edits:[],removeIds:[]};
+function galleryDesign(width=1080,height=1080){
+ const m=communityDesignMetrics('social',width,height);
+ const brand=(id,asset,geometry)=>({id,kind:'brand',asset,color:'light',city:'Montréal',frame:{rotation:0,opacity:1,...geometry}});
+ return {title:'Community meetup',reference:'social',width,height,background:'ink',elements:[
+  brand('glow','gradient',{x:-width*.54,y:-height*.2,width:m.gradientWidth,height:m.gradientWidth*1.00808,rotation:-9.91}),
+  brand('globe','globe',{x:m.globeX,y:height*.3,width:m.globeWidth,height:m.globeWidth}),
+  brand('logo','community-logo',{x:m.inset,y:m.inset,width:m.logoWidth,height:m.logoHeight}),
+  {...text,frame:{...frame,x:m.inset,y:m.headlineY,width:m.headlineWidth,height:180*m.scale},fontSize:m.headlineSize,lineHeight:88/96*100},
+ ]};
+}
+const plan={summary:'Created a LinkedIn post.',designs:[galleryDesign()],edits:[],removeIds:[]};
 
 test('Generation accepts free formats and multiple designs, but rejects executable content and unknown sources',()=>{
- assert.equal(validateChatPlan({...plan,designs:[...plan.designs,{...plan.designs[0],width:1200,height:627}]},request).designs.length,2);
+ assert.equal(validateChatPlan({...plan,designs:[...plan.designs,galleryDesign(1200,627)]},request).designs.length,2);
  assert.throws(()=>chatPlanSchema.parse({...plan,designs:[{...plan.designs[0],elements:[{id:'script',kind:'code',code:'alert(1)'}]}]}));
  assert.throws(()=>validateChatPlan({...plan,designs:[],edits:[{id:'copy',kind:'reuse',sourceId:'invented',frame:null}]},request));
  assert.throws(()=>validateChatPlan({...plan,edits:[text]},request));
@@ -64,4 +76,35 @@ test('A selected-element edit cannot change or remove unrelated elements',()=>{
 });
 test('The structured-output schema uses supported anyOf unions',()=>{
  const schema=z.toJSONSchema(chatPlanSchema);assert.equal(JSON.stringify(schema).includes('"oneOf"'),false);
+});
+
+test('Gallery rules reject the giant-heart demo, incorrect proportions and invented art direction',()=>{
+ const modify=fn=>{const copy=structuredClone(plan);fn(copy.designs[0]);return copy;};
+ assert.throws(()=>validateChatPlan(modify(d=>{d.background='white';}),request));
+ assert.throws(()=>validateChatPlan(modify(d=>{d.elements[1].asset='heart';}),request));
+ assert.throws(()=>validateChatPlan(modify(d=>{d.elements[2].frame.width*=2;}),request),/intact light logo/);
+ assert.throws(()=>validateChatPlan(modify(d=>{d.elements[3].frame.y=48;}),request),/clear space/);
+ assert.throws(()=>validateChatPlan(modify(d=>{d.elements[3].weight=900;}),request));
+ assert.throws(()=>validateChatPlan(modify(d=>{d.elements[3].align='center';}),request),/left-aligned/);
+ assert.throws(()=>validateChatPlan(modify(d=>{d.elements[1].frame.width=200;d.elements[1].frame.height=200;}),request),/globe scale/);
+ assert.throws(()=>validateChatPlan(modify(d=>{[d.elements[0],d.elements[1]]=[d.elements[1],d.elements[0]];}),request),/layer order/);
+ const withOldHeart={...request,blocks:[...request.blocks,{id:'old-heart',kind:'image',alt:'heart'}]};
+ assert.throws(()=>validateChatPlan({...plan,designs:[],edits:[{id:'reused-heart',kind:'reuse',sourceId:'old-heart',frame:null}]},withOldHeart),/Standalone heart/);
+});
+
+test('Reference measurements match the actual gallery renderer and include all six images',async()=>{
+ const gallery=await loadCommunityDesignReferences();assert.equal(gallery.references.length,6);
+ for(const ref of gallery.references){
+  assert.ok(ref.preview.length>1000);if(ref.id==='spotlight')continue;
+  const logo=ref.layers.find(l=>l.kind==='logo'),headline=ref.layers.find(l=>['title','headline','name'].includes(l.key)),rule=communityCompositionRules[ref.id];
+  for(const [actual,expected] of [[logo.x,rule.inset],[logo.y,rule.inset],[logo.w,rule.logoWidth],[headline.size,rule.headlineSize],[headline.leading,rule.headlineLeading]])assert.ok(Math.abs(actual-expected)<.01,`${ref.id}: ${actual} != ${expected}`);
+  const globe=ref.layers.find(l=>l.kind==='globe');if(globe){assert.ok(Math.abs(globe.w-rule.globeWidth)<.01);assert.ok(Math.abs(globe.x-rule.globeX)<.01);}
+ }
+});
+
+test('Invalid composition is corrected before being returned, with a bounded retry',async()=>{
+ let calls=0;const bad=structuredClone(plan);bad.designs[0].elements[2].frame.width*=2;
+ const result=await validatedCommunityGeneration(request,async feedback=>{calls++;if(calls===1){assert.equal(feedback,undefined);return bad;}assert.match(feedback.correctionFeedback,/intact light logo/);return plan;});
+ assert.deepEqual(result,plan);assert.equal(calls,2);
+ calls=0;await assert.rejects(validatedCommunityGeneration(request,async()=>{calls++;return bad;}),/did not meet/);assert.equal(calls,2);
 });

@@ -30,10 +30,10 @@ export async function requestLocalDesign(request:ReturnType<typeof localChatRequ
  const value=await response.json();if(!response.ok)throw Error(value.error||'Could not create this design.');return validateChatPlan(value,request);
 }
 const frameOf=(frame:NonNullable<ChatElement['frame']>)=>({position:'absolute' as const,x:frame.x,y:frame.y,widthPx:frame.width,height:frame.height,rotation:frame.rotation,opacity:frame.opacity});
-const brandSvg=(heart:boolean,dark:boolean)=>`data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${heart?'0 12.3906 35.0398 35.6303':COMMUNITY_VIEWBOX}">${dark?COMMUNITY_MARKUP.replaceAll('#F7F4ED','#1b1b1b'):COMMUNITY_MARKUP}</svg>`)}`;
-async function brandImage(heart:boolean,dark:boolean,width:number){
- const image=new Image();image.src=brandSvg(heart,dark);await image.decode();
- const canvas=document.createElement('canvas');canvas.width=Math.min(2400,Math.max(960,Math.ceil(width*2)));canvas.height=Math.round(canvas.width*(heart?35.6303/35.0398:46.1959/470.029));
+const brandSvg=(dark:boolean)=>`data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${COMMUNITY_VIEWBOX}">${dark?COMMUNITY_MARKUP.replaceAll('#F7F4ED','#1b1b1b'):COMMUNITY_MARKUP}</svg>`)}`;
+async function brandImage(dark:boolean,width:number){
+ const image=new Image();image.src=brandSvg(dark);await image.decode();
+ const canvas=document.createElement('canvas');canvas.width=Math.min(2400,Math.max(960,Math.ceil(width*2)));canvas.height=Math.round(canvas.width*46.1959/470.029);
  canvas.getContext('2d')!.drawImage(image,0,0,canvas.width,canvas.height);return canvas.toDataURL('image/png');
 }
 function sentenceCase(text:string){return /[a-zà-ÿ]/.test(text)||!/[A-Z]/.test(text)?text:text.charAt(0)+text.slice(1).toLowerCase();}
@@ -63,7 +63,7 @@ async function nativeElement(spec:ChatElement,existing:Map<string,HtmlBlock>,ima
   if(!src)throw Error('The requested image is no longer available.');
  }else{
   alt=spec.asset;
-  if(spec.asset==='community-logo'||spec.asset==='heart')src=await brandImage(spec.asset==='heart',spec.color==='dark',spec.frame.width);
+  if(spec.asset==='community-logo')src=await brandImage(spec.color==='dark',spec.frame.width);
   if(spec.asset==='community-photo'){src='/ambassadors/community-montreal-1600.webp';fit='cover';}
   if(spec.asset==='gradient')src='/ambassadors/assets/heart-overlay.png';
   if(spec.asset==='globe'){ambassador={...defaultAmbassador(),city:spec.city||'Paris'};ambassadorElement='globe';src=(await renderAmbassador(ambassador,{element:'globe',pixels:1600,signal})).src;}

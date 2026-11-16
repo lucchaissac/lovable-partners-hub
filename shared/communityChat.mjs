@@ -1,20 +1,21 @@
 import {z} from 'zod';
+import {communityReferenceIds,validateCommunityDesignRules} from './communityDesignRules.mjs';
 
 const id=z.string().min(1).max(80).regex(/^[a-zA-Z0-9-]+$/);
 const color=z.string().regex(/^(#[0-9a-fA-F]{6}|transparent)$/);
 const frame=z.object({x:z.number().min(-4000).max(4000),y:z.number().min(-4000).max(4000),width:z.number().min(12).max(4000),height:z.number().min(12).max(4000),rotation:z.number().min(-360).max(360),opacity:z.number().min(0).max(1)}).strict();
-export const chatIcons=['arrow-right','arrow-up-right','check','sparkles','calendar','map-pin','clock','users','globe','heart','plus','code','laptop','lightbulb','message-circle','star','rocket','zap','coffee','link','play','quote'];
+export const chatIcons=['arrow-right','arrow-up-right','check','sparkles','calendar','map-pin','clock','users','globe','plus','code','laptop','lightbulb','message-circle','star','rocket','zap','coffee','link','play','quote'];
 export const chatElementSchema=z.union([
- z.object({id,kind:z.literal('text'),frame,text:z.string().max(3000),fontSize:z.number().min(12).max(600),weight:z.union([z.literal(600),z.literal(700),z.literal(800),z.literal(900)]),align:z.enum(['left','center','right']),color,lineHeight:z.number().min(85).max(180)}).strict(),
+ z.object({id,kind:z.literal('text'),frame,text:z.string().max(3000),fontSize:z.number().min(12).max(600),weight:z.union([z.literal(600),z.literal(700)]),align:z.enum(['left','center','right']),color,lineHeight:z.number().min(85).max(180)}).strict(),
  z.object({id,kind:z.literal('shape'),frame,shape:z.enum(['rectangle','circle','triangle','line']),fill:color,stroke:color,strokeWidth:z.number().min(0).max(24),radius:z.number().min(0).max(1500)}).strict(),
  z.object({id,kind:z.literal('icon'),frame,name:z.enum(chatIcons),color,filled:z.boolean()}).strict(),
- z.object({id,kind:z.literal('brand'),frame,asset:z.enum(['community-logo','heart','globe','gradient','community-photo']),color:z.enum(['light','dark']),city:z.string().max(45)}).strict(),
+ z.object({id,kind:z.literal('brand'),frame,asset:z.enum(['community-logo','globe','gradient','community-photo']),color:z.enum(['light','dark']),city:z.string().max(45)}).strict(),
  z.object({id,kind:z.literal('image'),frame,sourceId:id,fit:z.enum(['cover','contain']),radius:z.number().min(0).max(1500)}).strict(),
  z.object({id,kind:z.literal('reuse'),sourceId:id,frame:frame.nullable()}).strict(),
 ]);
 export const chatPlanSchema=z.object({
  summary:z.string().min(1).max(1200),
- designs:z.array(z.object({title:z.string().min(1).max(100),width:z.number().int().min(200).max(4000),height:z.number().int().min(200).max(4000),background:z.enum(['ink','white']),elements:z.array(chatElementSchema).min(1).max(60)}).strict()).max(6),
+ designs:z.array(z.object({title:z.string().min(1).max(100),reference:z.enum(communityReferenceIds),width:z.number().int().min(200).max(4000),height:z.number().int().min(200).max(4000),background:z.literal('ink'),elements:z.array(chatElementSchema).min(1).max(60)}).strict()).max(6),
  edits:z.array(chatElementSchema).max(80),removeIds:z.array(id).max(80),
 }).strict();
 export const chatPlanJSONSchema=z.toJSONSchema(chatPlanSchema);
@@ -41,5 +42,5 @@ export function validateChatPlan(value,request){
   for(const e of elements){if((e.kind==='reuse'||e.kind==='image')&&!known.has(e.sourceId))throw Error('Unknown image or canvas element.');}
  }
  if(plan.removeIds.some(id=>!request.blocks.some(b=>b.id===id)))throw Error('Cannot remove an unknown element.');
- return plan;
+ return validateCommunityDesignRules(plan,request);
 }

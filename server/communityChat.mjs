@@ -4,6 +4,8 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {chatRequestSchema,chatPlanJSONSchema,validateChatPlan} from '../shared/communityChat.mjs';
 import {communityChatInstructions} from './communityChatPrompt.mjs';
+import {loadCommunityDesignReferences} from './communityDesignReferences.mjs';
+import {CommunityDesignRuleError} from '../shared/communityDesignRules.mjs';
 
 const bundled='/Applications/ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex';
 async function executable(){if(process.env.COMMUNITY_CODEX_BIN)return process.env.COMMUNITY_CODEX_BIN;try{await access(bundled);return bundled;}catch{return 'codex';}}
@@ -34,6 +36,17 @@ async function status(){
  let enabled=false;try{const result=await runProcess(await executable(),['login','status'],{timeout:5000});enabled=result.code===0;}catch{}
  const value={enabled,reason:enabled?'':'Sign in to Codex on this Mac to use the local chat.'};statusCache={at:Date.now(),value};return value;
 }
+export async function validatedCommunityGeneration(request,run,signal){
+ let correction;
+ for(let attempt=0;attempt<2;attempt++){
+  signal?.throwIfAborted();const value=await run(correction);signal?.throwIfAborted();
+  try{return validateChatPlan(value,request);}catch(error){
+   if(!(error instanceof CommunityDesignRuleError)&&error?.name!=='ZodError')throw error;
+   if(attempt===1)throw Error('This design did not meet the Community guidelines. Please retry with a shorter brief.');
+   correction={correctionFeedback:error.message,rejectedPlan:value};
+  }
+ }
+}
 export async function generateCommunityPlan(request,signal){
  const dir=await mkdtemp(join(tmpdir(),'lovable-community-chat-'));
  try{
@@ -41,16 +54,21 @@ export async function generateCommunityPlan(request,signal){
   const args=['exec','--ignore-user-config','--ephemeral','--skip-git-repo-check','--sandbox','read-only','--color','never','--output-schema',join(dir,'schema.json'),'--output-last-message',join(dir,'result.json'),'-C',dir,
    '-c','approval_policy="never"','-c','project_doc_max_bytes=0','-c','features.shell_tool=false','-c','features.apply_patch_freeform=false','-c','features.apps=false','-c','apps._default.enabled=false','-c','agents.enabled=false','-c','features.multi_agent_v2=false','-c','features.js_repl=false','-c','web_search="disabled"','-c','model_reasoning_effort="low"','-c',`developer_instructions=${JSON.stringify(communityChatInstructions)}`];
   if(process.env.COMMUNITY_CHAT_MODEL)args.push('--model',process.env.COMMUNITY_CHAT_MODEL);
-  const images=[request.preview,...request.sources.filter(s=>s.image).map(s=>s.image)].filter(Boolean).slice(0,4);
-  for(let i=0;i<images.length;i++){const match=images[i].match(/^data:image\/(png|jpeg|webp);base64,(.+)$/);const path=join(dir,`reference-${i}.${match[1]}`);await writeFile(path,Buffer.from(match[2],'base64'),{mode:0o600});args.push('--image',path);}
-  const payload={...request,preview:undefined,sources:request.sources.map(({image,...source})=>({...source,...(image?{attachedImage:true}:{})}))};
-  const result=await runProcess(await executable(),[...args,'-'],{cwd:dir,input:JSON.stringify(payload),signal,maxOutput:300000});
-  if(result.code!==0){
-   if(/rate.limit|usage.limit|quota/i.test(result.err))throw Error('Your Codex usage limit was reached. Retry when it resets.');
-   if(/unauthorized|sign.in|authentication|refresh.token/i.test(result.err))throw Error('Reconnect Codex on this Mac, then retry.');
-   throw Error('The local model could not finish this design. Please retry.',{cause:result.err});
-  }
-  return validateChatPlan(JSON.parse(await readFile(join(dir,'result.json'),'utf8')),request);
+  const gallery=await loadCommunityDesignReferences(),imageOrder=[];
+  for(const reference of gallery.references){const path=join(dir,`gallery-${reference.id}.webp`);await writeFile(path,reference.preview,{mode:0o600});args.push('--image',path);imageOrder.push({image:imageOrder.length+1,role:'Approved gallery master',reference:reference.id});}
+  const images=[...(request.preview?[{id:'current-canvas',image:request.preview}]:[]),...request.sources.filter(s=>s.image)].slice(0,7);
+  for(const item of images){const match=item.image.match(/^data:image\/(png|jpeg|webp);base64,(.+)$/),path=join(dir,`reference-${imageOrder.length}.${match[1]}`);await writeFile(path,Buffer.from(match[2],'base64'),{mode:0o600});args.push('--image',path);imageOrder.push({image:imageOrder.length+1,role:item.id==='current-canvas'?'Current editable canvas, not a brand master':'User attachment',sourceId:item.id});}
+  const payload={...request,preview:undefined,sources:request.sources.map(({image,...source})=>({...source,...(image?{attachedImage:true}:{})})),galleryContext:{...gallery,references:gallery.references.map(({preview,...reference})=>reference),imageOrder}};
+  const deadline=Date.now()+180000;
+  return await validatedCommunityGeneration(request,async correction=>{
+   const result=await runProcess(await executable(),[...args,'-'],{cwd:dir,input:JSON.stringify({...payload,...correction}),signal,maxOutput:300000,timeout:Math.max(1,deadline-Date.now())});
+   if(result.code!==0){
+    if(/rate.limit|usage.limit|quota/i.test(result.err))throw Error('Your Codex usage limit was reached. Retry when it resets.');
+    if(/unauthorized|sign.in|authentication|refresh.token/i.test(result.err))throw Error('Reconnect Codex on this Mac, then retry.');
+    throw Error('The local model could not finish this design. Please retry.',{cause:result.err});
+   }
+   return JSON.parse(await readFile(join(dir,'result.json'),'utf8'));
+  },signal);
  }finally{await rm(dir,{recursive:true,force:true});}
 }
 const json=(res,status,value)=>{res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify(value));};

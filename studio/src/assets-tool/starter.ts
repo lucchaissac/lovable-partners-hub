@@ -1,4 +1,5 @@
-import { makeNode, type AssetDocument } from './model';
+import { loadLibrary, rasterLibraryAsset } from './badgeLibrary';
+import { makeNode, referenceDocument, type AssetDocument } from './model';
 import { nativeDocument } from './nativeDocument';
 
 export function starterAsset(): AssetDocument {
@@ -23,4 +24,11 @@ export function starterAsset(): AssetDocument {
   blocks.unshift({ id: 'starter-motion', kind: 'media', format: 'Video', name: 'Lovable motion', src: '/gallery/motion-8-960.mp4', poster: '/gallery/motion-8.webp', editor: { position: 'absolute', x: 0, y: 0, widthPx: 1200, height: 738, appearance: { imageFit: 'cover' } } });
   blocks.push({ id: 'starter-badge', kind: 'image', value: { src: '/studio/partner-badge.svg', alt: 'Solution Partner · Select 2026', caption: '', alignment: 'center', width: 100 }, editor: { position: 'absolute', x: 924, y: 471, widthPx: 212, height: 198, appearance: { imageFit: 'contain' } } });
   return { ...asset, editor };
+}
+
+export async function badgeAsset(formatId: string): Promise<AssetDocument> {
+  const badge = (await loadLibrary()).find(asset => asset.id === formatId);
+  if (!badge) throw new Error('This badge format could not be found.');
+  const reference = await rasterLibraryAsset(badge);
+  return { ...referenceDocument(reference, 'landscape'), title: badge.name, background: 'ink', grid: false };
 }

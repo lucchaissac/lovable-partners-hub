@@ -2,18 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, Icon, Input, Tooltip } from '@asset/ui';
 import { useHtmlEditorInsert } from '../studio/HtmlEditorInsert';
 
-type LibraryAsset = { id: string; name: string; src: string };
-let library: Promise<LibraryAsset[]> | undefined;
-
-function loadLibrary() {
-  return library ??= Promise.all([import('../../../src/badges.js'), import('../../../src/export.js')]).then(async ([badges, exporter]) => {
-    await badges.prepareTypography();
-    return Promise.all(badges.FORMATS.map(async format => ({
-      id: format.id, name: format.name,
-      src: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(await exporter.makeExportSvg(format.id, { tier: 'Select', year: '2026', partnerName: 'Logo', symbolSize: 'large' }))}`,
-    })));
-  }).catch(error => { library = undefined; throw error; });
-}
+import { loadLibrary, rasterLibraryAsset, type LibraryAsset } from './badgeLibrary';
 
 export function AssetLibrary({ open, onOpenChange, onNew }: { open: boolean; onOpenChange: (open: boolean) => void; onNew: () => void }) {
   const trigger = useRef<HTMLDivElement>(null);
@@ -32,13 +21,10 @@ export function AssetLibrary({ open, onOpenChange, onNew }: { open: boolean; onO
   const add = async (asset: LibraryAsset) => {
     setAdding(asset.id); setError('');
     try {
-      const image = new Image(); image.src = asset.src; await image.decode();
-      const canvas = document.createElement('canvas');
-      canvas.width = image.naturalWidth * 2; canvas.height = image.naturalHeight * 2;
-      canvas.getContext('2d')!.drawImage(image, 0, 0, canvas.width, canvas.height);
-      const scale = Math.min(480 / image.naturalWidth, 480 / image.naturalHeight);
+      const image = await rasterLibraryAsset(asset);
+      const scale = Math.min(480 / image.width, 480 / image.height);
       if (!insert.current) throw new Error('The canvas is still opening.');
-      insert.current({ id: crypto.randomUUID(), kind: 'image', value: { src: canvas.toDataURL('image/png'), alt: asset.name, caption: '', alignment: 'center', width: 100 }, editor: { widthPx: image.naturalWidth * scale, height: image.naturalHeight * scale, appearance: { imageFit: 'contain' } } });
+      insert.current({ id: crypto.randomUUID(), kind: 'image', value: { src: image.src, alt: asset.name, caption: '', alignment: 'center', width: 100 }, editor: { widthPx: image.width * scale, height: image.height * scale, appearance: { imageFit: 'contain' } } });
       close();
     } catch (reason) { setError(reason instanceof Error ? reason.message : 'Could not add this asset.'); }
     finally { setAdding(''); }

@@ -124,6 +124,9 @@ body {
   height: 19px;
 }
 
+.partner-workspace-mark { display: block; width: 22px; height: 22px; }
+.workspace-switcher [aria-disabled="true"] { cursor: default; }
+
 .section-switcher {
   grid-area: sections;
   justify-self: center;
@@ -591,7 +594,7 @@ input[type='checkbox'] { accent-color: #ededed; width: 15px; height: 15px; margi
 .assembly-badge { max-width:440px; }
 .assembly-stage { min-height:210px;padding:28px 40px 52px; }
 .assembly-module,.assembly-module > svg { backface-visibility:hidden;-webkit-backface-visibility:hidden; }
-.motion-demos { display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:20px; }
+.motion-demos { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:20px; }
 .motion-example { min-width:0; }
 .motion-surface { height:220px;display:grid;place-items:center;perspective:900px;background:var(--color-panel);border-radius:14px;overflow:hidden; }
 .motion-example figcaption { display:flex;align-items:center;justify-content:space-between;font-size:14px;line-height:20px;margin-top:10px; }
@@ -644,3 +647,11 @@ input[type='checkbox'] { accent-color: #ededed; width: 15px; height: 15px; margi
 }
 :where(.guide-section:not(#color), .format-preview) image,
 .guide-section .cube-face img { transition:filter 260ms ease; }
+
+.motion-assembly .assembly-stage { height:220px;min-height:0;margin:0;padding:28px; }
+.motion-assembly .assembly-badge { max-width:100%; }
+.motion-assembly figcaption { align-items:flex-start;gap:12px; }
+.motion-assembly figcaption > span { max-width:240px; }
+.motion-assembly .assembly-controls { flex:none;gap:4px; }
+@media (max-width:900px) { .motion-demos { grid-template-columns:1fr; } }
+@media (max-width:680px) { .motion-assembly .assembly-stage { height:210px; } }

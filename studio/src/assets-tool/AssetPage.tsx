@@ -8,7 +8,7 @@ import { readStudioConfig, studioApi } from '../studio/client';
 
 import { AssetCanvas } from './AssetCanvas';
 import { AssetLibrary } from './AssetLibrary';
-import { starterAsset } from './starter';
+import { badgeAsset, starterAsset } from './starter';
 import { AssetDesignPanel } from './AssetDesignPanel';
 import {AssetLibraryCard} from './AssetLibraryCard';
 import { AssetHome, AssetRecents } from './AssetHome';
@@ -46,7 +46,8 @@ function AssetPageContent() {
   const insert = useHtmlEditorInsert();
   const { id } = useParams(), navigate = useNavigate(), location=useLocation();
   const owner = readStudioConfig()?.user?.id ?? 'local';
-  const [asset, setAsset] = useState<AssetDocument | undefined>(() => id ? undefined : starterAsset()), current = useRef<AssetDocument | undefined>(asset);
+  const requestedBadge = !id ? new URLSearchParams(location.search).get('badge') : null;
+  const [asset, setAsset] = useState<AssetDocument | undefined>(() => id || requestedBadge ? undefined : starterAsset()), current = useRef<AssetDocument | undefined>(asset);
   const [recent, setRecent] = useState<AssetDocument[]>([]);
   const [recentLoading, setRecentLoading] = useState(true);
   const [instructions, setInstructions] = useState('');
@@ -67,7 +68,7 @@ function AssetPageContent() {
   const [generationStage,setGenerationStage]=useState('Designing your asset…');
   const [saveState, setSaveState] = useState(''), [exporting, setExporting] = useState(false);
   const [dragging, setDragging] = useState(false);
-  const [loading, setLoading] = useState(!!id);
+  const [loading, setLoading] = useState(!!id || !!requestedBadge);
   const [historyVersion, setHistoryVersion] = useState(0);
   const past = useRef<AssetDocument[]>([]), future = useRef<AssetDocument[]>([]);
   const upload = useRef<HTMLInputElement>(null), exportBoard = useRef<HTMLDivElement>(null);
@@ -106,9 +107,18 @@ function AssetPageContent() {
         if (!found) { const next=starterAsset();current.current=next;setAsset(next); }
         else { current.current = found; setAsset(found); setLoadError(''); setSaveState('Saved on this device'); }
       }
-    }).catch(reason => { if (!cancelled) setError(reason.message); }).finally(() => { if (!cancelled) { setLoading(false); setRecentLoading(false); } });
+    }).catch(reason => { if (!cancelled) setError(reason.message); }).finally(() => { if (!cancelled) { if (!requestedBadge) setLoading(false); setRecentLoading(false); } });
     return () => { cancelled = true; };
-  }, [id, owner]);
+  }, [id, owner, requestedBadge]);
+  useEffect(() => {
+    if (!requestedBadge) return;
+    let cancelled = false;
+    setLoading(true);
+    void badgeAsset(requestedBadge).then(next => { if (!cancelled) put(next); })
+      .catch(reason => { if (!cancelled) setError(reason.message); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [requestedBadge, put]);
   useEffect(() => {
     const keys = (event: KeyboardEvent) => {
       if (!active || busy || event.defaultPrevented || (event.target as Element)?.closest('input, textarea, [contenteditable="true"]')) return;

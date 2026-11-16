@@ -3,6 +3,7 @@ export const websiteTokens = {
   "color-ink": "#1b1b1b",
   "color-muted": "rgb(255 255 255 / 60%)",
   "color-white": "#ffffff",
+  "color-beige": "#f7f4ed",
   "color-blue": "#0068f9",
   "color-blue-deep": "#002fa6",
   "color-blue-deep-light": "oklch(from var(--color-blue-deep) calc(l + .02) c h)",

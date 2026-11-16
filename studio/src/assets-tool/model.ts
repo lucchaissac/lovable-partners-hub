@@ -13,12 +13,12 @@ export const formats = {
 export type AssetFormat = keyof typeof formats;
 // The model and renderer use the same website source. No global UI tokens change.
 export const palette = {
-  ink: websiteTokens['color-ink'], muted: websiteTokens['color-muted'], white: websiteTokens['color-white'], blue: websiteTokens['color-blue'],
+  ink: websiteTokens['color-ink'], muted: websiteTokens['color-muted'], white: websiteTokens['color-white'], beige: websiteTokens['color-beige'], blue: websiteTokens['color-blue'],
   'blue-soft': websiteTokens['color-blue-soft'], mint: websiteTokens['color-mint'], 'yellow-soft': websiteTokens['color-yellow-soft'], 'pink-soft': websiteTokens['color-pink-soft'],
   'media-control': websiteTokens['color-media-control'], border: websiteTokens['color-border'],
 } as const;
 export const assetColor = (key: keyof typeof palette) => `var(--asset-color-${key})`;
-export const backgrounds = ['ink', 'blue-soft', 'mint', 'yellow-soft', 'pink-soft', 'white'] as const;
+export const backgrounds = ['ink', 'blue-soft', 'mint', 'yellow-soft', 'pink-soft', 'white', 'beige'] as const;
 const color = z.enum(['ink', 'muted', 'white', 'blue', 'blue-soft', 'mint', 'yellow-soft', 'pink-soft', 'media-control', 'border']);
 export const assetIcons = ['none', 'play', 'check', 'arrow-right', 'sparkles', 'circle', 'circle-check', 'file-text', 'calendar', 'video', 'message-square', 'book-open', 'users', 'chart-line'] as const;
 export const cropSchema = z.object({ x: z.number().min(0).max(1), y: z.number().min(0).max(1), w: z.number().positive().max(1), h: z.number().positive().max(1) }).strict();

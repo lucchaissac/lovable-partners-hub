@@ -38,6 +38,11 @@
       "reference": "community-flash-light.png",
       "note": "Built-in image_gen edits of the same fictional group: blank physical badges and a silver laptop, then corrected to realistic 13-inch proportions. Original identity is a separate transparent SVG layer.",
       "refinementPrompt": "laptop-scale-prompt.txt"
+    },
+    {
+      "file": "nature-macro-lovable-refraction.png",
+      "prompt": "nature-macro-prompts.txt",
+      "note": "Built-in image_gen: oversized single green leaf macro with one water droplet; second pass adds restrained blue/lavender/pink/orange refraction inside the drop. True transparency outside the leaf. Native Community identity and text remain separate."
     }
   ],
   "compositionPrompt": "final-demo-prompt.txt",
@@ -50,10 +55,11 @@
   "currentDirections": [
     "Community original globe",
     "Au flash",
-    "Matière"
+    "Matière",
+    "Nature macro"
   ],
   "communityDirectionPrompt": "community-direction-prompt.txt",
-  "currentWorkflow": "Replace both redundant Idée collective collages in place with the original Community globe direction, preserving the six-asset collection: three directions in dark and light palettes.",
+  "currentWorkflow": "Retain the six dark/light variants and append one requested nature composition, all at 1080 × 1080. The nature image reclaims the positive plant idea from the original flyer.",
   "communityLightDirectionPrompt": "community-light-direction-prompt.txt",
   "currentAssets": [
     "community",
@@ -61,10 +67,11 @@
     "matiere",
     "community-light",
     "au-flash-light",
-    "matiere-light"
+    "matiere-light",
+    "nature"
   ],
   "currentGlobePlacement": "User-refined close-up: original sphere x=-85, y=-116, 2361×2361 inside the unchanged 1080×1080 canvas; gradient x=-486.121, y=29.87, 2340×2358.9072, rotation=-9.91. Applied to the light counterpart without changing native type.",
-  "verification": "Six distinct editable canvases verified in the local studio. Export checks stopped at the user’s request; saved source files are snapshots before any subsequent manual canvas refinements.",
+  "verification": "Seven editable 1080 square canvases verified in the local studio; aligned headlines and Paris header on all seven, optical photo copy at upper right, Lovable beige on the fourth and seventh canvas. Build and 29 existing Community tests pass. No export checks, as requested.",
   "communityCloseCropPrompt": "community-close-crop-prompt.txt",
   "headlineAlignment": {
     "canvas": [
@@ -94,5 +101,36 @@
     "placement": "Transparent 1254 square vector layer mapped to the 1080 square photo, with local card/laptop transforms. Original logo paths retained verbatim.",
     "laptopSticker": "Original SVG heart silhouette with the exact gradient pixels from Luc’s supplied logo reference, clipped to the symbol and a small white die-cut edge; no beige background.",
     "laptopScalePrompt": "laptop-scale-prompt.txt"
-  }
+  },
+  "cityHeader": {
+    "text": "Paris",
+    "frame": {
+      "x": 836.8,
+      "y": 36.9,
+      "width": 200,
+      "height": 48
+    },
+    "fontSize": 36.675,
+    "weight": 700,
+    "align": "right",
+    "lineHeightPercent": 130.88,
+    "color": "Match light/dark palette",
+    "note": "Aligned to the visible wordmark center with equal 43.2px right inset."
+  },
+  "photoSupportingCopy": {
+    "text": "Build something\nthat matters",
+    "frame": {
+      "x": 436.8,
+      "y": 186,
+      "width": 600,
+      "height": 130
+    },
+    "fontSize": 56,
+    "lineHeightPercent": 105,
+    "align": "right",
+    "reference": "Luc’s manual upper-right placement, November 16, 2026; protects the faces."
+  },
+  "lightGlobeBackground": "#f7f4ed",
+  "natureBackground": "#f7f4ed",
+  "natureAssetId": "85b222e6-2bd1-4769-ab17-32859799dd6a"
 }

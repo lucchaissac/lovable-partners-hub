@@ -21,7 +21,7 @@ export const chatPlanSchema=z.object({
  replaceCurrent:z.boolean().default(false),
  reviews:z.array(reviewSchema).max(7),
  badgeBatch:z.object({sourceId:id.nullable(),people:z.array(z.object({name:z.string().min(1).max(48),role:z.string().max(55),city:z.string().max(45)}).strict()).max(64),city:z.string().max(45),role:z.string().max(55)}).strict().nullable(),
- designs:z.array(z.object({title:z.string().min(1).max(100),reference:z.enum(communityReferenceIds),visualTreatment:z.enum(['brand-scene','retained-visual','typographic']),width:z.number().int().min(200).max(communityWorkingCanvasLimit),height:z.number().int().min(200).max(communityWorkingCanvasLimit),background:z.enum(['ink','white']),elements:z.array(chatElementSchema).min(1).max(60)}).strict()).max(6),
+ designs:z.array(z.object({title:z.string().min(1).max(100),reference:z.enum(communityReferenceIds),visualTreatment:z.enum(['brand-scene','retained-visual','typographic']),width:z.number().int().min(200).max(communityWorkingCanvasLimit),height:z.number().int().min(200).max(communityWorkingCanvasLimit),background:z.enum(['ink','white','beige']),elements:z.array(chatElementSchema).min(1).max(60)}).strict()).max(6),
  edits:z.array(chatElementSchema).max(80),removeIds:z.array(id).max(80),
 }).strict();
 export const chatPlanJSONSchema=z.toJSONSchema(chatPlanSchema);

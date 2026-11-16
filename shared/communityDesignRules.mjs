@@ -52,7 +52,7 @@ export function validateCommunityDesignRules(plan,request){
   if(design.width>communityWorkingCanvasLimit||design.height>communityWorkingCanvasLimit)reject('Use an editor-sized canvas, at most 2560px on either side. Physical print dimensions do not request print-DPI pixel dimensions. A standard roll-up is 425 × 1000px.');
   if(['banner','poster'].includes(design.reference)&&Math.max(design.width,design.height)>1000&&!/\bpx\b|pixels?/i.test(request.prompt))reject('Use a 1000px long edge for print previews unless the user explicitly supplies pixel dimensions. Preserve the requested proportions; the standard roll-up is 425 × 1000px.');
   const m=communityDesignMetrics(design.reference,design.width,design.height),elements=design.elements;
-  const light=design.background==='white',logoColor=light?'dark':'light';
+  const light=design.background==='white'||design.background==='beige',logoColor=light?'dark':'light';
   const logos=elements.filter(e=>isBrand(e,'community-logo'));
   if(logos.length!==1)reject('Each design needs exactly one original Community lockup.');
   const logo=logos[0],f=logo.frame;

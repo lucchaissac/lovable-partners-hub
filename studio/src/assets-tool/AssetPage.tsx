@@ -1,5 +1,5 @@
 import {studioWorkspace,studioLastAssetKey,studioOwner} from './workspace';
-import {localCommunityChatAvailable,localChatStatus,localChatRequest,requestLocalDesign,materializeLocalPlan} from './localCommunityChat';
+import {localCommunityChatAvailable,localChatStatus,localChatRequest,requestLocalDesign,materializeLocalPlan,communityPlanReplies} from './localCommunityChat';
 import {ambassadorAsset,migrateCommunityAsset} from './ambassadorAsset';
 import {ambassadorFormats} from '../../../src/ambassadors/catalog.js';
 import {communityTemplate,communitySettings,syncCommunityDocument} from './communityDocument';
@@ -83,6 +83,9 @@ function AssetPageContent() {
   const [saveState, setSaveState] = useState(''), [exporting, setExporting] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [loading, setLoading] = useState(!!id || !!requestedBadge);
+  useEffect(()=>{
+    if(studioWorkspace==='ambassadors'&&asset?.id&&!loading)window.parent.postMessage({type:'lovable-community-asset',id:asset.id},window.location.origin);
+  },[asset?.id,loading]);
   // Reveal only after the document, font and artwork have reached their final first layout.
   useEffect(() => {
     if (loading) return;
@@ -223,15 +226,15 @@ function AssetPageContent() {
       if(studioWorkspace==='ambassadors'&&localChat.enabled){
         const rendered=await visionReference({name:'Current asset',src:png,...assetDimensions(document)});
         const payload=localChatRequest(document,request.prompt,request.sources,request.visual?.context,rendered.src,Math.max(0,MAX_ASSET_PAGES-assetPages(document,recent).length));
-        setGenerationStage('Designing your asset…');
+        setGenerationStage(request.sources.some(source=>source.kind==='image')?'Reviewing your asset…':'Designing your asset…');
         const plan=await requestLocalDesign(payload,active.signal);
         setGenerationStage('Building your canvas…');
         const designs=await materializeLocalPlan(plan,document,request.sources,active.signal);
         if(JSON.stringify([current.current?.editor,current.current?.dimensions,current.current?.background])!==JSON.stringify([document.editor,document.dimensions,document.background]))throw Error('The canvas changed during generation. Retry to keep your latest edits.');
         if(!mounted.current||run!==operation.current||current.current?.id!==document.id)return;
         if(plan.designs.length||plan.badgeBatch){
-          const reply:StudioMessage={id:crypto.randomUUID(),createdAt:new Date().toISOString(),text:plan.summary,user:false,channel:'workspace',workspaceChatId:request.chatId};
-          for(const design of designs)design.messages=[...assetMessages(current.current),reply];
+          const replies:StudioMessage[]=communityPlanReplies(plan,payload).map(text=>({id:crypto.randomUUID(),createdAt:new Date().toISOString(),text,user:false,channel:'workspace',workspaceChatId:request.chatId}));
+          for(const design of designs)design.messages=[...assetMessages(current.current),...replies];
           await saves.current;
           const collection=insertAssetPages(assetPages(current.current,await listAssets(owner)),current.current.id,designs);
           await saveAssets(owner,collection);
@@ -243,7 +246,7 @@ function AssetPageContent() {
           // put() records the new draft as the last-open asset for reopening the studio.
         }else{
           if(plan.edits.length||plan.removeIds.length)change(designs[0]);
-          appendMessage({id:crypto.randomUUID(),createdAt:new Date().toISOString(),text:plan.summary,user:false,workspaceChatId:request.chatId});
+          for(const text of communityPlanReplies(plan,payload))appendMessage({id:crypto.randomUUID(),createdAt:new Date().toISOString(),text,user:false,workspaceChatId:request.chatId});
         }
         lastRequest.current=undefined;setVisual(undefined);return;
       }

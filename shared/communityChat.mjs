@@ -1,6 +1,7 @@
 import {z} from 'zod';
 import {communityReferenceIds,communityWorkingCanvasLimit,validateCommunityDesignRules} from './communityDesignRules.mjs';
 import {resolveBadgeBatch} from './communityRoster.mjs';
+import {reviewSchema,imageCropSchema,validateCommunityReview} from './communityReview.mjs';
 
 const id=z.string().min(1).max(80).regex(/^[a-zA-Z0-9-]+$/);
 const color=z.string().regex(/^(#[0-9a-fA-F]{6}|transparent)$/);
@@ -12,13 +13,14 @@ export const chatElementSchema=z.union([
  z.object({id,kind:z.literal('icon'),frame,name:z.enum(chatIcons),color,filled:z.boolean()}).strict(),
  z.object({id,kind:z.literal('brand'),frame,asset:z.enum(['community-logo','globe','gradient','community-photo']),color:z.enum(['light','dark']),city:z.string().max(45)}).strict(),
  z.object({id,kind:z.literal('qr'),frame,url:z.string().max(300).url().regex(/^https?:\/\//)}).strict(),
- z.object({id,kind:z.literal('image'),frame,sourceId:id,fit:z.enum(['cover','contain']),radius:z.number().min(0).max(1500)}).strict(),
+ z.object({id,kind:z.literal('image'),frame,sourceId:id,fit:z.enum(['cover','contain']),radius:z.number().min(0).max(1500),crop:imageCropSchema.nullable(),placement:z.enum(['inset','background']),alt:z.string().min(1).max(200)}).strict(),
  z.object({id,kind:z.literal('reuse'),sourceId:id,frame:frame.nullable()}).strict(),
 ]);
 export const chatPlanSchema=z.object({
  summary:z.string().min(1).max(1200),
+ reviews:z.array(reviewSchema).max(7),
  badgeBatch:z.object({sourceId:id.nullable(),people:z.array(z.object({name:z.string().min(1).max(48),role:z.string().max(55),city:z.string().max(45)}).strict()).max(64),city:z.string().max(45),role:z.string().max(55)}).strict().nullable(),
- designs:z.array(z.object({title:z.string().min(1).max(100),reference:z.enum(communityReferenceIds),width:z.number().int().min(200).max(communityWorkingCanvasLimit),height:z.number().int().min(200).max(communityWorkingCanvasLimit),background:z.literal('ink'),elements:z.array(chatElementSchema).min(1).max(60)}).strict()).max(6),
+ designs:z.array(z.object({title:z.string().min(1).max(100),reference:z.enum(communityReferenceIds),visualTreatment:z.enum(['brand-scene','retained-visual','typographic']),width:z.number().int().min(200).max(communityWorkingCanvasLimit),height:z.number().int().min(200).max(communityWorkingCanvasLimit),background:z.literal('ink'),elements:z.array(chatElementSchema).min(1).max(60)}).strict()).max(6),
  edits:z.array(chatElementSchema).max(80),removeIds:z.array(id).max(80),
 }).strict();
 export const chatPlanJSONSchema=z.toJSONSchema(chatPlanSchema);
@@ -54,5 +56,5 @@ export function validateChatPlan(value,request){
   }
  }
  if(plan.removeIds.some(id=>!request.blocks.some(b=>b.id===id)))throw Error('Cannot remove an unknown element.');
- return validateCommunityDesignRules(plan,request);
+ return validateCommunityDesignRules(validateCommunityReview(plan,request),request);
 }

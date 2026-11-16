@@ -14,14 +14,14 @@ const request={prompt:'Make a square LinkedIn post',title:'Demo',width:1200,heig
 function galleryDesign(width=1080,height=1080){
  const m=communityDesignMetrics('social',width,height);
  const brand=(id,asset,geometry)=>({id,kind:'brand',asset,color:'light',city:'Montréal',frame:{rotation:0,opacity:1,...geometry}});
- return {title:'Community meetup',reference:'social',width,height,background:'ink',elements:[
+ return {title:'Community meetup',reference:'social',visualTreatment:'brand-scene',width,height,background:'ink',elements:[
   brand('glow','gradient',{x:-width*.54,y:-height*.2,width:m.gradientWidth,height:m.gradientWidth*1.00808,rotation:-9.91}),
   brand('globe','globe',{x:m.globeX,y:m.globeY,width:m.globeWidth,height:m.globeWidth}),
   brand('logo','community-logo',{x:m.inset,y:m.inset,width:m.logoWidth,height:m.logoHeight}),
   {...text,frame:{...frame,x:m.inset,y:m.headlineY,width:m.headlineWidth,height:180*m.scale},fontSize:m.headlineSize,lineHeight:88/96*100},
  ]};
 }
-const plan={badgeBatch:null,summary:'Created a LinkedIn post.',designs:[galleryDesign()],edits:[],removeIds:[]};
+const plan={reviews:[],badgeBatch:null,summary:'Created a LinkedIn post.',designs:[galleryDesign()],edits:[],removeIds:[]};
 
 test('Generation accepts free formats and multiple designs, but rejects executable content and unknown sources',()=>{
  assert.equal(validateChatPlan({...plan,designs:[...plan.designs,galleryDesign(1200,627)]},request).designs.length,2);
@@ -129,7 +129,7 @@ test('Print requests use practical working canvases and retain the roll-up propo
  assert.ok(Math.abs(dimensions.width/dimensions.height-850/2000)<.0001);
  const m=communityDesignMetrics('banner',dimensions.width,dimensions.height);
  const brand=(id,asset,geometry)=>({id,kind:'brand',asset,color:'light',city:'Paris',frame:{rotation:0,opacity:1,...geometry}});
- const rollup={title:'Build together',reference:'banner',...dimensions,background:'ink',elements:[
+ const rollup={title:'Build together',reference:'banner',visualTreatment:'brand-scene',...dimensions,background:'ink',elements:[
   brand('globe','globe',{x:m.globeX,y:m.globeY,width:m.globeWidth,height:m.globeWidth}),
   brand('gradient','gradient',{x:-640,y:275,width:m.gradientWidth,height:m.gradientWidth*1.00808,rotation:-9.91}),
   brand('logo','community-logo',{x:m.inset,y:m.inset,width:m.logoWidth,height:m.logoHeight}),
@@ -145,10 +145,11 @@ test('Print requests use practical working canvases and retain the roll-up propo
 test('A narrow custom print ratio keeps the scaled lockup instead of inflating it to 12px',()=>{
  const width=230,height=1000,m=communityDesignMetrics('banner',width,height);
  const brand=(id,asset,geometry)=>({id,kind:'brand',asset,color:'light',city:'Paris',frame:{rotation:0,opacity:1,...geometry}});
- const design={title:'Paris roll-up',reference:'banner',width,height,background:'ink',elements:[
+ const design={title:'Paris roll-up',reference:'banner',visualTreatment:'brand-scene',width,height,background:'ink',elements:[
   brand('globe','globe',{x:m.globeX,y:m.globeY,width:m.globeWidth,height:m.globeWidth}),
   brand('gradient','gradient',{x:-345,y:150,width:m.gradientWidth,height:m.gradientWidth*1.00808,rotation:-9.91}),
   brand('logo','community-logo',{x:m.inset,y:m.inset,width:m.logoWidth,height:m.logoHeight}),
+  {...text,fontSize:m.headlineSize,frame:{...frame,x:m.headlineX,y:m.headlineY,width:m.headlineWidth,height:100}},
  ]};
  assert.ok(m.logoHeight<12);
  assert.ok(validateChatPlan({...plan,designs:[design]},{...request,prompt:'Make a 23 × 100 cm roll-up.'}));

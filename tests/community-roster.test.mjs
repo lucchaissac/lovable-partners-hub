@@ -5,7 +5,7 @@ import {parseCommunityRoster} from '../shared/communityRoster.mjs';
 import {validateChatPlan} from '../shared/communityChat.mjs';
 
 const request={prompt:'Make name badges for our event in Paris.',title:'Event',width:1200,height:630,blocks:[],conversation:[],sources:[],availablePageSlots:63};
-const batch={summary:'Created the name badges.',badgeBatch:{sourceId:'attachment-0',people:[],city:'Paris',role:''},designs:[],edits:[],removeIds:[]};
+const batch={reviews:[],summary:'Created the name badges.',badgeBatch:{sourceId:'attachment-0',people:[],city:'Paris',role:''},designs:[],edits:[],removeIds:[]};
 const withCsv=text=>({...request,sources:[{id:'attachment-0',name:'people.csv',kind:'text',text}]});
 
 test('CSV supports quoted names, escaped quotes, multiline fields, BOM, CRLF and ignored columns',()=>{
@@ -46,7 +46,7 @@ test('The downloadable Paris example has exactly five usable attendees',async()=
 });
 test('QR elements accept only supplied links and preserve the square',()=>{
  const qr={id:'join-qr',kind:'qr',url:'https://lovable.dev/community',frame:{x:100,y:100,width:80,height:80,rotation:0,opacity:1}};
- const edit={summary:'Added a QR.',badgeBatch:null,designs:[],edits:[qr],removeIds:[]};
+ const edit={reviews:[],summary:'Added a QR.',badgeBatch:null,designs:[],edits:[qr],removeIds:[]};
  const linked={...request,prompt:'Add a QR for https://lovable.dev/community'};
  assert.equal(validateChatPlan(edit,linked).edits[0].url,qr.url);
  assert.throws(()=>validateChatPlan(edit,request),/exact link/);

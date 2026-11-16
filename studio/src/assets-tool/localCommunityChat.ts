@@ -1,6 +1,7 @@
 import {z} from 'zod';
 import {chatPlanSchema,chatRequestSchema,validateChatPlan} from '../../../shared/communityChat.mjs';
 import {communityDesignMetrics} from '../../../shared/communityDesignRules.mjs';
+export {communityPlanReplies} from '../../../shared/communityReview.mjs';
 import {COMMUNITY_MARKUP,COMMUNITY_VIEWBOX} from '../../../src/ambassadors/source/brand.mjs';
 import {renderAmbassador} from '../../../src/ambassadors/render.js';
 import {defaultAmbassador} from './ambassadorSettings';
@@ -59,10 +60,15 @@ async function nativeElement(spec:ChatElement,existing:Map<string,HtmlBlock>,ima
  }
  if(spec.kind==='shape')return {id:spec.id,kind:'shape',shape:spec.shape,editor:{...editor,appearance:{fill:spec.fill,background:spec.fill,borderColor:spec.stroke,borderWidth:spec.strokeWidth,radius:spec.radius,lineStyle:'solid',lineWidth:Math.max(1,spec.strokeWidth)}}};
  if(spec.kind==='icon')return {id:spec.id,kind:'shape',shape:'rectangle',icon:spec.name as HtmlIconName,filled:spec.filled,editor:{...editor,appearance:{fill:spec.color}}};
- let src='',alt='',ambassador:ReturnType<typeof defaultAmbassador>|undefined,ambassadorElement:'globe'|'qr'|undefined,fit:'contain'|'cover'='contain',radius=0;
+ let src='',alt='',ambassador:ReturnType<typeof defaultAmbassador>|undefined,ambassadorElement:'globe'|'qr'|undefined,fit:'contain'|'cover'='contain',radius=0,crop:Extract<HtmlBlock,{kind:'image'}>['value']['crop'];
  if(spec.kind==='image'){
-  const source=existing.get(spec.sourceId);src=images.get(spec.sourceId)??(source?.kind==='image'?source.value.src:'');alt=source?.kind==='image'?source.value.alt:'Attached image';fit=spec.fit;radius=spec.radius;
+  const source=existing.get(spec.sourceId);src=images.get(spec.sourceId)??(source?.kind==='image'?source.value.src:'');alt=spec.alt;fit=spec.fit;radius=spec.radius;
   if(!src)throw Error('The requested image is no longer available.');
+  if(spec.crop){
+   const image=new Image();image.src=src;await image.decode();signal.throwIfAborted();
+   const {naturalWidth:sourceWidth,naturalHeight:sourceHeight}=image;
+   crop={x:spec.crop.x*sourceWidth,y:spec.crop.y*sourceHeight,width:spec.crop.width*sourceWidth,height:spec.crop.height*sourceHeight,sourceWidth,sourceHeight};
+  }
  }else if(spec.kind==='qr'){
   ambassador={...defaultAmbassador(),url:spec.url};ambassadorElement='qr';alt='Community QR';
   src=(await renderAmbassador(ambassador,{element:'qr',pixels:Math.max(512,Math.ceil(spec.frame.width*3)),signal})).src;
@@ -73,7 +79,7 @@ async function nativeElement(spec:ChatElement,existing:Map<string,HtmlBlock>,ima
   if(spec.asset==='gradient')src='/ambassadors/assets/heart-overlay.png';
   if(spec.asset==='globe'){ambassador={...defaultAmbassador(),city:spec.city||'Paris'};ambassadorElement='globe';src=(await renderAmbassador(ambassador,{element:'globe',pixels:1600,signal})).src;}
  }
- return {id:spec.id,kind:'image',...(ambassador?{ambassador,ambassadorElement}:{}),value:{src,alt,caption:'',alignment:'center',width:100},editor:{...editor,appearance:{imageFit:fit,radius}}};
+ return {id:spec.id,kind:'image',...(ambassador?{ambassador,ambassadorElement}:{}),value:{src,alt,caption:'',alignment:'center',width:100,...(crop?{crop}:{})},editor:{...editor,appearance:{imageFit:fit,radius}}};
 }
 export async function materializeLocalPlan(plan:ChatPlan,base:AssetDocument,sources:StudioSource[],signal:AbortSignal):Promise<AssetDocument[]>{
  await Promise.all([document.fonts.load('600 32px "Camera Plain"'),document.fonts.load('700 120px "Camera Plain"')]);

@@ -60,6 +60,10 @@ export function validateCommunityDesignRules(plan,request){
   const x=f.width*communityLogo.heartHeight/communityLogo.width,clear={x:f.x-x,y:f.y-x,width:f.width+2*x,height:f.height+2*x};
   for(const e of elements){
    if(e===logo||isBrand(e,'globe')||isBrand(e,'gradient'))continue;
+   if(e.kind==='image'&&e.placement==='background'){
+    if(elements.indexOf(e)>elements.indexOf(logo)||elements.slice(0,elements.indexOf(e)).some(element=>element.kind==='text')||e.frame.opacity>.3)reject('Keep a retained background behind the complete logo and all copy, at opacity 0.3 or less over the dark canvas for legibility.');
+    continue;
+   }
    const source='sourceId'in e?request.blocks.find(b=>b.id===e.sourceId):undefined,frame=e.frame??(source?frameOf(source):null);
    if(frame&&boxOverlaps(frame,clear))reject('Keep one actual heart height of clear space around the full Community logo, including its y descender.');
    if(e.kind==='text'){
@@ -80,7 +84,8 @@ export function validateCommunityDesignRules(plan,request){
    }
   }
   const globe=elements.findIndex(e=>isBrand(e,'globe')),gradient=elements.findIndex(e=>isBrand(e,'gradient'));
-  if(m.motifOrder.length){
+  if(design.visualTreatment!=='brand-scene'&&(globe>=0||gradient>=0))reject('Choose one coherent visual treatment: the original globe scene, a retained illustration/photo, or a typographic composition.');
+  if(design.visualTreatment==='brand-scene'&&m.motifOrder.length){
    if(globe<0||gradient<0)reject('Use the original globe and gradient together, as in the chosen gallery reference.');
    if((m.motifOrder[0]==='gradient')!==(gradient<globe))reject(`Keep the ${design.reference} layer order: ${m.motifOrder.join(' then ')} behind the content.`);
    for(const i of [globe,gradient])if(i>elements.indexOf(logo)||elements.slice(0,i).some(e=>e.kind==='text'))reject('The globe and gradient stay behind the logo and all copy.');

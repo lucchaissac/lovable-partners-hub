@@ -136,6 +136,8 @@
 
 /* White chat chrome, with the title and history icon on the same compact row. */
 .asset-app .studio-editor.we-chat {background:var(--ui-bg);}
+/* Keep long review replies and their positioned actions inside the chat scroller. */
+.asset-app[data-workspace="ambassadors"] .we-chat-messages {position:relative;}
 .asset-app .studio-editor .we-chat-conversation[data-scrolled]::after {background:linear-gradient(to bottom,var(--ui-bg) 2px,transparent);}
 .asset-app .we-chat-header {padding-inline:var(--ui-space-4);}
 .asset-app .we-chat-header-leading {gap:var(--ui-space-1);}

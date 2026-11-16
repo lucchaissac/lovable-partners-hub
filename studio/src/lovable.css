@@ -64,8 +64,8 @@ html, body, #root { background: var(--studio-background); color: var(--ui-text);
 .asset-app .we-chat .we-sidebar-content .we-chat-start > .ui-btn { padding-inline: 0 !important; height: 36px; font-size: 13px; }
 .asset-app .we-chat-start .ui-btn:disabled { opacity: .55; }
 .asset-app .we-chat-composer { padding: 0 16px 0 8px; }
-.asset-app .we-chat-composer .ui-composer { background: rgb(var(--studio-fg-rgb) / 5%); border: 0; box-shadow: none; border-radius: 18px; min-height: 132px; }
-.asset-app .we-chat-composer .ui-composer-textarea { min-height: 78px; }
+.asset-app .we-chat-composer .ui-composer { background: rgb(var(--studio-fg-rgb) / 5%); border: 0; box-shadow: none; border-radius: 18px; min-height: 96px; }
+.asset-app .we-chat-composer .ui-composer-textarea { min-height: 44px; }
 .asset-app .ui-composer-send { color: var(--studio-primary-label); box-shadow: none; }
 .asset-app .ui-composer-send:disabled { color: var(--ui-text-muted); }
 .lovable-chat-status { padding: 10px 10px 0; font-size: 11px; color: rgb(var(--studio-fg-rgb) / 38%); line-height: 1.5 !important; }

@@ -14,14 +14,16 @@ export const FORMATS=[
 ];
 export const TIERS=['Select','Premier','Elite'];
 export const METRICS=Object.freeze({unit:32,module:5,text:3,radius:1.125,stroke:.125});
-let font,instance=0;
+let font,typography,instance=0;
 const cache=new Map();
 const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
 const n=v=>Number(v.toFixed(4));
-export async function prepareTypography(){
- const [module,response]=await Promise.all([import('opentype.js'),fetch('/fonts/CameraPlain-Bold.ttf')]);
- if(!response.ok)throw new Error('The badge font could not load.');
- font=(module.parse||module.default.parse)(await response.arrayBuffer());
+export function prepareTypography(){
+ return typography??=(async()=>{
+  const [module,response]=await Promise.all([import('opentype.js'),fetch('/fonts/CameraPlain-Bold.ttf')]);
+  if(!response.ok)throw new Error('The badge font could not load.');
+  font=(module.parse||module.default.parse)(await response.arrayBuffer());
+ })().catch(error=>{typography=undefined;throw error;});
 }
 function shape(lines,height){
  const key=lines.join('|')+height;if(cache.has(key))return cache.get(key);
@@ -43,7 +45,7 @@ function model(formatId,tier='Select',options={}){
  const stroke=u/8;
  let width,height,topHeight;
  if(format.layout==='horizontal'||format.layout==='compact'){width=(format.layout==='horizontal'?wordmarkWidth:h)+roleWidth+tierWidth-stroke*(level?2:1);height=h;topHeight=h;}
- if(format.layout==='stacked'){width=solution?roleWidth+tierWidth-stroke:wordmarkWidth;topHeight=solution?(width-2*u)/(461.0845/83.3618)+2*u:h;height=topHeight+(solution?2:1)*(h-stroke);}
+ if(format.layout==='stacked'){width=solution?roleWidth+tierWidth-stroke:Math.max(wordmarkWidth,roleWidth+4*u-stroke);topHeight=solution?(width-2*u)/(461.0845/83.3618)+2*u:h;height=topHeight+(solution?2:1)*(h-stroke);}
  if(format.layout==='symbol'){width=h+roleWidth+tierWidth-stroke*(solution?2:1);topHeight=h;height=2*h-stroke;}
  return {format,solution,u,h,width,height,topHeight,role,level,roleWidth,tierWidth,wordmarkWidth,stroke,moduleHeight:h};
 }
@@ -121,8 +123,6 @@ export function badgeAssembly(options={}){
   return `<div class="assembly-module" data-module="${i===0?'identity':'text'}" style="left:${x/w*100}%;width:${width/w*100}%"><svg xmlns="http://www.w3.org/2000/svg" viewBox="${x} 0 ${width} ${h}" aria-hidden="true">${module.outerHTML}</svg></div>`;
  }).join('')}</div>`;
 }
-export function symbolClearSpace(){
- const u=32,h=96,w=82.2357/83.3616*h;
 // Rotate the badge's own modules in sequence, keeping their type scale while the frame changes width.
 export function badgeVolume(options={}) {
  const {u,h,role,level,roleWidth,tierWidth}=model('solution-compact',options.tier||'Select',options);
@@ -135,5 +135,7 @@ export function badgeVolume(options={}) {
  </div>`;
 }
 
+export function symbolClearSpace(){
+ const u=32,h=96,w=82.2357/83.3616*h;
  return `<svg class="symbol-space-diagram" viewBox="0 0 ${w+2*u} ${h+2*u}" role="img" aria-label="Leave x on every side of the Lovable heart, with the symbol itself three x high">${image('1-713-imgVector1',u,u,82.2357,83.3616,h/83.3616)}<g fill="none" stroke="white" stroke-opacity=".28" stroke-width=".7"><rect x=".5" y=".5" width="${w+2*u-1}" height="${h+2*u-1}"/><path d="M32 0V160M${w+u} 0V160M0 32H${w+2*u}M0 128H${w+2*u}"/></g><g fill="white" fill-opacity=".6" font-family="Camera Plain" font-size="12" font-weight="600" text-anchor="middle"><text x="${u+w/2}" y="20">x</text><text x="${u+w/2}" y="149">x</text><text x="16" y="84">x</text><text x="${w+u*1.5}" y="84">x</text></g></svg>`;
 }

@@ -100,13 +100,14 @@
   }
   .partner-summary {
     display: grid;
-    grid-template-columns: clamp(32px, 9cqw, 44px) minmax(0, 1fr) auto;
+    --partner-icon-size: clamp(32px, 9cqw, 44px);
+    grid-template-columns: var(--partner-icon-size) minmax(0, 1fr) auto;
     align-items: center;
     gap: 2px clamp(8px, 2.5cqw, 12px);
-    margin-top: clamp(12px, 3.7cqw, 18px);
+    margin-top: clamp(6px, 1.8cqw, 9px);
   }
   .partner-avatar {
-    grid-row: 1 / span 2;
+    grid-row: 1;
     align-self: center;
     display: grid;
     place-items: center;
@@ -118,11 +119,9 @@
     color: #fafaf8;
   }
   .partner-avatar img { display: block; width: 100%; height: 100%; object-fit: contain; }
-  .partner-name { font-size: clamp(15px, 4.6cqw, 22px); line-height: 1.05; font-weight: 600; letter-spacing: -.025em; }
-  .partner-rating { display: flex; align-items: center; gap: 4px; font-size: clamp(11px, 3cqw, 14px); line-height: 1.25; font-weight: 600; }
-  .partner-star { width: 12px; height: 12px; fill: currentColor; }
-  .partner-credentials { grid-column: 2 / -1; display: flex; align-items: center; }
-  .partner-expert { flex: none; height: clamp(14px, 3.3cqw, 16px); }
+  .partner-name { grid-column: 2; grid-row: 1; font-size: clamp(15px, 4.6cqw, 22px); line-height: 1.05; font-weight: 600; letter-spacing: -.025em; }
+  .partner-credentials { grid-column: 3; grid-row: 1; display: flex; align-items: center; }
+  .partner-expert { flex: none; height: var(--partner-icon-size); }
   .partner-expert .badge-graphic { display: block; width: auto; height: 100%; }
   .partner-expert .module-outline { stroke-width: 5; }
 }
@@ -156,3 +155,11 @@
   .section-switcher { width: 100%; max-width: 100%; }
   .section-switcher .text-segment { flex: 1; padding-inline: 6px; font-size: 12px; }
 }
+
+.gallery-grid > .gallery-item { cursor:zoom-in; }
+.gallery-grid > .gallery-item:focus-visible { outline:2px solid var(--color-text);outline-offset:6px; }
+.gallery-lightbox { position:fixed;inset:0;width:100%;height:100dvh;max-width:none;max-height:none;padding:0;margin:0;border:0;background:transparent;overflow:hidden; }
+.gallery-lightbox[open] { display:grid;place-items:center; }
+.gallery-lightbox::backdrop { background:transparent; }
+.gallery-lightbox-stage { position:relative;flex:none;transform-origin:top left; }
+.gallery-lightbox-stage > .gallery-item { transform:scale(var(--preview-scale));transform-origin:top left;cursor:default; }

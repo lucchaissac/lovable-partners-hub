@@ -1,3 +1,4 @@
+import { defaultPartnerBadge, legacyBadgeFormat } from './partnerBadgeSettings';
 import { htmlEditorSchema, type HtmlBlock, type HtmlEditorState } from '../studio/htmlEditorModel.js';
 import { assetColor, assetDimensions, type AssetDocument } from './model.js';
 
@@ -21,8 +22,13 @@ function primitives(block:Extract<HtmlBlock,{kind:'cta'}>,badge=false):HtmlBlock
     ...(block.leadingIcon?[{id:`${block.id}-icon`,kind:'shape' as const,shape:'rectangle' as const,icon:block.leadingIcon,filled:block.leadingIcon==='play',editor:{...common,x:pill?x+16:x+(w-labelW)/2-12-size,y:y+(h-size)/2,widthPx:size,height:size,appearance:{fill}}}]:[]),
   ];
 }
+function upgradeBadge(block:HtmlBlock,referenceSrc:string):HtmlBlock {
+  if(block.kind!=='image')return block;
+  const format=block.badge?.format||legacyBadgeFormat(block.value.src,block.value.alt);
+  return format?{...block,badge:block.badge||defaultPartnerBadge(format),value:{...block.value,src:block.value.src===REFERENCE_IMAGE?referenceSrc:block.value.src}}:block;
+}
 export function nativeDocument(asset:AssetDocument):HtmlEditorState {
-  if(asset.editor)return {...asset.editor,pages:asset.editor.pages.map(page=>({...page,sections:page.sections.map(section=>({...section,...(section.shadow?{shadow:'none' as const}:{}),columns:section.columns.map(column=>column.flatMap(block=>block.kind==='cta'?primitives(block):[block]))}))}))};
+  if(asset.editor)return {...asset.editor,pages:asset.editor.pages.map(page=>({...page,sections:page.sections.map(section=>({...section,...(section.shadow?{shadow:'none' as const}:{}),columns:section.columns.map(column=>column.flatMap(block=>block.kind==='cta'?primitives(block):[upgradeBadge(block,asset.reference.src)]))}))}))};
   const blocks:HtmlBlock[]=asset.nodes.flatMap((node,index):HtmlBlock[]=>{
     const id=`a${index}-${node.id.replaceAll('_','-')}`;
     const appearance={radius:node.radius,fontFamily:'Camera Plain' as const,fontSize:node.fontSize,fontWeight:Number(node.weight),lineHeight:125,...(node.fill!=='none'?{background:assetColor(node.fill),fill:assetColor(node.fill)}:{})};
@@ -34,7 +40,7 @@ export function nativeDocument(asset:AssetDocument):HtmlEditorState {
     if(node.kind==='rule')return [{id,kind:'divider',editor:{...editor,y:node.y-12,height:24,appearance:{}}}];
     return [{id,kind:'shape',shape:'rectangle',editor:{...editor,appearance:{...appearance,borderWidth:.5,borderColor:assetColor('border'),shadow:'soft'}}}];
   });
-  return htmlEditorSchema.parse({version:1,pages:[{id:'asset-page',name:asset.title,sections:[{id:'asset-board',name:'Canvas',background:'transparent',padding:0,gap:0,blockGap:0,minHeight:assetDimensions(asset).height,columns:[blocks]}]}]});
+  return htmlEditorSchema.parse({version:1,pages:[{id:'asset-page',name:asset.title,sections:[{id:'asset-board',name:'Canvas',background:'transparent',padding:0,gap:0,blockGap:0,minHeight:assetDimensions(asset).height,columns:[blocks.map(block=>upgradeBadge(block,asset.reference.src))]}]}]});
 }
 export function previewDocument(editor:HtmlEditorState,prefix:string):HtmlEditorState {
   return {...editor,pages:editor.pages.map(page=>({...page,id:`${prefix}-${page.id}`,sections:page.sections.map(section=>({...section,id:`${prefix}-${section.id}`,columns:section.columns.map(column=>column.map(block=>({...block,id:`${prefix}-${block.id}`})))}))}))};

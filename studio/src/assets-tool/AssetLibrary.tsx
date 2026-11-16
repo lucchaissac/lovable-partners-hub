@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, Icon, Input, Tooltip } from '@asset/ui';
 import { useHtmlEditorInsert } from '../studio/HtmlEditorInsert';
 
-import { loadLibrary, rasterLibraryAsset, type LibraryAsset } from './badgeLibrary';
+import { createPartnerBadge } from './partnerBadge';
+import { defaultPartnerBadge, type PartnerBadgeSettings } from './partnerBadgeSettings';
+import { loadLibrary, type LibraryAsset } from './badgeLibrary';
 
 export function AssetLibrary({ open, onOpenChange, onNew }: { open: boolean; onOpenChange: (open: boolean) => void; onNew: () => void }) {
   const trigger = useRef<HTMLDivElement>(null);
@@ -21,10 +23,9 @@ export function AssetLibrary({ open, onOpenChange, onNew }: { open: boolean; onO
   const add = async (asset: LibraryAsset) => {
     setAdding(asset.id); setError('');
     try {
-      const image = await rasterLibraryAsset(asset);
-      const scale = Math.min(480 / image.width, 480 / image.height);
+      const badge = await createPartnerBadge(defaultPartnerBadge(asset.id as PartnerBadgeSettings['format']));
       if (!insert.current) throw new Error('The canvas is still opening.');
-      insert.current({ id: crypto.randomUUID(), kind: 'image', value: { src: image.src, alt: asset.name, caption: '', alignment: 'center', width: 100 }, editor: { widthPx: image.width * scale, height: image.height * scale, appearance: { imageFit: 'contain' } } });
+      insert.current(badge);
       close();
     } catch (reason) { setError(reason instanceof Error ? reason.message : 'Could not add this asset.'); }
     finally { setAdding(''); }

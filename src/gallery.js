@@ -1,5 +1,5 @@
+import { mountGalleryPreview } from './galleryPreview.js';
 import { badgeSvg } from './badges.js';
-import { createElement, Star } from 'lucide';
 import './gallery.css';
 
 const media = '/gallery/';
@@ -30,14 +30,12 @@ function card(node, className, label, content) {
 }
 
 function partnerCard() {
-  const icon = (shape, className) => createElement(shape, { class: className, width: 20, height: 20, 'stroke-width': 1.8, 'aria-hidden': 'true' }).outerHTML;
-  return `<figure class="gallery-item gallery-partner-demo" data-gallery-example="partner-card" role="img" aria-label="Partner profile illustration: LoCo AI Solutions, Expert 2026, United States, rated 5.0, with an Eames Institute website preview.">
+  return `<figure class="gallery-item gallery-partner-demo" data-gallery-example="partner-card" role="img" aria-label="Partner profile illustration: LoCo AI Solutions, Expert 2026, United States, with an Eames Institute website preview.">
     <div class="partner-card">
       <div class="partner-preview">${motion(4)}<img class="partner-site-preview" src="${media}eames-preview-1280.webp" srcset="${media}eames-preview-640.webp 640w, ${media}eames-preview-1280.webp 1280w" sizes="${sizes}" width="3392" height="1788" alt="" decoding="async" /></div>
       <div class="partner-summary">
         <div class="partner-avatar"><img src="${media}loco-logo.webp" width="128" height="128" alt="" decoding="async" /></div>
         <div class="partner-name">LoCo AI Solutions</div>
-        <div class="partner-rating">${icon(Star, 'partner-star')}<span>5.0</span></div>
         <div class="partner-credentials">
           <div class="partner-expert" aria-hidden="true">${badgeSvg('expert-compact', { year: '2026', treatment: 'dark-outline', trailingLines: ['United', 'States'] })}</div>
         </div>
@@ -65,7 +63,7 @@ export function gallery() {
   </div></section>`;
 }
 
-export function mountGallery(root) {
+export function mountGallery(root, { interactive = true } = {}) {
   const videos = [...root.querySelectorAll('.gallery-video')];
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   const connection = navigator.connection;
@@ -74,7 +72,7 @@ export function mountGallery(root) {
   const portalCleanups = videos.filter(video => video.closest('.gallery-portal')).map(mountPortal);
 
   function sync(video) {
-    if (disposed || document.hidden || reducedMotion.matches || connection?.saveData || !visible.has(video)) {
+    if (disposed || document.hidden || reducedMotion.matches || connection?.saveData || !visible.has(video) || (interactive && document.querySelector('.gallery-lightbox[open]'))) {
       video.pause();
       return;
     }
@@ -103,8 +101,11 @@ export function mountGallery(root) {
   reducedMotion.addEventListener('change', refresh);
   connection?.addEventListener('change', refresh);
 
+  const cleanupPreview = interactive ? mountGalleryPreview(root, copy => mountGallery(copy, { interactive: false }), refresh) : () => {};
+
   return () => {
     disposed = true;
+    cleanupPreview();
     observer.disconnect();
     portalCleanups.forEach(cleanup => cleanup());
     document.removeEventListener('visibilitychange', refresh);
@@ -185,7 +186,8 @@ function mountPortal(video) {
   video.addEventListener('pause', stop);
   resize();
   return () => {
-    disposed = true; stop(); resizeObserver.disconnect();
+    disposed = true;
+    stop(); resizeObserver.disconnect();
     poster.removeEventListener('load', resize);
     video.removeEventListener('playing', start);
     video.removeEventListener('pause', stop);

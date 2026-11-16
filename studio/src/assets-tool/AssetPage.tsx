@@ -69,6 +69,18 @@ function AssetPageContent() {
   const [saveState, setSaveState] = useState(''), [exporting, setExporting] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [loading, setLoading] = useState(!!id || !!requestedBadge);
+  // Reveal only after the document, font and artwork have reached their final first layout.
+  useEffect(() => {
+    if (loading) return;
+    let cancelled=false,first=0,second=0;
+    const images=[...document.querySelectorAll<HTMLImageElement>('.asset-artwork[data-editable] img')];
+    const posters=[...document.querySelectorAll<HTMLVideoElement>('.asset-artwork[data-editable] video[poster]')].map(video=>{const image=new Image();image.src=video.poster;return image;});
+    void Promise.all([document.fonts.ready,...[...images,...posters].map(image=>image.decode().catch(()=>{}))]).then(()=>{
+      if(cancelled)return;
+      first=requestAnimationFrame(()=>{second=requestAnimationFrame(()=>{if(!cancelled)window.parent.postMessage({type:'lovable-studio-ready'},window.location.origin);});});
+    });
+    return()=>{cancelled=true;cancelAnimationFrame(first);cancelAnimationFrame(second);};
+  },[loading,asset?.id]);
   const [historyVersion, setHistoryVersion] = useState(0);
   const past = useRef<AssetDocument[]>([]), future = useRef<AssetDocument[]>([]);
   const upload = useRef<HTMLInputElement>(null), exportBoard = useRef<HTMLDivElement>(null);

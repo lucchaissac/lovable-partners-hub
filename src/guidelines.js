@@ -1,4 +1,5 @@
 import { FORMATS, badgeSvg, paddingDiagram, badgeAssembly, symbolClearSpace } from './badges.js';
+import { studioInvitation } from './studio-preview.js';
 
 export function guidelines(tier,{icon,formatCard,sections}) {
  const badge=(id,options={})=>badgeSvg(id,{tier,...options});
@@ -60,7 +61,7 @@ export function guidelines(tier,{icon,formatCard,sections}) {
    ${heading('In use','Pick the shape that fits. Keep the badge intact.')}
    <div class="usage-examples"><figure><div>${badge('expert-horizontal')}</div><figcaption>Wide placements</figcaption></figure><figure><div>${badge('solution-stacked')}</div><figcaption>Stacked placements</figcaption></figure></div>
    <div class="usage-notes"><p>Scale as one. Keep blocks connected.</p><p>Use your current status, tier and year.</p><p>Give your logo its own block.</p></div>
-   <div class="closing-line"><h2>Make it yours.</h2><button class="primary-button" data-view="create">Create a badge ${icon('next')}</button></div>
+   ${studioInvitation()}
   </section>
  </div>`;
 }

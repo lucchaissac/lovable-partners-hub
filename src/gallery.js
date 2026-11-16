@@ -1,4 +1,5 @@
 import { badgeSvg } from './badges.js';
+import { createElement, Workflow, Star } from 'lucide';
 import './gallery.css';
 
 const media = '/gallery/';
@@ -24,6 +25,24 @@ function card(node, className, label, content) {
   return `<figure class="gallery-item ${className}" data-gallery-node="${node}" role="img" aria-label="${label}">${content}</figure>`;
 }
 
+function partnerCard() {
+  const icon = (shape, className) => createElement(shape, { class: className, width: 20, height: 20, 'stroke-width': 1.8, 'aria-hidden': 'true' }).outerHTML;
+  return `<figure class="gallery-item gallery-partner-demo" data-gallery-example="partner-card" role="img" aria-label="Example partner profile: LoCo AI Solutions, Expert 2026, United States, rated 5.0. A looping video previews their work.">
+    <div class="partner-card">
+      <div class="partner-preview">${motion(4)}</div>
+      <div class="partner-summary">
+        <div class="partner-avatar">${icon(Workflow, 'partner-avatar-icon')}</div>
+        <div class="partner-name">LoCo AI Solutions</div>
+        <div class="partner-rating">${icon(Star, 'partner-star')}<span>5.0</span></div>
+        <div class="partner-credentials">
+          <div class="partner-expert" aria-hidden="true">${badgeSvg('expert-compact', { year: '2026' })}</div>
+          <span class="partner-country">United States</span>
+        </div>
+      </div>
+    </div>
+  </figure>`;
+}
+
 export function gallery() {
   return `<section class="gallery" aria-label="Partner gallery"><div class="gallery-grid">
     <div class="gallery-column">
@@ -32,6 +51,7 @@ export function gallery() {
       ${card('3:52', 'gallery-square', 'Stacked Solution Partner badge on flowing pink and blue', motion(3) + badge('solution-stacked', 'badge-stacked'))}
     </div>
     <div class="gallery-column">
+      ${partnerCard()}
       ${card('3:27', 'gallery-landscape gallery-portal gallery-portal-alt', 'Outlined Solution Partner badge inside a moving color composition', motion(8, true) + badge('solution-compact', 'badge-portal', { tier: 'Premier' }))}
       ${card('3:100', 'gallery-hoodie', 'White outlined partner badge printed on a pink hoodie', photo('hoodie', 1024, 1536, true) + badge('solution-stacked', 'badge-hoodie'))}
       ${card('3:9', 'gallery-portrait', 'Solution Partner badge on an outdoor portrait', photo('portrait', 399, 501) + badge('solution-horizontal', 'badge-portrait-wide'))}

@@ -43,6 +43,7 @@
     "au-flash-light",
     "matiere-light"
   ],
-  "currentGlobePlacement": "Original social globe and gradient shifted down 400 px for the explicitly requested bottom-right crop; both palettes share the exact geometry, title size and 92% title line height.",
-  "verification": "Six distinct editable canvases verified in the local studio. Export checks stopped at the user’s request; saved source files are snapshots before any subsequent manual canvas refinements."
+  "currentGlobePlacement": "User-refined close-up: original sphere x=-85, y=-116, 2361×2361 inside the unchanged 1080×1080 canvas; gradient x=-486.121, y=29.87, 2340×2358.9072, rotation=-9.91. Applied to the light counterpart without changing native type.",
+  "verification": "Six distinct editable canvases verified in the local studio. Export checks stopped at the user’s request; saved source files are snapshots before any subsequent manual canvas refinements.",
+  "communityCloseCropPrompt": "community-close-crop-prompt.txt"
 }

@@ -1,0 +1,6 @@
+Modifie uniquement les deux images de cette version claire pour reprendre le gros plan du globe que je viens de régler dans la version sombre. Ne touche pas à la version sombre ni aux quatre autres pages. Aucun export, aucun nouveau design, aucun autre asset. Edits seulement.
+
+Globe original existant : x=-85, y=-116, largeur=2361, hauteur=2361, rotation=0, opacité=1. C’est le globe avec son cœur intégré : conserve son image et tous ses réglages, agrandis uniquement son cadre. La sphère doit sortir largement du cadre à droite et en bas, avec le cœur bien visible, comme un gros plan de carte — pas une petite boule entière.
+Gradient original existant : x=-486.121, y=29.87, largeur=2340, hauteur=2358.9072, rotation=-9.91, opacité=1.
+
+Le canvas reste 1080×1080 blanc ; logo Community complet dark et textes foncés inchangés. Garde strictement le titre 180px interligne92%, les positions et tous les sauts de ligne. Réutilise les images natives existantes, ne régénère rien et ne remplace pas toute la composition. Réponds brièvement en français.

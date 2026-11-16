@@ -358,7 +358,7 @@ function AssetPageContent() {
     const next=pages.find(page=>page.id===pageId);if(!next)return;
     if(current.current)pageHistory.current.set(current.current.id,{past:past.current,future:future.current});
     const history=pageHistory.current.get(pageId);past.current=history?.past??[];future.current=history?.future??[];
-    put(next);setVisual(undefined);setReviewCandidate(undefined);setHistoryVersion(value=>value+1);setZoom(0);
+    put(next);setVisual(undefined);setReviewCandidate(undefined);setHistoryVersion(value=>value+1);
   };
   const addCommunityPage=async(afterId:string,kind:string)=>{
     if(busy||addingPage||changingTemplate||!current.current)return;

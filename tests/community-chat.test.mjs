@@ -35,6 +35,9 @@ test('Reviewed globe counterparts retain the original motif geometry and editori
  assert.deepEqual(light.designs[0].elements.slice(0,2),dark.designs[0].elements.slice(0,2));
  const lower=structuredClone(light);lower.designs[0].elements[1].frame.y=400;assert.ok(validateChatPlan(lower,context));
  lower.reviews=[];assert.throws(()=>validateChatPlan(lower,context));
+ const closeCrop=structuredClone(light);Object.assign(closeCrop.designs[0].elements[1].frame,{x:-85,y:-116,width:2361,height:2361});
+ assert.ok(validateChatPlan(closeCrop,context));assert.equal(closeCrop.designs[0].width,1080);
+ closeCrop.reviews=[];assert.throws(()=>validateChatPlan(closeCrop,context));
  const wrong=structuredClone(light);wrong.designs[0].elements[1].frame.width*=.5;
  assert.throws(()=>validateChatPlan(wrong,context),/original globe shape/);
 });

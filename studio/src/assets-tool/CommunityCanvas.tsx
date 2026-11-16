@@ -1,4 +1,4 @@
-import {memo,useEffect,useLayoutEffect,useRef,useState,type ReactNode,type DragEvent} from 'react';
+import {memo,useEffect,useLayoutEffect,useRef,useState,type ReactNode,type DragEvent,type KeyboardEvent} from 'react';
 import {Button,Dropdown,Icon,Tooltip} from '@asset/ui';
 import {ambassadorFormats} from '../../../src/ambassadors/catalog.js';
 import {Artwork} from './Artwork';
@@ -58,6 +58,21 @@ export function CommunityCanvas({toolbar,asset,pages,busy,generating,zoom,onZoom
  },[asset.id,grid,scale,onZoom]);
  useEffect(()=>{const host=strip.current,target=host?.querySelector<HTMLElement>('[aria-current="page"]');if(host&&target){const box=target.getBoundingClientRect(),view=host.getBoundingClientRect();if(box.left<view.left||box.right>view.right)host.scrollBy({left:box.left-view.left-(view.width-box.width)/2});}},[asset.id,thumbnails,grid]);
  const open=(id:string)=>{if(busy||performance.now()<suppressOpen.current)return;onOpen(id);setGrid(false);};
+ const navigateThumbnail=(event:KeyboardEvent<HTMLButtonElement>,i:number)=>{
+  if(busy||event.altKey||event.ctrlKey||event.metaKey||event.shiftKey)return;
+  const host=event.currentTarget.closest<HTMLElement>('.community-page-grid,.community-page-strip');
+  if(!host)return;
+  const tiles=Array.from(host.querySelectorAll<HTMLButtonElement>('.community-page-tile'));
+  const firstTop=tiles[0]?.getBoundingClientRect().top??0;
+  const columns=grid?Math.max(1,tiles.filter(tile=>Math.abs(tile.getBoundingClientRect().top-firstTop)<2).length):1;
+  const next=event.key==='ArrowRight'?i+1:event.key==='ArrowLeft'?i-1:event.key==='ArrowDown'?i+columns:event.key==='ArrowUp'?i-columns:event.key==='Home'?0:event.key==='End'?pages.length-1:null;
+  if(next===null)return;
+  event.preventDefault();event.stopPropagation();
+  const target=Math.max(0,Math.min(pages.length-1,next));
+  tiles[target]?.focus({preventScroll:true});
+  if(grid)tiles[target]?.scrollIntoView({block:'nearest',inline:'nearest'});
+  onOpen(pages[target].id);
+ };
  const overview=()=>{if(busy)return;setGrid(value=>!value);onOverview();};
  const add=(afterId:string,kind:string)=>{if(locked)return;setGrid(false);onAdd(afterId,kind);};
  const dragStart=(event:DragEvent,id:string)=>{if(busy){event.preventDefault();return;}event.dataTransfer.setData('text/plain',id);event.dataTransfer.effectAllowed='move';setDragged(id);};
@@ -72,7 +87,7 @@ export function CommunityCanvas({toolbar,asset,pages,busy,generating,zoom,onZoom
   {kind:'separator'},{id:'remove',label:'Remove from canvas',disabled:pages.length<=1,leadingIcon:<Icon name="trash-2" size={16}/>},
  ]} onChange={action=>{if(action==='open')open(page.id);else if(action==='duplicate')add(page.id,'duplicate');else if(action==='up')onMove(page.id,pages[i-1].id,'before');else if(action==='down')onMove(page.id,pages[i+1].id,'after');else onRemove(page.id);}} trigger={<Button variant="ghost" size="sm" disabled={busy} className="community-page-menu" aria-label={`Asset ${i+1} actions`} leadingIcon={<Icon name="ellipsis" size={16}/>}/>}/>;
  const tile=(page:AssetDocument,i:number)=><div key={page.id} className="community-page-slot" data-dragging={dragged===page.id||undefined} data-drop={dropTarget?.id===page.id?dropTarget.side:undefined} onDragOver={event=>dragOver(event,page.id)} onDrop={event=>drop(event,page.id)}>
-  <button className="community-page-tile" draggable={!busy} onDragStart={event=>dragStart(event,page.id)} onDragEnd={endDrag} aria-label={`${grid?'Open':'Go to'} asset ${i+1}: ${page.title}`} aria-current={page.id===asset.id?'page':undefined} disabled={busy} onClick={()=>open(page.id)}><AssetThumbnail asset={page}/><span>{i+1}<span>{page.title}</span></span></button>{actions(page,i)}
+  <button className="community-page-tile" draggable={!busy} onDragStart={event=>dragStart(event,page.id)} onDragEnd={endDrag} aria-label={`${grid?'Open':'Go to'} asset ${i+1}: ${page.title}`} aria-current={page.id===asset.id?'page':undefined} tabIndex={page.id===asset.id?0:-1} disabled={busy} onKeyDown={event=>navigateThumbnail(event,i)} onClick={()=>open(page.id)}><AssetThumbnail asset={page}/><span>{i+1}<span>{page.title}</span></span></button>{actions(page,i)}
  </div>;
  return <div className="we-main asset-canvas-area community-canvas">{toolbar}
   <div ref={viewport} className="asset-canvas-scroll studio-workspace-scroll" data-html-selection-surface={!grid&&!busy||undefined} aria-label={grid?'Asset grid':'Asset canvas'}>

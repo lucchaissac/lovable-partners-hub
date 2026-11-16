@@ -94,8 +94,9 @@ export function validateCommunityDesignRules(plan,request){
    if((m.motifOrder[0]==='gradient')!==(gradient<globe))reject(`Keep the ${design.reference} layer order: ${m.motifOrder.join(' then ')} behind the content.`);
    for(const i of [globe,gradient])if(i>elements.indexOf(logo)||elements.slice(0,i).some(e=>e.kind==='text'))reject('The globe and gradient stay behind the logo and all copy.');
    const g=elements[globe];if(!near(g.frame.width,g.frame.height)||g.frame.rotation!==0||g.frame.opacity!==1)reject('Preserve the original globe shape, light and texture: square, unrotated, full opacity.');
-   if(Math.abs(g.frame.width-m.globeWidth)>m.globeWidth*.15||Math.abs(g.frame.x-m.globeX)>design.width*.12)reject(`Keep the reference globe scale and edge crop: approximately ${m.globeWidth.toFixed(1)}px wide at x=${m.globeX.toFixed(1)}. Keep its upper crop anchored on custom heights.`);
-   if(editorial?(g.frame.y<m.globeY-design.width*.06||g.frame.y>design.height*.55):Math.abs(g.frame.y-m.globeY)>design.width*.06)reject(`Keep the globe high, near y=${m.globeY.toFixed(1)}px (within 6% of canvas width). Do not add the extra canvas height to its y position.`);
+   const editorialCrop=editorial&&g.frame.width>=m.globeWidth*.85&&g.frame.width<=m.globeWidth*2.5&&g.frame.x>=-design.width&&g.frame.x<=design.width*.8;
+   if(editorial?!editorialCrop:Math.abs(g.frame.width-m.globeWidth)>m.globeWidth*.15||Math.abs(g.frame.x-m.globeX)>design.width*.12)reject(`Keep the reference globe scale and edge crop: approximately ${m.globeWidth.toFixed(1)}px wide at x=${m.globeX.toFixed(1)}. A reviewed editorial close crop can enlarge the original sphere up to 2.5 times that size, without enlarging the canvas.`);
+   if(editorial?(g.frame.y<-design.height*.5||g.frame.y>design.height*.55):Math.abs(g.frame.y-m.globeY)>design.width*.06)reject(`Keep the globe high, near y=${m.globeY.toFixed(1)}px (within 6% of canvas width). Do not add the extra canvas height to its y position.`);
    const glow=elements[gradient].frame;
    if(Math.abs(glow.width-m.gradientWidth)>m.gradientWidth*.15||Math.abs(glow.height/glow.width-1.00808)>.01||Math.abs(glow.rotation+9.91)>.2)reject('Preserve the original gradient scale, 1:1.00808 proportions and -9.91 degree rotation.');
   }

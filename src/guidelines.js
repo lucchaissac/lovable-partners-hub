@@ -1,4 +1,4 @@
-import { FORMATS, badgeSvg, paddingDiagram } from './badges.js';
+import { FORMATS, badgeSvg, paddingDiagram, badgeAssembly, symbolClearSpace } from './badges.js';
 
 export function guidelines(tier,{icon,formatCard,sections}) {
  const badge=(id,options={})=>badgeSvg(id,{tier,...options});
@@ -12,10 +12,10 @@ export function guidelines(tier,{icon,formatCard,sections}) {
   </section>
   <section id="construction" class="guide-section">
    ${heading('Construction','One unit, x. The same visible space on every side of the text.')}
-   <div class="construction-board"><div class="padding-specimen">${paddingDiagram()}<span>x = the space around the visible letters</span></div><div class="relative-rules"><div><strong>x</strong><span>Top, right, bottom, left</span></div><div><strong>3x</strong><span>Two-line text height</span></div><div><strong>5x</strong><span>Module height</span></div></div></div>
+   <div class="construction-board"><div class="padding-specimen">${paddingDiagram()}<span>x = the space around the visible letters</span></div><div class="relative-rules"><div><strong>x</strong><span>Top, right, bottom, left</span></div><div><strong>3x</strong><span>Standard text height</span></div><div><strong>5x</strong><span>Standard module height</span></div></div></div>
    <div class="construction-strip"><div><span>Between modules</span><strong>0</strong></div><div><span>Corner radius</span><strong>1⅛x</strong></div><div><span>Outline</span><strong>⅛x</strong></div></div>
    <p class="quiet-note">The block width follows the text, with x on both sides. Logos stay proportional and centered, with at least x around them. Resize the complete badge together.</p>
-   <div class="assembly-stage" aria-label="Repeating badge construction"><div class="assembly-badge">${badge('solution-compact')}</div><div class="motion-footer"><span>Identity, status, tier. One connected badge.</span><div class="assembly-controls"><button class="text-link" data-replay>Replay ${icon('replay')}</button><button class="text-link" data-pause aria-pressed="false">Pause ${icon('pause')}</button></div></div></div>
+   <div class="assembly-stage" aria-label="Repeating badge construction">${badgeAssembly({tier})}<div class="motion-footer"><span>The heart stays. Each block opens from the left.</span><div class="assembly-controls"><button class="text-link" data-replay>Replay ${icon('replay')}</button><button class="text-link" data-pause aria-pressed="false">Pause ${icon('pause')}</button></div></div></div>
   </section>
   <section id="connections" class="guide-section">
    ${heading('Connections','Align the modules. Let their outlines meet as one line.')}
@@ -23,9 +23,8 @@ export function guidelines(tier,{icon,formatCard,sections}) {
    <div class="minimal-caption"><span>No gap between blocks</span><span>Overlap by one outline thickness</span></div>
   </section>
   <section id="clear-space" class="guide-section">
-   ${heading('Clear space','Leave at least x around the complete badge. Keep the same space on all four sides.')}
-   <div class="diagram-stage clear-space-stage"><div class="clear-space-badge">${badge('expert-horizontal',{guides:true,clearSpace:true})}</div></div>
-   <div class="minimal-caption"><span>Inside the modules: x</span><span>Outside the badge: at least x</span></div>
+   <div class="clear-space-pair"><div class="diagram-stage symbol-space-stage">${symbolClearSpace()}</div><div class="diagram-stage clear-space-stage"><div class="clear-space-badge">${badge('expert-horizontal',{guides:true,clearSpace:true})}</div></div></div>
+   ${heading('Clear space','The heart on its own or the full badge: leave at least x on every side. The heart is 3x high.')}
   </section>
   <section id="scale" class="guide-section">
    ${heading('Scale','The same badge, at the size people will actually see it.')}
@@ -33,21 +32,19 @@ export function guidelines(tier,{icon,formatCard,sections}) {
    <div class="scale-notes"><p>Scale the whole composition. At small sizes, keep the outline at least one screen pixel wide.</p><p>The words and year must stay distinct at actual size. If they merge, enlarge the badge or use a compact format.</p></div>
   </section>
   <section id="motion" class="guide-section">
-   ${heading('Motion','Direct movement. Clear rhythm. A precise finish.')}
    <div class="motion-guides">
-    <article class="motion-rule"><svg viewBox="0 0 280 170" role="img" aria-label="An easing curve that rises quickly, then gradually settles"><g class="motion-grid"><path d="M24 20V140H260M24 80H260M142 20V140"/></g><path class="motion-curve" d="M24 140C76 20 109 20 260 20"/><circle cx="260" cy="20" r="3" fill="white"/><text x="24" y="163">Start</text><text x="260" y="163" text-anchor="end">Settle</text></svg><h3>Ease into place</h3><p>Start decisively, then slow into the final position. Keep the landing steady, with no bounce or overshoot.</p></article>
-    <article class="motion-rule"><svg viewBox="0 0 280 170" role="img" aria-label="Small interactions take 160 milliseconds; entering elements take 320 milliseconds"><g class="motion-grid"><path d="M24 20V140H260M142 20V140"/></g><path class="motion-bar muted" d="M24 55H142"/><path class="motion-bar" d="M24 108H260"/><text x="24" y="38">160 ms · Interact</text><text x="24" y="91">320 ms · Enter</text><text x="24" y="163">Short</text><text x="260" y="163" text-anchor="end">Deliberate</text></svg><h3>Match the moment</h3><p>Keep small feedback quick. Give a new block more time to arrive so its movement is easy to follow.</p></article>
-    <article class="motion-rule"><svg viewBox="0 0 280 170" role="img" aria-label="Three modules enter in sequence, with 120 milliseconds between their starts"><g class="motion-grid"><path d="M24 20V140H260M75 20V140M126 20V140"/></g><path class="motion-bar" d="M24 42H160M75 82H211M126 122H260"/><text x="24" y="163">+120 ms</text><text x="260" y="163" text-anchor="end">Together</text></svg><h3>Build a rhythm</h3><p>Lead with the identity, then the status and tier. Overlap the entrances slightly so the sequence feels continuous.</p></article>
+    <div class="motion-rule"><svg viewBox="0 0 280 130" role="img" aria-label="Move quickly, then settle gently"><path class="motion-grid" d="M24 16V110H260"/><path class="motion-curve" d="M24 110C76 20 109 20 260 20"/></svg></div>
+    <div class="motion-rule"><svg viewBox="0 0 280 130" role="img" aria-label="Keep the heart in place and reveal the next two blocks one after another"><path class="motion-bar muted" d="M24 30H260"/><path class="motion-bar" d="M88 65H260M152 100H260"/></svg></div>
    </div>
-   <div class="intro-footer"><p>Move each block as a whole. Keep logos, letters and outlines intact.</p><a class="text-link" href="#guidelines/construction" data-section="construction">See the construction ${icon('next')}</a></div>
+   ${heading('Motion','Keep the heart in place. Open each block from the left, one after another. Let it settle.')}
   </section>
   <section id="formats" class="guide-section">
    ${heading('Formats','Four layouts for each family. The construction stays the same.')}
    <div class="format-grid guide-format-grid">${FORMATS.map(f=>formatCard(f,true)).join('')}</div>
   </section>
   <section id="color" class="guide-section">
-   ${heading('Color','White artwork. Transparent blocks.')}
-   <div class="monochrome-stage"><div>${badge('solution-horizontal')}</div><div class="monochrome-key"><span><i></i> White symbol, type and outlines</span><span>No filled logo tile</span></div></div>
+   <div class="color-examples"><div class="color-sample">${badge('solution-compact')}</div><div class="color-sample color-sample-video"><video class="gallery-video" data-motion="3" poster="/gallery/motion-3.webp" width="960" height="960" muted loop playsinline preload="none" disablepictureinpicture disableremoteplayback aria-hidden="true" tabindex="-1"></video>${badge('solution-compact')}</div></div>
+   ${heading('Color','White artwork, transparent blocks. On a dark surface or a Lovable video background.')}
   </section>
   <section id="typography" class="guide-section">
    ${heading('Typography')}

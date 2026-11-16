@@ -35,13 +35,14 @@ const image=(name,x,y,w,h,scale=1)=>`<g transform="translate(${n(x)} ${n(y)}) sc
 function outline(x,y,w,h,u){const stroke=u/8;return `<rect class="module-outline" x="${n(x+stroke/2)}" y="${n(y+stroke/2)}" width="${n(w-stroke)}" height="${n(h-stroke)}" rx="${n(u*1.125-stroke/2)}" fill="none" stroke="white" stroke-width="${n(stroke)}" />`;}
 function model(formatId,tier='Select',options={}){
  const format=FORMATS.find(f=>f.id===formatId)||FORMATS[0],solution=format.family==='solution',u=format.layout==='symbol'?21:32,h=5*u;
- const year=options.year||'2026',role=shape(solution?['Solution','Partner']:['Expert',year],3*u),level=solution?shape([tier,year],3*u):null;
- const roleWidth=role.width+2*u,tierWidth=level?level.width+2*u:0,wordmarkWidth=582.295/105.276*(3*u)+2*u;
+ const year=options.year||'2026';
+ let role=shape(solution?['Solution','Partner']:['Expert',year],3*u),level=solution?shape([tier,year],3*u):null;
+ let roleWidth=role.width+2*u,tierWidth=level?level.width+2*u:0;const wordmarkWidth=582.295/105.276*(3*u)+2*u;
  const stroke=u/8;
  let width,height,topHeight;
  if(format.layout==='horizontal'||format.layout==='compact'){width=(format.layout==='horizontal'?wordmarkWidth:h)+roleWidth+tierWidth-stroke*(solution?2:1);height=h;topHeight=h;}
  if(format.layout==='stacked'){width=solution?roleWidth+tierWidth-stroke:wordmarkWidth;topHeight=solution?(width-2*u)/(461.0845/83.3618)+2*u:h;height=topHeight+(solution?2:1)*(h-stroke);}
- if(format.layout==='symbol'){width=solution?roleWidth+tierWidth-stroke:342.872;topHeight=width;height=topHeight+(solution?2:1)*(h-stroke);}
+ if(format.layout==='symbol'){width=Math.max(roleWidth,tierWidth);topHeight=h;role=shape(solution?['Solution','Partner']:['Expert',year],role.height*(width-2*u)/role.width);if(solution)level=shape([tier,year],level.height*(width-2*u)/level.width);roleWidth=width;tierWidth=solution?width:0;height=topHeight+role.height+2*u+(solution?level.height+2*u:h)-2*stroke;}
  return {format,solution,u,h,width,height,topHeight,role,level,roleWidth,tierWidth,wordmarkWidth,stroke,moduleHeight:h};
 }
 export function badgeGeometry(formatId,tier='Select',options={}){return model(formatId,tier,options);}
@@ -50,11 +51,11 @@ export function badgeSvg(formatId,options={}){
  const m=model(formatId,tier,options),{format,solution,u,h,width,height,role,level,roleWidth,tierWidth,wordmarkWidth,topHeight,stroke}=m;
  const parts=[],id=`badge-${++instance}`,pad=clearSpace?u:0;
  const wrap=(start,type)=>{const content=parts.splice(start);parts.push(`<g data-module="${type}">${content.join('')}</g>`);};
- const cell=(s,x,y,w)=>{parts.push(`<g data-module="text">${outline(x,y,w,h,u)}${drawShape(s,x+u,y+u)}</g>`);};
+ const cell=(s,x,y,w)=>{parts.push(`<g data-module="text">${outline(x,y,w,s.height+2*u,u)}${drawShape(s,x+u,y+u)}</g>`);};
  const symbol=(x,y,w,boxH=h,tower=false)=>{
   const start=parts.length;
   parts.push(outline(x,y,w,boxH,u));
-  const logoH=tower?boxH*(symbolSize==='small'?.636:solution?.814:.79):boxH-2*u;
+  const logoH=(boxH-2*u)*(tower&&symbolSize==='small'?.75:1);
   const scale=logoH/83.3616,logoW=82.2357*scale;
   parts.push(image('1-713-imgVector1',x+(w-logoW)/2,y+(boxH-logoH)/2,82.2357,83.3616,scale));wrap(start,'identity');
  };
@@ -82,11 +83,11 @@ export function badgeSvg(formatId,options={}){
   if(solution){cell(level,roleWidth-stroke,topHeight-stroke,tierWidth);partner(0,topHeight+h-2*stroke,width);}else partner(roleWidth-stroke,topHeight-stroke,width-roleWidth+stroke);
  }else{
   symbol(0,0,width,topHeight,true);cell(role,0,topHeight-stroke,roleWidth);
-  if(solution){cell(level,roleWidth-stroke,topHeight-stroke,tierWidth);partner(0,topHeight+h-2*stroke,width);}else partner(roleWidth-stroke,topHeight-stroke,width-roleWidth+stroke);
+  if(solution)cell(level,0,topHeight+role.height+2*u-2*stroke,width);else partner(0,topHeight+role.height+2*u-2*stroke,width);
  }
  if(guides){
   const ink='rgba(255,255,255,.38)',x0=format.layout==='compact'?h-stroke:format.layout==='horizontal'?wordmarkWidth-stroke:0,y0=['stacked','symbol'].includes(format.layout)?topHeight-stroke:0;
-  parts.push(`<g fill="none" stroke="${ink}" stroke-width="1"><rect x="${x0+u}" y="${y0+u}" width="${role.width}" height="${3*u}"/><path d="M ${x0} ${y0+u} H ${x0+roleWidth} M ${x0+u} ${y0} V ${y0+h}"/></g>`);
+  parts.push(`<g fill="none" stroke="${ink}" stroke-width="1"><rect x="${x0+u}" y="${y0+u}" width="${role.width}" height="${role.height}"/><path d="M ${x0} ${y0+u} H ${x0+roleWidth} M ${x0+u} ${y0} V ${y0+role.height+2*u}"/></g>`);
   if(clearSpace)parts.push(`<g fill="none" stroke="${ink}" stroke-width="1"><rect x="${-u}" y="${-u}" width="${width+2*u}" height="${height+2*u}"/><path d="M 0 ${-u} V ${height+u} M ${width} ${-u} V ${height+u} M ${-u} 0 H ${width+u} M ${-u} ${height} H ${width+u}"/></g><g fill="${ink}" font-family="Camera Plain" font-size="${u*.45}" text-anchor="middle"><text x="${width/2}" y="${-u*.35}">x</text><text x="${-u*.5}" y="${height/2+u*.15}">x</text><text x="${width+u*.5}" y="${height/2+u*.15}">x</text><text x="${width/2}" y="${height+u*.68}">x</text></g>`);
  }
  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${-pad} ${-pad} ${n(width+pad*2)} ${n(height+pad*2)}" class="badge-graphic" role="img" aria-labelledby="${id}-title" data-format="${format.id}" data-figma-node="${format.node}"><title id="${id}-title">${esc(format.name)}${solution?` · ${tier}`:''} · ${esc(year)}</title>${parts.join('')}</svg>`;
@@ -95,4 +96,20 @@ export function badgeSvg(formatId,options={}){
 export function paddingDiagram(){
  const u=32,s=shape(['Solution','Partner'],96),w=s.width+64,h=160,left=48,top=42;
  return `<svg class="padding-diagram" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w+96} 244" role="img" aria-label="The visible text has equal x padding on all four sides"><g transform="translate(${left} ${top})">${outline(0,0,w,h,u)}${drawShape(s,u,u)}<g fill="none" stroke="white" stroke-opacity=".28" stroke-width=".8"><rect x="${u}" y="${u}" width="${s.width}" height="96"/><path d="M ${u} 0 V ${h} M ${w-u} 0 V ${h} M 0 ${u} H ${w} M 0 ${h-u} H ${w}"/></g><g fill="white" fill-opacity=".6" font-family="Camera Plain" font-size="12" text-anchor="middle"><text x="${w/2}" y="20">x</text><text x="${w/2}" y="149">x</text><text x="16" y="84">x</text><text x="${w-16}" y="84">x</text></g></g></svg>`;
+}
+
+// Separate HTML panels allow a real perspective hinge around each left edge.
+export function badgeAssembly(options={}){
+ const svg=new DOMParser().parseFromString(badgeSvg('solution-compact',options),'image/svg+xml').documentElement;
+ const [,,w,h]=svg.getAttribute('viewBox').split(' ').map(Number);
+ return `<div class="assembly-badge" style="aspect-ratio:${w}/${h}">${[...svg.querySelectorAll('[data-module]')].map((module,i)=>{
+  const rect=module.querySelector('rect'),stroke=Number(rect.getAttribute('stroke-width'));
+  const x=Number(rect.getAttribute('x'))-stroke/2,width=Number(rect.getAttribute('width'))+stroke;
+  module.removeAttribute('data-module');
+  return `<div class="assembly-module" data-module="${i===0?'identity':'text'}" style="left:${x/w*100}%;width:${width/w*100}%"><svg xmlns="http://www.w3.org/2000/svg" viewBox="${x} 0 ${width} ${h}" aria-hidden="true">${module.outerHTML}</svg></div>`;
+ }).join('')}</div>`;
+}
+export function symbolClearSpace(){
+ const u=32,h=96,w=82.2357/83.3616*h;
+ return `<svg class="symbol-space-diagram" viewBox="0 0 ${w+2*u} ${h+2*u}" role="img" aria-label="Leave x on every side of the Lovable heart, with the symbol itself three x high">${image('1-713-imgVector1',u,u,82.2357,83.3616,h/83.3616)}<g fill="none" stroke="white" stroke-opacity=".28" stroke-width=".7"><rect x=".5" y=".5" width="${w+2*u-1}" height="${h+2*u-1}"/><path d="M32 0V160M${w+u} 0V160M0 32H${w+2*u}M0 128H${w+2*u}"/></g><g fill="white" fill-opacity=".6" font-family="Camera Plain" font-size="12" font-weight="600" text-anchor="middle"><text x="${u+w/2}" y="20">x</text><text x="${u+w/2}" y="149">x</text><text x="16" y="84">x</text><text x="${w+u*1.5}" y="84">x</text></g></svg>`;
 }

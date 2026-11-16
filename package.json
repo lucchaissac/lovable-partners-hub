@@ -12,6 +12,7 @@
     "vite": "^8.3.8"
   },
   "dependencies": {
-    "lucide": "^1.73.0"
+    "lucide": "^1.73.0",
+    "opentype.js": "^2.0.0"
   }
 }

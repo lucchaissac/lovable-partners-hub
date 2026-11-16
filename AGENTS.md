@@ -1,5 +1,7 @@
 # Partner hub
 
+- Durable Community art direction lives in `server/communityEditorialMemory.mjs`, imported into the local agent prompt on every request. Read it with `examples/ai-for-impact/editorial/provenance.json` when continuing or adapting the approved AI for impact series. Generalize its design principles; its exact copy, Paris, fictional names, seven-version count and coordinates belong to that campaign. Update this memory when Luc validates a new correction; keep later manual refinements authoritative.
+
 - Use Camera Plain from the bundled local font and Lucide for interface icons. Body and interface text must be Semibold (600) minimum; badge lettering stays Bold (700).
 - Use small, aligned Lucide chevrons in selects rather than large native arrows. Use solid borders throughout; no dotted or dashed borders, including the partner logo upload.
 - Use natural sentence case. Never use all-caps typography, uppercase transforms, or small caps.

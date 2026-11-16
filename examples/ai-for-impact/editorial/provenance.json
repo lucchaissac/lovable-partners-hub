@@ -87,7 +87,7 @@
     "fontSize": 180,
     "lineHeightPercent": 92,
     "text": "AI for\nimpact",
-    "appliesTo": "All six current variants; photo titles aligned without moving other content."
+    "appliesTo": "All seven approved variants; preserve the shared headline frame when adapting the visual."
   },
   "photoBranding": {
     "overlays": [
@@ -132,5 +132,11 @@
   },
   "lightGlobeBackground": "#f7f4ed",
   "natureBackground": "#f7f4ed",
-  "natureAssetId": "85b222e6-2bd1-4769-ab17-32859799dd6a"
+  "natureAssetId": "85b222e6-2bd1-4769-ab17-32859799dd6a",
+  "agentMemory": {
+    "module": "server/communityEditorialMemory.mjs",
+    "loadedBy": "server/communityChatPrompt.mjs",
+    "scope": "Reusable Community art direction plus campaign-specific measured reference; loaded on every local planner request. No changes to Partners.",
+    "approvedOn": "2026-11-16"
+  }
 }

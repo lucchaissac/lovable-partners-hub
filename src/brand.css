@@ -22,9 +22,12 @@
   position: relative;
   z-index: 1;
   color: #fff;
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 1.5;
+  max-width: 100%;
+  font-size: clamp(64px, 12vw, 256px);
+  font-weight: 900;
+  line-height: .98;
+  text-align: center;
+  text-wrap: balance;
   padding: 10px 0;
 }
 .brand-hub-link:hover { color: #fff; text-decoration: underline; text-underline-offset: 4px; }

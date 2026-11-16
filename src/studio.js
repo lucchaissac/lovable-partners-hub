@@ -1,8 +1,8 @@
 import './studio.css';
 
-export function studio({ library = false, badge, workspace = 'partners' } = {}) {
+export function studio({ library = false, badge, starter = false, workspace = 'partners' } = {}) {
   const theme = document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
-  return `<section class="partner-studio" aria-label="Make your own"><iframe src="/studio/index.html?theme=${theme}&workspace=${workspace}${library ? '&panel=library' : ''}${badge ? `&badge=${encodeURIComponent(badge)}` : ''}" title="Lovable design studio" allow="clipboard-read; clipboard-write"></iframe></section>`;
+  return `<section class="partner-studio" aria-label="Make your own"><iframe src="/studio/index.html?theme=${theme}&workspace=${workspace}${starter ? '&starter=grow-your-business' : ''}${library ? '&panel=library' : ''}${badge ? `&badge=${encodeURIComponent(badge)}` : ''}" title="Lovable design studio" allow="clipboard-read; clipboard-write"></iframe></section>`;
 }
 
 // Reveal the frame only after its initial theme and React styles are ready.

@@ -60,10 +60,10 @@ function syncGuidelinePosition(){
 window.addEventListener('scroll',()=>{if(scrollFrame)return;scrollFrame=requestAnimationFrame(()=>{scrollFrame=undefined;syncGuidelinePosition();});},{passive:true});
 function render(view=state.view,{reset=true}={}){
  const showLibrary=view==='library';if(showLibrary||view==='badge')view='create';
- const requestedBadge=parseRoute().section,badge=currentFormats().some(format=>format.id===requestedBadge)?requestedBadge:undefined;
+ const requestedBadge=parseRoute().section,badge=currentFormats().some(format=>format.id===requestedBadge)?requestedBadge:undefined,starter=state.workspace==='partners'&&requestedBadge==='grow-your-business';
  requestedSection=undefined;state.view=view;observer?.disconnect();assemblyObserver?.disconnect();cleanupGallery?.();cleanupGallery=undefined;cleanupAmbassadors?.();cleanupAmbassadors=undefined;cleanupBrand?.();cleanupBrand=undefined;
  const brand=view==='brand',ambassadors=state.workspace==='ambassadors';
- app.innerHTML=brand?brandHub():view==='gallery'?(ambassadors?ambassadorGallery():gallery()):view==='create'?studio({library:showLibrary,badge,workspace:state.workspace}):ambassadors?ambassadorGuidelines({icon}):guidelines(state.tier,{icon,formatCard,sections});
+ app.innerHTML=brand?brandHub():view==='gallery'?(ambassadors?ambassadorGallery():gallery()):view==='create'?studio({library:showLibrary,badge,starter,workspace:state.workspace}):ambassadors?ambassadorGuidelines({icon}):guidelines(state.tier,{icon,formatCard,sections});
  document.querySelectorAll('[data-workspace]').forEach(button=>{const selected=!brand&&button.dataset.workspace===state.workspace;button.classList.toggle('is-selected',selected);if(button.dataset.workspace!=='lovable')button.setAttribute('aria-pressed',String(selected));});
  updateWorkspaceMetadata(brand?'lovable':state.workspace);
  if(brand)cleanupBrand=mountBrandHub(app);
@@ -88,7 +88,7 @@ document.addEventListener('click',event=>{
  const replay=event.target.closest('[data-replay]');if(replay){const stage=document.querySelector('.assembly-stage'),control=stage.closest('.motion-example').querySelector('[data-pause]');stage.classList.remove('is-paused');stage.classList.add('is-restarting');control.setAttribute('aria-pressed','false');control.setAttribute('aria-label','Pause badge assembly');control.innerHTML=icon('pause');hydrateIcons(control);requestAnimationFrame(()=>requestAnimationFrame(()=>stage.classList.remove('is-restarting')));return;}
  const section=event.target.closest('[data-section]');if(section){event.preventDefault();const id=section.dataset.section;history.replaceState(null,'',route('guidelines',id));requestSection(id);document.getElementById(id)?.scrollIntoView({behavior:'smooth'});return;}
  const workspace=event.target.closest('[data-workspace]:not([aria-disabled="true"])');if(workspace){state.workspace=workspace.dataset.workspace;navigate('gallery');return;}
- const view=event.target.closest('[data-view]');if(view){event.preventDefault();navigate(view.dataset.view);return;}
+ const view=event.target.closest('[data-view]');if(view){event.preventDefault();navigate(view.dataset.view,view.dataset.createTemplate);return;}
  const customize=event.target.closest('[data-customize]');if(customize){state.format=customize.dataset.customize;navigate('create',state.format);return;}
  const filter=event.target.closest('[data-filter]');if(filter){state.filter=filter.dataset.filter;render('library',{reset:false});return;}
  const bg=event.target.closest('[data-background]');if(bg){state.background=bg.dataset.background;document.querySelectorAll('[data-background]').forEach(b=>{b.classList.toggle('is-active',b===bg);b.setAttribute('aria-pressed',b===bg);});document.querySelector('#creator-preview').className=`creator-preview ${state.background==='transparent'?'checkerboard':''}`;return;}

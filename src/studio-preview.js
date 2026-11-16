@@ -6,10 +6,10 @@ const glyph = shape => createElement(shape, { width: 16, height: 16, 'stroke-wid
 
 // A lightweight illustration of the real studio: one live artwork, no second editor runtime.
 export function studioInvitation({workspace='partners'}={}) {
-  const community=workspace==='ambassadors';
+  const community=workspace==='ambassadors',template=community?'social':'grow-your-business';
   return `<div class="studio-invitation" data-workspace-preview="${workspace}">
-    <div class="studio-invitation-heading"><h2>Make it yours.</h2><button class="primary-button" data-view="create">Create ${community?'an asset':'a badge'} ${glyph(ArrowRight)}</button></div>
-    <a class="studio-preview" href="${community?'#ambassadors/create':'#create'}" data-view="create" aria-label="Open Make your own to create ${community?'a community':'a partner'} asset">
+    <div class="studio-invitation-heading"><h2>Make it yours.</h2><button class="primary-button" data-view="create" data-create-template="${template}">Create ${community?'an asset':'a badge'} ${glyph(ArrowRight)}</button></div>
+    <a class="studio-preview" href="${community?'#ambassadors/create':'#create'}/${template}" data-view="create" data-create-template="${template}" aria-label="Open Make your own to create ${community?'a community':'a partner'} asset">
       <div class="studio-mini-chat" aria-hidden="true">
         <div class="studio-mini-panel-title">${glyph(PanelLeftClose)}<span>Chat</span></div>
         <div class="studio-mini-composer"><span>Ask Lovable…</span><div>${glyph(Plus)}<span class="studio-mini-send">${glyph(ArrowUp)}</span></div></div>

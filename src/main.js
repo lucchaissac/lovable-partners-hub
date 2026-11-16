@@ -1,5 +1,6 @@
 import {warmGallery} from './galleryLoading.js';
 import './navigation.js';
+import { showWorkspaceTransition } from './brand-transition.js';
 import {ambassadorFormats,ambassadorSections} from './ambassadors/catalog.js';
 import {ambassadorGallery,ambassadorGuidelines,mountAmbassadorPreviews} from './ambassadors/views.js';
 import { createElement, Globe, Grid3X3, Moon, Sun, Search, X, ArrowUpRight, ArrowRight, ChevronDown, Download, Check, Copy, Upload, RotateCcw, Pause, Play } from 'lucide';
@@ -57,13 +58,16 @@ function syncGuidelinePosition(){
 }
 window.addEventListener('scroll',()=>{if(scrollFrame)return;scrollFrame=requestAnimationFrame(()=>{scrollFrame=undefined;syncGuidelinePosition();});},{passive:true});
 function render(view=state.view,{reset=true}={}){
+ showWorkspaceTransition(view==='brand'?'lovable':state.workspace);
  const showLibrary=view==='library';if(showLibrary||view==='badge')view='create';
  const requestedBadge=parseRoute().section,badge=currentFormats().some(format=>format.id===requestedBadge)?requestedBadge:undefined;
  requestedSection=undefined;state.view=view;observer?.disconnect();assemblyObserver?.disconnect();cleanupGallery?.();cleanupGallery=undefined;cleanupAmbassadors?.();cleanupAmbassadors=undefined;
- const ambassadors=state.workspace==='ambassadors';
- app.innerHTML=view==='gallery'?(ambassadors?ambassadorGallery():gallery()):view==='create'?studio({library:showLibrary,badge,workspace:state.workspace}):ambassadors?ambassadorGuidelines({icon}):guidelines(state.tier,{icon,formatCard,sections});
- document.querySelectorAll('[data-workspace]').forEach(button=>{const selected=button.dataset.workspace===state.workspace;button.classList.toggle('is-selected',selected);if(button.dataset.workspace!=='lovable')button.setAttribute('aria-pressed',String(selected));});
- document.title=ambassadors?'Lovable Ambassadors':'Lovable Partners';
+ const brand=view==='brand',ambassadors=state.workspace==='ambassadors';
+ app.innerHTML=brand?`<section class="brand-hub-page" aria-label="Lovable brand hub"><a class="primary-button" href="https://lovablebrand.lovable.app/" target="_blank" rel="noopener noreferrer">Visit brand hub ${icon('arrow')}</a></section>`:view==='gallery'?(ambassadors?ambassadorGallery():gallery()):view==='create'?studio({library:showLibrary,badge,workspace:state.workspace}):ambassadors?ambassadorGuidelines({icon}):guidelines(state.tier,{icon,formatCard,sections});
+ document.querySelectorAll('[data-workspace]').forEach(button=>{const selected=!brand&&button.dataset.workspace===state.workspace;button.classList.toggle('is-selected',selected);if(button.dataset.workspace!=='lovable')button.setAttribute('aria-pressed',String(selected));});
+ document.title=brand?'Lovable brand hub':ambassadors?'Lovable Ambassadors':'Lovable Partners';
+ document.querySelector('.section-switcher').hidden=brand;document.querySelector('#search-toggle').hidden=brand;
+ const brandLink=document.querySelector('[data-brand-link]');brandLink.classList.toggle('is-selected',brand);if(brand)brandLink.setAttribute('aria-current','page');else brandLink.removeAttribute('aria-current');
  document.querySelector('#search-input').placeholder=ambassadors?'Search assets, spacing, guidelines…':'Search badges, spacing, guidelines…';
  if(ambassadors&&view!=='create')cleanupAmbassadors=mountAmbassadorPreviews(app);
  document.querySelectorAll('.section-switcher [data-view]').forEach(b=>{const active=b.dataset.view===view;b.classList.toggle('is-selected',active);if(active)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});hydrateIcons();
@@ -82,7 +86,7 @@ document.addEventListener('click',event=>{
  const pause=event.target.closest('[data-pause]');if(pause){const stage=document.querySelector('.assembly-stage'),paused=stage.classList.toggle('is-paused');pause.setAttribute('aria-pressed',paused);pause.setAttribute('aria-label',paused?'Play badge assembly':'Pause badge assembly');pause.innerHTML=icon(paused?'play':'pause');hydrateIcons(pause);return;}
  const replay=event.target.closest('[data-replay]');if(replay){const stage=document.querySelector('.assembly-stage'),control=stage.closest('.motion-example').querySelector('[data-pause]');stage.classList.remove('is-paused');stage.classList.add('is-restarting');control.setAttribute('aria-pressed','false');control.setAttribute('aria-label','Pause badge assembly');control.innerHTML=icon('pause');hydrateIcons(control);requestAnimationFrame(()=>requestAnimationFrame(()=>stage.classList.remove('is-restarting')));return;}
  const section=event.target.closest('[data-section]');if(section){event.preventDefault();const id=section.dataset.section;history.replaceState(null,'',route('guidelines',id));requestSection(id);document.getElementById(id)?.scrollIntoView({behavior:'smooth'});return;}
- const workspace=event.target.closest('[data-workspace]:not([aria-disabled="true"])');if(workspace){const next=workspace.dataset.workspace;if(next!==state.workspace){state.workspace=next;navigate('gallery');}else navigate('guidelines');return;}
+ const workspace=event.target.closest('[data-workspace]:not([aria-disabled="true"])');if(workspace){state.workspace=workspace.dataset.workspace;navigate('gallery');return;}
  const view=event.target.closest('[data-view]');if(view){event.preventDefault();navigate(view.dataset.view);return;}
  const customize=event.target.closest('[data-customize]');if(customize){state.format=customize.dataset.customize;navigate('create',state.format);return;}
  const filter=event.target.closest('[data-filter]');if(filter){state.filter=filter.dataset.filter;render('library',{reset:false});return;}
@@ -106,7 +110,7 @@ dialog.addEventListener('click',event=>{if(event.target===dialog){dialog.close()
 function syncThemeButton(){const light=document.documentElement.dataset.theme==='light',button=document.querySelector('#theme-toggle');button.setAttribute('aria-label',light?'Switch to dark appearance':'Switch to light appearance');button.innerHTML=icon(light?'sun':'moon');hydrateIcons(button);}
 document.querySelector('#theme-toggle').addEventListener('click',()=>{const theme=document.documentElement.dataset.theme==='light'?'dark':'light';document.documentElement.dataset.theme=theme;try{localStorage.setItem('lovable-hub-theme',theme);}catch{}document.querySelector('meta[name="theme-color"]').content=theme==='light'?'#f7f4ed':'#1b1b1b';syncThemeButton();});
 syncThemeButton();
-function openHash(){const {workspace,view,section}=parseRoute();state.workspace=workspace;if(view==='badge'){navigate('create',currentFormats().some(format=>format.id===section)?section:undefined);return;}const valid=['gallery','library','guidelines','create'].includes(view)?view:'guidelines';render(valid);if(valid==='guidelines'&&currentSections().some(([id])=>id===section))requestAnimationFrame(()=>{requestSection(section);document.getElementById(section)?.scrollIntoView();});}
+function openHash(){const {workspace,view,section}=parseRoute();state.workspace=workspace;if(view==='badge'){navigate('create',currentFormats().some(format=>format.id===section)?section:undefined);return;}const valid=['brand','gallery','library','guidelines','create'].includes(view)?view:'gallery';render(valid);if(valid==='guidelines'&&currentSections().some(([id])=>id===section))requestAnimationFrame(()=>{requestSection(section);document.getElementById(section)?.scrollIntoView();});}
 window.addEventListener('hashchange',openHash);
 const typographyReady=prepareTypography();
 if(parseRoute().workspace==='partners')await typographyReady;

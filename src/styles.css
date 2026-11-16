@@ -169,6 +169,8 @@ button:hover:not(:disabled), a:hover { color: var(--color-text); }
 .text-segment, .icon-control, .icon-segment { transition: color .18s; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 #app { min-height: 100svh; }
+.brand-hub-page { min-height: 100svh; display: grid; place-items: center; padding: var(--header-height) 24px; }
+.hub-header [hidden] { display: none; }
 .guideline-content { max-width: 1080px; margin-left: max(240px, calc((100vw - 1080px) / 2)); margin-right: 64px; padding-top: 168px; }
 .guideline-sidebar { position: fixed; left: 24px; top: 50%; transform: translateY(-50%); width: 166px; z-index: 10; }
 .guideline-sidebar nav { display: flex; flex-direction: column; gap: 7px; }

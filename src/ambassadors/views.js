@@ -4,9 +4,18 @@ import './views.css';
 import './gallery.css';
 const preview=(id,extra='')=>`<img src="${ambassadorPreview(id)}" data-ambassador-preview="${id}" alt="${ambassadorFormats.find(f=>f.id===id).name}" width="${ambassadorFormats.find(f=>f.id===id).width}" height="${ambassadorFormats.find(f=>f.id===id).height}" loading="eager" decoding="sync" ${extra}/>`;
 const heading=(title,copy)=>`<div class="section-heading"><div><h2>${title}</h2>${copy?`<p>${copy}</p>`:''}</div></div>`;
+const galleryPhotos={
+  photo:{label:'Lovable Community gathering in Montreal',src:'/ambassadors/community-montreal-1600.webp',srcset:'/ambassadors/community-montreal-800.webp 800w, /ambassadors/community-montreal-1600.webp 1600w',width:2400,height:1600},
+  website:{label:'Welcome to the Lovable community website',src:'/ambassadors/gallery/community-website-1600.webp',srcset:'/ambassadors/gallery/community-website-800.webp 800w, /ambassadors/gallery/community-website-1600.webp 1600w',width:3386,height:1794},
+  gathering:{label:'Lovable community members making heart gestures',src:'/ambassadors/gallery/community-gathering-412.webp',width:412,height:308},
+  kit:{label:'Lovable ambassador welcome kit',src:'/ambassadors/gallery/ambassador-kit-1280.webp',srcset:'/ambassadors/gallery/ambassador-kit-640.webp 640w, /ambassadors/gallery/ambassador-kit-1280.webp 1280w',width:1280,height:832},
+};
 export function ambassadorGallery(){return `<section class="gallery ambassador-gallery" aria-label="Community gallery"><div class="gallery-grid">
-  <figure class="gallery-item ambassador-gallery-photo" role="img" aria-label="Lovable Community gathering in Montreal"><img src="/ambassadors/community-montreal-1600.webp" srcset="/ambassadors/community-montreal-800.webp 800w, /ambassadors/community-montreal-1600.webp 1600w" sizes="(max-width:680px) calc(100vw - 48px), (max-width:1000px) 88vw, min(58vw, 850px)" width="2400" height="1600" alt="Lovable Community gathering in Montreal" fetchpriority="high" decoding="async"/></figure>
-  ${['banner','spotlight','social','speakers','badge','poster'].map(id=>`<figure class="gallery-item ambassador-gallery-${id}" role="img" aria-label="${ambassadorFormats.find(f=>f.id===id).name}">${preview(id)}</figure>`).join('')}
+  ${['photo','banner','spotlight','website','gathering','social','kit','speakers','badge','poster'].map(id=>{
+    const photo=galleryPhotos[id],label=photo?.label||ambassadorFormats.find(f=>f.id===id).name;
+    const content=photo?`<img src="${photo.src}" ${photo.srcset?`srcset="${photo.srcset}"`:''} sizes="(max-width:680px) calc(100vw - 48px), (max-width:1000px) 88vw, min(58vw, 850px)" width="${photo.width}" height="${photo.height}" alt="${label}" ${id==='photo'?'fetchpriority="high"':'loading="lazy"'} decoding="async"/>`:preview(id);
+    return `<figure class="gallery-item ambassador-gallery-${id}" role="img" aria-label="${label}">${content}</figure>`;
+  }).join('')}
 </div></section>`;}
 export function ambassadorGuidelines({icon}){return `<aside class="guideline-sidebar"><nav aria-label="Guideline navigation">${ambassadorSections.map(([id,label],i)=>`<a href="#ambassadors/guidelines/${id}" data-section="${id}" ${i===0?'aria-current="location"':''}>${label}</a>`).join('')}</nav></aside><div class="guideline-content ambassador-guidelines">
 <section id="overview" class="guide-section overview-section"><div class="page-intro"><h1>Lovable Community</h1><p>One shared identity. Your local community.</p></div><div class="ambassador-hero">${preview('social')}</div><div class="intro-footer"><p>The city, the people and the occasion change.<br/>The logo, type and composition stay together.</p><button class="text-link" data-view="library">Open library ${icon('next')}</button></div></section>

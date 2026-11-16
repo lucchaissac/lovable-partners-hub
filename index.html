@@ -12,12 +12,14 @@
     <link rel="icon" href="data:," />
     <link rel="preload" href="/fonts/CameraPlainVariable.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="/src/styles.css" />
+    <link rel="stylesheet" href="/src/brand-transition.css" />
   </head>
   <body>
+    <div class="brand-transition" data-brand-transition aria-hidden="true"><span>Lovable</span></div>
     <header class="hub-header" aria-label="Partner hub">
       <div class="header-start">
         <div class="segmented workspace-switcher" role="group" aria-label="Workspaces">
-          <a class="icon-segment" href="https://lovable.dev/dashboard" target="_blank" rel="noopener noreferrer" aria-label="Visit Lovable brand hub" title="Visit Lovable brand hub">
+          <a class="icon-segment" data-brand-link href="#brand" aria-label="Lovable" title="Lovable">
             <svg class="icon lovable-mark" viewBox="0 0 42.5092 43.2257" fill="currentColor" aria-hidden="true">
               <path d="M12.7548 0C19.7991 0 25.5096 5.72557 25.5096 12.7884V17.6488H29.7544C36.7987 17.6488 42.5092 23.3744 42.5092 30.4373C42.5092 37.5001 36.7987 43.2257 29.7544 43.2257H0V12.7884C0 5.72557 5.71052 0 12.7548 0Z" />
             </svg>

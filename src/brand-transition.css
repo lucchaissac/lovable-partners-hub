@@ -1,0 +1,37 @@
+.brand-transition {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  padding: 24px;
+  color: #fff;
+  pointer-events: none;
+}
+
+.brand-transition[hidden] { display: none; }
+
+html[data-theme='light'] .brand-transition { color: #1b1b1b; }
+
+.brand-transition span {
+  font-family: 'Camera Plain', Arial, sans-serif;
+  font-size: clamp(40px, 12vw, 192px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: normal;
+  white-space: nowrap;
+}
+
+/* A failed or slow application boot must never leave the word behind. */
+.brand-transition:not([data-managed]) {
+  animation: brand-boot-fallback 300ms ease-out 2500ms forwards;
+}
+
+@keyframes brand-boot-fallback {
+  to { opacity: 0; visibility: hidden; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-transition { display: none; }
+}

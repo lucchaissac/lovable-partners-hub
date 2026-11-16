@@ -37,3 +37,9 @@ Verified in the browser at 320, 390, 820 and 2560 CSS pixels: no horizontal over
 ## Compact chat composer
 
 Reduced the miniature’s placeholder-to-action gap from 44 to 16 px, and the real studio’s composer/input minimum heights from 132/78 to 96/44 px. Browser measurements confirm an 80.8 px miniature and 96 px editor composer with a 44 px input. The existing multiline auto-growth code is unchanged; live typing was not exercised because the editor chat is disabled in the current local configuration. Desktop visual checks and the production build pass.
+
+## Universe name transitions
+
+Initial entry briefly shows Lovable; switching workspaces shows Lovable, Partners or Community, all in the same responsive Camera Plain Bold size. Only the word fades; the fixed, pointer-transparent container has no background, blur or dimming. Text is white in dark appearance and #1b1b1b in light appearance. Native opacity animation lasts 780 ms, cancels on subsequent switches, and is omitted for reduced motion. The default entry and workspace controls lead to Gallery, while explicit deep links remain intact.
+
+Browser verification: initial label, all three names, rapid switching, no replay between Gallery and Guidelines, transparent background, correct colors in both appearances, and eventual hidden state after initial and subsequent transitions. The shared CSS specimen fits Community at 320 and 390 px (214 and 251 px text widths); desktop type is 192 px. No console errors. Reduced motion is implemented in both CSS and the controller; OS-level emulation was not available for this check.

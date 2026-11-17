@@ -26,7 +26,8 @@
   "overrides": [
     "Camera Plain body and interface minimum 600; badges 700.",
     "Natural sentence case; English replaces the source language abbreviation.",
-    "Guidelines use identity/construction/clear-space/color sheets and the shared studio invitation; subscription UI is omitted."
+    "Guidelines use identity/construction/clear-space/color sheets and the shared studio invitation; subscription UI is omitted.",
+    "Tech blog signature Regular 400 overrides the body/interface minimum; all other copy retains its existing weights."
   ],
   "sharedGuidelines": "shared/techBlogGuidelines.mjs",
   "identityGeometry": {
@@ -35,9 +36,17 @@
     "logoToLabelGap": 3.111,
     "colorField": {
       "width": 34.051,
-      "height": 8.776,
+      "height": 6.903908203125,
       "radius": 2.119
     },
-    "clearSpace": "One heart height around the full signature; local guideline added at Luc\u2019s request."
+    "clearSpace": "One heart height around the full signature; local guideline added at Luc\u2019s request.",
+    "signature": {
+      "weight": 400,
+      "fontSize": 13.541,
+      "xHeightUnits": 1044,
+      "unitsPerEm": 2048,
+      "colorSpace": "OKLCH shorter hue",
+      "correction": "Luc\u2019s November 17 reference: lowercase x-height and baseline alignment, excluding the g descender."
+    }
   }
 }

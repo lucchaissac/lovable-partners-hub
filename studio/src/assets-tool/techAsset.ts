@@ -23,8 +23,8 @@ export async function techStarterAsset():Promise<AssetDocument>{
  ...[28.43,309.27].map((y,i)=>rectangle('guide-h-'+i,0,y,674,1,.159)),
  ...[23.87,389.31,642.06].flatMap((x,i)=>[23.52,304.7].map((y,j)=>rectangle(`handle-${i}-${j}`,x,y,8.425,8.425))),
  image('tech-identity','/brand/assets/full-white-pure.svg',55.82,55.92,59.179,10.755),
- text('tech-signature','Tech blog',118.11,54.4,62,16,13.541,600),
- image('tech-color','/tech-blog/color-field.svg',180.87,57.57,34.051,8.776),
+ text('tech-signature','Tech blog',118.11,55.3126,62,16,13.541,400),
+ image('tech-color','/tech-blog/color-field.svg',180.87,59.771091796875,34.051,6.903908203125),
  text('tech-headline','Inside Chats:\nHow Lovable’s\nAgents Work\nTogether',55.82,152.786,260,137,33.541),
  ]];
  return assetSchema.parse({...doc,editor});

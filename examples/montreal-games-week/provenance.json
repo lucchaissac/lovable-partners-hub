@@ -1,7 +1,7 @@
 {
   "title": "Crée ton jeu. · Montréal",
   "date": "2026-11-16",
-  "status": "Simplified manual layout preserved; flat beige pixel replacement proposed locally following Luc’s latest direction",
+  "status": "Original manual composition preserved; two requested editable alternatives appended and rules saved in the local agent memory",
   "source": {
     "file": "source-flyer.png",
     "providedBy": "Luc",
@@ -52,23 +52,22 @@
     "initialPrompt": "prompt.txt",
     "initialLayerGeometry": "composition.json",
     "pixelSource": "../../public/ambassadors/assets/pixel-abstraction.svg",
-    "fontSources": "../../public/fonts/community/provenance.json"
+    "fontSources": "../../public/fonts/community/provenance.json",
+    "variantLayerGeometry": "variants-layout.json"
   },
   "verification": [
-    "Production build and all 51 tests passed.",
+    "Production build and all 53 tests passed.",
     "No artwork exports during layout verification.",
-    "Five text blocks, the full Community lockup and pixel abstraction remain separate native layers.",
-    "Verified all six non-artwork layers retain exactly the same visible DOM geometry and styling as the manual layout.",
-    "Verified Pixelify Sans persists after reload; Anton renders at its native 400 weight and Bodoni Moda at 700. Restored Camera Plain on the current poster.",
-    "Headline remains 192 px with 92% leading; practical text remains Camera Plain.",
-    "Verified the final composition at 50% editor zoom."
+    "The original seven-layer composition is unchanged, including the later x617 access-block correction.",
+    "Both appended variants retain all five text blocks, with identical content, frame geometry, alignments, font size and leading. Only the light palette changes their ink.",
+    "Custom hex #f7f4ed applied through the new color-picker dialog and persisted after page reload.",
+    "Confirmed three separate assets in the existing collection and visually checked both variants.",
+    "Saved visible DOM geometry for all three variants; the full Community lockup and artwork remain separate native image layers."
   ],
   "result": {
     "localAssetId": "354b1a85-933b-47b9-8d08-312e26458028",
     "localUrl": "http://127.0.0.1:5173/#ambassadors/create/354b1a85-933b-47b9-8d08-312e26458028",
-    "assetCount": 1,
-    "nativeLayers": 7,
-    "editableTextLayers": 5,
+    "assetCount": 3,
     "replacesStartingTemplate": true,
     "separateFromMalagaCollection": true,
     "imageFrame": {
@@ -78,11 +77,40 @@
       "height": 520,
       "rotation": 0
     },
-    "imagePixelsUnchanged": true
+    "imagePixelsUnchanged": true,
+    "nativeLayersPerAsset": 7,
+    "editableTextLayersPerAsset": 5,
+    "variants": [
+      {
+        "position": 1,
+        "title": "Crée ton jeu. · Montréal",
+        "role": "Unchanged original",
+        "background": "#1b1b1b",
+        "visualSourceId": "library-pixel-abstraction"
+      },
+      {
+        "position": 2,
+        "title": "Crée ton jeu. · Éclat",
+        "role": "Requested abstract motif alternative",
+        "background": "#1b1b1b",
+        "visualSourceId": "library-pixel-bloom"
+      },
+      {
+        "position": 3,
+        "title": "Crée ton jeu. · Clair",
+        "role": "Requested series alternative in Lovable beige with dark type, lockup and loop",
+        "background": "#f7f4ed",
+        "visualSourceId": "library-pixel-abstraction-dark",
+        "localUrl": "http://127.0.0.1:5173/#ambassadors/create/c39b111f-1f0d-4a10-8ed9-e9b2191bd01a"
+      }
+    ]
   },
   "reusableCorrections": [
     "One main message plus essential date, place and access information; never restore manually removed copy.",
     "Gaming theme can use clean abstract pixel geometry; no automatic figurative illustration or gradient.",
-    "Display families are optional headline-only choices; the current poster stays Camera Plain unless requested otherwise."
+    "Display families are optional headline-only choices; the current poster stays Camera Plain unless requested otherwise.",
+    "Preserve the first original; append requested alternatives with the same text geometry and native editable layers.",
+    "Latest access block starts at x617, with its right edge aligned to the header city.",
+    "Community canvas backgrounds use the existing color picker, original-kit neutrals and heart-gradient stop swatches, plus custom hex input."
   ]
 }

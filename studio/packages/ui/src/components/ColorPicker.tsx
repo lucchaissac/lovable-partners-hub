@@ -487,6 +487,7 @@ export function ColorPickerDialog({
           <div className="ui-color-hex">
             <Input
               inputSize="md"
+              aria-label="Hex color"
               value={hexInput.replace(/^#/, '#')}
               onChange={(e) => onHexChange(e.target.value)}
               spellCheck={false}
@@ -511,7 +512,7 @@ export function ColorPickerDialog({
               </button>
             </div>
           </div>
-          <div className="ui-color-hex-label">HEX</div>
+          <div className="ui-color-hex-label">Hex</div>
         </div>
       </DialogBody>
       <DialogFooter>

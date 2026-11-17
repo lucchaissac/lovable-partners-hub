@@ -8,5 +8,7 @@ export const communityMediaLibrary=[
  media('library-mediterranean-materials','Mediterranean materials','mediterranean-materials',1536,1024,'Illustrations','Transparent limestone arch, lavender material, gradient paper and green palm frond. The approved Málaga artwork; preserve its colors and original silhouette.'),
  media('library-leaf-macro','Leaf macro','leaf-macro',1254,1254,'Illustrations','Transparent green leaf macro with a water droplet and subtle Lovable-color refraction. Large lower/right crop, keep the leaf green.'),
  media('library-pixel-abstraction','Pixel abstraction','pixel-abstraction',600,600,'Shapes','A single flat Lovable-beige stepped geometric loop on transparency. Clean abstract pixels, no gradient, texture, glow or figurative gaming object. Use a large deliberate edge crop.'),
+ media('library-pixel-abstraction-dark','Pixel abstraction · Dark ink','pixel-abstraction-dark',600,600,'Shapes','The exact same stepped loop in #1b1b1b on transparency, for a light or Lovable-beige canvas. Preserve its geometry and crop.'),
+ media('library-pixel-bloom','Pixel bloom','pixel-bloom',600,600,'Shapes','A flat Lovable-beige stepped four-point geometric shape on transparency. Abstract, no gradient or texture. Large right-edge crop, clear of the headline.'),
 ];
 export const communityMediaById=new Map(communityMediaLibrary.map(item=>[item.id,item]));

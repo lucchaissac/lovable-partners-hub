@@ -3,6 +3,7 @@ import {ambassadorSchema} from './ambassadorSettings';
 import { conversationSchema, documentSchema } from '../studio/schema.js';
 import { htmlEditorSchema } from '../studio/htmlEditorModel.js';
 import { websiteTokens } from './websiteTokens.js';
+import {canvasBackgroundPresets,canvasBackgroundSchema,isCustomCanvasColor} from '../../../shared/communityColors.mjs';
 import {assetLayoutsSchema,captureBlocks,fitBoxes,resizeEditor,restoreBlocks,repairEditorScale,layoutContentKey} from './layout.js';
 
 export const formats = {
@@ -17,8 +18,8 @@ export const palette = {
   'blue-soft': websiteTokens['color-blue-soft'], mint: websiteTokens['color-mint'], 'yellow-soft': websiteTokens['color-yellow-soft'], 'pink-soft': websiteTokens['color-pink-soft'],
   'media-control': websiteTokens['color-media-control'], border: websiteTokens['color-border'],
 } as const;
-export const assetColor = (key: keyof typeof palette) => `var(--asset-color-${key})`;
-export const backgrounds = ['ink', 'blue-soft', 'mint', 'yellow-soft', 'pink-soft', 'white', 'beige'] as const;
+export const assetColor = (key: string) => isCustomCanvasColor(key)?key:`var(--asset-color-${key})`;
+export const backgrounds = canvasBackgroundPresets;
 const color = z.enum(['ink', 'muted', 'white', 'blue', 'blue-soft', 'mint', 'yellow-soft', 'pink-soft', 'media-control', 'border']);
 export const assetIcons = ['none', 'play', 'check', 'arrow-right', 'sparkles', 'circle', 'circle-check', 'file-text', 'calendar', 'video', 'message-square', 'book-open', 'users', 'chart-line'] as const;
 export const cropSchema = z.object({ x: z.number().min(0).max(1), y: z.number().min(0).max(1), w: z.number().positive().max(1), h: z.number().positive().max(1) }).strict();
@@ -34,7 +35,7 @@ export const nodeSchema = z.object({
 }).strict();
 export const compositionSchema = z.object({
   title: z.string().trim().min(1).max(100),
-  background: z.enum(backgrounds), grid: z.boolean(), nodes: z.array(nodeSchema).min(1).max(40),
+  background: canvasBackgroundSchema, grid: z.boolean(), nodes: z.array(nodeSchema).min(1).max(40),
 }).strict();
 export const referenceSchema = z.object({
   name: z.string().min(1).max(200),

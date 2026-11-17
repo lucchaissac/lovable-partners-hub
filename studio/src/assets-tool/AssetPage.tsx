@@ -8,7 +8,7 @@ import {CommunityRenderErrors,useCommunityRendering} from './CommunityRendering'
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Button, ColorPickerPaletteProvider, Dropdown, Icon, Input, PageHeader, Tooltip } from '@asset/ui';
-import { assetPalette } from './palette';
+import { assetPalette, communityPalette } from './palette';
 import { useStudioSession } from '../studio/StudioSessions';
 import { assetTheme } from './websiteTokens';
 import { readStudioConfig, studioApi } from '../studio/client';
@@ -48,7 +48,7 @@ const locationSearch = () => window.location.search;
 type AssetRequest = {id:number;prompt:string;visual?:WorkspaceVisual;sources:StudioSource[];recorded?:boolean;chatId?:string};
 
 export default function AssetPage() {
-  return <CommunityTypographyContext.Provider value={studioWorkspace==='ambassadors'}><ColorPickerPaletteProvider value={assetPalette}><WorkspaceWidgetHost><HtmlSelectionMode.Provider value={true}><HtmlEditorInsertProvider><AssetPageContent/></HtmlEditorInsertProvider></HtmlSelectionMode.Provider></WorkspaceWidgetHost></ColorPickerPaletteProvider></CommunityTypographyContext.Provider>;
+  return <CommunityTypographyContext.Provider value={studioWorkspace==='ambassadors'}><ColorPickerPaletteProvider value={studioWorkspace==='ambassadors'?communityPalette:assetPalette}><WorkspaceWidgetHost><HtmlSelectionMode.Provider value={true}><HtmlEditorInsertProvider><AssetPageContent/></HtmlEditorInsertProvider></HtmlSelectionMode.Provider></WorkspaceWidgetHost></ColorPickerPaletteProvider></CommunityTypographyContext.Provider>;
 }
 function AssetPageContent() {
   const { active } = useStudioSession();

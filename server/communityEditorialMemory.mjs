@@ -1,7 +1,7 @@
 // Approved by Luc through the AI for impact iterations, November 16, 2026.
 // Imported into the local Community agent's instructions on every request.
 export const communityEditorialMemory = `Approved Community editorial memory:
-Scope: these are Luc-approved decisions from the AI for impact series, not unreviewed experiments. Apply the reusable principles to future Community artwork. The precise coordinates, copy, city and subjects below are a reference for this campaign, not defaults for every request. Follow later explicit user instructions and preserve their latest manual refinements. Partners is outside this scope.
+Scope: these are Luc-approved decisions from the AI for impact, Málaga and Montréal iterations. Apply the reusable principles to future Community artwork. Exact coordinates, copy, cities and subjects belong to their respective campaigns, not every request. Follow later explicit user instructions and preserve their latest manual refinements. Partners is outside this scope.
 
 Reusable art direction:
 - Content editing comes before layout: a social poster is not a transcription of every line in its source. Keep one main message, date/time and the essential location/access details. Remove redundant programme lists, campaign eyebrows, slogans and level cards when they compete with that message; retain full source information in the chat, not by forcing it all onto the artwork. Never restore copy Luc manually removed. The simplified Montréal version is the reference for this content budget.
@@ -20,6 +20,15 @@ Reusable art direction:
 - Tactile collage should have a large deliberate crop and real paper texture. A restrained blue/lavender/pink/orange Lovable gradient can be printed into paper or reflected/refracted inside a photographic object. The nature example keeps the leaf green and confines a subtle colored glint inside the water drop; do not tint the whole scene or add a logo inside the drop.
 - The original Community globe direction uses the approved oversized close crop and embedded heart, not a small floating sphere or standalone heart. Respect the current manual geometry and original image proportions, texture and layer order.
 - Rebuild requests replace the active base in place; requested new alternatives append without disturbing the other versions. Keep the specified number of assets. A seven-asset collection is valid even though each generation response supports at most six new designs. Do not automatically recreate seven variants for every new request.
+
+Latest Montréal layout, manually refined by Luc and requested as a reusable reference:
+- Keep the current original as the first asset. Requested alternatives append; they must never overwrite the original or add back discarded source copy. For one or two requested variations, make two at most, changing the abstract motif or palette while preserving the layout.
+- Canvas 1080 square. Full Community lockup x43.2,y43.2,w407.025,h40.003. Montréal x816.8,y36.9,w220,h48,36.675px,Bold700,130.88% leading,right aligned.
+- Main title "Crée\\nton jeu.": x53,y237,w993.594,h367,Camera Plain Bold700,192px,92% leading. Preserve the exact line break, baseline spacing and anchor. Optional display fonts need a specific request; adjust imagery instead of moving or shrinking the title.
+- Date/time in one block: "14 novembre 2026\\n13 h–17 h",x53,y635,w460,h115,50px,Bold700,115% leading. Venue/address "Ideal Coworking\\n4035 Saint-Ambroise",x43,y957,w420,h100,36px,Bold700,115% leading,left aligned. Access "Gratuit · Bilingue\\nPlaces limitées",x617,y962,w420,h95,36px,Bold700,115% leading,right aligned. Luc's latest x617 correction supersedes x607.
+- Only these five text blocks plus the original Community identity and one abstract visual. Do not restore the campaign eyebrow, three-step programme, slogans, level cards, calendar/location icons, literal controller or old paper collage.
+- Main stepped loop x760,y260,w520,h520,rotation0,opacity1,transparent with a deliberate right crop. Flat beige on dark. The prepared dark-ink loop is its exact light counterpart; a different clean stepped motif may use the same visual frame. No gradients, texture, glow, figurative props or extra decoration in this direction.
+- Preserve these campaign-specific coordinates when reusing this asset. For a different format, retain the relationships: intact header/city, dominant title, same-size stacked date/time, two anchored footer blocks, artwork beside rather than across the headline. Do not copy Montréal's event facts into a new campaign.
 
 Latest Málaga layout, manually refined and approved by Luc (supersedes the earlier bottom-band proposal):
 - Keep the full Community signature and Málaga in their original header positions. At 1080 square: logo x43.2,y43.2,w407.025,h40.003; city x816.8,y36.9,w220,h48,36.675px,right aligned.

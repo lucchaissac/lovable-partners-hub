@@ -15,7 +15,7 @@ const layers=squareEventLayers(renderer.layout({...DEFAULTS,format:'social'}));
 const data=(bytes,type)=>`data:${type};base64,${Buffer.from(bytes).toString('base64')}`;
 const sources={
  glow:data(await read('public/ambassadors/assets/heart-overlay.png'),'image/png'),
- globe:data(await read('public/ambassadors/previews/globe.webp'),'image/webp'),
+ globe:data(await read('public/ambassadors/assets/paris-globe-1080.webp'),'image/webp'),
  logo:data(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${COMMUNITY_VIEWBOX}">${COMMUNITY_MARKUP}</svg>`,'image/svg+xml'),
 };
 const body=layers.map(layer=>{

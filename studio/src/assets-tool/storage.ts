@@ -34,3 +34,26 @@ export async function listAssets(owner: string): Promise<AssetDocument[]> {
     request.onerror = () => reject(new Error('Could not open your saved assets.'));
   });
 }
+
+/** Open only this collection; unrelated saved images should not delay the canvas. */
+export async function loadAssetCollection(owner:string,id:string):Promise<AssetDocument[]>{
+  const db=await openDatabase();
+  const get=(ids:string[])=>new Promise<AssetDocument[]>((resolve,reject)=>{
+    const store=db.transaction('assets').objectStore('assets'),found=new Map<string,AssetDocument>();
+    let remaining=ids.length;
+    if(!remaining){resolve([]);return;}
+    for(const id of ids){
+      const request=store.get(`${owner}:${id}`);
+      request.onsuccess=()=>{
+        const row=request.result as StoredAsset|undefined;
+        if(row?.owner===owner){const parsed=assetSchema.safeParse(row.document);if(parsed.success)found.set(id,parsed.data);}
+        if(!--remaining)resolve(ids.flatMap(id=>found.has(id)?[found.get(id)!]:[]));
+      };
+      request.onerror=()=>reject(new Error('Could not open your saved asset.'));
+    }
+  });
+  const [current]=await get([id]);
+  if(!current)return [];
+  const siblings=[...new Set((current.series??[]).map(page=>page.id))].filter(pageId=>pageId!==id);
+  return [current,...await get(siblings)];
+}

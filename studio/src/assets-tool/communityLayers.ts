@@ -3,6 +3,7 @@ import type {AmbassadorSettings} from './ambassadorSettings';
 import {emptyPortrait} from '../../../src/ambassadors/portrait.js';
 import {communityLayout,renderAmbassador} from '../../../src/ambassadors/render.js';
 import {squareEventLayers} from '../../../shared/communityStarter.mjs';
+import {communityGradientPreview,preparedCommunityGlobe} from '../../../shared/communityPreparedArtwork.mjs';
 
 export type CommunityLayer={kind:'text'|'logo'|'globe'|'glow'|'qr'|'portrait';key:string;x:number;y:number;w:number;h:number;rotation?:number;src?:string;text?:string;size?:number;leading?:number;weight?:string;tracking?:number;align?:'left'|'center'|'right'};
 
@@ -29,16 +30,19 @@ function spotlightLayers(settings:AmbassadorSettings):CommunityLayer[]{
 export function communityLayerBlock(layer:CommunityLayer,settings:AmbassadorSettings,artwork:Record<string,string>):HtmlBlock{
  const id=`community-${layer.key}-${crypto.randomUUID()}`,editor={position:'absolute' as const,x:layer.x,y:layer.y,widthPx:layer.w,height:Math.max(12,layer.h),rotation:layer.rotation};
  if(layer.kind==='text')return {id,kind:'text',value:{runs:[{text:layer.text??''}],style:'Text',size:layer.size!,align:layer.align??'left',color:'#f7f4ed'},editor:{...editor,appearance:{fontFamily:'Camera Plain',fontSize:layer.size!,fontWeight:layer.weight==='bold'?700:layer.weight==='medium'?500:400,letterSpacing:(layer.tracking??0)*layer.size!,lineHeight:layer.leading!/layer.size!*100}}};
- const src=layer.kind==='logo'?'/ambassadors/assets/lovable-community.svg':layer.kind==='glow'?'/ambassadors/assets/heart-overlay.png':layer.kind==='portrait'?(layer.src||emptyPortrait):artwork[layer.kind];
+ const src=layer.kind==='logo'?'/ambassadors/assets/lovable-community.svg':layer.kind==='glow'?communityGradientPreview:layer.kind==='portrait'?(layer.src||emptyPortrait):artwork[layer.kind];
  const element=layer.kind==='globe'?(settings.format==='spotlight'?'spotlight-globe' as const:'globe' as const):layer.kind==='qr'?'qr' as const:undefined;
  return {id,kind:'image',...(element?{ambassador:structuredClone(settings),ambassadorElement:element}:{}),value:{src,alt:layer.kind==='logo'?'Lovable Community':layer.kind==='globe'?'Globe':layer.kind==='glow'?'Gradient':layer.kind==='qr'?'Community QR':layer.key==='photo'?'Portrait':`Speaker ${Number(layer.key.slice(6))+1} portrait`,caption:'',alignment:'center',width:100},editor:{...editor,appearance:{imageFit:layer.kind==='portrait'?'cover':'contain',...(layer.kind==='portrait'?{radius:layer.w/2,background:'#1b1b1b'}:{})}}};
 }
 export async function createCommunityLayers(settings:AmbassadorSettings,squareEvent=false){
- await document.fonts.ready;
+ if(settings.format==='spotlight')await document.fonts.ready;
  const source:CommunityLayer[]=settings.format==='spotlight'?spotlightLayers(settings):await communityLayout(settings);
  const layers:CommunityLayer[]=squareEvent?squareEventLayers(source):source;
  const artwork:Record<string,string>={};
- for(const kind of ['globe','qr'] as const)if(layers.some(layer=>layer.kind===kind))artwork[kind]=(await renderAmbassador(settings,{element:kind==='globe'&&settings.format==='spotlight'?'spotlight-globe':kind,pixels:1600})).src;
+ await Promise.all((['globe','qr'] as const).filter(kind=>layers.some(layer=>layer.kind===kind)).map(async kind=>{
+  const prepared=kind==='globe'?preparedCommunityGlobe(settings):null;
+  artwork[kind]=prepared??(await renderAmbassador(settings,{element:kind==='globe'&&settings.format==='spotlight'?'spotlight-globe':kind,pixels:1600})).src;
+ }));
  const blocks=layers.map(layer=>communityLayerBlock(layer,settings,artwork));
  return {blocks,bindings:Object.fromEntries(layers.map((layer,index)=>[layer.key,blocks[index].id]))};
 }

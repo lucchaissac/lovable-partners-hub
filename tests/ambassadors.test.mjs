@@ -7,6 +7,7 @@ import {createRenderer,DEFAULTS,FORMATS,validateDetails,cityLocation} from '../s
 import qrcode from '../src/ambassadors/source/qrcode.js';
 import {ambassadorFormats} from '../src/ambassadors/catalog.js';
 import {squareEventLayers} from '../shared/communityStarter.mjs';
+import {preparedCommunityGlobe,communityGradientPreview,communityGradientMaster} from '../shared/communityPreparedArtwork.mjs';
 import {ambassadorSchema,defaultAmbassador} from '../studio/src/assets-tool/ambassadorSettings.ts';
 const font=path=>{const bytes=readFileSync(new URL(path,import.meta.url));return parse(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength));};
 const renderer=createRenderer({bold:font('../public/fonts/CameraPlain-Bold.ttf'),regular:font('../public/ambassadors/assets/CameraPlain-Regular.ttf'),qrcode,heartOverlay:''});
@@ -93,6 +94,19 @@ test('Square Event starter follows Luc’s approved manual layout without changi
  assert.ok(Math.abs(1080-footer.y-footer.h-footer.x)<.001);
  assert.ok(Math.abs(footer.size-32.4)<.001);
  assert.equal(original.find(layer=>layer.key==='title').size,96);
+});
+
+test('Prepared Paris artwork skips scene startup without replacing a personalized city or Spotlight',()=>{
+ const src=preparedCommunityGlobe(defaultAmbassador());
+ assert.equal(src,'/ambassadors/assets/paris-globe-1080.webp');
+ assert.equal(preparedCommunityGlobe({...defaultAmbassador(),city:'  PARIS '}),src);
+ assert.equal(preparedCommunityGlobe({...defaultAmbassador(),city:'Montréal'}),null);
+ assert.equal(preparedCommunityGlobe(defaultAmbassador('spotlight')),null);
+ for(const path of [src,communityGradientPreview]){
+  const bytes=readFileSync(new URL(`../public${path}`,import.meta.url));
+  assert.equal(bytes.subarray(8,12).toString(),'WEBP');
+ }
+ assert.equal(communityGradientMaster,'/ambassadors/assets/heart-overlay.png');
 });
 
 const {syncCommunityDocument}=await import('../studio/src/assets-tool/communityDocument.ts');

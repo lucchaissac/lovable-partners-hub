@@ -39,7 +39,7 @@ import '../studio/workspace-widgets.css';
 import { Artwork } from './Artwork';
 import { assetSchema, assetDimensions, compositionSchema, formats, resizeAsset, referenceDocument, type AssetDocument, type AssetFormat, type Composition } from './model';
 import { exportPng, renderPng, exportSource, readReference, visionReference } from './media';
-import { listAssets, saveAsset, saveAssets } from './storage';
+import { listAssets, loadAssetCollection, saveAsset, saveAssets } from './storage';
 import './assets.css';
 import {AssetScreenMenu} from './AssetScreenMenu';
 
@@ -137,7 +137,8 @@ function AssetPageContent() {
   }, []);
   useEffect(() => {
     let cancelled = false;
-    void listAssets(owner).then(async items => {
+    const opening=studioWorkspace==='ambassadors'?(id?loadAssetCollection(owner,id):Promise.resolve([])):listAssets(owner);
+    void opening.then(async items => {
       if (cancelled) return; setRecent(items);
       if (id && !current.current && !readingFile.current) {
         const found = items.find(item => item.id === id);

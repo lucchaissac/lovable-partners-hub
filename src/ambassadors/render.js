@@ -6,8 +6,11 @@ import {safeUrl} from './source/renderer.mjs';
 export {DEFAULTS};
 const toData=blob=>new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(blob);});
 const read=async path=>{const response=await fetch(path);if(!response.ok)throw Error('The community artwork could not load. Please try again.');return response;};
-let renderer,cityIndex;
-function loadRenderer(){return renderer??=Promise.all([read('/fonts/CameraPlain-Bold.ttf').then(r=>r.arrayBuffer()).then(parse),read('/ambassadors/assets/CameraPlain-Regular.ttf').then(r=>r.arrayBuffer()).then(parse),read('/ambassadors/assets/heart-overlay.png').then(r=>r.blob()).then(toData)]).then(([bold,regular,heartOverlay])=>createRenderer({bold,regular,heartOverlay,qrcode})).catch(error=>{renderer=undefined;throw error;});}
+let renderer,layoutRenderer,fonts,cityIndex;
+function loadFonts(){return fonts??=Promise.all([read('/fonts/CameraPlain-Bold.ttf').then(r=>r.arrayBuffer()).then(parse),read('/ambassadors/assets/CameraPlain-Regular.ttf').then(r=>r.arrayBuffer()).then(parse)]).catch(error=>{fonts=undefined;throw error;});}
+function loadRenderer(){return renderer??=Promise.all([loadFonts(),read('/ambassadors/assets/heart-overlay.png').then(r=>r.blob()).then(toData)]).then(([[bold,regular],heartOverlay])=>createRenderer({bold,regular,heartOverlay,qrcode})).catch(error=>{renderer=undefined;throw error;});}
+// Native geometry needs font metrics, not the 1.7 MB export background.
+function loadLayoutRenderer(){return layoutRenderer??=loadFonts().then(([bold,regular])=>createRenderer({bold,regular,heartOverlay:'',qrcode})).catch(error=>{layoutRenderer=undefined;throw error;});}
 // The scene is the original kit renderer. Only its capture bridge is new.
 class Scene {
  constructor(spotlight){this.spotlight=spotlight;this.listeners=new Set();this.revision=0;this.lastCity='';this.queue=Promise.resolve();}
@@ -70,4 +73,4 @@ export function renderAmbassador(settings,{pixels=1600,element=undefined,signal=
  const result=jobs.catch(()=>{}).then(run);jobs=result;return result;
 }
 
-export async function communityLayout(settings){const engine=await loadRenderer();return engine.layout({...structuredClone(DEFAULTS),...settings,badgeMode:'single'});}
+export async function communityLayout(settings){const engine=await loadLayoutRenderer();return engine.layout({...structuredClone(DEFAULTS),...settings,badgeMode:'single'});}

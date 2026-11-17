@@ -1,0 +1,22 @@
+[
+  {
+    "name": "paris-globe-1080.webp",
+    "source": "examples/ai-for-impact/editorial/community.asset.json",
+    "width": 1080,
+    "height": 1080,
+    "quality": 92,
+    "sourceBytes": 998252,
+    "preparedBytes": 134324,
+    "sourceSha256": "954a4cfaaa6e2840f49d0f25e7c6c5c5310a85837533b084c758fd6c446db448"
+  },
+  {
+    "name": "heart-overlay.webp",
+    "source": "public/ambassadors/assets/heart-overlay.png",
+    "width": 2160,
+    "height": 2177,
+    "quality": 92,
+    "sourceBytes": 1772189,
+    "preparedBytes": 453956,
+    "sourceSha256": "56e218879fda46d242697d098e58ec78f8d44e85b80ed4db6cfee2db656ad7cc"
+  }
+]

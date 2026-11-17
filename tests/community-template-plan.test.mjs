@@ -56,3 +56,10 @@ test('image edits deterministically replace their source layer and preserve its 
  const base={...request,blocks:[{id:'leaf-photo',kind:'image',asset:'image',frame:{x:300,y:430,widthPx:970,height:970}}],canvasImages:[{id:'leaf-photo',image:'data:image/webp;base64,AAAA'}],context:'HTML_SELECTION {"blockIds":["leaf-photo"]}'};
  const edit=compileTemplatePlan(value,base).plan.edits[0];assert.equal(edit.id,'leaf-photo');assert.equal(edit.sourceId,'media-retouch');assert.equal(edit.frame.x,300);assert.equal(edit.frame.width,970);
 });
+test('reusing a library photograph selects its approved layout and keeps supporting copy above faces',()=>{
+ const value=structuredClone(intent);value.designs[0].image={sourceId:'library-flash-light',crop:null};value.designs[0].background='white';
+ const result=compileTemplatePlan(value,request);assert.equal(result.templatePlan.designs[0].template,'editorial-photo');
+ const d=result.plan.designs[0],subtitle=d.elements.find(e=>e.id==='d0-subtitle');assert.equal(subtitle.align,'right');assert.equal(subtitle.frame.y,180);assert.equal(subtitle.frame.height,135);
+ assert.equal(d.elements.find(e=>e.id==='d0-logo').frame.width,407.025);
+ const exact=compileTemplatePlan(value,{...request,prompt:'Use the template Event with this picture'});assert.equal(exact.templatePlan.designs[0].template,'event-square');
+});

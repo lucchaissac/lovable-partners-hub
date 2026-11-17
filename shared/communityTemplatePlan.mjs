@@ -3,7 +3,7 @@ import {chatPlanSchema,chatElementSchema,validateChatPlanContent} from './commun
 import {reviewSchema,imageCropSchema} from './communityReview.mjs';
 import {mediaRequestSchema,validateMediaPlan} from './communityMediaPlan.mjs';
 import {communityTemplateGeometry,cameraBoldAdvances} from './communityTemplateGeometry.mjs';
-import {communityMediaById} from './communityMediaLibrary.mjs';
+import {communityMediaById,communityMediaLayouts} from './communityMediaLibrary.mjs';
 
 const id=z.string().min(1).max(80).regex(/^[a-zA-Z0-9-]+$/);
 const picture=z.object({sourceId:id,crop:imageCropSchema.nullable()}).strict();
@@ -92,6 +92,12 @@ export function compileTemplatePlan(value,request){
   if(change)change.sourceId=media.id;
   else intent.changes.push({id:media.sourceId,text:null,sourceId:media.id,fontSize:null,color:null,dx:null,dy:null,rotation:null});
  }
+ if(!/\b(?:template|mod[eè]le|composition)\s+(?:Event|event-square)\b/i.test(request.prompt))intent.designs=intent.designs.map(spec=>{
+  const approved=spec.image&&communityMediaLayouts[spec.image.sourceId];
+  if(!approved||spec.template!=='event-square'||spec.width&&spec.height&&spec.width!==spec.height)return spec;
+  const fields=spec.fields.map(field=>['eventFooter','footer'].includes(field.slot)&&['editorial-photo','editorial-collage','editorial-nature'].includes(approved)?{...field,slot:'subtitle'}:field);
+  return {...spec,template:approved,fields};
+ });
  const designs=intent.designs.map(designFromTemplate),edits=[...intent.changes.map(c=>changedElement(c,request)),...intent.additions];
  const elements=[...designs.flatMap(d=>d.elements),...edits];
  const reviews=intent.reviews.filter(review=>request.sources.some(s=>s.kind==='image'&&s.id===review.sourceId)||review.sourceId==='current-canvas'&&request.preview).map(review=>({...review,retainedVisuals:elements.filter(e=>e.kind==='image'&&e.sourceId===review.sourceId).map(e=>({elementId:e.id,sourceId:e.sourceId,kind:e.id.includes('partner-')?'partner-logo':'illustration',reason:'Retained useful visual from the supplied source.'}))}));

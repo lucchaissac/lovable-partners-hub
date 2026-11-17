@@ -15,3 +15,10 @@ export const communityMediaLibrary=[
  partnerMark('library-startup-oasis','Startup Oasis','startup-oasis',979,428),
 ];
 export const communityMediaById=new Map(communityMediaLibrary.map(item=>[item.id,item]));
+
+// Reusing a prepared visual also selects its approved native composition.
+export const communityMediaLayouts={
+ 'library-flash-dark':'editorial-photo','library-flash-light':'editorial-photo','library-malaga-makers':'editorial-photo',
+ 'library-paper-collage':'editorial-collage','library-mediterranean-materials':'editorial-materials','library-leaf-macro':'editorial-nature',
+ 'library-pixel-abstraction':'editorial-pixel','library-pixel-abstraction-dark':'editorial-pixel','library-pixel-bloom':'editorial-pixel',
+};

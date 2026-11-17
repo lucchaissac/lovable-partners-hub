@@ -814,12 +814,12 @@ export const communityTemplateGeometry={
    {
     "kind": "text",
     "key": "subtitle",
-    "x": 610,
+    "x": 600,
     "y": 180,
-    "w": 426.8,
-    "h": 180,
-    "size": 52,
-    "leading": 57.2,
+    "w": 436.8,
+    "h": 135,
+    "size": 50,
+    "leading": 55,
     "weight": "bold",
     "align": "right"
    }

@@ -22,7 +22,7 @@ const image=(id:string,src:string,alt:string,x:number,y:number,width:number,heig
 export async function brandStarterAsset(template='collaboration'):Promise<AssetDocument>{
  if(template==='app-studio')return appStudioAsset();
  const reference=await rasterLibraryAsset(brandElements[0]);
- const doc:AssetDocument={version:1,id:crypto.randomUUID(),title:'Lovable × Cerebras',format:'landscape',dimensions:{width:1200,height:675},reference,background:'ink',grid:false,updatedAt:Date.now(),nodes:[makeNode('image',{name:'Lovable logo',x:190,y:307,w:358,h:65.19})]};
+ const doc:AssetDocument={version:1,id:crypto.randomUUID(),title:'Partnership',format:'landscape',dimensions:{width:1200,height:675},reference,background:'ink',grid:false,updatedAt:Date.now(),nodes:[makeNode('image',{name:'Lovable logo',x:190,y:307,w:358,h:65.19})]};
  const editor=nativeDocument(doc);
  editor.pages[0].sections[0].columns=[[ 
   image('brand-glow','/ambassadors/assets/heart-overlay.webp','Lovable gradient',-600,-280,2400,2400),

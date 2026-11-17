@@ -31,7 +31,7 @@
 /* Nested geometry: 32 px outer radius = 16 px inset + 16 px panel radius. */
 .logo-playground { display:grid; grid-template-columns:minmax(0,1fr) 248px; align-items:start; gap:32px; padding:16px; min-height:420px; margin-bottom:32px; border-radius:32px; background:var(--logo-background); }
 .logo-playground-art { align-self:center; padding:48px 24px; }
-.logo-playground-art img { width:100%; height:auto; display:block; filter:none; }
+.logo-playground-art img { width:100%; height:auto; display:block; filter:none; transform:scale(.88); transform-origin:right center; }
 .logo-playground-controls { background:var(--color-background); color:var(--color-text); padding:16px; border:1px solid var(--color-border); border-radius:16px; display:grid; gap:16px; font-size:14px; }
 .logo-control { display:grid; gap:8px; }
 .logo-control-trigger { display:flex; align-items:center; gap:10px; width:100%; height:40px; padding:0 10px; border:1px solid var(--color-border); border-radius:8px; background:transparent; color:inherit; font:inherit; font-weight:600; cursor:pointer; }
@@ -43,7 +43,7 @@
 .lovable-motion-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
 .lovable-gradient-preview { aspect-ratio:1; overflow:hidden; border-radius:12px; background:#1b1b1b; }
 .lovable-gradient-preview video { display:block; width:100%; height:100%; object-fit:cover; }
-@media(max-width:900px) { .logo-playground { grid-template-columns:1fr; }.logo-playground-controls { width:100%; }.logo-playground-art { padding:48px 24px; } }
+@media(max-width:900px) { .logo-playground { grid-template-columns:1fr; }.logo-playground-controls { width:100%; }.logo-playground-art { padding:48px 24px; }.logo-playground-art img { transform-origin:center; } }
 @media(max-width:540px) { .logo-playground { padding:16px; gap:8px; }.lovable-motion-grid { grid-template-columns:1fr; } }
 .lovable-logo-preview { display:grid; place-items:center; height:180px; padding:32px; border-radius:12px; }
 .lovable-logo-preview.on-white { background:#fff; }

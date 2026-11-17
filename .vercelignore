@@ -1,0 +1,11 @@
+.git/
+.vercel/
+node_modules/
+dist/
+.DS_Store
+.env*
+examples/
+design/
+tests/
+scripts/
+AGENTS.md

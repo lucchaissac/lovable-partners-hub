@@ -3,7 +3,7 @@ import {updateWorkspaceMetadata} from './workspaceMetadata.js';
 import {warmGallery} from './galleryLoading.js';
 import './navigation.js';
 import { showWorkspaceTransition } from './brand-transition.js';
-import {ambassadorFormats,ambassadorSections} from './ambassadors/catalog.js';
+import {ambassadorDefaultFormat,ambassadorFormats,ambassadorSections} from './ambassadors/catalog.js';
 import {ambassadorGallery,ambassadorGuidelines,mountAmbassadorPreviews} from './ambassadors/views.js';
 import { createElement, Globe, Grid3X3, Moon, Sun, Search, X, ArrowUpRight, ArrowRight, ChevronDown, Download, Check, Copy, Upload, RotateCcw, Pause, Play } from 'lucide';
 import { FORMATS, TIERS, FIGMA_FILE, badgeSvg, badgeGeometry, prepareTypography } from './badges.js';
@@ -62,7 +62,7 @@ window.addEventListener('scroll',()=>{if(scrollFrame)return;scrollFrame=requestA
 function render(view=state.view,{reset=true}={}){
  showWorkspaceTransition(view==='brand'?'lovable':state.workspace);
  const showLibrary=view==='library';if(showLibrary||view==='badge')view='create';
- const requestedBadge=parseRoute().section,badge=currentFormats().some(format=>format.id===requestedBadge)?requestedBadge:undefined,starter=state.workspace==='partners'&&requestedBadge==='grow-your-business';
+ const requestedBadge=parseRoute().section,badge=currentFormats().some(format=>format.id===requestedBadge)||(state.workspace==='ambassadors'&&requestedBadge===ambassadorDefaultFormat)?requestedBadge:undefined,starter=state.workspace==='partners'&&requestedBadge==='grow-your-business';
  requestedSection=undefined;state.view=view;observer?.disconnect();assemblyObserver?.disconnect();cleanupGallery?.();cleanupGallery=undefined;cleanupAmbassadors?.();cleanupAmbassadors=undefined;cleanupBrand?.();cleanupBrand=undefined;
  const brand=view==='brand',ambassadors=state.workspace==='ambassadors';
  const asset=ambassadors&&/^[a-f0-9-]{36}$/i.test(requestedBadge??'')?requestedBadge:undefined;

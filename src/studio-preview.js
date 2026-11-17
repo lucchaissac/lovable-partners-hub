@@ -1,6 +1,6 @@
 import { createElement, ArrowRight, ArrowUp, ChevronDown, Image, Library, PanelLeftClose, PanelRightClose, Plus, Shapes, Smile, Type, Video } from 'lucide';
 import { badgeSvg } from './badges.js';
-import { ambassadorDefaultFormat, ambassadorFormats, ambassadorPreview } from './ambassadors/catalog.js';
+import { ambassadorDefaultFormat, ambassadorDefaultTemplate, ambassadorPreview } from './ambassadors/catalog.js';
 import './studio-preview.css';
 
 const glyph = shape => createElement(shape, { width: 16, height: 16, 'stroke-width': 1.8, 'aria-hidden': 'true' }).outerHTML;
@@ -8,7 +8,7 @@ const glyph = shape => createElement(shape, { width: 16, height: 16, 'stroke-wid
 // A lightweight illustration of the real studio: one live artwork, no second editor runtime.
 export function studioInvitation({workspace='partners'}={}) {
   const community=workspace==='ambassadors',template=community?ambassadorDefaultFormat:'grow-your-business';
-  const format=community?ambassadorFormats.find(format=>format.id===template):null,width=format?.width??1200,height=format?.height??738;
+  const format=community?ambassadorDefaultTemplate:null,width=format?.width??1200,height=format?.height??738;
   return `<div class="studio-invitation" data-workspace-preview="${workspace}">
     <div class="studio-invitation-heading"><h2>Make it yours.</h2><button class="primary-button" data-view="create" data-create-template="${template}">Create ${community?'an asset':'a badge'} ${glyph(ArrowRight)}</button></div>
     <a class="studio-preview" href="${community?'#ambassadors/create':'#create'}/${template}" data-view="create" data-create-template="${template}" aria-label="Open Make your own to create ${community?'a community':'a partner'} asset">

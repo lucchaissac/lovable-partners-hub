@@ -2,6 +2,7 @@ import type {HtmlBlock} from '../studio/htmlEditorModel';
 import type {AmbassadorSettings} from './ambassadorSettings';
 import {emptyPortrait} from '../../../src/ambassadors/portrait.js';
 import {communityLayout,renderAmbassador} from '../../../src/ambassadors/render.js';
+import {squareEventLayers} from '../../../shared/communityStarter.mjs';
 
 export type CommunityLayer={kind:'text'|'logo'|'globe'|'glow'|'qr'|'portrait';key:string;x:number;y:number;w:number;h:number;rotation?:number;src?:string;text?:string;size?:number;leading?:number;weight?:string;tracking?:number;align?:'left'|'center'|'right'};
 
@@ -32,9 +33,10 @@ export function communityLayerBlock(layer:CommunityLayer,settings:AmbassadorSett
  const element=layer.kind==='globe'?(settings.format==='spotlight'?'spotlight-globe' as const:'globe' as const):layer.kind==='qr'?'qr' as const:undefined;
  return {id,kind:'image',...(element?{ambassador:structuredClone(settings),ambassadorElement:element}:{}),value:{src,alt:layer.kind==='logo'?'Lovable Community':layer.kind==='globe'?'Globe':layer.kind==='glow'?'Gradient':layer.kind==='qr'?'Community QR':layer.key==='photo'?'Portrait':`Speaker ${Number(layer.key.slice(6))+1} portrait`,caption:'',alignment:'center',width:100},editor:{...editor,appearance:{imageFit:layer.kind==='portrait'?'cover':'contain',...(layer.kind==='portrait'?{radius:layer.w/2,background:'#1b1b1b'}:{})}}};
 }
-export async function createCommunityLayers(settings:AmbassadorSettings){
+export async function createCommunityLayers(settings:AmbassadorSettings,squareEvent=false){
  await document.fonts.ready;
- const layers:CommunityLayer[]=settings.format==='spotlight'?spotlightLayers(settings):await communityLayout(settings);
+ const source:CommunityLayer[]=settings.format==='spotlight'?spotlightLayers(settings):await communityLayout(settings);
+ const layers:CommunityLayer[]=squareEvent?squareEventLayers(source):source;
  const artwork:Record<string,string>={};
  for(const kind of ['globe','qr'] as const)if(layers.some(layer=>layer.kind===kind))artwork[kind]=(await renderAmbassador(settings,{element:kind==='globe'&&settings.format==='spotlight'?'spotlight-globe':kind,pixels:1600})).src;
  const blocks=layers.map(layer=>communityLayerBlock(layer,settings,artwork));

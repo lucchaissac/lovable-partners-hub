@@ -6,6 +6,7 @@ const {parse}=opentype;
 import {createRenderer,DEFAULTS,FORMATS,validateDetails,cityLocation} from '../src/ambassadors/source/renderer.mjs';
 import qrcode from '../src/ambassadors/source/qrcode.js';
 import {ambassadorFormats} from '../src/ambassadors/catalog.js';
+import {squareEventLayers} from '../shared/communityStarter.mjs';
 import {ambassadorSchema,defaultAmbassador} from '../studio/src/assets-tool/ambassadorSettings.ts';
 const font=path=>{const bytes=readFileSync(new URL(path,import.meta.url));return parse(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength));};
 const renderer=createRenderer({bold:font('../public/fonts/CameraPlain-Bold.ttf'),regular:font('../public/ambassadors/assets/CameraPlain-Regular.ttf'),qrcode,heartOverlay:''});
@@ -69,6 +70,21 @@ test('Native Community layouts preserve original type and image positions',()=>{
  assert.equal(headline.size,82*FORMATS.banner.w/595);
  const speakers=renderer.layout({...DEFAULTS,format:'speakers',count:3});
  assert.equal(speakers.filter(layer=>layer.kind==='portrait').length,3);
+});
+
+test('Square Event starter preserves the Event identity, copy and unstretched scene',()=>{
+ const original=renderer.layout({...DEFAULTS,format:'social'}),square=squareEventLayers(original);
+ assert.deepEqual(square.map(layer=>layer.key),original.map(layer=>layer.key));
+ assert.equal(square.find(layer=>layer.key==='title').text,'Build something\nlovable.');
+ assert.equal(square.some(layer=>layer.key==='name'||layer.kind==='portrait'),false);
+ const globe=square.find(layer=>layer.key==='globe');
+ assert.equal(globe.w,globe.h);assert.equal(globe.y,0);assert.equal(globe.x,495);
+ const logo=square.find(layer=>layer.key==='logo');
+ assert.equal(logo.x,logo.y);assert.ok(Math.abs(logo.w/logo.h-470.029/46.1959)<.0001);
+ const footer=square.find(layer=>layer.key==='eventFooter');
+ assert.ok(Math.abs(1080-footer.y-footer.h-footer.x)<.001);
+ assert.ok(Math.abs(footer.size-32.4)<.001);
+ assert.equal(original.find(layer=>layer.key==='title').size,96);
 });
 
 const {syncCommunityDocument}=await import('../studio/src/assets-tool/communityDocument.ts');

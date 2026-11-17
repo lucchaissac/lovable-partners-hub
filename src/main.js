@@ -1,4 +1,4 @@
-import {brandGallery,brandGuidelines,brandCreator,brandSections,mountBrandHub} from './brand.js';
+import {brandGallery,brandGuidelines,brandSections,mountBrandHub} from './brand.js';
 import {updateWorkspaceMetadata} from './workspaceMetadata.js';
 import {warmGallery} from './galleryLoading.js';
 import './navigation.js';
@@ -66,7 +66,7 @@ function render(view=state.view,{reset=true}={}){
  requestedSection=undefined;state.view=view;observer?.disconnect();assemblyObserver?.disconnect();cleanupGallery?.();cleanupGallery=undefined;cleanupAmbassadors?.();cleanupAmbassadors=undefined;cleanupBrand?.();cleanupBrand=undefined;
  const brand=state.workspace==='lovable',ambassadors=state.workspace==='ambassadors';
  const asset=ambassadors&&/^[a-f0-9-]{36}$/i.test(requestedBadge??'')?requestedBadge:undefined;
- app.innerHTML=brand?(view==='gallery'?brandGallery():view==='create'?brandCreator():brandGuidelines({icon})):view==='gallery'?(ambassadors?ambassadorGallery():gallery()):view==='create'?studio({library:showLibrary,badge,asset,starter,workspace:state.workspace}):ambassadors?ambassadorGuidelines({icon}):guidelines(state.tier,{icon,formatCard,sections});
+ app.innerHTML=brand?(view==='gallery'?brandGallery():view==='create'?studio({workspace:'lovable',badge:requestedBadge==='collaboration'?'collaboration':undefined,asset:/^[a-f0-9-]{36}$/i.test(requestedBadge??'')?requestedBadge:undefined}):brandGuidelines({icon})):view==='gallery'?(ambassadors?ambassadorGallery():gallery()):view==='create'?studio({library:showLibrary,badge,asset,starter,workspace:state.workspace}):ambassadors?ambassadorGuidelines({icon}):guidelines(state.tier,{icon,formatCard,sections});
  document.querySelectorAll('[data-workspace]').forEach(button=>{const selected=!brand&&button.dataset.workspace===state.workspace;button.classList.toggle('is-selected',selected);if(button.dataset.workspace!=='lovable')button.setAttribute('aria-pressed',String(selected));});
  updateWorkspaceMetadata(state.workspace);
  if(brand)cleanupBrand=mountBrandHub(app,toast);

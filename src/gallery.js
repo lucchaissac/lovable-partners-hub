@@ -86,7 +86,7 @@ export function mountGallery(root, { interactive = true } = {}) {
     }
     if (!video.hasAttribute('src')) {
       const pixels = video.clientWidth * Math.min(devicePixelRatio || 1, 2);
-      video.src = `${media}motion-${video.dataset.motion}-${pixels <= 560 ? 480 : 960}.mp4`;
+      video.src = (pixels <= 560 ? video.dataset.videoSmall : video.dataset.videoLarge) || `${media}motion-${video.dataset.motion}-${pixels <= 560 ? 480 : 960}.mp4`;
       video.muted = true;
     }
     const playing = video.play();

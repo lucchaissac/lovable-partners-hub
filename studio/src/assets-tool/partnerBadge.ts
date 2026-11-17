@@ -23,14 +23,14 @@ export async function createPartnerBadge(settings:PartnerBadgeSettings):Promise<
   return {id:crypto.randomUUID(),kind:'image',badge:settings,value:{src:image.src,alt:badgeFormatName(settings.format),caption:'',alignment:'center',width:100},editor:{widthPx:image.width*scale,height:image.height*scale,appearance:{imageFit:'contain'}}};
 }
 
-export async function importPartnerLogo(file:File) {
+export async function importPartnerLogo(file:File, options:{vectorResolution?:number}={}) {
   if(!['image/svg+xml','image/png','image/jpeg','image/webp'].includes(file.type))throw new Error('Choose an SVG, PNG or JPG logo.');
   if(file.size>5_000_000)throw new Error('Choose a logo smaller than 5 MB.');
   const url=URL.createObjectURL(file);
   try {
     const image=new Image();image.src=url;await image.decode();
     if(!image.naturalWidth||!image.naturalHeight||image.naturalWidth*image.naturalHeight>60_000_000)throw new Error('This logo is too large.');
-    const canvas=document.createElement('canvas'),scale=Math.min(1,1200/Math.max(image.naturalWidth,image.naturalHeight));
+    const canvas=document.createElement('canvas'),scale=file.type==='image/svg+xml'&&options.vectorResolution ? options.vectorResolution/Math.max(image.naturalWidth,image.naturalHeight) : Math.min(1,1200/Math.max(image.naturalWidth,image.naturalHeight));
     canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));
     const context=canvas.getContext('2d')!;context.drawImage(image,0,0,canvas.width,canvas.height);
     const data=context.getImageData(0,0,canvas.width,canvas.height),cleaned=cleanLogoPixels(data.data,canvas.width,canvas.height);

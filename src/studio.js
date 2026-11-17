@@ -10,8 +10,8 @@ window.addEventListener('message', event => {
   const frame = document.querySelector('.partner-studio iframe');
   if (frame && event.origin === window.location.origin && event.source === frame.contentWindow && event.data?.type === 'lovable-studio-ready') { syncStudioTheme(); frame.dataset.ready = 'true'; }
   // Keep a reviewed Community proposal open on refresh instead of recreating its starter.
-  if (frame && event.origin === window.location.origin && event.source === frame.contentWindow && event.data?.type === 'lovable-community-asset' && /^#ambassadors\/create(?:\/|$)/.test(location.hash) && /^[a-f0-9-]{36}$/i.test(event.data.id)) {
-    history.replaceState(null, '', `#ambassadors/create/${event.data.id}`);
+  if (frame && event.origin === window.location.origin && event.source === frame.contentWindow && ['lovable-community-asset','lovable-brand-asset'].includes(event.data?.type) && (event.data.type==='lovable-community-asset'?/^#ambassadors\/create(?:\/|$)/:/^#brand\/create(?:\/|$)/).test(location.hash) && /^[a-f0-9-]{36}$/i.test(event.data.id)) {
+    history.replaceState(null, '', `#${event.data.type==='lovable-brand-asset'?'brand':'ambassadors'}/create/${event.data.id}`);
   }
 });
 

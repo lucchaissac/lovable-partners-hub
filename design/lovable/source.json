@@ -367,7 +367,52 @@
     "corrections": [
       "Omit the gradient palette section.",
       "Use original light/dark logo files; never invert the gradient heart.",
-      "Use equal 3:2 photography frames."
+      "Use equal 3:2 photography frames.",
+      "Omit the Gradient heart guideline section.",
+      "Add dimension ticks and x annotations on all four sides of clear-space specimens.",
+      "Use original Cerebras logo paths from its public homepage in monochrome; show full and symbol-only horizontal/stacked studies."
+    ],
+    "partnerLogoSource": "https://www.cerebras.ai/"
+  },
+  "motionSources": [
+    {
+      "id": "fabian",
+      "source": "https://x.com/FabianHedin/status/2110387471812829535",
+      "media": "https://video.twimg.com/ext_tw_video/2110387382641975296/pu/pl/avc1/1280x720/t0KV9pzJSlyx_C0D.m3u8",
+      "duration": 50.78
+    },
+    {
+      "id": "og",
+      "source": "https://www.ogimage.gallery/og-images/lovable-animated",
+      "media": "https://www.ogimage.gallery/assets/editorial/lovable-social-preview-673b6d01.mp4",
+      "duration": 5
+    }
+  ],
+  "motionEncoding": {
+    "video": "H.264, yuv420p, CRF 25, slow preset, 24 fps, faststart, no audio",
+    "widths": [
+      480,
+      960
+    ],
+    "poster": "WebP, 960 px wide, frame at one second",
+    "loading": "Viewport-only source assignment and playback, paused while hidden or for reduced motion/data saving.",
+    "reusedGradients": [
+      "/gallery/motion-3",
+      "/gallery/motion-4",
+      "/gallery/motion-8"
     ]
+  },
+  "collaborationTemplate": {
+    "size": [
+      1200,
+      675
+    ],
+    "elements": [
+      "Original white Lovable lockup",
+      "Original gradient artwork",
+      "Editable solid divider",
+      "Replaceable monochrome partner logo"
+    ],
+    "scope": "Lovable workspace only; independent local drafts and original shared studio controls."
   }
 }

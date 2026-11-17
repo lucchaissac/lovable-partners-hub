@@ -218,3 +218,5 @@ html, body, #root { background: var(--studio-background); color: var(--ui-text);
 .ambassador-design textarea{width:100%;resize:vertical;box-sizing:border-box;background:var(--surface-2,rgba(127,127,127,.08));color:inherit;border:1px solid rgba(127,127,127,.2);border-radius:6px;padding:8px;font:inherit;outline:none}.ambassador-design textarea:focus{border-color:rgba(127,127,127,.45)}.ambassador-photo-field{position:relative;display:block;padding:9px 12px;border:1px solid rgba(127,127,127,.25);border-radius:7px;text-align:center;cursor:pointer;font-size:12px}.ambassador-photo-field input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}.ambassador-render-status{font-size:12px;opacity:.6}
 
 [data-theme='light'] .ambassador-design .partner-badge-preview img{filter:none}
+
+.brand-logo-position{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.brand-logo-controls h2{margin-bottom:16px}.brand-logo-controls .partner-badge-fields{border:0;padding:0;margin:0}.brand-logo-controls .partner-badge-logo{height:104px;background:#1b1b1b}.brand-logo-controls .partner-badge-fields p{font-size:12px;color:var(--ui-text-muted);line-height:1.5}

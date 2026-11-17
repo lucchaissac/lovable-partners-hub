@@ -1,3 +1,4 @@
+import {brandStarterAsset} from './brandAsset';
 import {studioWorkspace,studioLastAssetKey,studioOwner} from './workspace';
 import {CommunityTypographyContext} from '../studio/PresentationElementDesign';
 import {localCommunityChatAvailable,localChatStatus,localChatRequest,requestLocalDesign,materializeLocalPlan,communityPlanReplies,communityCanvasImages} from './localCommunityChat';
@@ -55,7 +56,7 @@ function AssetPageContent() {
   const insert = useHtmlEditorInsert();
   const { id } = useParams(), navigate = useNavigate(), location=useLocation();
   const owner = studioOwner(readStudioConfig()?.user?.id);
-  const requestedBadge = !id ? (new URLSearchParams(location.search).get('badge') || (studioWorkspace==='ambassadors'?ambassadorDefaultFormat:null)) : null;
+  const requestedBadge = !id ? (new URLSearchParams(location.search).get('badge') || (studioWorkspace==='ambassadors'?ambassadorDefaultFormat:studioWorkspace==='lovable'?'collaboration':null)) : null;
   const [asset, setAsset] = useState<AssetDocument | undefined>(() => id || requestedBadge ? undefined : starterAsset()), current = useRef<AssetDocument | undefined>(asset);
   const [recent, setRecent] = useState<AssetDocument[]>([]);
   const [recentLoading, setRecentLoading] = useState(true);
@@ -86,7 +87,7 @@ function AssetPageContent() {
   const [dragging, setDragging] = useState(false);
   const [loading, setLoading] = useState(!!id || !!requestedBadge);
   useEffect(()=>{
-    if(studioWorkspace==='ambassadors'&&asset?.id&&!loading)window.parent.postMessage({type:'lovable-community-asset',id:asset.id},window.location.origin);
+    if(studioWorkspace!=='partners'&&asset?.id&&!loading)window.parent.postMessage({type:studioWorkspace==='lovable'?'lovable-brand-asset':'lovable-community-asset',id:asset.id},window.location.origin);
   },[asset?.id,loading]);
   // Reveal only after the document, font and artwork have reached their final first layout.
   useEffect(() => {
@@ -143,7 +144,7 @@ function AssetPageContent() {
       if (cancelled) return; setRecent(items);
       if (id && !current.current && !readingFile.current) {
         const found = items.find(item => item.id === id);
-        if (!found) { if(studioWorkspace==='ambassadors'){navigate('/assets/new');return;}const next=starterAsset();current.current=next;setAsset(next); }
+        if (!found) { if(studioWorkspace!=='partners'){navigate('/assets/new');return;}const next=starterAsset();current.current=next;setAsset(next); }
         else { const opened=studioWorkspace==='ambassadors'?await migrateCommunityAsset(found):found;if(cancelled)return;current.current=opened;setAsset(opened);setLoadError('');setSaveState('Saved on this device');if(opened!==found)put(opened); }
       }
     }).catch(reason => { if (!cancelled) setError(reason.message); }).finally(() => { if (!cancelled) { if (!requestedBadge) setLoading(false); setRecentLoading(false); } });
@@ -153,7 +154,7 @@ function AssetPageContent() {
     if (!requestedBadge) return;
     let cancelled = false;
     setLoading(true);
-    void (studioWorkspace==='ambassadors'?ambassadorAsset(requestedBadge):badgeAsset(requestedBadge)).then(next => { if (!cancelled) put(next); })
+    void (studioWorkspace==='ambassadors'?ambassadorAsset(requestedBadge):studioWorkspace==='lovable'?brandStarterAsset():badgeAsset(requestedBadge)).then(next => { if (!cancelled) put(next); })
       .catch(reason => { if (!cancelled) setError(reason.message); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
@@ -341,7 +342,7 @@ function AssetPageContent() {
     stop(); lastRequest.current=undefined; setVisual(undefined); await saves.current;
     setLibraryOpen(false);
     if (id) navigate('/assets/new');
-    else { const next=studioWorkspace==='ambassadors'?await ambassadorAsset():starterAsset(); put(next);  setError(''); setInstructions(''); past.current = []; future.current = []; setRecent(await listAssets(owner)); }
+    else { const next=studioWorkspace==='ambassadors'?await ambassadorAsset():studioWorkspace==='lovable'?await brandStarterAsset():starterAsset(); put(next);  setError(''); setInstructions(''); past.current = []; future.current = []; setRecent(await listAssets(owner)); }
   };
   const runtime:WorkspaceRuntime={
     title:asset?.title??'Asset',content:null,
@@ -443,7 +444,7 @@ function AssetPageContent() {
     <div className="lovable-canvas-tools">
 
 
-      <AssetLibrary open={libraryOpen} onOpenChange={setLibraryOpen} onNew={()=>void newAsset()} onImport={studioWorkspace==='ambassadors'?()=>upload.current?.click():undefined}/>
+      <AssetLibrary open={libraryOpen} onOpenChange={setLibraryOpen} onNew={()=>void newAsset()} onImport={studioWorkspace!=='partners'?()=>upload.current?.click():undefined}/>
       <HtmlPresentationTools primitivesOnly/>
       {studioWorkspace==='ambassadors'?<Dropdown align="end" value={templateFormat?.id} items={ambassadorFormats.map(format=>({id:format.id,label:format.name,leadingIcon:<Icon name={format.width===format.height?'square':'rectangle-horizontal'} size={16} style={format.width<format.height?{transform:'rotate(90deg)'}:undefined}/>}))} onChange={value=>void switchCommunityTemplate(value)} trigger={<Button variant="ghost" disabled={busy||changingTemplate||exporting} className="asset-format-trigger" aria-label={`Community template: ${templateFormat?.name??'Custom'}`} trailingIcon={<Icon name="chevron-down" size={14}/>}>{templateFormat?.name??'Template'}</Button>}/>:<Dropdown align="end" value={asset.format} items={Object.entries(formats).map(([id,item])=>({id,label:item.label,leadingIcon:<Icon name={id==='square'?'square':'rectangle-horizontal'} size={16} style={id==='portrait'?{transform:'rotate(90deg)'}:undefined}/>}))} onChange={value=>{change(resizeAsset({...asset,editor:nativeDocument(asset)},value as AssetFormat));setZoom(0);}} trigger={<Button variant="ghost" disabled={busy} className="asset-format-trigger" aria-label={`Canvas format: ${formats[asset.format].label}`} leadingIcon={<Icon name={asset.format==='square'?'square':'rectangle-horizontal'} size={16} style={asset.format==='portrait'?{transform:'rotate(90deg)'}:undefined}/>} trailingIcon={<Icon name="chevron-down" size={14}/>}/>}/>}
       <span className="asset-tools-divider" aria-hidden="true"/>
@@ -459,7 +460,7 @@ function AssetPageContent() {
     {loading ? <div className="asset-empty"><p role="status">Opening your asset…</p></div> : !asset ? <AssetHome reading={reading} onBrowse={() => upload.current?.click()}>
       {(recentLoading || recent.length > 0) && <AssetRecents loading={recentLoading}>{recent.map(item=><AssetLibraryCard key={item.id} asset={item} onOpen={()=>navigate(`/assets/${item.id}`)}/>)}</AssetRecents>}
     </AssetHome> : <>
-      <div className="we-body asset-workspace"><WorkspaceChat singleAsset preserveSourceTransparency={studioWorkspace==='ambassadors'} placeholder="Ask Lovable…"/>{studioWorkspace==='ambassadors'?<CommunityCanvas toolbar={canvasToolbar} asset={generationPreview??asset} pages={generationPreview?pages.map(page=>page.id===asset.id?generationPreview:page):pages} generating={busy} busy={busy||addingPage||changingTemplate} zoom={zoom} onZoom={setZoom} onChange={change} onOpen={openCommunityPage} onAdd={(afterId,kind)=>void addCommunityPage(afterId,kind)} onOverview={()=>setVisual(undefined)} onRename={renameCommunityPage} onMove={(pageId,targetId,side)=>void arrangeCommunityPages('move',pageId,targetId,side)} onRemove={pageId=>void arrangeCommunityPages('remove',pageId)} onUndoArrangement={pageArrangement?()=>void arrangeCommunityPages('undo'):undefined}/>:<AssetCanvas toolbar={canvasToolbar} asset={asset} onChange={change} preview={false} busy={busy} zoom={zoom} onZoom={setZoom} />}
+      <div className="we-body asset-workspace"><WorkspaceChat singleAsset preserveSourceTransparency={studioWorkspace!=='partners'} placeholder="Ask Lovable…"/>{studioWorkspace==='ambassadors'?<CommunityCanvas toolbar={canvasToolbar} asset={generationPreview??asset} pages={generationPreview?pages.map(page=>page.id===asset.id?generationPreview:page):pages} generating={busy} busy={busy||addingPage||changingTemplate} zoom={zoom} onZoom={setZoom} onChange={change} onOpen={openCommunityPage} onAdd={(afterId,kind)=>void addCommunityPage(afterId,kind)} onOverview={()=>setVisual(undefined)} onRename={renameCommunityPage} onMove={(pageId,targetId,side)=>void arrangeCommunityPages('move',pageId,targetId,side)} onRemove={pageId=>void arrangeCommunityPages('remove',pageId)} onUndoArrangement={pageArrangement?()=>void arrangeCommunityPages('undo'):undefined}/>:<AssetCanvas toolbar={canvasToolbar} asset={asset} onChange={change} preview={false} busy={busy} zoom={zoom} onZoom={setZoom} />}
         <AssetDesignPanel mobileOpen={designOpen} onClose={()=>setDesignOpen(false)} asset={asset} onChange={change} onImport={() => upload.current?.click()}/>
       </div>
       <div className="asset-export-host" aria-hidden="true"><Artwork ref={exportBoard} asset={reviewCandidate??asset} /></div>

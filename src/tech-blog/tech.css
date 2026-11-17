@@ -4,8 +4,8 @@
 .tech-modal-wash { position:absolute; inset:0; background:#0009; }
 .tech-demo-button { color:#1b1b1b; background:#f7f4ed; border-radius:8px; padding:8px 14px; font:600 14px 'Camera Plain'; }
 .tech-gallery .gallery-grid { align-items:start; }
-.tech-gallery .tech-artwork { grid-column:span 6; width:100%; margin-top:0; background:transparent; }
-.tech-gallery .tech-artwork:nth-child(2) { margin-top:80px; }
+.tech-gallery .tech-artwork { grid-column:span 4; width:100%; margin-top:0; background:transparent; }
+.tech-gallery .tech-artwork:nth-child(3n + 2) { margin-top:48px; }
 .tech-gallery .tech-email { width:62%; justify-self:center; }
 .tech-gallery .tech-email:last-child { margin-top:64px; }
 .tech-guidelines .tech-frame { border-radius:12px; }
@@ -79,9 +79,5 @@
 
 .tech-label-gap { left:72.495%; width:6.103%; top:-24px; height:8px; border-top:1px solid var(--color-guide); border-inline:1px solid var(--color-guide); }
 .tech-label-gap b { bottom:16px; left:50%; transform:translateX(-50%); }
-.tech-gallery .tech-motion { grid-column:1 / -1; width:100%; aspect-ratio:16/9; }
+.tech-gallery .tech-motion { aspect-ratio:16/9; }
 .tech-gallery .tech-motion > img { display:block; width:100%; height:auto; }
-.tech-gallery .tech-artwork:nth-child(2) { margin-top:0; }
-.tech-gallery .tech-cover:nth-child(3) { margin-top:80px; }
-@media(max-width:1000px){.tech-gallery .tech-cover:nth-child(3){margin-top:50px}}
-@media(max-width:680px){.tech-gallery .tech-cover:nth-child(3){margin-top:0}}

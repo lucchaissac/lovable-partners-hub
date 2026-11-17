@@ -13,7 +13,7 @@ const galleryPhotos={
   kit:{label:'Lovable ambassador welcome kit',src:'/ambassadors/gallery/ambassador-kit-1280.webp',srcset:'/ambassadors/gallery/ambassador-kit-640.webp 640w, /ambassadors/gallery/ambassador-kit-1280.webp 1280w',width:1280,height:832},
 };
 export function ambassadorGallery(){return `<section class="gallery ambassador-gallery" aria-label="Community gallery"><div class="gallery-grid">
-  ${['photo','banner','spotlight','website','gathering','social','kit','speakers','badge','poster'].map(id=>{
+  ${['photo','banner','kit','website','gathering','social','spotlight','speakers','badge','poster'].map(id=>{
     const photo=galleryPhotos[id],label=photo?.label||ambassadorFormats.find(f=>f.id===id).name;
     const content=photo?`<img src="${photo.src}" ${photo.srcset?`srcset="${photo.srcset}"`:''} sizes="(max-width:680px) calc(100vw - 48px), (max-width:1000px) 88vw, min(58vw, 850px)" width="${photo.width}" height="${photo.height}" alt="${label}" ${id==='photo'?'fetchpriority="high"':'loading="lazy"'} decoding="async"/>`:preview(id);
     return `<figure class="gallery-item ambassador-gallery-${id}" role="img" aria-label="${label}">${content}</figure>`;

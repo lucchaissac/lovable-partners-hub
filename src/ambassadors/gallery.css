@@ -1,11 +1,11 @@
 /* Share Partners' gallery shell, grid, spacing and responsive breakpoints. */
 .ambassador-gallery .ambassador-gallery-photo { grid-area: 1 / 1 / auto / span 5; }
 .ambassador-gallery .ambassador-gallery-banner { grid-area: 1 / 7 / auto / span 2; margin-top: 48px; }
-.ambassador-gallery .ambassador-gallery-spotlight { grid-area: 1 / 10 / auto / span 3; margin-top: 112px; }
+.ambassador-gallery .ambassador-gallery-kit { grid-area: 1 / 10 / auto / span 3; margin-top: 112px; }
 .ambassador-gallery .ambassador-gallery-website { grid-area: 2 / 1 / auto / span 5; margin-top: 48px; }
 .ambassador-gallery .ambassador-gallery-gathering { grid-area: 2 / 7 / auto / span 3; margin-top: 96px; }
 .ambassador-gallery .ambassador-gallery-social { grid-area: 2 / 10 / auto / span 3; }
-.ambassador-gallery .ambassador-gallery-kit { grid-area: 3 / 1 / auto / span 4; }
+.ambassador-gallery .ambassador-gallery-spotlight { grid-area: 3 / 1 / auto / span 4; }
 .ambassador-gallery .ambassador-gallery-speakers { grid-area: 3 / 6 / auto / span 4; margin-top: 72px; }
 .ambassador-gallery .ambassador-gallery-badge { grid-area: 3 / 11 / auto / span 2; margin-top: 120px; border-radius: 5.33%; }
 .ambassador-gallery .ambassador-gallery-poster { grid-area: 4 / 6 / auto / span 7; }
@@ -14,8 +14,8 @@
   .ambassador-gallery .gallery-item { grid-area: auto; margin-top: 0; }
   .ambassador-gallery .ambassador-gallery-photo { grid-column: span 2; width: 88%; }
   .ambassador-gallery .ambassador-gallery-banner { width: 60%; justify-self: center; }
-  .ambassador-gallery .ambassador-gallery-spotlight { width: 86%; justify-self: end; margin-top: 32px; }
-  .ambassador-gallery .ambassador-gallery-website, .ambassador-gallery .ambassador-gallery-kit, .ambassador-gallery .ambassador-gallery-social, .ambassador-gallery .ambassador-gallery-speakers, .ambassador-gallery .ambassador-gallery-poster { grid-column: span 2; width: 88%; }
+  .ambassador-gallery .ambassador-gallery-kit { width: 86%; justify-self: end; margin-top: 32px; }
+  .ambassador-gallery .ambassador-gallery-website, .ambassador-gallery .ambassador-gallery-spotlight, .ambassador-gallery .ambassador-gallery-social, .ambassador-gallery .ambassador-gallery-speakers, .ambassador-gallery .ambassador-gallery-poster { grid-column: span 2; width: 88%; }
   .ambassador-gallery .ambassador-gallery-speakers, .ambassador-gallery .ambassador-gallery-poster { justify-self: end; }
   .ambassador-gallery .ambassador-gallery-gathering, .ambassador-gallery .ambassador-gallery-badge { width: 86%; }
 }
@@ -23,8 +23,8 @@
 @media (max-width: 680px) {
   .ambassador-gallery .gallery-item { grid-area: auto; margin-top: 0; }
   .ambassador-gallery .ambassador-gallery-banner { width: 36%; justify-self: end; }
-  .ambassador-gallery .ambassador-gallery-spotlight { width: 72%; }
+  .ambassador-gallery .ambassador-gallery-kit { width: 72%; }
   .ambassador-gallery .ambassador-gallery-speakers, .ambassador-gallery .ambassador-gallery-poster { width: 84%; justify-self: end; }
   .ambassador-gallery .ambassador-gallery-gathering, .ambassador-gallery .ambassador-gallery-badge { width: 72%; }
-  .ambassador-gallery .ambassador-gallery-kit { width: 84%; }
+  .ambassador-gallery .ambassador-gallery-spotlight { width: 84%; }
 }

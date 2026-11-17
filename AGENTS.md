@@ -101,3 +101,7 @@
 - In the Lovable identity color playground, display the intact logo at 88% with a right-center transform origin on desktop, increasing its left margin without moving its right anchor. Center that scaling in the stacked mobile layout; downloadable artwork stays unchanged.
 
 - The Lovable collaboration template is named “Partnership” in the selector and new-document title. Cerebras is only the replaceable example partner, not the template name. Preserve existing saved document names.
+
+- Tech blog Gallery shows three assets per desktop row. Its optimized motion video is the first normal-size tile, never a full-width row; retain two columns on tablet and one on mobile.
+
+- Community Gallery places the welcome kit third on the first row, swapping its previous position with Spotlight. Keep this order in responsive layouts and sharing previews.

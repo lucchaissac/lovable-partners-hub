@@ -4,7 +4,8 @@
 .tech-artwork-preview[data-kind='curves'] { position:relative; }
 .tech-artwork-preview[data-kind='curves'] img { position:absolute; width:268.7px; max-width:none; height:134.32px; left:calc(50% - 207.1px); top:-11.2px; object-fit:fill; }
 .tech-artwork-field { display:grid; gap:var(--ui-space-2); }
-.tech-artwork-field button { width:100%; }
+.tech-artwork-fields .tech-artwork-field .ui-dropdown-root,
+.tech-artwork-fields .tech-artwork-field .ui-trigger-field { width:100%; min-width:0; }
 .tech-artwork-range { display:grid; gap:var(--ui-space-2); }
 .tech-artwork-range > div { display:flex; align-items:center; gap:var(--ui-space-2); }
 .tech-artwork-range input[type='range'] { flex:1; width:0; min-width:0; height:20px; margin:0; padding:0; cursor:pointer; appearance:none; -webkit-appearance:none; background:transparent; border:0; box-shadow:none; }

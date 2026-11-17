@@ -105,3 +105,5 @@
 - Tech blog Gallery shows three assets per desktop row. Its optimized motion video is the first normal-size tile, never a full-width row; retain two columns on tablet and one on mobile.
 
 - Community Gallery places the welcome kit third on the first row, swapping its previous position with Spotlight. Keep this order in responsive layouts and sharing previews.
+
+- Stacked Design dropdowns for vector Composition, grid Pattern and Ink fill the available panel width; do not inherit the compact 128 px inline-field width or truncate their labels.

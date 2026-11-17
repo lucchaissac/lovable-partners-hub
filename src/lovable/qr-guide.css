@@ -1,12 +1,14 @@
-.lovable-qr-diagram { display:grid; grid-template-columns:minmax(0,1.2fr) minmax(180px,1fr); align-items:center; gap:64px; padding:48px; border-radius:16px; background:#fff; color:#1b1b1b; }
+.lovable-qr { --qr-paper:#252525; --qr-ink:#f7f4ed; }
+:root[data-theme='light'] .lovable-qr { --qr-paper:#fff; --qr-ink:#1b1b1b; }
+.lovable-qr-diagram { display:grid; grid-template-columns:minmax(0,1.2fr) minmax(180px,1fr); align-items:center; gap:64px; padding:48px; border-radius:16px; background:var(--qr-paper); color:var(--qr-ink); }
 .lovable-qr-specimen { width:100%; max-width:360px; aspect-ratio:1; justify-self:center; }
 .lovable-qr-specimen svg { display:block; width:100%; height:100%; }
 .lovable-qr-annotations { display:grid; gap:36px; }
 .lovable-qr-annotations p { position:relative; font-size:14px; line-height:1.4; margin:0; }
-.lovable-qr-annotations p::before { content:''; position:absolute; top:9px; right:calc(100% + 16px); width:48px; height:1px; background:rgb(0 0 0 / 25%); }
-.lovable-qr-annotations p::after { content:''; position:absolute; top:7px; right:calc(100% + 64px); width:5px; height:5px; border-radius:50%; background:rgb(0 0 0 / 40%); }
+.lovable-qr-annotations p::before { content:''; position:absolute; top:9px; right:calc(100% + 16px); width:48px; height:1px; background:currentColor; opacity:.25; }
+.lovable-qr-annotations p::after { content:''; position:absolute; top:7px; right:calc(100% + 64px); width:5px; height:5px; border-radius:50%; background:currentColor; opacity:.4; }
 .lovable-qr-annotations span { display:block; }
-.lovable-qr-annotations span + span { margin-top:4px; color:rgb(0 0 0 / 60%); }
+.lovable-qr-annotations span + span { margin-top:4px; color:var(--qr-ink); opacity:.6; }
 .lovable-qr-controls { display:flex; align-items:flex-end; gap:24px; margin-top:24px; }
 .lovable-qr-controls label { flex:1; min-width:0; display:grid; gap:8px; font-size:14px; }
 .lovable-qr-controls input { width:100%; height:40px; padding:0 12px; border:1px solid var(--color-border); border-radius:8px; background:transparent; color:var(--color-text); font:inherit; font-weight:600; }

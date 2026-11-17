@@ -1,14 +1,13 @@
 import qrcode from '../ambassadors/source/qrcode.js';
 import {makeOriginalQR} from '../ambassadors/source/original-qr.mjs';
 import './qr-guide.css';
+import {normalizeQrUrl} from '../../shared/qrUrl.mjs';
 
 // The Community poster generator remains the single source of geometry.
 const generate = makeOriginalQR(qrcode, {ink:'#1b1b1b', background:'#fff', quietZoneModules:4});
 export function brandQrSvg(value) {
- const url = new URL(value.trim());
- if (!['https:','http:'].includes(url.protocol) || !url.hostname || url.username || url.password) throw new Error('Enter a complete https:// or http:// URL.');
- if (url.href.length > 500) throw new Error('Use a shorter URL, up to 500 characters.');
- return generate(url.href).replace('<svg ', '<svg width="512" height="512" ');
+ const url=normalizeQrUrl(value);
+ return generate(url).replace('<svg ', '<svg width="512" height="512" ');
 }
 
 export function qrGuide(icon) {
@@ -38,8 +37,8 @@ export function mountQrGuide(root) {
   objectUrl=null;
   try {
    const svg=brandQrSvg(input.value);
-   preview.innerHTML=svg;
-   preview.setAttribute('aria-label',`Lovable QR code linking to ${new URL(input.value.trim()).href}`);
+   preview.innerHTML=svg.replaceAll('#1b1b1b','var(--qr-ink)').replaceAll('fill="#fff"','fill="var(--qr-paper)"');
+   preview.setAttribute('aria-label',`Lovable QR code linking to ${normalizeQrUrl(input.value)}`);
    objectUrl=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml'}));
    download.href=objectUrl;
    download.removeAttribute('aria-disabled');download.removeAttribute('tabindex');
@@ -49,10 +48,11 @@ export function mountQrGuide(root) {
    preview.replaceChildren();preview.setAttribute('aria-label','Enter a valid URL to preview your QR code');
    download.removeAttribute('href');download.setAttribute('aria-disabled','true');download.setAttribute('tabindex','-1');
    input.setAttribute('aria-invalid','true');
-   status.textContent='Enter a complete https:// or http:// URL, up to 500 characters.';
+   status.textContent='Enter a website address, for example lovable.dev. Up to 500 characters.';
   }
  };
- const preventSubmit=event=>event.preventDefault();
- input.addEventListener('input',render);form.addEventListener('submit',preventSubmit);render();
- return()=>{input.removeEventListener('input',render);form.removeEventListener('submit',preventSubmit);if(objectUrl)URL.revokeObjectURL(objectUrl);};
+ const completeUrl=()=>{try{input.value=normalizeQrUrl(input.value);}catch{}};
+ const preventSubmit=event=>{event.preventDefault();completeUrl();render();};
+ input.addEventListener('blur',completeUrl);input.addEventListener('input',render);form.addEventListener('submit',preventSubmit);render();
+ return()=>{input.removeEventListener('blur',completeUrl);input.removeEventListener('input',render);form.removeEventListener('submit',preventSubmit);if(objectUrl)URL.revokeObjectURL(objectUrl);};
 }

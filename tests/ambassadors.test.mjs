@@ -72,13 +72,21 @@ test('Native Community layouts preserve original type and image positions',()=>{
  assert.equal(speakers.filter(layer=>layer.kind==='portrait').length,3);
 });
 
-test('Square Event starter preserves the Event identity, copy and unstretched scene',()=>{
+test('Square Event starter follows Luc’s approved manual layout without changing the Event master',()=>{
  const original=renderer.layout({...DEFAULTS,format:'social'}),square=squareEventLayers(original);
- assert.deepEqual(square.map(layer=>layer.key),original.map(layer=>layer.key));
- assert.equal(square.find(layer=>layer.key==='title').text,'Build something\nlovable.');
+ assert.deepEqual(square.map(layer=>layer.key),['logo','city','title','globe','glow','eventFooter']);
+ const title=square.find(layer=>layer.key==='title');
+ assert.equal(title.text,'Build something\nlovable.');
+ assert.deepEqual([title.x,title.y,title.w,title.size],[43,184,793,160]);
+ assert.ok(Math.abs(title.leading/title.size-11/12)<.00001);
+ const bold=font('../public/fonts/CameraPlain-Bold.ttf'),options={letterSpacing:title.tracking};
+ assert.ok(bold.getAdvanceWidth('Build something',title.size,options)>title.w);
+ assert.ok(bold.getAdvanceWidth('something',title.size,options)<title.w);
  assert.equal(square.some(layer=>layer.key==='name'||layer.kind==='portrait'),false);
  const globe=square.find(layer=>layer.key==='globe');
- assert.equal(globe.w,globe.h);assert.equal(globe.y,0);assert.equal(globe.x,495);
+ assert.deepEqual([globe.x,globe.y,globe.w,globe.h],[304,191,1340,1340]);
+ const glow=square.find(layer=>layer.key==='glow');
+ assert.deepEqual([glow.x,glow.y,glow.w,glow.h,glow.rotation],[-692.697,119.958,2340,2358.91,-18.2698]);
  const logo=square.find(layer=>layer.key==='logo');
  assert.equal(logo.x,logo.y);assert.ok(Math.abs(logo.w/logo.h-470.029/46.1959)<.0001);
  const footer=square.find(layer=>layer.key==='eventFooter');

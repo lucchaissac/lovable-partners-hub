@@ -1,0 +1,55 @@
+{
+  "source": "https://lovable-brands.vercel.app/#ambassadors/create/5aea83f4-55d8-45e3-bc06-ca83a0083322",
+  "approvedOn": "2026-11-17",
+  "canvas": "width: 1080px; height: 1080px; background-color: var(--asset-color-ink); --asset-editor-scale: 0.4101851851851852;",
+  "layers": [
+    {
+      "align": "",
+      "kind": "image",
+      "style": "box-sizing: border-box; --hcs-padding-top: 0px; --hcs-padding-left: 0px; --hcs-list-line: 1.25; width: 325.62px; min-width: 0px; left: 43.2px; min-height: 32.0029px; top: 43.2px; transform: translateY(0px) rotate(0deg); transform-origin: center center; --hcs-text-transform: none; --hcs-image-fit: contain; --hcs-image-height: 32.00293802722811px;",
+      "text": "",
+      "image": {
+        "alt": "Lovable Community",
+        "source": "/ambassadors/assets/lovable-community.svg"
+      }
+    },
+    {
+      "align": "font-size: 32px; font-weight: 400; text-align: right; color: rgb(247, 244, 237);",
+      "kind": "text",
+      "style": "box-sizing: border-box; --hcs-padding-top: 0px; --hcs-padding-left: 0px; --hcs-list-size: 32px; --hcs-list-color: #f7f4ed; --hcs-list-line: 1.3098159509202454; width: 271.8px; min-width: 0px; left: 765px; min-height: 38.43px; top: 38.1411px; transform: translateY(0px) rotate(0deg); transform-origin: center center; --hcs-text-size: 32px; --hcs-font: Camera Plain; --hcs-text-spacing: -0.29340000000000005px; --hcs-text-line: 1.3098159509202454; --hcs-text-weight: 700; --hcs-text-transform: none;",
+      "text": "Paris"
+    },
+    {
+      "align": "font-size: 160px; font-weight: 400; text-align: left; color: rgb(247, 244, 237);",
+      "kind": "text",
+      "style": "box-sizing: border-box; --hcs-padding-top: 0px; --hcs-padding-left: 0px; --hcs-list-size: 160px; --hcs-list-color: #f7f4ed; --hcs-list-line: 0.9166666666666665; width: 793px; min-width: 0px; left: 43px; min-height: 439.992px; top: 184px; transform: translateY(0px) rotate(0deg); transform-origin: center center; --hcs-text-size: 160px; --hcs-font: Camera Plain; --hcs-text-spacing: -2.4px; --hcs-text-line: 0.9166666666666665; --hcs-text-weight: 700; --hcs-text-transform: none;",
+      "text": "Build something\nlovable."
+    },
+    {
+      "align": "",
+      "kind": "image",
+      "style": "box-sizing: border-box; --hcs-padding-top: 0px; --hcs-padding-left: 0px; --hcs-list-line: 1.25; width: 1340px; min-width: 0px; left: 304px; min-height: 1340px; top: 191px; transform: translateY(0px) rotate(0deg); transform-origin: center center; --hcs-text-transform: none; --hcs-image-fit: contain; --hcs-image-height: 1340px;",
+      "text": "",
+      "image": {
+        "alt": "Globe",
+        "source": "Original Community globe renderer, city Paris"
+      }
+    },
+    {
+      "align": "",
+      "kind": "image",
+      "style": "box-sizing: border-box; --hcs-padding-top: 0px; --hcs-padding-left: 0px; --hcs-list-line: 1.25; width: 2340px; min-width: 0px; left: -692.697px; min-height: 2358.91px; top: 119.958px; transform: translateY(0px) rotate(-18.2698deg); transform-origin: center center; --hcs-text-transform: none; --hcs-image-fit: contain; --hcs-image-height: 2358.91px;",
+      "text": "",
+      "image": {
+        "alt": "Gradient",
+        "source": "/ambassadors/assets/heart-overlay.png"
+      }
+    },
+    {
+      "align": "font-size: 32.4px; font-weight: 400; text-align: left; color: rgb(247, 244, 237);",
+      "kind": "text",
+      "style": "box-sizing: border-box; --hcs-padding-top: 0px; --hcs-padding-left: 0px; --hcs-list-size: 32.400000000000006px; --hcs-list-color: #f7f4ed; --hcs-list-line: 1.333333333333333; width: 993.6px; min-width: 0px; left: 43.2px; min-height: 43.2px; top: 993.6px; transform: translateY(0px) rotate(0deg); transform-origin: center center; --hcs-text-size: 32.400000000000006px; --hcs-font: Camera Plain; --hcs-text-spacing: 0px; --hcs-text-line: 1.333333333333333; --hcs-text-weight: 700; --hcs-text-transform: none;",
+      "text": "Meet your local Lovable community."
+    }
+  ]
+}

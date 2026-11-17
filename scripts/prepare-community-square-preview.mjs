@@ -22,7 +22,16 @@ const body=layers.map(layer=>{
  if(layer.kind!=='text')return `<image href="${sources[layer.kind]}" x="${layer.x}" y="${layer.y}" width="${layer.w}" height="${layer.h}"${layer.rotation?` transform="rotate(${layer.rotation} ${layer.x+layer.w/2} ${layer.y+layer.h/2})"`:''}/>`;
  const font=layer.weight==='regular'?regular:bold,options={kerning:true,letterSpacing:layer.tracking??0};
  const baseline=layer.y+(layer.leading+(font.ascender+font.descender)*layer.size/font.unitsPerEm)/2;
- return layer.text.split('\n').map((line,i)=>{const x=layer.align==='right'?layer.x+layer.w-font.getAdvanceWidth(line,layer.size,options):layer.x;return `<path fill="#f7f4ed" d="${font.getPath(line,x,baseline+i*layer.leading,layer.size,options).toPathData(2)}"/>`;}).join('');
+ const lines=layer.text.split('\n').flatMap(paragraph=>{
+  const wrapped=[];let line='';
+  for(const word of paragraph.split(' ')){
+   const candidate=line?`${line} ${word}`:word;
+   if(line&&font.getAdvanceWidth(candidate,layer.size,options)>layer.w){wrapped.push(line);line=word;}
+   else line=candidate;
+  }
+  return [...wrapped,line];
+ });
+ return lines.map((line,i)=>{const x=layer.align==='right'?layer.x+layer.w-font.getAdvanceWidth(line,layer.size,options):layer.x;return `<path fill="#f7f4ed" d="${font.getPath(line,x,baseline+i*layer.leading,layer.size,options).toPathData(2)}"/>`;}).join('');
 }).join('');
 const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080"><rect width="1080" height="1080" fill="#1b1b1b"/>${body}</svg>`;
 const image=await loadImage(Buffer.from(svg)),canvas=createCanvas(720,720);

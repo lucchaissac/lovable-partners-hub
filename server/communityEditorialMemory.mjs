@@ -21,6 +21,12 @@ Reusable art direction:
 - The original Community globe direction uses the approved oversized close crop and embedded heart, not a small floating sphere or standalone heart. Respect the current manual geometry and original image proportions, texture and layer order.
 - Rebuild requests replace the active base in place; requested new alternatives append without disturbing the other versions. Keep the specified number of assets. A seven-asset collection is valid even though each generation response supports at most six new designs. Do not automatically recreate seven variants for every new request.
 
+Default square Event, manually refined by Luc on November 17, 2026:
+- The 1080 × 1080 starter uses the exact captured layout in examples/community-square-default/approved-layout.json, implemented in shared/communityStarter.mjs. This starter-specific correction supersedes generic scaled-Event rules; it does not change the six source masters or unrelated campaigns.
+- Native layer order: full Community logo, city, title, globe, gradient, footer. Omit the empty event-details layer. Logo x43.2,y43.2,w325.62,h32.002938; city x765,y38.1411,w271.8,h38.43,32px Bold700,41.91411px leading,right aligned.
+- Headline x43,y184,w793,h439.992,160px Camera Plain Bold700,146.666667px leading,-2.4px tracking. The stored title is "Build something\\nlovable."; this frame wraps it visually into three lines: Build / something / lovable. Keep this scale, anchor and wrapping.
+- Original Paris globe x304,y191,1340 square; gradient x-692.697,y119.958,w2340,h2358.91,rotation-18.2698,above the globe. Use the original Community globe renderer with editable city settings. Footer x43.2,y993.6,w993.6,h43.2,32.4px Bold700,43.2px leading. Preserve existing manually edited documents; apply this default only to fresh starters.
+
 Latest Montréal layout, manually refined by Luc and requested as a reusable reference:
 - Keep the current original as the first asset. Requested alternatives append; they must never overwrite the original or add back discarded source copy. For one or two requested variations, make two at most, changing the abstract motif or palette while preserving the layout.
 - Canvas 1080 square. Full Community lockup x43.2,y43.2,w407.025,h40.003. Montréal x816.8,y36.9,w220,h48,36.675px,Bold700,130.88% leading,right aligned.

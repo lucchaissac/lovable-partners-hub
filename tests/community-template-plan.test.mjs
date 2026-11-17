@@ -63,3 +63,8 @@ test('reusing a library photograph selects its approved layout and keeps support
  assert.equal(d.elements.find(e=>e.id==='d0-logo').frame.width,407.025);
  const exact=compileTemplatePlan(value,{...request,prompt:'Use the template Event with this picture'});assert.equal(exact.templatePlan.designs[0].template,'event-square');
 });
+test('portrait templates retain their original sphere and gradient behind the separate portrait',()=>{
+ const value=structuredClone(intent);Object.assign(value.designs[0],{template:'spotlight',fields:[{slot:'name',text:'Alex Morgan'},{slot:'city',text:'Paris'}],image:{sourceId:'library-flash-light',crop:null}});
+ const d=compileTemplatePlan(value,request).plan.designs[0];assert.equal(d.elements.filter(e=>e.kind==='brand'&&['globe','gradient'].includes(e.asset)).length,2);
+ const portrait=d.elements.find(e=>e.kind==='image');assert.equal(portrait.frame.x,64);assert.equal(portrait.frame.y,181.6);assert.equal(portrait.radius,280);
+});

@@ -10,14 +10,16 @@ const bold=await font('public/fonts/CameraPlain-Bold.ttf'),regular=await font('p
 const renderer=createRenderer({bold,regular,qrcode,heartOverlay:''}),layouts={};
 for(const f of ambassadorFormats.filter(f=>f.id!=='spotlight'))layouts[f.id]={width:f.width,height:f.height,reference:f.id,layers:renderer.layout({...DEFAULTS,format:f.id}).map(({src,text,...l})=>l)};
 layouts['event-square']={width:1080,height:1080,reference:'social',layers:squareEventLayers(renderer.layout({...DEFAULTS,format:'social'})).map(({src,text,...l})=>l)};
-// The Spotlight native profile, with fixed editable slots rather than fictional attendee copy.
+// The original native Spotlight profile at its default one-line name/role geometry.
+const angle=-9.91*Math.PI/180,dy=3699.1*.004;
 layouts.spotlight={width:1080,height:1080,reference:'spotlight',layers:[
  {kind:'globe',key:'globe',x:258,y:-62,w:1404,h:1404},
+ {kind:'glow',key:'glow',x:409.35-dy*Math.sin(angle)-3698.9/2,y:1354.45+dy*Math.cos(angle)-3699.1*1.008/2,w:3698.9,h:3699.1*1.008,rotation:-9.91},
  {kind:'logo',key:'logo',x:64,y:64,w:470.029,h:46.1959},
- {kind:'portrait',key:'photo',x:64,y:200,w:560,h:560},
- {kind:'text',key:'name',x:64,y:780,w:952,h:105,size:96,leading:100.8,weight:'bold'},
- {kind:'text',key:'city',x:64,y:890,w:952,h:66,size:60,leading:66,weight:'bold'},
- {kind:'text',key:'role',x:64,y:977,w:952,h:40,size:36,leading:39.6,weight:'bold'},
+ {kind:'text',key:'name',x:64,y:781.6,w:952,h:100.8,size:96,leading:100.8,weight:'bold',tracking:-.01},
+ {kind:'text',key:'city',x:64,y:898.4,w:952,h:66,size:60,leading:66,weight:'bold',tracking:-.01},
+ {kind:'text',key:'role',x:64,y:976.4,w:952,h:39.6,size:36,leading:39.6,weight:'bold'},
+ {kind:'portrait',key:'photo',x:64,y:181.6,w:560,h:560},
 ]};
 const readManual=async(path,keys)=>{
  const data=JSON.parse(await readFile(new URL(path,root),'utf8'));

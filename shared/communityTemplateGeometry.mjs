@@ -546,6 +546,15 @@ export const communityTemplateGeometry={
     "h": 1404
    },
    {
+    "kind": "glow",
+    "key": "glow",
+    "x": -1437.553524294965,
+    "y": -495.32077258833533,
+    "w": 3698.9,
+    "h": 3728.6928,
+    "rotation": -9.91
+   },
+   {
     "kind": "logo",
     "key": "logo",
     "x": 64,
@@ -554,45 +563,47 @@ export const communityTemplateGeometry={
     "h": 46.1959
    },
    {
-    "kind": "portrait",
-    "key": "photo",
-    "x": 64,
-    "y": 200,
-    "w": 560,
-    "h": 560
-   },
-   {
     "kind": "text",
     "key": "name",
     "x": 64,
-    "y": 780,
+    "y": 781.6,
     "w": 952,
-    "h": 105,
+    "h": 100.8,
     "size": 96,
     "leading": 100.8,
-    "weight": "bold"
+    "weight": "bold",
+    "tracking": -0.01
    },
    {
     "kind": "text",
     "key": "city",
     "x": 64,
-    "y": 890,
+    "y": 898.4,
     "w": 952,
     "h": 66,
     "size": 60,
     "leading": 66,
-    "weight": "bold"
+    "weight": "bold",
+    "tracking": -0.01
    },
    {
     "kind": "text",
     "key": "role",
     "x": 64,
-    "y": 977,
+    "y": 976.4,
     "w": 952,
-    "h": 40,
+    "h": 39.6,
     "size": 36,
     "leading": 39.6,
     "weight": "bold"
+   },
+   {
+    "kind": "portrait",
+    "key": "photo",
+    "x": 64,
+    "y": 181.6,
+    "w": 560,
+    "h": 560
    }
   ]
  },

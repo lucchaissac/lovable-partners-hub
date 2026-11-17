@@ -32,7 +32,7 @@ function scaledLayers(template,width,height){
   return l;
  });
 }
-function imageElement(id,pic,l,photo=false){return {id,kind:'image',frame:frame(l),sourceId:pic.sourceId,fit:photo?'cover':'contain',radius:0,crop:pic.crop,placement:photo?'background':'inset',alt:communityMediaById.get(pic.sourceId)?.name??'Prepared Community visual'};}
+function imageElement(id,pic,l,photo=false){return {id,kind:'image',frame:frame(l),sourceId:pic.sourceId,fit:photo?'cover':'contain',radius:l.kind==='portrait'?l.w/2:0,crop:pic.crop,placement:photo?'background':'inset',alt:communityMediaById.get(pic.sourceId)?.name??'Prepared Community visual'};}
 function designFromTemplate(spec,index){
  const t=communityTemplateGeometry[spec.template],isPrint=['banner','poster'].includes(spec.template);
  const width=spec.width??(isPrint?Math.round(t.width*1000/Math.max(t.width,t.height)):t.width),height=spec.height??(isPrint?Math.round(t.height*1000/Math.max(t.width,t.height)):t.height);
@@ -60,7 +60,7 @@ function designFromTemplate(spec,index){
    if(image&&!visualPlaced){elements.push(imageElement(`d${index}-visual`,image,l,!!photo));visualPlaced=true;}continue;
   }
   if(['globe','glow'].includes(l.kind)){
-   if(image){if(!visualPlaced){const area=photo?{x:0,y:0,w:width,h:height}:{x:width*.42,y:height*.45,w:width*.9,h:width*.9};elements.unshift(imageElement(`d${index}-visual`,image,area,!!photo));visualPlaced=true;}continue;}
+   if(image&&!layers.some(layer=>layer.kind==='portrait')){if(!visualPlaced){const area=photo?{x:0,y:0,w:width,h:height}:{x:width*.42,y:height*.45,w:width*.9,h:width*.9};elements.unshift(imageElement(`d${index}-visual`,image,area,!!photo));visualPlaced=true;}continue;}
    elements.push({id:elementId,kind:'brand',frame:frame(l),asset:l.kind==='glow'?'gradient':'globe',color:dark?'light':'dark',city:fields.city??'Paris'});
   }
  }

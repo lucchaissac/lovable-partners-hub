@@ -1,4 +1,4 @@
-export type LibraryAsset = { id: string; name: string; src: string };
+export type LibraryAsset = { id: string; name: string; src: string; transparent?: boolean };
 let library: Promise<LibraryAsset[]> | undefined;
 
 export function loadLibrary() {

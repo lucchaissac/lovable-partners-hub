@@ -41,7 +41,10 @@ export function validateCommunityReview(plan,request){
  }
  for(const design of plan.designs){
   const images=design.elements.filter(element=>element.kind==='image');
-  if(design.visualTreatment==='retained-visual'&&!images.some(image=>communityMediaById.has(image.sourceId)||plan.reviews.some(review=>review.retainedVisuals.some(visual=>visual.elementId===image.id&&visual.sourceId===image.sourceId&&visual.kind!=='partner-logo'))))reject('A retained-visual composition needs a reviewed photograph or illustration. A partner logo is not the main illustration.');
+  if(design.visualTreatment==='retained-visual'&&!images.some(image=>{
+   const prepared=communityMediaById.get(image.sourceId);
+   return prepared?prepared.kind!=='partner-logo':plan.reviews.some(review=>review.retainedVisuals.some(visual=>visual.elementId===image.id&&visual.sourceId===image.sourceId&&visual.kind!=='partner-logo'));
+  }))reject('A retained-visual composition needs a reviewed photograph or illustration. A partner logo is not the main illustration.');
   if(!design.elements.some(element=>element.kind==='text'&&element.text.trim().length>2&&!/^lovable(?:\s+community)?[.!]?$/i.test(element.text.trim())))reject('Build a complete communication asset with meaningful content, not an isolated logo.');
   if(design.elements.some(element=>element.kind==='text'&&/^lovable(?:\s+community)?[.!]?$/i.test(element.text.trim())))reject('Use the original full Lovable Community lockup; never retype or substitute a standalone Lovable wordmark.');
   if(plan.reviews.length){

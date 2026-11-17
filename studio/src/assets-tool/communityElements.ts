@@ -8,8 +8,8 @@ import {communityMediaSource} from './communityMedia';
 const svg=(viewBox:string,markup:string)=>`data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}">${markup}</svg>`)}`;
 export const communityElements=[
  {id:'globe',name:'Globe',src:'/ambassadors/previews/globe.webp'},
- {id:'community-logo',name:'Community logo',src:svg(COMMUNITY_VIEWBOX,COMMUNITY_MARKUP)},
- ...communityMediaLibrary.map(item=>({id:item.id,name:item.name,src:item.thumbnail,category:item.category})),
+ {id:'community-logo',name:'Community logo',src:svg(COMMUNITY_VIEWBOX,COMMUNITY_MARKUP),transparent:true},
+ ...communityMediaLibrary.map(item=>({id:item.id,name:item.name,src:item.thumbnail,category:item.category,transparent:item.transparent})),
 ];
 export async function createCommunityElement(id:string):Promise<Extract<HtmlBlock,{kind:'image'}>>{
  const item=communityElements.find(item=>item.id===id);if(!item)throw Error('This element could not be found.');

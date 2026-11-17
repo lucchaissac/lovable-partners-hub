@@ -203,6 +203,14 @@ html, body, #root { background: var(--studio-background); color: var(--ui-text);
 :root[data-theme='light'] .lovable-library-item > span:first-child { background: #252525; }
 :root[data-theme='light'] .lovable-library-item:hover > span:first-child { background: #333; }
 :root[data-theme='light'] .lovable-library-loading { background: #252525ee; color: white; }
+/* Mid-gray transparency checks keep both beige and dark artwork visible in either theme. */
+:root .lovable-library-item[data-community-transparent] > span:first-child,
+:root .lovable-library-item[data-community-transparent]:hover > span:first-child {
+  padding: 14px;
+  overflow: hidden;
+  background: repeating-conic-gradient(rgb(0 0 0 / 12%) 0% 25%, transparent 0% 50%) 0 0 / 16px 16px, #b8b8b4;
+}
+.lovable-library-item[data-community-transparent] img { object-fit: contain; }
 
 :root .ui-input-field:focus-visible { outline: none; }
 .asset-app .asset-artwork .hcs-ui { color: var(--ui-text); }

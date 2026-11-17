@@ -4,6 +4,9 @@ import {validateChatPlan} from '../shared/communityChat.mjs';
 import {communityDesignMetrics} from '../shared/communityDesignRules.mjs';
 import {communityPlanReplies} from '../shared/communityReview.mjs';
 import {validatedCommunityGeneration} from '../server/communityChat.mjs';
+import {communityMediaById} from '../shared/communityMediaLibrary.mjs';
+import {communityChatInstructions} from '../server/communityChatPrompt.mjs';
+import {readFile} from 'node:fs/promises';
 
 const frame=(x,y,width,height,opacity=1)=>({x,y,width,height,rotation:0,opacity});
 const request={prompt:'Analyse cette affiche et refais une version conforme.',title:'Test',width:900,height:600,blocks:[],conversation:[],sources:[{id:'attachment-0',kind:'image',name:'Event.png',image:'data:image/png;base64,AAAA'}]};
@@ -23,6 +26,21 @@ test('Prepared library images can be reused without an attachment or a fabricate
  assert.equal(validateChatPlan(p,input).designs[0].elements.at(-1).sourceId,'library-malaga-makers');
  p.designs[0].elements.at(-1).sourceId='library-invented-photo';
  assert.throws(()=>validateChatPlan(p,input),/Unknown image/);
+});
+
+test('Prepared partner marks resolve for the planner and edits without masquerading as an illustration',async()=>{
+ const p=clone();p.designs[0].elements.push({...image,sourceId:'library-malaga-startups',crop:null});
+ assert.ok(validateChatPlan(p,request));
+ p.designs[0].visualTreatment='retained-visual';
+ assert.throws(()=>validateChatPlan(p,request),/partner logo is not the main illustration/);
+ for(const id of ['library-malaga-startups','library-startup-oasis']){
+  const mark=communityMediaById.get(id);
+  assert.equal(mark.kind,'partner-logo');assert.ok(communityChatInstructions.includes(id));
+  for(const src of [mark.src,mark.thumbnail])assert.ok((await readFile(new URL(`../public${src}`,import.meta.url))).length>1000);
+  const edit={...image,sourceId:id,crop:null};
+  const result=validateChatPlan({...p,reviews:[],designs:[],edits:[edit]},{...request,sources:[]});
+  assert.equal(result.edits[0].sourceId,id);
+ }
 });
 
 test('Image-led redesigns include a source-specific review and a complete Community composition',()=>{

@@ -1,5 +1,6 @@
 // Curated local artwork. These IDs are the only library image sources the planner can use.
-const media=(id,name,file,width,height,category,description)=>({id,name,src:`/ambassadors/library/${file}.webp`,thumbnail:`/ambassadors/library/${file}-thumb.webp`,width,height,category,description});
+const media=(id,name,file,width,height,category,description)=>({id,name,src:`/ambassadors/library/${file}.webp`,thumbnail:`/ambassadors/library/${file}-thumb.webp`,width,height,category,description,transparent:category!=='Photos'});
+const partnerMark=(id,name,file,width,height)=>({...media(id,name,file,width,height,'Partner marks',`Prepared dark monochrome ${name} mark on transparency. Use this supplied artwork instead of typing the partner name on matching event posters. Preserve its pixels and proportions with crop:null and fit:contain. This is an approved raster adaptation, not an official vector or a main illustration.`),src:`/ambassadors/library/${file}.png`,kind:'partner-logo'});
 export const communityMediaLibrary=[
  media('library-flash-dark','Flash · Dark','flash-dark',1254,1254,'Photos','Fictional diverse makers in a dark interior. Exact Community badges and a gradient laptop sticker are baked into this photo. Quiet dark upper-left area for light copy.'),
  media('library-flash-light','Flash · Light','flash-light',1254,1254,'Photos','The matching fictional maker group on a pale wall, with exact Community badges and laptop sticker baked in. Dark copy belongs above the people; keep faces clear.'),
@@ -10,5 +11,7 @@ export const communityMediaLibrary=[
  media('library-pixel-abstraction','Pixel abstraction','pixel-abstraction',600,600,'Shapes','A single flat Lovable-beige stepped geometric loop on transparency. Clean abstract pixels, no gradient, texture, glow or figurative gaming object. Use a large deliberate edge crop.'),
  media('library-pixel-abstraction-dark','Pixel abstraction · Dark ink','pixel-abstraction-dark',600,600,'Shapes','The exact same stepped loop in #1b1b1b on transparency, for a light or Lovable-beige canvas. Preserve its geometry and crop.'),
  media('library-pixel-bloom','Pixel bloom','pixel-bloom',600,600,'Shapes','A flat Lovable-beige stepped four-point geometric shape on transparency. Abstract, no gradient or texture. Large right-edge crop, clear of the headline.'),
+ partnerMark('library-malaga-startups','Málaga Startups','malaga-startups',895,444),
+ partnerMark('library-startup-oasis','Startup Oasis','startup-oasis',979,428),
 ];
 export const communityMediaById=new Map(communityMediaLibrary.map(item=>[item.id,item]));

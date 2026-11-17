@@ -65,7 +65,46 @@
     "format": "WebP, quality 92; 320 px thumbnails, quality 85; original alpha retained",
     "sourceArtwork": "Málaga refinement plus the approved AI for impact editorial assets",
     "insertion": "One native editable image per visual, preserving ratio; the original image is embedded for portable save/reopen and source export.",
-    "reusePolicy": "Prefer the prepared pixels and latest approved native layout for the same or similar brief. Change only requested content; do not invent alternatives by default."
+    "reusePolicy": "Prefer the prepared pixels and latest approved native layout for the same or similar brief. Change only requested content; do not invent alternatives by default.",
+    "partnerMarks": {
+      "preparation": "../../../scripts/prepare-community-partner-marks.mjs",
+      "master": "partners-monochrome.png",
+      "treatment": "Two separate lossless PNG crops of the approved transparent monochrome master. Existing identity pixels retained; no new reconstruction. Available to Library and the local planner.",
+      "sources": [
+        {
+          "id": "library-malaga-startups",
+          "file": "malaga-startups.png",
+          "cropPixels": [
+            1209,
+            121,
+            895,
+            444
+          ],
+          "frame": [
+            50,
+            841,
+            166.797,
+            84
+          ]
+        },
+        {
+          "id": "library-startup-oasis",
+          "file": "startup-oasis.png",
+          "cropPixels": [
+            80,
+            174,
+            979,
+            428
+          ],
+          "frame": [
+            43,
+            953,
+            192,
+            84
+          ]
+        }
+      ]
+    }
   },
   "uncertainties": [
     "No year is supplied for 11 December; do not invent a year or weekday."

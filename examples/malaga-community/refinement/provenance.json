@@ -1,0 +1,82 @@
+{
+  "title": "Málaga · Community editorial refinement",
+  "date": "2026-11-16",
+  "status": "Matière layout manually refined by Luc; Au flash and Community are companion proposals",
+  "canvas": [
+    1080,
+    1080
+  ],
+  "palette": {
+    "background": "#f7f4ed",
+    "ink": "#1b1b1b"
+  },
+  "approvedLayout": "luc-layout-reference.json",
+  "authority": "The latest manual layout supersedes layout-prompt.txt: larger date and time under the headline, stacked partner marks on the left, no footer cover band.",
+  "directions": [
+    "Matière",
+    "Au flash",
+    "Community"
+  ],
+  "generation": {
+    "provider": "Built-in image_gen",
+    "materials": {
+      "file": "mediterranean-materials.png",
+      "prompt": "mediterranean-materials-prompt.txt",
+      "transparency": true
+    },
+    "photograph": {
+      "file": "mediterranean-makers.png",
+      "prompt": "mediterranean-makers-prompt.txt",
+      "subjects": "Fictional inclusive makers, not real attendees"
+    },
+    "physicalBadges": {
+      "file": "mediterranean-makers-badges.png",
+      "prompt": "mediterranean-makers-badges-prompt.txt"
+    },
+    "partnerMarks": {
+      "file": "partners-monochrome.png",
+      "prompt": "partners-monochrome-prompt.txt",
+      "treatment": "Prepared monochrome raster adaptations of the supplied marks, with transparent background; not original official vector files"
+    }
+  },
+  "photoBranding": {
+    "source": "mediterranean-makers-branding.svg",
+    "treatment": "Original Community logo/name-tag hierarchy and exact gradient-heart sticker rendered into the prepared photo, preserving the identity vectors.",
+    "names": [
+      "Maya",
+      "Leo",
+      "Emi"
+    ],
+    "namesAreFictional": true,
+    "libraryResult": "../../../public/ambassadors/library/malaga-makers.webp",
+    "singleImage": true
+  },
+  "library": {
+    "catalog": "../../../shared/communityMediaLibrary.mjs",
+    "preparation": "../../../scripts/prepare-community-media.mjs",
+    "assets": [
+      "flash-dark",
+      "flash-light",
+      "malaga-makers",
+      "paper-collage",
+      "mediterranean-materials",
+      "leaf-macro"
+    ],
+    "format": "WebP, quality 92; 320 px thumbnails, quality 85; original alpha retained",
+    "sourceArtwork": "Málaga refinement plus the approved AI for impact editorial assets",
+    "insertion": "One native editable image per visual, preserving ratio; the original image is embedded for portable save/reopen and source export.",
+    "reusePolicy": "Prefer the prepared pixels and latest approved native layout for the same or similar brief. Change only requested content; do not invent alternatives by default."
+  },
+  "uncertainties": [
+    "No year is supplied for 11 December; do not invent a year or weekday."
+  ],
+  "verification": [
+    "Production build passed.",
+    "40 focused Community tests passed.",
+    "Font-size toolbar changed the rendered headline from 192 to 180 px, then restored 192 px.",
+    "Library displays all six prepared visuals alongside Globe and Community logo.",
+    "No artwork export was run during layout QA.",
+    "Local chat replaced only the Au flash image using library-malaga-makers; the DOM data URL exactly matched the prepared WebP bytes.",
+    "Matière retains Luc’s 192 px headline and 50 px date/time, with the manually placed illustration and stacked left partner marks."
+  ]
+}

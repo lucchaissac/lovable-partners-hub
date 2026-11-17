@@ -16,6 +16,15 @@ const clone=()=>structuredClone(plan);
 const image={id:'scene',kind:'image',sourceId:'attachment-0',crop:{x:.05,y:.6,width:.9,height:.25},placement:'inset',alt:'Coastal illustration',fit:'contain',radius:0,frame:frame(54,400,792,140)};
 function retained(){const p=clone();p.designs[0].visualTreatment='retained-visual';p.designs[0].elements.push(structuredClone(image));p.reviews[0].retainedVisuals.push({sourceId:'attachment-0',elementId:'scene',kind:'illustration',reason:'The coastal scene supports the event location without its old typography.'});return p;}
 
+test('Prepared library images can be reused without an attachment or a fabricated review',()=>{
+ const p=clone();p.reviews=[];p.designs[0].visualTreatment='retained-visual';
+ p.designs[0].elements.push({...image,sourceId:'library-malaga-makers',crop:null});
+ const input={...request,sources:[],prompt:'Reuse the Málaga photo from the library.'};
+ assert.equal(validateChatPlan(p,input).designs[0].elements.at(-1).sourceId,'library-malaga-makers');
+ p.designs[0].elements.at(-1).sourceId='library-invented-photo';
+ assert.throws(()=>validateChatPlan(p,input),/Unknown image/);
+});
+
 test('Image-led redesigns include a source-specific review and a complete Community composition',()=>{
  assert.ok(validateChatPlan(plan,request));
  const noReview=clone();noReview.reviews=[];assert.throws(()=>validateChatPlan(noReview,request),/Inspect each attached/);

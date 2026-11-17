@@ -39,7 +39,7 @@ export function AssetLibrary({ open, onOpenChange, onNew, onImport }: { open: bo
     <div className="lovable-library-header"><span>Library</span>{onImport&&<Button size="sm" variant="ghost" onClick={()=>{close();onImport();}}>Open source</Button>}<Button size="sm" variant="ghost" onClick={()=>{close();onNew();}}>New design</Button></div>
     <Input autoFocus inputSize="sm" aria-label="Search assets" placeholder="Search assets…" value={query} onChange={event => setQuery(event.target.value)} leadingIcon={<Icon name="search" size={14}/>}/>
     <div className="lovable-library-grid" aria-busy={!!adding}>
-      {assets.filter(asset => asset.name.toLowerCase().includes(query.toLowerCase())).map(asset => <button key={asset.id} className="lovable-library-item" aria-label={`Add ${asset.name}`} disabled={!!adding} onClick={() => void add(asset)}><span><img src={asset.src} alt=""/>{adding === asset.id && <span className="lovable-library-loading">Adding…</span>}</span><span>{asset.name}</span></button>)}
+      {assets.filter(asset => asset.name.toLowerCase().includes(query.toLowerCase())).map(asset => <button key={asset.id} className="lovable-library-item" data-community-media={studioWorkspace==='ambassadors'&&asset.id.startsWith('library-')||undefined} aria-label={`Add ${asset.name}`} disabled={!!adding} onClick={() => void add(asset)}><span><img src={asset.src} alt="" loading="lazy"/>{adding === asset.id && <span className="lovable-library-loading">Adding…</span>}</span><span>{asset.name}</span></button>)}
     </div>
     {!!assets.length && !assets.some(asset=>asset.name.toLowerCase().includes(query.toLowerCase())) && <p role="status">No assets found.</p>}
     {!assets.length && !error && <p role="status">Loading assets…</p>}

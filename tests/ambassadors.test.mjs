@@ -72,6 +72,21 @@ test('Native Community layouts preserve original type and image positions',()=>{
 });
 
 const {syncCommunityDocument}=await import('../studio/src/assets-tool/communityDocument.ts');
+test('Font-size toolbar edits update custom Community canvases without template bindings',()=>{
+ const previous=communityFixture();
+ const text={id:'headline',kind:'text',value:{runs:[{text:'Let’s\nbuild it.'}],size:192},editor:{x:41,y:219,widthPx:994,height:367,appearance:{fontSize:192,fontWeight:700,lineHeight:92}}};
+ previous.editor.pages[0].sections[0].columns[0].push(text);
+ const edited=structuredClone(previous);
+ edited.editor.pages[0].sections[0].columns[0][1].value.size=180;
+ const saved=JSON.parse(JSON.stringify(syncCommunityDocument(edited,previous)));
+ const result=saved.editor.pages[0].sections[0].columns[0][1];
+ assert.equal(result.editor.appearance.fontSize,180);
+ assert.equal(result.value.size,180);
+ assert.deepEqual({...result.editor,appearance:undefined},{...text.editor,appearance:undefined});
+ assert.equal(result.editor.appearance.lineHeight,92);
+ assert.equal(text.editor.appearance.fontSize,192);
+ assert.equal(saved.community,undefined);
+});
 test('Native text edits survive source serialization without moving artwork or mutating the prior draft',()=>{
  const previous=communityFixture(),blocks=previous.editor.pages[0].sections[0].columns[0];
  blocks[0].ambassadorElement='globe';

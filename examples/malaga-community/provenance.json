@@ -1,6 +1,6 @@
 {
   "title": "Let’s build it. · Málaga",
-  "status": "First local proposal, awaiting Luc’s visual feedback",
+  "status": "Archived first proposal; superseded by the refinement and Luc’s manual layout",
   "date": "2026-11-16",
   "workspace": "ambassadors",
   "source": {
@@ -13,13 +13,19 @@
   },
   "result": {
     "localAssetId": "b34c2114-e38d-4cd4-ab27-b248b8c3a336",
-    "canvas": [1080, 1080],
+    "canvas": [
+      1080,
+      1080
+    ],
     "background": "#f7f4ed",
     "ink": "#1b1b1b",
     "font": "Camera Plain Bold",
     "nativeLayers": 10,
     "identity": "Original full Lovable Community lockup",
-    "partnerMarks": ["Startup Oasis", "Málaga Startups"],
+    "partnerMarks": [
+      "Startup Oasis",
+      "Málaga Startups"
+    ],
     "editable": true,
     "replacesStartingTemplate": true,
     "separateFromAiForImpactCollection": true
@@ -27,7 +33,8 @@
   "references": {
     "prompt": "prompt.txt",
     "visibleChatReview": "chat-review.txt",
-    "observedLayerGeometry": "composition.json"
+    "observedLayerGeometry": "composition.json",
+    "currentRefinement": "refinement/provenance.json"
   },
   "uncertainties": [
     "The source provides 11 December and 19:00–22:00 without a year. No year or weekday was invented.",

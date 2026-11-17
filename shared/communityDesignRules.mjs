@@ -1,4 +1,5 @@
 import {ambassadorFormats} from '../src/ambassadors/catalog.js';
+import {communityMediaById} from './communityMediaLibrary.mjs';
 
 // Measured from the six gallery masters, not a second, invented visual system.
 // tests/community-chat.test.mjs compares these values with the kit renderer.
@@ -56,7 +57,7 @@ export function validateCommunityDesignRules(plan,request){
   const logos=elements.filter(e=>isBrand(e,'community-logo'));
   if(logos.length!==1)reject('Each design needs exactly one original Community lockup.');
   const logo=logos[0],f=logo.frame;
-  const editorial=plan.reviews.length>0;
+  const editorial=plan.reviews.length>0||elements.some(e=>e.kind==='image'&&communityMediaById.has(e.sourceId));
   const logoScale=f.width/m.logoWidth;
   const validLogoSize=editorial?logoScale>=.99&&logoScale<=1.35&&near(f.height,m.logoHeight*logoScale):near(f.width,m.logoWidth)&&near(f.height,m.logoHeight);
   if(logo.color!==logoColor||!near(f.x,m.inset)||!near(f.y,m.inset)||!validLogoSize||f.rotation!==0||f.opacity!==1)reject(`For ${design.reference} at ${design.width}px, use the intact ${logoColor} logo at x=y=${m.inset.toFixed(2)}, width=${m.logoWidth.toFixed(2)}, height=${m.logoHeight.toFixed(2)}, no rotation or opacity change. Reviewed editorial layouts may enlarge it proportionally by up to 1.35 for small-size legibility.`);

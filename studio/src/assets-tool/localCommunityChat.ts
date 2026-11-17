@@ -10,6 +10,8 @@ import {assetDimensions,assetSchema,makeNode,type AssetDocument} from './model';
 import {nativeDocument} from './nativeDocument';
 import {htmlEditorSchema,type HtmlBlock,type HtmlEditorState,type HtmlIconName} from '../studio/htmlEditorModel';
 import type {StudioSource} from '../studio/sources';
+import {communityMediaById} from '../../../shared/communityMediaLibrary.mjs';
+import {communityMediaSource} from './communityMedia';
 
 export type ChatPlan=z.infer<typeof chatPlanSchema>;
 type ChatElement=ChatPlan['edits'][number];
@@ -63,6 +65,7 @@ async function nativeElement(spec:ChatElement,existing:Map<string,HtmlBlock>,ima
  let src='',alt='',ambassador:ReturnType<typeof defaultAmbassador>|undefined,ambassadorElement:'globe'|'qr'|undefined,fit:'contain'|'cover'='contain',radius=0,crop:Extract<HtmlBlock,{kind:'image'}>['value']['crop'];
  if(spec.kind==='image'){
   const source=existing.get(spec.sourceId);src=images.get(spec.sourceId)??(source?.kind==='image'?source.value.src:'');alt=spec.alt;fit=spec.fit;radius=spec.radius;
+  if(!src&&communityMediaById.has(spec.sourceId))src=await communityMediaSource(spec.sourceId);
   if(!src)throw Error('The requested image is no longer available.');
   if(spec.crop){
    const image=new Image();image.src=src;await image.decode();signal.throwIfAborted();

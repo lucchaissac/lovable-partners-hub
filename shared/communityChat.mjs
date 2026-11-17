@@ -2,6 +2,7 @@ import {z} from 'zod';
 import {communityReferenceIds,communityWorkingCanvasLimit,validateCommunityDesignRules} from './communityDesignRules.mjs';
 import {resolveBadgeBatch} from './communityRoster.mjs';
 import {reviewSchema,imageCropSchema,validateCommunityReview} from './communityReview.mjs';
+import {communityMediaById} from './communityMediaLibrary.mjs';
 
 const id=z.string().min(1).max(80).regex(/^[a-zA-Z0-9-]+$/);
 const color=z.string().regex(/^(#[0-9a-fA-F]{6}|transparent)$/);
@@ -54,7 +55,7 @@ export function validateChatPlan(value,request){
  const known=new Set([...request.blocks.map(b=>b.id),...request.sources.filter(s=>s.kind==='image').map(s=>s.id)]);
  for(const elements of [...plan.designs.map(d=>d.elements),plan.edits]){
   if(new Set(elements.map(e=>e.id)).size!==elements.length)throw Error('Duplicate element IDs.');
-  for(const e of elements){if((e.kind==='reuse'||e.kind==='image')&&!known.has(e.sourceId))throw Error('Unknown image or canvas element.');}
+  for(const e of elements){if((e.kind==='reuse'||e.kind==='image')&&!known.has(e.sourceId)&&!(e.kind==='image'&&communityMediaById.has(e.sourceId)))throw Error('Unknown image or canvas element.');}
   for(const e of elements.filter(e=>e.kind==='qr')){
    const supplied=[request.prompt,...request.sources.map(s=>s.text??''),...request.conversation.filter(m=>m.user).map(m=>m.text)].join('\n');
    if(!supplied.includes(e.url))throw Error('Use the exact link supplied in the message for the QR code.');

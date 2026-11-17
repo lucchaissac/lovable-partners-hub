@@ -23,15 +23,19 @@ export function applyCommunityRender(asset:AssetDocument,documentId:string,block
 
 export const communitySettings=(asset?:AssetDocument):AmbassadorSettings|undefined=>asset?.community?.settings??communityTemplate(asset)?.ambassador;
 export function syncCommunityDocument(asset:AssetDocument,previous?:AssetDocument):AssetDocument{
- if(!asset.community||!asset.editor)return asset;
- const next=structuredClone(asset),community=next.community!,settings=community.settings,bindings=community.bindings;
+ if(!asset.editor)return asset;
+ const next=structuredClone(asset);
  const blocks=next.editor!.pages.flatMap(page=>page.sections.flatMap(section=>section.columns.flat()));
- const byKey=(key:string)=>blocks.find(block=>block.id===bindings[key]);
  const previousBlocks=previous?.editor?.pages.flatMap(page=>page.sections.flatMap(section=>section.columns.flat()))??[];
  for(const block of blocks){
   const old=previousBlocks.find(old=>old.id===block.id);
   if(block.kind==='text'&&old?.kind==='text'&&block.value.size!==old.value.size)block.editor={...block.editor,appearance:{...block.editor?.appearance,fontSize:block.value.size}};
  }
+ // Generated free canvases have no template bindings, but their toolbar must
+ // still update the appearance override that determines rendered text size.
+ if(!next.community)return next;
+ const community=next.community,settings=community.settings,bindings=community.bindings;
+ const byKey=(key:string)=>blocks.find(block=>block.id===bindings[key]);
  const photo=(key:string)=>{const block=byKey(key);return block?.kind==='image'&&/^data:image\/(png|jpeg|webp);base64,/.test(block.value.src)?(block.value.src===emptyPortrait?'':block.value.src):undefined;};
  const portrait=photo('photo');if(portrait!==undefined)settings.photo=portrait;
  for(let i=0;i<settings.count;i++){const portrait=photo(`photo-${i}`);if(portrait!==undefined)settings.speakers[i].photo=portrait;}

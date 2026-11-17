@@ -1,3 +1,5 @@
+import {TechArtworkDesign} from '../assets-tool/TechArtworkDesign';
+import {isTechArtwork} from '../assets-tool/techArtwork';
 import {BrandLogoDesign} from '../assets-tool/BrandLogoDesign';
 import {studioWorkspace} from '../assets-tool/workspace';
 import {communityImageHit} from '../assets-tool/communityHitTest';
@@ -230,7 +232,7 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
   function changeBlock(block:HtmlBlock){const next=structuredClone(source.current);for(const p of next.pages)for(const s of p.sections)for(const c of s.columns){const i=c.findIndex(b=>b.id===block.id);if(i>=0)c[i]=block;}save(next);}
   function editBlock(block:HtmlBlock){
     if(block.editor?.locked)return;
-    if(block.kind==='image'){choose([block.id]);if(block.badge||block.ambassador||block.brandRole){setDesign(true);host.panelChanged('html-selection',true);}else onReplace(block.id);return;}
+    if(block.kind==='image'){choose([block.id]);if(block.badge||block.ambassador||block.brandRole||(studioWorkspace==='tech-blog'&&isTechArtwork(block))){setDesign(true);host.panelChanged('html-selection',true);}else onReplace(block.id);return;}
     choose([block.id]);setEditingId(block.id);
     if(block.kind==='cta')onEditButton(block);
     if(block.kind==='shape'){setEditingId('');setDesign(true);host.panelChanged('html-selection',true);}
@@ -290,8 +292,17 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
   }
   function hitElement(target:Element,x:number,y:number){
     const initial=target.closest<HTMLElement>('.hev-block');
-    if(!initial||communityImageHit(initial,x,y,zoom))return initial;
-    return document.elementsFromPoint(x,y).map(element=>element.closest<HTMLElement>('.hev-block')).find(element=>element&&root.current?.contains(element)&&communityImageHit(element,x,y,zoom))??null;
+    const hit=(el:HTMLElement)=>{
+      const b=blocks.find(b=>`block-${b.id}`===el.id);
+      if(studioWorkspace==='tech-blog'&&b?.kind==='image'&&isTechArtwork(b)&&b.value.src.includes('curves')){
+        const r=el.getBoundingClientRect(),angle=(b.editor?.rotation??0)*Math.PI/180,dx=(x-r.left-r.width/2)/zoom,dy=(y-r.top-r.height/2)/zoom;
+        const u=(dx*Math.cos(angle)+dy*Math.sin(angle))/el.offsetWidth+.5,v=(-dx*Math.sin(angle)+dy*Math.cos(angle))/el.offsetHeight+.5;
+        return u>=393.87/674&&u<=645.218/674&&v>=28.08/337&&v<=308.914/337;
+      }
+      return communityImageHit(el,x,y,zoom);
+    };
+    if(!initial||hit(initial))return initial;
+    return document.elementsFromPoint(x,y).map(element=>element.closest<HTMLElement>('.hev-block')).find(element=>element&&root.current?.contains(element)&&hit(element))??null;
   }
   function pointerDown(event:ReactPointerEvent<HTMLDivElement>){
     if(!enabled||event.button!==0)return;
@@ -311,7 +322,7 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
       const additive=event.shiftKey||event.metaKey||event.ctrlKey;
       const group=block.editor?.groupId;
       const next=event.altKey?[id!]:additive?(ids.includes(id!)?ids.filter(i=>i!==id):[...ids,id!]):ids.includes(id!)?ids:group?blocks.filter(b=>b.editor?.groupId===group).map(b=>b.id):[id!];
-      choose(next);if(next.length===1&&block.kind==='image'&&(block.badge||block.ambassador||block.brandRole)){setDesign(true);host.panelChanged('html-selection',true);}if(!additive)begin(event,'move',blocks.filter(b=>next.includes(b.id)));return;
+      choose(next);if(next.length===1&&block.kind==='image'&&(block.badge||block.ambassador||block.brandRole||(studioWorkspace==='tech-blog'&&isTechArtwork(block)))){setDesign(true);host.panelChanged('html-selection',true);}if(!additive)begin(event,'move',blocks.filter(b=>next.includes(b.id)));return;
     }
     if(target.closest('button,a,input,textarea,[role=tab],.hev-section-tools,.hev-column-resizer'))return;
     if(target.closest('.hev-content'))startMarquee(event,target.closest<HTMLElement>('.hev-section'));
@@ -346,7 +357,7 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
       const xFactor=kind.includes('w')?-1:1,yFactor=kind.includes('n')?-1:1;
       let sx=kind==='n'||kind==='s'?1:Math.max(.05,(bounds.width+dx*xFactor)/bounds.width),sy=kind==='e'||kind==='w'?1:Math.max(.05,(bounds.height+dy*yFactor)/bounds.height);
       if(kind!=='n'&&kind!=='s')sx=Math.max(sx,...g.blocks.map(({block,width})=>htmlBlockMinWidth(block)/width));
-      if(g.blocks.some(({block})=>block.kind==='image'&&(block.badge||block.ambassador||block.brandRole))){if(kind==='n'||kind==='s')sx=sy;else sy=sx;}else if(event.shiftKey&&kind.length===2)sy=sx;
+      if(g.blocks.some(({block})=>block.kind==='image'&&(block.badge||block.ambassador||block.brandRole||(studioWorkspace==='tech-blog'&&isTechArtwork(block))))){if(kind==='n'||kind==='s')sx=sy;else sy=sx;}else if(event.shiftKey&&kind.length===2)sy=sx;
       g.frames=Object.fromEntries(g.blocks.map(({block,box,width,parentWidth})=>{const widthNext=resizedElementWidth(block.editor,width*sx,parentWidth);return [block.id,{...block.editor,...widthNext,...(sy!==1?{height:clamp(box.height*sy,12,3000)}:{}),x:clamp((block.editor?.x||0)+(kind.includes('w')?bounds.width*(1-sx):0)+(box.left-bounds.left)*(sx-1),-4000,4000),y:clamp((block.editor?.y||0)+(kind.includes('n')?bounds.height*(1-sy):0)+(box.top-bounds.top)*(sy-1),-4000,4000)}];}));
     }
     g.frames=constrainLayoutFrames(g.layout||[],g.frames);
@@ -420,20 +431,20 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
           {one?.kind==='shape'&&one.icon&&<Button size="sm" variant="ghost" aria-label="Filled icon" active={!!one.filled} onClick={()=>changeBlock({...one,filled:!one.filled})} leadingIcon={<Icon name="circle" size={16} fill={one.filled?'currentColor':'none'}/>}/>}
           {members.some(b=>b.editor?.groupId)&&toolButton('Ungroup elements','layers',()=>{const next=structuredClone(source.current);for(const page of next.pages)for(const section of page.sections)for(const block of section.columns.flat())if(ids.includes(block.id)&&block.editor)delete block.editor.groupId;save(next);})}
           {one?.kind==='media'&&one.format==='Video'&&toolButton('Play or pause video','play',()=>{const video=element(one.id)?.querySelector('video');if(video?.paused)void video.play().catch(()=>{});else video?.pause();})}
-          {one?.kind==='image'&&!one.badge&&!one.ambassador&&!one.brandRole&&toolButton('Replace image','image',()=>onReplace(one.id),locked)}
+          {one?.kind==='image'&&!one.badge&&!one.ambassador&&!one.brandRole&&!isTechArtwork(one)&&toolButton('Replace image','image',()=>onReplace(one.id),locked)}
           {multipleSections&&<>{toolButton('Move selected sections up','arrow-up',()=>action('up'),locked||!page.sections.some((s,i)=>sectionIds.includes(s.id)&&i>0&&!sectionIds.includes(page.sections[i-1].id)))}{toolButton('Move selected sections down','arrow-down',()=>action('down'),locked||!page.sections.some((s,i)=>sectionIds.includes(s.id)&&i<page.sections.length-1&&!sectionIds.includes(page.sections[i+1].id)))}</>}
           {!(fixedCanvas&&sectionSelection)&&toolButton('Duplicate selection','copy',()=>action('duplicate'),locked)}
           {!(fixedCanvas&&sectionSelection)&&toolButton('Delete selection','trash-2',()=>action('delete'),locked)}
           {!(fixedCanvas&&sectionSelection)&&<SelectionMenu open={menu} onOpenChange={setMenu} items={[
             ...(one?.kind==='text'?[{id:'bullet',label:one.value.list==='bullet'?'Remove bullet':'Add bullet',leadingIcon:<Icon name="list" size={16}/>,disabled:locked}]:[]),
-            ...(!communityCanvas&&studioWorkspace!=='lovable'&&one?.kind==='image'&&!one.badge&&!one.ambassador?[{id:'play-icon',label:one.value.playIcon?'Hide play icon':'Show play icon',disabled:locked}]:[]),
+            ...(!communityCanvas&&studioWorkspace!=='lovable'&&studioWorkspace!=='tech-blog'&&one?.kind==='image'&&!one.badge&&!one.ambassador?[{id:'play-icon',label:one.value.playIcon?'Hide play icon':'Show play icon',disabled:locked}]:[]),
             ...(one?[{id:'edit',label:one.kind==='text'?'Edit text':'Edit content',leadingIcon:<Icon name="pencil" size={16}/>,disabled:locked}]:[]),
             ...(layeredSelection?layerItems:[{id:'up',label:'Move up',leadingIcon:<Icon name="arrow-up" size={16}/>,disabled:locked},{id:'down',label:'Move down',leadingIcon:<Icon name="arrow-down" size={16}/>,disabled:locked},{id:'first',label:'Move to beginning',disabled:locked},{id:'last',label:'Move to end',disabled:locked}]),
             {kind:'separator'}, {id:'duplicate',label:'Duplicate',leadingIcon:<Icon name="copy" size={16}/>,disabled:locked},
             {id:locked?'unlock':'lock',label:locked?'Unlock':'Lock',leadingIcon:<Icon name={locked?'lock':'lock-open'} size={16}/>},
             {id:'delete',label:'Delete',leadingIcon:<Icon name="trash-2" size={16}/>,disabled:locked},
             ...(one?[{kind:'separator' as const},{id:'position',label:one.editor?.position==='absolute'?'Return to normal flow':'Absolute position',leadingIcon:<Icon name="move" size={16}/>,disabled:locked}]:[])
-          ]} onChange={value=>{if(value==='bullet'&&one?.kind==='text'&&!locked)changeBlock({...one,value:{...one.value,list:one.value.list==='bullet'?'none':'bullet'}});else if(value==='play-icon'&&!communityCanvas&&studioWorkspace!=='lovable'&&one?.kind==='image'&&!locked)changeBlock({...one,value:{...one.value,playIcon:!one.value.playIcon}});else if(value==='edit'&&one)editBlock(one);else if(value==='position'&&one)setAbsolute(one.editor?.position!=='absolute');else if(layeredSelection&&layerItems.some(item=>item.id===value))arrange(value as LayerOrderAction);else action(value as SelectionAction);}} trigger={<Button size="sm" variant="ghost" aria-label="More element options" leadingIcon={<Icon name="ellipsis" size={16}/>}/>}/>}
+          ]} onChange={value=>{if(value==='bullet'&&one?.kind==='text'&&!locked)changeBlock({...one,value:{...one.value,list:one.value.list==='bullet'?'none':'bullet'}});else if(value==='play-icon'&&!communityCanvas&&studioWorkspace!=='lovable'&&studioWorkspace!=='tech-blog'&&one?.kind==='image'&&!locked)changeBlock({...one,value:{...one.value,playIcon:!one.value.playIcon}});else if(value==='edit'&&one)editBlock(one);else if(value==='position'&&one)setAbsolute(one.editor?.position!=='absolute');else if(layeredSelection&&layerItems.some(item=>item.id===value))arrange(value as LayerOrderAction);else action(value as SelectionAction);}} trigger={<Button size="sm" variant="ghost" aria-label="More element options" leadingIcon={<Icon name="ellipsis" size={16}/>}/>}/>}
         </div>
       </>}
     </div>,root.current)}
@@ -443,6 +454,7 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
       if(current?.kind!=='image'||!current.ambassador||current.editor?.locked)return;
       changeBlock(editCommunityBlock({...current,ambassador:current.ambassador},ambassador));
     }} onClose={()=>{setDesign(false);host.closePanel();}}/>,host.panelHost)}
+    {selectionDesignActive&&one?.kind==='image'&&studioWorkspace==='tech-blog'&&isTechArtwork(one)&&host.panelHost&&host.activeId==='html-selection'&&createPortal(<TechArtworkDesign key={one.id} block={one} locked={locked} onChange={changeBlock} onClose={()=>{setDesign(false);host.closePanel();}}/>,host.panelHost)}
     {selectionDesignActive&&one?.kind==='image'&&one.brandRole==='partner'&&host.panelHost&&host.activeId==='html-selection'&&createPortal(<BrandLogoDesign key={one.id} block={one} locked={locked} onChange={changeBlock} onClose={()=>{setDesign(false);host.closePanel();}}/>,host.panelHost)}
     {selectionDesignActive&&one?.kind==='image'&&one.badge&&host.panelHost&&host.activeId==='html-selection'&&createPortal(<PartnerBadgeDesign key={one.id} settings={one.badge} src={one.value.src} locked={locked}
       onChange={(badge:PartnerBadgeSettings,image)=>{
@@ -451,7 +463,7 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
         const width=current.editor?.widthPx||bounds?.width||320,ratio=image.width/image.height;
         changeBlock({...current,badge,value:{...current.value,src:image.src,alt:badgeFormatName(badge.format),crop:undefined,playIcon:undefined},editor:{...current.editor,widthPx:width,height:Math.max(12,Math.min(3000,width/ratio)),appearance:{imageFit:'contain'}}});
       }} onClose={()=>{setDesign(false);host.closePanel();}}/>,host.panelHost)}
-    {selectionDesignActive&&one&&!(one.kind==='image'&&(one.badge||one.ambassador||one.brandRole==='partner'))&&host.panelHost&&host.activeId==='html-selection'&&createPortal(<div className="hcs-ui" style={{height:'100%',display:'contents'}}><PresentationElementDesign
+    {selectionDesignActive&&one&&!(one.kind==='image'&&(one.badge||one.ambassador||one.brandRole==='partner'||(studioWorkspace==='tech-blog'&&isTechArtwork(one))))&&host.panelHost&&host.activeId==='html-selection'&&createPortal(<div className="hcs-ui" style={{height:'100%',display:'contents'}}><PresentationElementDesign
       shape={{id:one.id,kind:one.kind==='text'?'text':one.kind==='image'?'image':one.kind==='shape'?one.shape:'rectangle',width:bounds?.width||100,height:bounds?.height||100,src:one.kind==='image'?one.value.src:undefined,appearance:{...(one.kind==='text'?{fill:one.value.color,fontFamily:'Camera Plain',fontSize:one.value.size,textAlign:one.value.align,fontWeight:one.value.runs.every(r=>r.bold)?700:400,italic:one.value.runs.every(r=>r.italic),underline:one.value.runs.every(r=>r.underline),lineHeight:one.value.style==='Heading 1'?102:one.value.style.startsWith('Heading')?112:150}:one.kind==='image'?{imageFit:'cover'}:{}),...one.editor?.appearance}}}
       label={one.kind==='text'?(one.value.runs.map(r=>r.text).join('').slice(0,60)||'Text'):one.kind==='image'?'Image':one.kind==='contacts'?'Contact cards':one.kind==='tasks'?'Checklist':one.kind==='media'&&one.format==='Video'?'Video':'Element'} locked={locked}
       spacingAfter={one.editor?.spacingAfter??0} onSpacingAfter={(spacingAfter:number)=>changeBlock({...one,editor:{...one.editor,spacingAfter}})} onSpacingPreview={setSpacingPreview}

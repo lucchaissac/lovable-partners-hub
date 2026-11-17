@@ -220,3 +220,7 @@ html, body, #root { background: var(--studio-background); color: var(--ui-text);
 [data-theme='light'] .ambassador-design .partner-badge-preview img{filter:none}
 
 .brand-logo-position{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.brand-logo-controls h2{margin-bottom:16px}.brand-logo-controls .partner-badge-fields{border:0;padding:0;margin:0}.brand-logo-controls .partner-badge-logo{height:104px;background:#1b1b1b}.brand-logo-controls .partner-badge-fields p{font-size:12px;color:var(--ui-text-muted);line-height:1.5}
+
+/* White construction artwork needs a dark transparency checker to stay legible. */
+:root .lovable-library-item[data-tech-artwork] > span:first-child,
+:root .lovable-library-item[data-tech-artwork]:hover > span:first-child { background:repeating-conic-gradient(rgb(255 255 255 / 5%) 0% 25%, transparent 0% 50%) 0 0 / 16px 16px, #242424; }

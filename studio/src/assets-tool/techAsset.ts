@@ -6,7 +6,8 @@ type ImageBlock=Extract<HtmlBlock,{kind:'image'}>;
 export const techElements:LibraryAsset[]=[
  {id:'tech-curves',name:'Construction curves',src:'/tech-blog/cover-curves.svg',transparent:true},
  {id:'tech-grid',name:'Cover grid',src:'/tech-blog/cover-grid.svg',transparent:true},
- {id:'tech-logo',name:'Lovable logo',src:'/brand/assets/full-white-pure.svg',transparent:true},
+ {id:'tech-logo',name:'Tech blog logo',src:'/tech-blog/tech-logo.svg',transparent:true},
+ {id:'tech-logo-color',name:'Tech blog logo · Color field',src:'/tech-blog/tech-logo-color.svg',transparent:true},
  {id:'tech-color',name:'Color field',src:'/tech-blog/color-field.svg',transparent:true},
 ];
 const image=(id:string,src:string,x:number,y:number,width:number,height:number):ImageBlock=>({id,kind:'image',value:{src,alt:id,caption:'',alignment:'center',width:100},editor:{position:'absolute',x,y,widthPx:width,height,appearance:{imageFit:'contain',radius:0}}});

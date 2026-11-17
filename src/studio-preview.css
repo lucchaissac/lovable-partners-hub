@@ -7,26 +7,26 @@
   .studio-invitation-heading { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 48px; }
   .studio-invitation-heading h2 { font-size: clamp(56px, 9.5cqw, 104px); line-height: .94; letter-spacing: -.055em; font-weight: 900; }
   .studio-invitation-heading .primary-button { flex: none; margin-bottom: 5px; }
-  .studio-preview { display: grid; grid-template-columns: 144px minmax(0, 1fr) 150px; gap: 12px; width: 100%; color: var(--color-text); text-align: left; font-size: 12px; line-height: 1.4; }
+  .studio-preview { display: grid; grid-template-columns: 144px minmax(0, 1fr) 150px; gap: 12px; width: 100%; height:clamp(320px,55cqw,600px); max-height:600px; color: var(--color-text); text-align: left; font-size: 12px; line-height: 1.4; }
   .studio-preview svg { display: block; flex: none; }
   .studio-mini-chat { display: flex; flex-direction: column; justify-content: space-between; }
   .studio-mini-panel-title { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 12px; }
-  .studio-mini-composer { padding: 12px; border-radius: 12px; background: var(--color-surface); color: var(--color-dim); }
+  .studio-mini-composer { min-height:96px; display:flex; flex-direction:column; justify-content:space-between; padding: 12px; border-radius: 12px; background: var(--color-surface); color: var(--color-dim); }
   .studio-mini-composer > div { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; }
   .studio-mini-send { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--color-surface); }
-  .studio-mini-workspace { min-width: 0; border-radius: 14px; border: 1px solid var(--color-border); background: transparent; overflow: hidden; }
-  .studio-mini-toolbar { display: flex; align-items: center; gap: 16px; padding: 12px 16px; min-height: 48px; }
+  .studio-mini-workspace { display:flex; flex-direction:column; min-width:0; min-height:0; border-radius: 14px; border: 1px solid var(--color-border); background: transparent; overflow: hidden; }
+  .studio-mini-toolbar { flex:none; display: flex; align-items: center; gap: 16px; padding: 12px 16px; min-height: 48px; }
   .studio-mini-title { flex: 1; white-space: nowrap; }
   .studio-mini-tools { display: flex; align-items: center; gap: 12px; }
   .studio-mini-tools > svg { width: 14px; height: 14px; }
   .studio-mini-export { padding: 5px 12px; border-radius: 99px; background: var(--color-text); color: var(--color-background); }
-  .studio-mini-canvas { padding: 32px 24px; }
-  .studio-mini-artwork { position: relative; isolation: isolate; overflow: hidden; container-type: inline-size; aspect-ratio: 1200 / 738; background: #1b1b1b; color: white; --preview-ink: #fff; --preview-image-filter: none; }
+  .studio-mini-canvas { display:grid; place-items:center; container-type:size; flex:1; min-height:0; padding:32px 24px; }
+  .studio-mini-artwork { position: relative; isolation: isolate; overflow: hidden; container-type: inline-size; width:min(100cqw,calc(100cqh * var(--artwork-ratio))); aspect-ratio:var(--artwork-ratio); background: #1b1b1b; color: white; --preview-ink: #fff; --preview-image-filter: none; }
   .studio-mini-artwork video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   .studio-mini-headline { position: absolute; left: 5.333%; top: 59.079%; font-size: 10.1667cqw; line-height: .96; letter-spacing: -.03em; font-weight: 700; }
   .studio-mini-badge { position: absolute; width: 17.667%; right: 5.333%; bottom: 9.35%; }
   .studio-mini-badge .badge-graphic { width: 100%; height: auto; }
-  .studio-mini-status { display: flex; justify-content: space-between; align-items: center; padding: 0 16px 12px; font-size: 11px; color: var(--color-muted); }
+  .studio-mini-status { flex:none; display: flex; justify-content: space-between; align-items: center; padding: 0 16px 12px; font-size: 11px; color: var(--color-muted); }
   .studio-mini-zoom { display: flex; align-items: center; gap: 12px; }
   .studio-mini-zoom i { position: relative; width: 72px; height: 3px; border-radius: 2px; background: var(--color-border); }
   .studio-mini-zoom i::after { content: ''; position: absolute; top: -4px; left: 32px; width: 11px; height: 11px; border-radius: 50%; background: var(--color-text); }
@@ -45,7 +45,7 @@
 }
 @container (max-width: 700px) {
   .studio-invitation .studio-invitation-heading { flex-direction: column; align-items: start; gap: 24px; margin-bottom: 32px; }
-  .studio-invitation .studio-preview { display: block; }
+  .studio-invitation .studio-preview { grid-template-columns:minmax(0,1fr); }
   .studio-invitation .studio-mini-design { display: none; }
   .studio-invitation .studio-mini-toolbar { gap: 12px; padding: 12px; }
   .studio-invitation .studio-mini-tools > svg { display: none; }

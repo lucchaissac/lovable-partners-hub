@@ -26,7 +26,18 @@
   "overrides": [
     "Camera Plain body and interface minimum 600; badges 700.",
     "Natural sentence case; English replaces the source language abbreviation.",
-    "No real mailing subscription is submitted by the guideline demo."
+    "Guidelines use identity/construction/clear-space/color sheets and the shared studio invitation; subscription UI is omitted."
   ],
-  "sharedGuidelines": "shared/techBlogGuidelines.mjs"
+  "sharedGuidelines": "shared/techBlogGuidelines.mjs",
+  "identityGeometry": {
+    "source": "15:32819\u201315:32828",
+    "unit": "Heart height: 10.755 px",
+    "logoToLabelGap": 3.111,
+    "colorField": {
+      "width": 34.051,
+      "height": 8.776,
+      "radius": 2.119
+    },
+    "clearSpace": "One heart height around the full signature; local guideline added at Luc\u2019s request."
+  }
 }

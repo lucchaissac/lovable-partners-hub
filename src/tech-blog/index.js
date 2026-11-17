@@ -3,8 +3,10 @@ import specimens from './specimens.json';
 import './specimens.css';
 import './tech.css';
 import {agentGuideSection} from '../agentGuide.js';
+import {studioInvitation} from '../studio-preview.js';
+import {techLockup,techConstruction,techClearSpace} from './identity.js';
 
-export const techSections=[['overview','Overview'],['identity','Identity'],['covers','Covers'],['newsletter','Newsletter'],['subscription','Subscription'],['typography','Typography'],['for-your-agent','For your agent'],['usage','In use']];
+export const techSections=[['overview','Overview'],['identity','Identity'],['construction','Construction'],['clear-space','Clear space'],['color','Color field'],['covers','Covers'],['typography','Typography'],['for-your-agent','For your agent'],['usage','In use']];
 const heading=(title,copy)=>`<div class="section-heading"><div><h2>${title}</h2><p>${copy}</p></div></div>`;
 const sizes={'15:33792':[520,150],'15:33887':[322,311],'15:32743':[674,337],'15:17034':[800.93,214.09],'15:13922':[256,480.5],'15:33328':[1440,64],'15:20702':[540,455],'15:24117':[540,455],'15:33156':[278,429],'network-cover':[376,211.5],'15:14047':[376,409.5],'15:13936':[376,409.5],'15:35793':[326,343],...Object.fromEntries(['33982','34568','35184','35482','34260','34876'].map(id=>['15:'+id,[390,858]])),...Object.fromEntries(['33730','33512'].map(id=>['15:'+id,[680,1153]])),...Object.fromEntries(['33356','33574'].map(id=>['15:'+id,[680,1060]]))};
 export function specimen(id){const [width,height]=sizes[id]||[1440,831];return `<div class="tech-frame" style="aspect-ratio:${width}/${height}" data-tech-width="${width}"><div class="tech-source" style="width:${width}px;height:${height}px">${specimens[id]||(id==='network-cover'?networkCover():id==='15:14047'?networkCard():desktop(id))}</div></div>`;}
@@ -21,17 +23,17 @@ const entries=[['15:32743','Inside Chats cover','cover'],['network-cover','Conne
 export function techGallery(){return `<section class="gallery tech-gallery" aria-label="Tech blog gallery"><div class="gallery-grid">${entries.map(([id,name,type])=>`<figure class="gallery-item tech-artwork tech-${type}" aria-label="${name}">${specimen(id)}</figure>`).join('')}</div></section>`;}
 
 export function techGuidelines({icon}){return `<aside class="guideline-sidebar"><nav aria-label="Guideline navigation">${techSections.map(([id,label],i)=>`<a href="#tech-blog/guidelines/${id}" data-section="${id}" ${i===0?'aria-current="location"':''}>${label}</a>`).join('')}</nav></aside><div class="guideline-content tech-guidelines">
-<section id="overview" class="guide-section overview-section"><div class="page-intro"><h1>Tech blog</h1><p>How we build Lovable.</p></div>${specimen('15:33792')}</section>
-<section id="identity" class="guide-section">${heading('Identity',rules.identity)}<div class="tech-identity-example">${specimen('15:33887')}</div></section>
+<section id="overview" class="guide-section overview-section"><div class="page-intro"><h1>Lovable Tech blog</h1><p>How we build Lovable.</p></div><div class="tech-identity-board tech-identity-hero">${techLockup()}</div></section>
+<section id="identity" class="guide-section">${heading('Identity',rules.identity)}<div class="tech-identity-pair"><div class="tech-identity-board tech-identity-dark">${techLockup()}</div><div class="tech-identity-board tech-identity-light">${techLockup()}</div></div></section>
+<section id="construction" class="guide-section">${heading('Construction',rules.construction)}${techConstruction()}</section>
+<section id="clear-space" class="guide-section">${heading('Clear space',rules.clearSpace)}${techClearSpace()}</section>
+<section id="color" class="guide-section">${heading('Color field',rules.color)}<div class="tech-color-board"><img src="/tech-blog/color-field.svg" alt="Original orange, pink, lilac and blue Tech blog color field" width="340.51" height="87.76"/></div></section>
 <section id="covers" class="guide-section">${heading('Covers',rules.covers)}${specimen('15:32743')}<div class="intro-footer"><p>674 × 337</p><a class="text-link" href="#tech-blog/create/cover">Use template ${icon('arrow')}</a></div></section>
-<section id="newsletter" class="guide-section">${heading('Newsletter',rules.newsletter)}<div class="tech-pair">${specimen('15:33356')}${specimen('15:33574')}</div><div class="tech-pair">${specimen('15:33512')}${specimen('15:33730')}</div></section>
-<section id="subscription" class="guide-section">${heading('Subscription',rules.subscription)}<div class="tech-subscribe-demo"><form data-tech-form><h3>New engineering posts<br/>in your inbox</h3><label>Email<input type="email" name="email" autocomplete="email" placeholder="jane@company.com" required/></label><button class="primary-button" type="submit">Subscribe</button><p>Demo preview. No email is sent or stored.</p></form><div class="tech-demo-confirmation" hidden><h3>Thanks for subscribing</h3><p>This is the confirmation preview.</p><button class="text-link" data-tech-reset>Try again</button></div></div><div class="tech-trio">${specimen('15:34568')}${specimen('15:34876')}${specimen('15:35184')}</div></section>
-<section id="typography" class="guide-section">${heading('Typography',rules.typography)}<div class="type-poster"><span class="specimen-label">Camera Plain</span><div>Inside Chats:<br/>How we build.</div><div class="specimen-specs"><span>Headline <b>34 px / 35 px mobile</b></span><span>Body <b>16 px / 24 px</b></span></div></div></section>
+<section id="typography" class="guide-section">${heading('Typography',rules.typography)}<div class="type-poster"><span class="specimen-label">Camera Plain</span><div>Inside Chats:<br/>How we build.</div><div class="specimen-specs"><span>Headline <b>700</b></span><span>Body <b>600</b></span><span>Case <b>Natural</b></span></div></div></section>
 ${agentGuideSection('tech-blog')}
-<section id="usage" class="guide-section">${heading('In use','Article covers, subscription moments and welcome emails share the same identity.')}<div class="tech-pair">${specimen('15:13916')}${specimen('15:27318')}</div><a class="text-link" href="#tech-blog/create/cover">Make your own ${icon('arrow')}</a></section></div>`;}
+<section id="usage" class="guide-section">${heading('In use','Start with the cover. Make the headline yours; keep the identity and construction intact.')}${studioInvitation({workspace:'tech-blog',artwork:specimen('15:32743')})}</section></div>`;}
+
 export function mountTech(root){
  const resize=new ResizeObserver(entries=>entries.forEach(({target,contentRect})=>{target.firstElementChild.style.transform=`scale(${contentRect.width/Number(target.dataset.techWidth)})`;}));root.querySelectorAll('[data-tech-width]').forEach(frame=>resize.observe(frame));
- const submit=event=>{if(!event.target.matches('[data-tech-form]'))return;event.preventDefault();event.target.hidden=true;event.target.nextElementSibling.hidden=false;};
- const click=event=>{if(event.target.closest('[data-tech-reset]')){const demo=event.target.closest('.tech-subscribe-demo');demo.querySelector('form').hidden=false;demo.querySelector('.tech-demo-confirmation').hidden=true;demo.querySelector('input').focus();}};
- root.addEventListener('submit',submit);root.addEventListener('click',click);return()=>{resize.disconnect();root.removeEventListener('submit',submit);root.removeEventListener('click',click);};
+ return()=>resize.disconnect();
 }

@@ -8,5 +8,5 @@ export const ambassadorFormats = [
  {id:'spotlight',name:'Spotlight',width:1080,height:1080,detail:'1080 × 1080 px'},
  {id:'badge',name:'Name tag',width:900,height:600,detail:'90 × 60 mm'},
 ];
-export const ambassadorSections=[['overview','Overview'],['identity','Identity'],['construction','Construction'],['clear-space','Clear space'],['layout','Layout'],['typography','Typography'],['globe','Globe'],['formats','Formats'],['usage','In use']];
+export const ambassadorSections=[['overview','Overview'],['identity','Identity'],['construction','Construction'],['clear-space','Clear space'],['layout','Layout'],['typography','Typography'],['globe','Globe'],['formats','Formats'],['for-your-agent','For your agent'],['usage','In use']];
 export const ambassadorPreview=id=>`/ambassadors/previews/${id}.webp`;

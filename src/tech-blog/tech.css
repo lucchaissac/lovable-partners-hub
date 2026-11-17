@@ -1,0 +1,27 @@
+.tech-frame { width:100%; position:relative; overflow:hidden; }
+.tech-source { transform-origin:top left; position:absolute; top:0; left:0; }
+.tech-desktop,.tech-desktop-base { position:relative; width:100%; height:100%; background:#1b1b1b; color:#fff; overflow:hidden; }
+.tech-modal-wash { position:absolute; inset:0; background:#0009; }
+.tech-demo-button { color:#1b1b1b; background:#f7f4ed; border-radius:8px; padding:8px 14px; font:600 14px 'Camera Plain'; }
+.tech-gallery .gallery-grid { align-items:start; }
+.tech-gallery .tech-artwork { grid-column:span 4; width:100%; margin-top:0; background:transparent; }
+.tech-gallery .tech-artwork:nth-child(3n+2) { margin-top:80px; }
+.tech-gallery .tech-artwork:nth-child(3n) { margin-top:32px; }
+.tech-gallery .tech-mobile { width:70%; justify-self:center; }
+.tech-guidelines .tech-frame { border-radius:12px; }
+.tech-guidelines .overview-section > .tech-frame { margin-top:40px; }
+.tech-pair,.tech-trio { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:24px; margin-block:24px; align-items:start; }
+.tech-trio { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.tech-identity-example { max-width:440px; margin-inline:auto; }
+.tech-subscribe-demo { background:var(--color-surface); padding:32px; border-radius:16px; max-width:480px; margin:0 auto 32px; }
+.tech-subscribe-demo form { display:grid; gap:20px; }
+.tech-subscribe-demo [hidden] { display:none; }
+.tech-subscribe-demo h3 { font-size:26px; line-height:1; letter-spacing:-.03em; }
+.tech-subscribe-demo label { display:grid; gap:8px; font-size:14px; }
+.tech-subscribe-demo input { width:100%; height:48px; border:1px solid var(--color-border); border-radius:8px; padding:12px; background:transparent; color:inherit; font:inherit; }
+.tech-subscribe-demo p { font-size:12px; color:var(--color-muted); }
+.tech-demo-confirmation { display:grid; gap:20px; }
+@media(max-width:1000px){.tech-gallery .tech-artwork:nth-child(n){grid-column:auto;margin-top:0}.tech-gallery .tech-artwork:nth-child(2n){margin-top:50px}.tech-pair{gap:16px}}
+@media(max-width:680px){.tech-gallery .tech-artwork:nth-child(n){margin-top:0;width:100%}.tech-gallery .tech-mobile:nth-child(n){width:72%}.tech-pair{grid-template-columns:1fr}.tech-trio{gap:8px}}
+/* The local 600 minimum must not split the source's short navigation labels. */
+.tech-source [data-node-id="15:33328"] p,.tech-source [data-node-id="15:13922"] p { white-space:nowrap; }

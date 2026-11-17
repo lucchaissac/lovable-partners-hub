@@ -1,6 +1,6 @@
 const layer = document.querySelector('[data-brand-transition]');
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-const names = { lovable: 'Lovable', partners: 'Partners', ambassadors: 'Community' };
+const names = { 'tech-blog':'Tech blog', lovable: 'Lovable', partners: 'Partners', ambassadors: 'Community' };
 let currentWorkspace;
 let animations = [];
 let timeout;
@@ -32,17 +32,17 @@ export function showWorkspaceTransition(workspace) {
   try {
     const word = label.animate([
       { opacity: firstVisit ? 1 : 0, offset: 0, easing: 'cubic-bezier(.16,1,.3,1)' },
-      { opacity: 1, offset: 0.15 },
-      { opacity: 1, offset: 0.65, easing: 'cubic-bezier(.2,0,0,1)' },
+      { opacity: 1, offset: 48 / 1820 },
+      { opacity: 1, offset: 1708 / 1820, easing: 'cubic-bezier(.2,0,0,1)' },
       { opacity: 0, offset: 1 },
-    ], { duration: 320, easing: 'linear', fill: 'both' });
+    ], { duration: 1820, easing: 'linear', fill: 'both' });
     animations = [word];
     word.finished.then(() => {
       if (activeRevision === revision) dismiss();
     }).catch(() => {});
     timeout = setTimeout(() => {
       if (activeRevision === revision) dismiss();
-    }, 800);
+    }, 2200);
   } catch {
     dismiss();
   }

@@ -1,0 +1,31 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="17.3015" height="17.5806" viewBox="0 0 17.3015 17.5806" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path id="Vector" d="M17.3015 0H0V17.5806H17.3015V0Z" fill="url(#paint0_radial_0_6)"/>
+<defs>
+<radialGradient id="paint0_radial_0_6" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(9.07535 2.99177) scale(15.613)">
+<stop stop-color="#FE7B02" stop-opacity="0.9721"/>
+<stop offset="0.0625" stop-color="#FE7B02" stop-opacity="0.9659"/>
+<stop offset="0.1042" stop-color="#FE7B02" stop-opacity="0.9524"/>
+<stop offset="0.1375" stop-color="#FE7B02" stop-opacity="0.9355"/>
+<stop offset="0.175" stop-color="#FE7B02" stop-opacity="0.9085"/>
+<stop offset="0.2" stop-color="#FE7B02" stop-opacity="0.8851"/>
+<stop offset="0.225" stop-color="#FE7B02" stop-opacity="0.8574"/>
+<stop offset="0.25" stop-color="#FE7B02" stop-opacity="0.8246"/>
+<stop offset="0.2958" stop-color="#FE7B02" stop-opacity="0.7516"/>
+<stop offset="0.3417" stop-color="#FE7B02" stop-opacity="0.6635"/>
+<stop offset="0.3917" stop-color="#FE7B02" stop-opacity="0.5545"/>
+<stop offset="0.45" stop-color="#FE7B02" stop-opacity="0.4195"/>
+<stop offset="0.5042" stop-color="#FE7B02" stop-opacity="0.3029"/>
+<stop offset="0.525" stop-color="#FE7B02" stop-opacity="0.2622"/>
+<stop offset="0.5542" stop-color="#FE7B02" stop-opacity="0.2106"/>
+<stop offset="0.5875" stop-color="#FE7B02" stop-opacity="0.159"/>
+<stop offset="0.6208" stop-color="#FE7B02" stop-opacity="0.1158"/>
+<stop offset="0.6417" stop-color="#FE7B02" stop-opacity="0.0939"/>
+<stop offset="0.6708" stop-color="#FE7B02" stop-opacity="0.0686"/>
+<stop offset="0.7" stop-color="#FE7B02" stop-opacity="0.0488"/>
+<stop offset="0.7375" stop-color="#FE7B02" stop-opacity="0.0302"/>
+<stop offset="0.7708" stop-color="#FE7B02" stop-opacity="0.0191"/>
+<stop offset="0.8583" stop-color="#FE7B02" stop-opacity="0.01"/>
+<stop offset="1" stop-color="#FE7B02" stop-opacity="0"/>
+</radialGradient>
+</defs>
+</svg>

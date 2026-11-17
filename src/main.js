@@ -1,3 +1,5 @@
+import {techGallery,techGuidelines,techSections,mountTech} from './tech-blog/index.js';
+import {mountAgentGuide} from './agentGuide.js';
 import {brandGallery,brandGuidelines,brandSections,mountBrandHub} from './brand.js';
 import {updateWorkspaceMetadata} from './workspaceMetadata.js';
 import {warmGallery} from './galleryLoading.js';
@@ -5,23 +7,23 @@ import './navigation.js';
 import { showWorkspaceTransition } from './brand-transition.js';
 import {ambassadorDefaultFormat,ambassadorFormats,ambassadorSections} from './ambassadors/catalog.js';
 import {ambassadorGallery,ambassadorGuidelines,mountAmbassadorPreviews} from './ambassadors/views.js';
-import { createElement, Globe, Grid3X3, Moon, Sun, Search, X, ArrowUpRight, ArrowRight, ChevronDown, Download, Check, Copy, Upload, RotateCcw, Pause, Play } from 'lucide';
+import { createElement, CodeXml, Globe, Grid3X3, Moon, Sun, Search, X, ArrowUpRight, ArrowRight, ChevronDown, Download, Check, Copy, Upload, RotateCcw, Pause, Play } from 'lucide';
 import { FORMATS, TIERS, FIGMA_FILE, badgeSvg, badgeGeometry, prepareTypography } from './badges.js';
 import { exportBadge } from './export.js';
 import { guidelines } from './guidelines.js';
 import { studio } from './studio.js';
 import { gallery, mountGallery } from './gallery.js';
 
-const icons={globe:Globe,grid:Grid3X3,moon:Moon,sun:Sun,search:Search,x:X,arrow:ArrowUpRight,next:ArrowRight,chevron:ChevronDown,download:Download,check:Check,copy:Copy,upload:Upload,replay:RotateCcw,pause:Pause,play:Play};
+const icons={code:CodeXml,globe:Globe,grid:Grid3X3,moon:Moon,sun:Sun,search:Search,x:X,arrow:ArrowUpRight,next:ArrowRight,chevron:ChevronDown,download:Download,check:Check,copy:Copy,upload:Upload,replay:RotateCcw,pause:Pause,play:Play};
 export const icon=name=>`<i data-icon="${name}" aria-hidden="true"></i>`;
-export const sections=[['overview','Overview'],['construction','Construction'],['connections','Connections'],['clear-space','Clear space'],['scale','Scale'],['motion','Motion'],['formats','Formats'],['color','Color'],['typography','Typography'],['usage','Usage']];
+export const sections=[['overview','Overview'],['construction','Construction'],['connections','Connections'],['clear-space','Clear space'],['scale','Scale'],['motion','Motion'],['formats','Formats'],['color','Color'],['typography','Typography'],['for-your-agent','For your agent'],['usage','In use']];
 const app=document.querySelector('#app');
 const state={workspace:'partners',view:'guidelines',filter:'all',tier:'Select',format:'solution-compact',year:'2026',partnerName:'',partnerImage:'',symbolSize:'large',guides:false,background:'dark',scale:2};
-let observer,assemblyObserver,toastTimer,cleanupGallery,cleanupAmbassadors,cleanupBrand;
-const currentSections=()=>state.workspace==='lovable'?brandSections:state.workspace==='ambassadors'?ambassadorSections:sections;
-const currentFormats=()=>state.workspace==='lovable'?[]:state.workspace==='ambassadors'?ambassadorFormats:FORMATS;
-const route=(view,section)=>`#${state.workspace==='lovable'?'brand/':state.workspace==='ambassadors'?'ambassadors/':''}${view}${section?`/${section}`:''}`;
-function parseRoute(){const parts=location.hash.slice(1).split('/');const workspace=parts[0]==='brand'?'lovable':parts[0]==='ambassadors'?'ambassadors':'partners';if(workspace!=='partners')parts.shift();return {workspace,view:parts[0]||'gallery',section:parts[1]};}
+let observer,assemblyObserver,toastTimer,cleanupGallery,cleanupAmbassadors,cleanupBrand,cleanupAgentGuide,cleanupTech;
+const currentSections=()=>state.workspace==='tech-blog'?techSections:state.workspace==='lovable'?brandSections:state.workspace==='ambassadors'?ambassadorSections:sections;
+const currentFormats=()=>state.workspace==='tech-blog'?[]:state.workspace==='lovable'?[]:state.workspace==='ambassadors'?ambassadorFormats:FORMATS;
+const route=(view,section)=>`#${state.workspace==='tech-blog'?'tech-blog/':state.workspace==='lovable'?'brand/':state.workspace==='ambassadors'?'ambassadors/':''}${view}${section?`/${section}`:''}`;
+function parseRoute(){const parts=location.hash.slice(1).split('/');const workspace=parts[0]==='tech-blog'?'tech-blog':parts[0]==='brand'?'lovable':parts[0]==='ambassadors'?'ambassadors':'partners';if(workspace!=='partners')parts.shift();return {workspace,view:parts[0]||'gallery',section:parts[1]};}
 const escape=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function hydrateIcons(root=document){root.querySelectorAll('select').forEach(select=>{if(select.parentElement.classList.contains('select-control'))return;const wrapper=document.createElement('span');wrapper.className='select-control';select.replaceWith(wrapper);wrapper.append(select,createElement(ChevronDown,{class:'select-chevron',width:14,height:14,'stroke-width':1.75,'aria-hidden':'true',focusable:'false'}));});root.querySelectorAll('[data-icon]').forEach(el=>el.replaceWith(createElement(icons[el.dataset.icon]||icons.grid,{class:'icon','stroke-width':1.8,'aria-hidden':'true',focusable:'false'})));}
 export function formatCard(f,compact=false){return `<article class="format-card"><button class="format-preview ${f.layout}" style="--badge-row-scale:${160/badgeGeometry('solution-horizontal',state.tier).width};--badge-height-scale:${badgeGeometry(f.id,state.tier).height/badgeGeometry(f.id,state.tier).moduleHeight}" data-customize="${f.id}" aria-label="Customize ${f.name}">${badgeSvg(f.id,{tier:state.tier})}</button><div class="format-caption"><div><h3>${f.name}</h3>${compact?'':`<p>${f.description}</p>`}</div><button class="subtle-button" data-download="${f.id}" aria-label="Download ${f.name} as .svg" title="Download .svg">${icon('download')}</button></div></article>`;}
@@ -63,12 +65,14 @@ function render(view=state.view,{reset=true}={}){
  showWorkspaceTransition(state.workspace);
  const showLibrary=view==='library';if(showLibrary||view==='badge')view='create';
  const requestedBadge=parseRoute().section,badge=currentFormats().some(format=>format.id===requestedBadge)||(state.workspace==='ambassadors'&&requestedBadge===ambassadorDefaultFormat)?requestedBadge:undefined,starter=state.workspace==='partners'&&requestedBadge==='grow-your-business';
- requestedSection=undefined;state.view=view;observer?.disconnect();assemblyObserver?.disconnect();cleanupGallery?.();cleanupGallery=undefined;cleanupAmbassadors?.();cleanupAmbassadors=undefined;cleanupBrand?.();cleanupBrand=undefined;
+ requestedSection=undefined;state.view=view;observer?.disconnect();assemblyObserver?.disconnect();cleanupGallery?.();cleanupGallery=undefined;cleanupAmbassadors?.();cleanupAmbassadors=undefined;cleanupBrand?.();cleanupBrand=undefined;cleanupAgentGuide?.();cleanupAgentGuide=undefined;cleanupTech?.();cleanupTech=undefined;
  const brand=state.workspace==='lovable',ambassadors=state.workspace==='ambassadors';
  const asset=ambassadors&&/^[a-f0-9-]{36}$/i.test(requestedBadge??'')?requestedBadge:undefined;
- app.innerHTML=brand?(view==='gallery'?brandGallery():view==='create'?studio({workspace:'lovable',badge:['collaboration','app-studio'].includes(requestedBadge)?requestedBadge:!requestedBadge?'collaboration':undefined,asset:/^[a-f0-9-]{36}$/i.test(requestedBadge??'')?requestedBadge:undefined}):brandGuidelines({icon})):view==='gallery'?(ambassadors?ambassadorGallery():gallery()):view==='create'?studio({library:showLibrary,badge,asset,starter,workspace:state.workspace}):ambassadors?ambassadorGuidelines({icon}):guidelines(state.tier,{icon,formatCard,sections});
+ app.innerHTML=state.workspace==='tech-blog'?(view==='gallery'?techGallery():view==='create'?studio({workspace:'tech-blog',badge:requestedBadge==='cover'||!requestedBadge?'cover':undefined,asset:/^[a-f0-9-]{36}$/i.test(requestedBadge??'')?requestedBadge:undefined}):techGuidelines({icon})):brand?(view==='gallery'?brandGallery():view==='create'?studio({workspace:'lovable',badge:['collaboration','app-studio'].includes(requestedBadge)?requestedBadge:!requestedBadge?'collaboration':undefined,asset:/^[a-f0-9-]{36}$/i.test(requestedBadge??'')?requestedBadge:undefined}):brandGuidelines({icon})):view==='gallery'?(ambassadors?ambassadorGallery():gallery()):view==='create'?studio({library:showLibrary,badge,asset,starter,workspace:state.workspace}):ambassadors?ambassadorGuidelines({icon}):guidelines(state.tier,{icon,formatCard,sections});
  document.querySelectorAll('[data-workspace]').forEach(button=>{const selected=!brand&&button.dataset.workspace===state.workspace;button.classList.toggle('is-selected',selected);if(button.dataset.workspace!=='lovable')button.setAttribute('aria-pressed',String(selected));});
  updateWorkspaceMetadata(state.workspace);
+ if(state.workspace==='tech-blog'&&view!=='create')cleanupTech=mountTech(app);
+ if(view==='guidelines')cleanupAgentGuide=mountAgentGuide(app,toast);
  if(brand)cleanupBrand=mountBrandHub(app,toast);
  document.querySelector('.section-switcher').hidden=false;document.querySelector('#search-toggle').hidden=false;
  const brandLink=document.querySelector('[data-brand-link]');brandLink.classList.toggle('is-selected',brand);if(brand)brandLink.setAttribute('aria-current','page');else brandLink.removeAttribute('aria-current');

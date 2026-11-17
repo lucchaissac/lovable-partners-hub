@@ -1,9 +1,10 @@
 import assets from './lovable/assets.json';
 import './brand.css';
 import {clearSpaceDiagrams,collaborationDiagrams} from './lovable/diagrams.js';
-import {appStudioSpecimen} from './lovable/appStudio.js';
+import {logoPlayground,mountLogoPlayground} from './lovable/logoPlayground.js';
+import {agentGuideSection} from './agentGuide.js';
 
-export const brandSections = [['overview','Overview'],['identity','Identity'],['clear-space','Clear space'],['collaborations','Co-branding'],['app-studio','App Studio'],['color','Color'],['typography','Typography'],['photography','Photography'],['downloads','Downloads']];
+export const brandSections = [['overview','Overview'],['identity','Identity'],['clear-space','Clear space'],['collaborations','Co-branding'],['gradients','Animated gradients'],['color','Color'],['typography','Typography'],['photography','Photography'],['for-your-agent','For your agent'],['downloads','Downloads']];
 import {brandGalleryAssets} from './lovable/galleryMedia.js';
 const escape = value => String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const source = 'https://lovablebrand.lovable.app';
@@ -23,18 +24,20 @@ function logoCard(logo,icon){
 export function brandGuidelines({icon}){
  return `<aside class="guideline-sidebar"><nav aria-label="Guideline navigation">${brandSections.map(([id,label],i)=>`<a href="#brand/guidelines/${id}" data-section="${id}" ${i===0?'aria-current="location"':''}>${label}</a>`).join('')}</nav></aside><div class="guideline-content lovable-guidelines">
  <section id="overview" class="guide-section overview-section"><div class="page-intro"><h1>Lovable</h1><p>The identity, the colors, the essentials.</p></div><div class="lovable-identity-hero"><img class="lovable-logo-light" src="/brand/assets/lockup-white.svg" alt="Lovable"/><img class="lovable-logo-dark" src="/brand/assets/lockup-black.svg" alt="Lovable"/></div><div class="intro-footer"><p>Original artwork and guidance from the Lovable brand hub.</p>${external('/','Visit brand hub',icon)}</div></section>
- <section id="identity" class="guide-section">${heading('Identity','Choose the supplied version for your background. Keep the artwork’s proportions and leave space around the logo.')}<div class="lovable-logo-grid">${assets.logos.map(logo=>logoCard(logo,icon)).join('')}</div><div class="lovable-usage-notes"><p>Use a clear, contrasting background.</p><p>Keep the original colors and shapes.</p><p>Avoid stretching, shadows and added outlines.</p></div></section>
+ <section id="identity" class="guide-section">${heading('Identity','Choose the supplied version for your background. Keep the artwork’s proportions and leave space around the logo.')}${logoPlayground()}<div class="lovable-logo-grid">${assets.logos.map(logo=>logoCard(logo,icon)).join('')}</div><div class="lovable-usage-notes"><p>Use a clear, contrasting background.</p><p>Keep the original colors and shapes.</p><p>Avoid stretching, shadows and added outlines.</p></div></section>
  <section id="clear-space" class="guide-section">${heading('Clear space','Keep text, images and edges away from the visible artwork. Leave a clear area around both the symbol and the complete logo.')}${clearSpaceDiagrams()}<p class="quiet-note">The x labels show equal spacing in these diagrams; they do not define an official minimum.</p></section>
  <section id="collaborations" class="guide-section">${heading('Co-branding','Use monochrome artwork, balance the visible size of both identities and keep equal space on either side of the divider.')}${collaborationDiagrams()}<div class="lovable-usage-notes"><p>Balance wordmark size optically.</p><p>Keep equal gaps around the divider.</p><p>Use symbols together when both brands are recognizable.</p></div></section>
- <section id="app-studio" class="guide-section">${heading('App Studio','Start with this banner for App Studio events. Keep the original wordmark and update the event details.')}${appStudioSpecimen()}<div class="intro-footer"><p>1920 × 1080</p><a class="text-link" href="#brand/create/app-studio">Use template ${icon('arrow')}</a></div></section>
+ <section id="gradients" class="guide-section">${heading('Animated gradients','Use the original motion artwork. Preserve its colors and let it fill the composition.')}<div class="lovable-motion-grid">${brandGalleryAssets.filter(asset=>asset.id.startsWith('gradient-')).map(asset=>`<div class="lovable-gradient-preview"><video class="gallery-video" data-video-small="${asset.small}" data-video-large="${asset.src}" poster="${asset.thumbnail}" muted loop playsinline preload="none" aria-label="Animated Lovable gradient"></video></div>`).join('')}</div></section>
  <section id="color" class="guide-section">${heading('Color','The original brand palette, with black and creme neutrals. Use the colors in brand artwork and marketing.')}<div class="lovable-color-grid">${assets.colors.map(color=>`<button class="lovable-color" data-brand-copy="${color.hex}" aria-label="Copy ${color.name}: ${color.hex}"><span class="lovable-color-chip" style="--swatch:${color.hex}" aria-hidden="true"></span><span class="lovable-color-name">${color.name}</span><span class="lovable-color-value">${color.hex} ${icon('copy')}</span></button>`).join('')}</div><p class="quiet-note">Keep interface controls neutral; the brand palette is not a set of button or toggle colors.</p></section>
  <section id="typography" class="guide-section">${heading('Typography','Camera Plain is the primary Lovable typeface, used for headlines, body copy and interface text.')}<div class="lovable-type-specimen"><span>Camera Plain</span><div>Make something<br/>people love.</div><p>Aa Bb Cc Dd Ee Ff Gg Hh Ii Jj<br/>0123456789 &amp;?!</p></div><div class="intro-footer"><p>Use the original font files from the brand hub.</p>${external('/brand/typography','Get Camera Plain',icon)}</div></section>
  <section id="photography" class="guide-section">${heading('Photography','Original founder and company photographs, available for press and editorial use.')}<div class="lovable-photo-grid">${assets.media.filter(asset=>asset.kind==='photo').map(asset=>`<article>${image(asset)}<div class="format-caption"><h3>${asset.name}</h3><a class="subtle-button" href="${asset.url}" target="_blank" rel="noopener noreferrer" aria-label="Open original photo: ${asset.name}">${icon('arrow')}</a></div></article>`).join('')}</div></section>
+ ${agentGuideSection('lovable')}
  <section id="downloads" class="guide-section">${heading('Downloads','Original files, ready to use.')}<div class="lovable-downloads">${[['/brand/logo','Logos and symbols','Vector masters'],['/brand/banners-wallpapers','Banners and wallpapers','Social covers and desktop backgrounds'],['/brand/photos','Photography','Full-resolution originals']].map(([href,title,detail])=>`<a href="${source}${href}" target="_blank" rel="noopener noreferrer"><span>${title}<small>${detail}</small></span>${icon('arrow')}</a>`).join('')}</div></section>
  </div>`;
 }
 
 export function mountBrandHub(root,notify){
+ const cleanupLogo=mountLogoPlayground(root);
  const click=async event=>{
   const button=event.target.closest('[data-brand-copy]');
   if(!button)return;
@@ -42,5 +45,5 @@ export function mountBrandHub(root,notify){
   catch{notify('Copy was unavailable. Please try again.');}
  };
  root.addEventListener('click',click);
- return()=>root.removeEventListener('click',click);
+ return()=>{cleanupLogo();root.removeEventListener('click',click);};
 }

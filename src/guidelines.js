@@ -1,3 +1,4 @@
+import {agentGuideSection} from './agentGuide.js';
 import { FORMATS, badgeSvg, paddingDiagram, badgeAssembly, badgeVolume, symbolClearSpace } from './badges.js';
 import { studioInvitation } from './studio-preview.js';
 
@@ -57,7 +58,7 @@ export function guidelines(tier,{icon,formatCard,sections}) {
    <div class="type-poster"><span class="specimen-label">Camera Plain · Bold</span><div>Camera Plain</div><div class="specimen-specs"><span>Weight <b>700</b></span><span>Case <b>Natural</b></span><span>Alignment <b>Left</b></span></div></div>
    <div class="type-pair"><div class="type-card"><span class="specimen-label">Badge text</span><div class="badge-type-demo">Solution<br />Partner</div><p>Two lines. 3x high. x around.</p></div><div class="type-card"><span class="specimen-label">Body text</span><div class="body-type-demo">Use clear, useful language. Keep sentences short and give each idea enough room to breathe.</div><p>Camera Plain · Semibold · 600 minimum</p></div></div>
   </section>
-  <section id="usage" class="guide-section">
+  ${agentGuideSection('partners')}<section id="usage" class="guide-section">
    ${heading('In use','Pick the shape that fits. Keep the badge intact.')}
    <div class="usage-examples"><figure><div>${badge('expert-horizontal')}</div><figcaption>Wide placements</figcaption></figure><figure><div>${badge('solution-stacked')}</div><figcaption>Stacked placements</figcaption></figure></div>
    <div class="usage-notes"><p>Scale as one. Keep blocks connected.</p><p>Use your current status, tier and year.</p><p>Give your logo its own block.</p></div>

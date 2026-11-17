@@ -1,4 +1,5 @@
 const workspaces = {
+ 'tech-blog':{title:'Lovable Tech blog',description:'Lovable Tech blog artwork, guidelines and design studio.'},
   lovable: {title: 'Lovable', description: 'Explore the Lovable brand hub.'},
   partners: {title: 'Lovable Partners', description: 'Lovable partner badges, guidelines and design studio.'},
   ambassadors: {title: 'Lovable Community', description: 'Lovable Community assets, guidelines and design studio.'},

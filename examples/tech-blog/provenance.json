@@ -1,0 +1,32 @@
+{
+  "source": "https://www.figma.com/design/sUeZcAIPXpjFAuHnPigkNm/lovable",
+  "nodes": [
+    "15:27318",
+    "15:17307",
+    "15:20722",
+    "15:13916",
+    "15:33982",
+    "15:34568",
+    "15:35184",
+    "15:35482",
+    "15:35805",
+    "15:34260",
+    "15:35806",
+    "15:34876",
+    "15:35793",
+    "15:33730",
+    "15:33356",
+    "15:33512",
+    "15:33792",
+    "15:33574",
+    "15:33887"
+  ],
+  "cover": "15:32743",
+  "implementation": "Native HTML/CSS specimens with local original SVG assets. Two annotation nodes inform subscription placement. Editable cover uses separate native text and artwork layers in the shared studio.",
+  "overrides": [
+    "Camera Plain body and interface minimum 600; badges 700.",
+    "Natural sentence case; English replaces the source language abbreviation.",
+    "No real mailing subscription is submitted by the guideline demo."
+  ],
+  "sharedGuidelines": "shared/techBlogGuidelines.mjs"
+}

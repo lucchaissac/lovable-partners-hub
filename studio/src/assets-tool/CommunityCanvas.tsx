@@ -1,3 +1,4 @@
+import {graphicEventFormat} from './communityGraphic';
 import {memo,useEffect,useLayoutEffect,useRef,useState,type ReactNode,type DragEvent,type KeyboardEvent} from 'react';
 import {Button,Dropdown,Icon,Tooltip} from '@asset/ui';
 import {ambassadorFormats} from '../../../src/ambassadors/catalog.js';
@@ -17,7 +18,7 @@ function AddAsset({disabled,onAdd,compact=false}:{disabled:boolean;onAdd:(kind:s
  return <Dropdown placement="top" align="center" items={[
   {id:'blank',label:'Blank asset',leadingIcon:<Icon name="plus" size={16}/>},
   {id:'duplicate',label:'Duplicate asset',leadingIcon:<Icon name="copy" size={16}/>},
-  {kind:'separator'},...ambassadorFormats.map(format=>({id:format.id,label:format.name,leadingIcon:<Icon name={format.width===format.height?'square':'rectangle-horizontal'} size={16}/>})),
+  {kind:'separator'},...[...ambassadorFormats,graphicEventFormat].map(format=>({id:format.id,label:format.name,leadingIcon:<Icon name={format.width===format.height?'square':'rectangle-horizontal'} size={16}/>})),
  ]} onChange={onAdd} trigger={<Button variant="ghost" disabled={disabled} className={compact?'community-page-add-tile':'community-page-add'} aria-label="Add asset" leadingIcon={<Icon name="plus" size={16}/>} trailingIcon={!compact?<Icon name="chevron-down" size={14}/>:undefined}>{!compact&&'Add asset'}</Button>}/>;
 }
 export function CommunityCanvas({toolbar,asset,pages,busy,generating,zoom,onZoom,onChange,onOpen,onAdd,onOverview,onRename,onMove,onRemove,onUndoArrangement}:Props){

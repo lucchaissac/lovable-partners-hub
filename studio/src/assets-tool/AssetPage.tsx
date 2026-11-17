@@ -1,3 +1,4 @@
+import {graphicEventFormat,applyCommunityContrast} from './communityGraphic';
 import {techStarterAsset} from './techAsset';
 import {brandStarterAsset,isAppStudioAsset} from './brandAsset';
 import {requestsAppStudioTemplate} from '../../../shared/brandTemplates.mjs';
@@ -104,6 +105,7 @@ function AssetPageContent() {
     return()=>{cancelled=true;cancelAnimationFrame(first);cancelAnimationFrame(second);};
   },[loading,asset?.id]);
   const [historyVersion, setHistoryVersion] = useState(0);
+  const numberScrub=useRef<string|undefined>(undefined);
   const past = useRef<AssetDocument[]>([]), future = useRef<AssetDocument[]>([]);
   const upload = useRef<HTMLInputElement>(null), exportBoard = useRef<HTMLDivElement>(null);
   const readingFile = useRef(false);
@@ -122,15 +124,17 @@ function AssetPageContent() {
   useEffect(() => { if (!id && current.current) put(current.current); }, []);
   const change = useCallback((next: AssetDocument) => {
     if (current.current && JSON.stringify(current.current) === JSON.stringify(next)) return;
-    if(studioWorkspace==='ambassadors')next=syncCommunityDocument(next,current.current);
+    if(studioWorkspace==='ambassadors'){next=syncCommunityDocument(next,current.current);if(next.community?.autoContrast&&next.background!==current.current?.background)next=applyCommunityContrast(next);}
     const oldTemplate=communitySettings(current.current),newTemplate=communitySettings(next);
     if(studioWorkspace==='ambassadors'&&oldTemplate&&newTemplate&&next.title===current.current?.title){
-      const oldName=ambassadorFormats.find(format=>format.id===oldTemplate.format)!.name;
-      if(next.title===`${oldName} · ${oldTemplate.city||'Community'}`)next={...next,title:`${ambassadorFormats.find(format=>format.id===newTemplate.format)!.name} · ${newTemplate.city||'Community'}`};
+      const oldName=current.current?.community?.layout==='graphic'?graphicEventFormat.name:ambassadorFormats.find(format=>format.id===oldTemplate.format)!.name;
+      if(next.title===`${oldName} · ${oldTemplate.city||'Community'}`)next={...next,title:`${next.community?.layout==='graphic'?graphicEventFormat.name:ambassadorFormats.find(format=>format.id===newTemplate.format)!.name} · ${newTemplate.city||'Community'}`};
     }
     const parsed = assetSchema.safeParse({ ...next, messages:current.current?.messages ?? next.messages, workspaceChats:current.current?.workspaceChats??next.workspaceChats,workspaceActiveChatId:current.current?.workspaceActiveChatId??next.workspaceActiveChatId, updatedAt: Date.now() });
     if (!parsed.success) { setError(parsed.error.issues[0]?.message || 'Check the asset dimensions.'); return; }
-    if (current.current) past.current = [...past.current.slice(-49), current.current];
+    const scrub=document.documentElement.dataset.numberScrubbing;
+    if (current.current&&(!scrub||scrub!==numberScrub.current)) past.current = [...past.current.slice(-49), current.current];
+    numberScrub.current=scrub;
     future.current = []; put(parsed.data); setHistoryVersion(value => value + 1);
   }, [put]);
   const undo = useCallback(() => { const previous = past.current.pop(); if (!previous || !current.current) return; future.current.push(current.current); put({ ...previous, series:current.current.series, messages:current.current.messages,workspaceChats:current.current.workspaceChats,workspaceActiveChatId:current.current.workspaceActiveChatId, updatedAt: Date.now() }); setHistoryVersion(value => value + 1);  }, [put]);
@@ -371,7 +375,7 @@ function AssetPageContent() {
     action:(action,id)=>{if(action==='stop')stop();else if(action==='retry'&&lastRequest.current)void refine(lastRequest.current);else if(action==='dismiss')setError('');else if(action==='remove')setQueued(items=>items.filter(item=>item.id!==id));},
 
   };
-  const template=communitySettings(asset),templateFormat=ambassadorFormats.find(format=>format.id===template?.format);
+  const template=communitySettings(asset),templateFormat=asset?.community?.layout==='graphic'?graphicEventFormat:ambassadorFormats.find(format=>format.id===template?.format);
   const switchBrandTemplate=async(templateId:string)=>{
     const previous=current.current;if(!previous||changingTemplate)return;
     setChangingTemplate(true);setError('');
@@ -385,8 +389,8 @@ function AssetPageContent() {
     try{
       const oldTemplate=communitySettings(previous),next=await ambassadorAsset(formatId,oldTemplate);
       if(!mounted.current||current.current?.id!==previous.id)return;
-      const automaticTitle=oldTemplate?`${ambassadorFormats.find(format=>format.id===oldTemplate.format)!.name} · ${oldTemplate.city||'Community'}`:previous.title;
-      change({...previous,...next,id:previous.id,series:previous.series,title:previous.title===automaticTitle?next.title:previous.title,layouts:undefined});setZoom(0);
+      const automaticTitle=oldTemplate?`${previous.community?.layout==='graphic'?graphicEventFormat.name:ambassadorFormats.find(format=>format.id===oldTemplate.format)!.name} · ${oldTemplate.city||'Community'}`:previous.title;
+      change({...previous,...next,id:previous.id,series:previous.series,title:previous.title===automaticTitle?next.title:previous.title,community:next.community,layouts:undefined});setZoom(0);
     }catch(reason){setError(reason instanceof Error?reason.message:'Could not open this template.');}
     finally{if(mounted.current)setChangingTemplate(false);}
   };
@@ -473,7 +477,7 @@ function AssetPageContent() {
       <AssetLibrary open={libraryOpen} onOpenChange={setLibraryOpen}/>
       <HtmlPresentationTools primitivesOnly/>
       {studioWorkspace==='lovable'&&<Dropdown align="end" value={isAppStudioAsset(asset)?'app-studio':'collaboration'} items={[{id:'collaboration',label:'Lovable × Cerebras'},{id:'app-studio',label:'App Studio'}]} onChange={value=>void switchBrandTemplate(value)} trigger={<Button variant="ghost" disabled={busy||changingTemplate} aria-label="Lovable template" trailingIcon={<Icon name="chevron-down" size={14}/>}>Template</Button>}/>}
-      {studioWorkspace==='ambassadors'?<Dropdown align="end" value={templateFormat?.id} items={ambassadorFormats.map(format=>({id:format.id,label:format.name,leadingIcon:<Icon name={format.width===format.height?'square':'rectangle-horizontal'} size={16} style={format.width<format.height?{transform:'rotate(90deg)'}:undefined}/>}))} onChange={value=>void switchCommunityTemplate(value)} trigger={<Button variant="ghost" disabled={busy||changingTemplate||exporting} className="asset-format-trigger" aria-label={`Community template: ${templateFormat?.name??'Custom'}`} trailingIcon={<Icon name="chevron-down" size={14}/>}>{templateFormat?.name??'Template'}</Button>}/>:<Dropdown align="end" value={asset.format} items={Object.entries(formats).map(([id,item])=>({id,label:item.label,leadingIcon:<Icon name={id==='square'?'square':'rectangle-horizontal'} size={16} style={id==='portrait'?{transform:'rotate(90deg)'}:undefined}/>}))} onChange={value=>{change(resizeAsset({...asset,editor:nativeDocument(asset)},value as AssetFormat));setZoom(0);}} trigger={<Button variant="ghost" disabled={busy} className="asset-format-trigger" aria-label={`Canvas format: ${formats[asset.format].label}`} leadingIcon={<Icon name={asset.format==='square'?'square':'rectangle-horizontal'} size={16} style={asset.format==='portrait'?{transform:'rotate(90deg)'}:undefined}/>} trailingIcon={<Icon name="chevron-down" size={14}/>}/>}/>}
+      {studioWorkspace==='ambassadors'?<Dropdown align="end" value={templateFormat?.id} items={[...ambassadorFormats,graphicEventFormat].map(format=>({id:format.id,label:format.name,leadingIcon:<Icon name={format.width===format.height?'square':'rectangle-horizontal'} size={16} style={format.width<format.height?{transform:'rotate(90deg)'}:undefined}/>}))} onChange={value=>void switchCommunityTemplate(value)} trigger={<Button variant="ghost" disabled={busy||changingTemplate||exporting} className="asset-format-trigger" aria-label={`Community template: ${templateFormat?.name??'Custom'}`} trailingIcon={<Icon name="chevron-down" size={14}/>}>{templateFormat?.name??'Template'}</Button>}/>:<Dropdown align="end" value={asset.format} items={Object.entries(formats).map(([id,item])=>({id,label:item.label,leadingIcon:<Icon name={id==='square'?'square':'rectangle-horizontal'} size={16} style={id==='portrait'?{transform:'rotate(90deg)'}:undefined}/>}))} onChange={value=>{change(resizeAsset({...asset,editor:nativeDocument(asset)},value as AssetFormat));setZoom(0);}} trigger={<Button variant="ghost" disabled={busy} className="asset-format-trigger" aria-label={`Canvas format: ${formats[asset.format].label}`} leadingIcon={<Icon name={asset.format==='square'?'square':'rectangle-horizontal'} size={16} style={asset.format==='portrait'?{transform:'rotate(90deg)'}:undefined}/>} trailingIcon={<Icon name="chevron-down" size={14}/>}/>}/>}
       <span className="asset-tools-divider" aria-hidden="true"/>
       <Button className="lovable-mobile-design-toggle" variant="ghost" aria-label="Open design panel" leadingIcon={<Icon name="sliders-horizontal" size={16}/>} onClick={()=>setDesignOpen(value=>!value)}/>
       {studioWorkspace==='ambassadors'&&<Button variant="ghost" className="community-add-template" disabled title="Coming soon">Add to templates</Button>}

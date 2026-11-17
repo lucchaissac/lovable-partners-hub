@@ -1,3 +1,5 @@
+import {communityGraphicDefaults} from '../../../shared/techArtwork.mjs';
+import {techArtworkSchema} from './techArtworkSettings';
 import {COMMUNITY_MARKUP,COMMUNITY_VIEWBOX} from '../../../src/ambassadors/source/brand.mjs';
 import {renderAmbassador} from './ambassadorAsset';
 import {defaultAmbassador} from './ambassadorSettings';
@@ -7,6 +9,7 @@ import {communityMediaSource} from './communityMedia';
 
 const svg=(viewBox:string,markup:string)=>`data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}">${markup}</svg>`)}`;
 export const communityElements=[
+ {id:'graphic-motif',name:'Graphic motif',src:'/ambassadors/graphic-motif.svg',transparent:true},
  {id:'globe',name:'Globe',src:'/ambassadors/previews/globe.webp'},
  {id:'community-logo',name:'Community logo',src:svg(COMMUNITY_VIEWBOX,COMMUNITY_MARKUP),transparent:true},
  ...communityMediaLibrary.map(item=>({id:item.id,name:item.name,src:item.thumbnail,category:item.category,transparent:item.transparent})),
@@ -14,6 +17,7 @@ export const communityElements=[
 export async function createCommunityElement(id:string):Promise<Extract<HtmlBlock,{kind:'image'}>>{
  const item=communityElements.find(item=>item.id===id);if(!item)throw Error('This element could not be found.');
  const settings=defaultAmbassador();let src:string,width:number,height:number;
+ if(id==='graphic-motif'){return {id:crypto.randomUUID(),kind:'image',techArtwork:techArtworkSchema.parse(communityGraphicDefaults),value:{src:item.src,alt:'Graphic motif',caption:'',alignment:'center',width:100},editor:{widthPx:1000,height:440,appearance:{imageFit:'contain'}}};}
  if(id==='globe'){
   const image=await renderAmbassador(settings,{element:'globe',pixels:1080});src=image.src;width=height=400;
  }else if(communityMediaById.has(id)){

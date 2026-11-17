@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import sharp from 'sharp';
 import {techArtworkSvg,curveDefaults,gridDefaults,curvePresets} from '../shared/techArtwork.mjs';
 test('every construction remains inside the authored crop, including rotated extremes',async()=>{
- for(const {id:preset} of curvePresets)for(const count of [3,64]){
-  const svg=techArtworkSvg({...curveDefaults,preset,count,spread:160,rotation:137,stroke:4,opacity:100});
+ for(const {id:preset} of curvePresets)for(const count of [3,64])for(const transform of [{},{scale:280,offsetX:37,offsetY:-24}]){
+  const svg=techArtworkSvg({...curveDefaults,preset,count,spread:160,rotation:137,stroke:4,opacity:100,...transform});
   assert.doesNotMatch(svg,/NaN|Infinity|<image|<script/);
   const {data,info}=await sharp(Buffer.from(svg)).ensureAlpha().raw().toBuffer({resolveWithObject:true});
   let visible=0;

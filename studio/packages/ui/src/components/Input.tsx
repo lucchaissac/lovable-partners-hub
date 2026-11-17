@@ -2,6 +2,7 @@ import { Icon } from './Icon';
 import { forwardRef } from 'react';
 import type { InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from 'react';
 import { cn } from '../lib/cn';
+import {useNumberScrub} from './numberScrub';
 
 export type InputSize = 'sm' | 'md' | 'lg';
 export type InputTone = 'default' | 'ai';
@@ -28,8 +29,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   },
   ref,
 ) {
+  const scrub=useNumberScrub();
   return (
     <span
+      onPointerDown={scrub}
       className={cn('ui-input', className)}
       data-size={inputSize}
       data-tone={tone === 'ai' ? 'ai' : undefined}

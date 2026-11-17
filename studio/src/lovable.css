@@ -213,6 +213,20 @@ html, body, #root { background: var(--studio-background); color: var(--ui-text);
 .lovable-library-item[data-community-transparent] img { object-fit: contain; }
 
 :root .ui-input-field:focus-visible { outline: none; }
+/* Neutral inspector controls in both appearances, including hover/open states. */
+:root .asset-app .ui-trigger-field:hover:not([data-disabled]):not([data-active]),
+:root .asset-app .ui-trigger-field[data-active],
+:root .asset-app .ui-trigger-field:focus-visible {
+  background: var(--ui-bg);
+  color: var(--ui-text);
+  border-color: rgb(var(--studio-fg-rgb) / 24%);
+  box-shadow: inset 0 0 0 .5px rgb(var(--studio-fg-rgb) / 24%);
+}
+:root .ui-switch-thumb { background: var(--studio-foreground); }
+:root .ui-switch[data-state='on'] .ui-switch-thumb { background: var(--studio-background); }
+:is(.lovable-design,.hcs-design-design-panel,.hev-inspector,.studio-properties) .ui-input:has(input[type='number']:not(:disabled):not([readonly])) { cursor: ew-resize; }
+:is(.lovable-design,.hcs-design-design-panel,.hev-inspector,.studio-properties) input[type='number']:not(:disabled):not([readonly]):not(:focus) { cursor: ew-resize; }
+html[data-number-scrubbing] *, html[data-number-scrubbing] { cursor: ew-resize !important; user-select: none !important; }
 .asset-app .asset-artwork .hcs-ui { color: var(--ui-text); }
 
 .ambassador-design textarea{width:100%;resize:vertical;box-sizing:border-box;background:var(--surface-2,rgba(127,127,127,.08));color:inherit;border:1px solid rgba(127,127,127,.2);border-radius:6px;padding:8px;font:inherit;outline:none}.ambassador-design textarea:focus{border-color:rgba(127,127,127,.45)}.ambassador-photo-field{position:relative;display:block;padding:9px 12px;border:1px solid rgba(127,127,127,.25);border-radius:7px;text-align:center;cursor:pointer;font-size:12px}.ambassador-photo-field input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}.ambassador-render-status{font-size:12px;opacity:.6}
@@ -224,3 +238,6 @@ html, body, #root { background: var(--studio-background); color: var(--ui-text);
 /* White construction artwork needs a dark transparency checker to stay legible. */
 :root .lovable-library-item[data-tech-artwork] > span:first-child,
 :root .lovable-library-item[data-tech-artwork]:hover > span:first-child { background:repeating-conic-gradient(rgb(255 255 255 / 5%) 0% 25%, transparent 0% 50%) 0 0 / 16px 16px, #242424; }
+
+.community-contrast-toggle { display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600; }
+.community-contrast-toggle input { width:16px; height:16px; accent-color:var(--ui-text); }

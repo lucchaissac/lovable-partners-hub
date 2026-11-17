@@ -1,0 +1,17 @@
+html,body { margin:0; padding:0; background:#1b1b1b; width:1200px; height:630px; overflow:hidden; }
+#share-artwork { position:relative; width:1200px; height:630px; overflow:hidden; background:#1b1b1b; }
+#share-artwork h1 { position:absolute; top:32px; left:56px; margin:0; color:#f7f4ed; font:700 84px/1 'Camera Plain',sans-serif; letter-spacing:-.025em; }
+.share-gallery { position:absolute; left:0; top:168px; width:1200px; height:462px; overflow:hidden; }
+#share-artwork .share-gallery .gallery { width:1200px; box-sizing:border-box; padding:0 56px; margin:0; max-width:none; }
+#share-artwork .share-gallery .gallery-grid { margin:0; gap:36px; grid-template-columns:repeat(3,minmax(0,1fr)); align-items:start; }
+#share-artwork .share-gallery .gallery-item { grid-area:auto; margin:0; align-self:start; width:100%; max-width:none; transform:none; }
+#share-artwork .share-gallery .gallery-item:nth-child(3n+2) { margin-top:48px; }
+#share-artwork .share-gallery .gallery-item:nth-child(n+4) { display:none; }
+#share-artwork .share-gallery .tech-artwork { width:100%; }
+#share-artwork .share-gallery .tech-motion { margin-top:24px; }
+#share-artwork .share-gallery .tech-cover { margin-top:104px; }
+#share-artwork .share-gallery .tech-cover:nth-child(3) { margin-top:210px; }
+#share-artwork .share-gallery .gallery-video { display:none; }
+
+#share-artwork .share-gallery .gallery-hoodie { width:80%; justify-self:end; }
+#share-artwork .share-gallery .ambassador-gallery-banner { width:46%; justify-self:center; }

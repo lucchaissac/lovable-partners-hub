@@ -64,7 +64,7 @@ window.addEventListener('scroll',()=>{if(scrollFrame)return;scrollFrame=requestA
 function render(view=state.view,{reset=true}={}){
  showWorkspaceTransition(state.workspace);
  const showLibrary=view==='library';if(showLibrary||view==='badge')view='create';
- const requestedBadge=parseRoute().section,badge=currentFormats().some(format=>format.id===requestedBadge)||(state.workspace==='ambassadors'&&requestedBadge===ambassadorDefaultFormat)?requestedBadge:undefined,starter=state.workspace==='partners'&&requestedBadge==='grow-your-business';
+ const requestedBadge=parseRoute().section,badge=currentFormats().some(format=>format.id===requestedBadge)||(state.workspace==='ambassadors'&&[ambassadorDefaultFormat,'event-graphic'].includes(requestedBadge))?requestedBadge:undefined,starter=state.workspace==='partners'&&requestedBadge==='grow-your-business';
  requestedSection=undefined;state.view=view;observer?.disconnect();assemblyObserver?.disconnect();cleanupGallery?.();cleanupGallery=undefined;cleanupAmbassadors?.();cleanupAmbassadors=undefined;cleanupBrand?.();cleanupBrand=undefined;cleanupAgentGuide?.();cleanupAgentGuide=undefined;cleanupTech?.();cleanupTech=undefined;
  const brand=state.workspace==='lovable',ambassadors=state.workspace==='ambassadors';
  const asset=ambassadors&&/^[a-f0-9-]{36}$/i.test(requestedBadge??'')?requestedBadge:undefined;

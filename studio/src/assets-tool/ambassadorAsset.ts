@@ -1,3 +1,4 @@
+import {graphicEventAsset} from './communityGraphic';
 import {ambassadorDefaultFormat,ambassadorDefaultTemplate,ambassadorFormats,ambassadorPreview} from '../../../src/ambassadors/catalog.js';
 import {defaultAmbassador,type AmbassadorSettings} from './ambassadorSettings';
 import {makeNode,type AssetDocument} from './model';
@@ -6,6 +7,7 @@ import {communityBlocks} from './communityDocument';
 export {renderAmbassador} from '../../../src/ambassadors/render.js';
 
 export async function ambassadorAsset(formatId=ambassadorDefaultFormat,personalization?:AmbassadorSettings):Promise<AssetDocument>{
+ if(formatId==='event-graphic')return graphicEventAsset(personalization);
  const squareEvent=formatId===ambassadorDefaultFormat;
  const format=squareEvent?ambassadorDefaultTemplate:ambassadorFormats.find(f=>f.id===formatId);if(!format)throw Error('This community format could not be found.');
  const settings={...(personalization??defaultAmbassador()),format:(squareEvent?ambassadorDefaultTemplate.source:format.id) as AmbassadorSettings['format']};

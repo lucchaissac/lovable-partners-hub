@@ -1,11 +1,18 @@
 /** Deterministic vector constructions, inspired by the supplied Tech blog covers. */
 export const curvePresets=[{id:'convergence',label:'Convergence'},{id:'rays',label:'Rays'},{id:'rings',label:'Hourglass'},{id:'flow',label:'Flow'}];
+export const communityGraphicPresets=[{id:'diamonds',label:'Diamonds'},{id:'rings',label:'Orbits'},{id:'rays',label:'Rays'},{id:'flow',label:'Flow'}];
+export const communityGraphicDefaults={kind:'curves',layout:'band',preset:'diamonds',count:8,spread:100,rotation:0,stroke:1.5,opacity:80,color:'#ffffff'};
 export const curveDefaults={kind:'curves',preset:'convergence',count:7,spread:100,rotation:0,stroke:1.12,opacity:30,color:'#ffffff'};
 export const gridDefaults={kind:'grid',style:'lines',spacing:28.08,stroke:.37,opacity:8,color:'#ffffff'};
 const clamp=(n,a,b)=>Math.min(b,Math.max(a,Number(n)||0));
 const n=v=>Number(v.toFixed(3));
+function cropTransform(s,cx,cy,width,height){
+ const scale=clamp(s.scale??100,25,300)/100,dx=clamp(s.offsetX??0,-100,100)*width/100,dy=clamp(s.offsetY??0,-100,100)*height/100;
+ return `translate(${n(dx)} ${n(dy)}) translate(${cx} ${cy}) rotate(${clamp(s.rotation,-180,180)}) scale(${scale}) translate(${-cx} ${-cy})`;
+}
 export function techArtworkSvg(settings){
  const s=settings,ink=/^#[0-9a-f]{6}$/i.test(s.color)?s.color:'#ffffff',stroke=clamp(s.stroke,.1,4),opacity=clamp(s.opacity,0,100)/100;
+ if(s.kind==='curves'&&s.layout==='band')return communityBandSvg(s,ink,stroke,opacity);
  const start='<svg xmlns="http://www.w3.org/2000/svg" width="674" height="337" viewBox="0 0 674 337">';
  if(s.kind==='grid'){
   const step=clamp(s.spacing,10,84),parts=[];
@@ -40,6 +47,26 @@ export function techArtworkSvg(settings){
    for(const side of [-1,1])parts.push(`<ellipse cx="${n(cx+side*w/2)}" cy="${cy}" rx="${n(w/2-stroke/2)}" ry="${n(138.035-stroke/2)}"/>`);
   }
  }
- return start+'<defs><clipPath id="tech-crop"><rect x="393.87" y="28.08" width="251.348" height="280.834"/></clipPath></defs>'+`<g clip-path="url(#tech-crop)"><g fill="none" stroke="${ink}" stroke-width="${stroke}" opacity="${opacity}" transform="rotate(${rotation} ${cx} ${cy})">${parts.join('')}</g></g></svg>`;
+ return start+'<defs><clipPath id="tech-crop"><rect x="393.87" y="28.08" width="251.348" height="280.834"/></clipPath></defs>'+`<g clip-path="url(#tech-crop)"><g fill="none" stroke="${ink}" stroke-width="${stroke}" opacity="${opacity}" transform="${cropTransform(s,cx,cy,251.348,280.834)}">${parts.join('')}</g></g></svg>`;
 }
 export const techArtworkDataUrl=settings=>'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(techArtworkSvg(settings));
+
+function communityBandSvg(s,ink,stroke,opacity){
+ const count=Math.round(clamp(s.count,3,64)),spread=clamp(s.spread,25,160)/100,rotation=clamp(s.rotation,-180,180),parts=[];
+ for(let i=0;i<count;i++){
+  const t=i/(count-1);
+  if(s.preset==='diamonds'){
+   const r=(24+t*186)*spread;
+   for(const cx of [275,725])parts.push(`<path d="M${cx} ${n(220-r)}L${n(cx+r)} 220 ${cx} ${n(220+r)} ${n(cx-r)} 220Z"/>`);
+  }else if(s.preset==='rings'){
+   parts.push(`<ellipse cx="500" cy="220" rx="${n((40+t*435)*spread)}" ry="${n(14+t*186)}"/>`);
+  }else if(s.preset==='rays'){
+   const a=i/count*Math.PI*2,r=205*spread;
+   for(const cx of [275,725])parts.push(`<path d="M${n(cx+Math.cos(a)*18)} ${n(220+Math.sin(a)*18)}L${n(cx+Math.cos(a)*r)} ${n(220+Math.sin(a)*r)}"/>`);
+  }else{
+   const y=20+t*400;
+   parts.push(`<path d="M20 ${n(y)}C${n(280*spread)} ${n(y)} 390 220 500 220S${n(1000-280*spread)} ${n(y)} 980 ${n(y)}"/>`);
+  }
+ }
+ return `<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="440" viewBox="0 0 1000 440"><defs><clipPath id="band"><rect width="1000" height="440"/></clipPath></defs><g clip-path="url(#band)"><g fill="none" stroke="${ink}" stroke-width="${stroke}" opacity="${opacity}" transform="${cropTransform(s,500,220,1000,440)}">${parts.join('')}</g></g></svg>`;
+}

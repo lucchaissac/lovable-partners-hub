@@ -232,7 +232,7 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
   function changeBlock(block:HtmlBlock){const next=structuredClone(source.current);for(const p of next.pages)for(const s of p.sections)for(const c of s.columns){const i=c.findIndex(b=>b.id===block.id);if(i>=0)c[i]=block;}save(next);}
   function editBlock(block:HtmlBlock){
     if(block.editor?.locked)return;
-    if(block.kind==='image'){choose([block.id]);if(block.badge||block.ambassador||block.brandRole||(studioWorkspace==='tech-blog'&&isTechArtwork(block))){setDesign(true);host.panelChanged('html-selection',true);}else onReplace(block.id);return;}
+    if(block.kind==='image'){choose([block.id]);if(block.badge||block.ambassador||block.brandRole||((studioWorkspace==='tech-blog'||studioWorkspace==='ambassadors')&&isTechArtwork(block))){setDesign(true);host.panelChanged('html-selection',true);}else onReplace(block.id);return;}
     choose([block.id]);setEditingId(block.id);
     if(block.kind==='cta')onEditButton(block);
     if(block.kind==='shape'){setEditingId('');setDesign(true);host.panelChanged('html-selection',true);}
@@ -322,7 +322,7 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
       const additive=event.shiftKey||event.metaKey||event.ctrlKey;
       const group=block.editor?.groupId;
       const next=event.altKey?[id!]:additive?(ids.includes(id!)?ids.filter(i=>i!==id):[...ids,id!]):ids.includes(id!)?ids:group?blocks.filter(b=>b.editor?.groupId===group).map(b=>b.id):[id!];
-      choose(next);if(next.length===1&&block.kind==='image'&&(block.badge||block.ambassador||block.brandRole||(studioWorkspace==='tech-blog'&&isTechArtwork(block)))){setDesign(true);host.panelChanged('html-selection',true);}if(!additive)begin(event,'move',blocks.filter(b=>next.includes(b.id)));return;
+      choose(next);if(next.length===1&&block.kind==='image'&&(block.badge||block.ambassador||block.brandRole||((studioWorkspace==='tech-blog'||studioWorkspace==='ambassadors')&&isTechArtwork(block)))){setDesign(true);host.panelChanged('html-selection',true);}if(!additive)begin(event,'move',blocks.filter(b=>next.includes(b.id)));return;
     }
     if(target.closest('button,a,input,textarea,[role=tab],.hev-section-tools,.hev-column-resizer'))return;
     if(target.closest('.hev-content'))startMarquee(event,target.closest<HTMLElement>('.hev-section'));
@@ -357,7 +357,7 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
       const xFactor=kind.includes('w')?-1:1,yFactor=kind.includes('n')?-1:1;
       let sx=kind==='n'||kind==='s'?1:Math.max(.05,(bounds.width+dx*xFactor)/bounds.width),sy=kind==='e'||kind==='w'?1:Math.max(.05,(bounds.height+dy*yFactor)/bounds.height);
       if(kind!=='n'&&kind!=='s')sx=Math.max(sx,...g.blocks.map(({block,width})=>htmlBlockMinWidth(block)/width));
-      if(g.blocks.some(({block})=>block.kind==='image'&&(block.badge||block.ambassador||block.brandRole||(studioWorkspace==='tech-blog'&&isTechArtwork(block))))){if(kind==='n'||kind==='s')sx=sy;else sy=sx;}else if(event.shiftKey&&kind.length===2)sy=sx;
+      if(g.blocks.some(({block})=>block.kind==='image'&&(block.badge||block.ambassador||block.brandRole||((studioWorkspace==='tech-blog'||studioWorkspace==='ambassadors')&&isTechArtwork(block))))){if(kind==='n'||kind==='s')sx=sy;else sy=sx;}else if(event.shiftKey&&kind.length===2)sy=sx;
       g.frames=Object.fromEntries(g.blocks.map(({block,box,width,parentWidth})=>{const widthNext=resizedElementWidth(block.editor,width*sx,parentWidth);return [block.id,{...block.editor,...widthNext,...(sy!==1?{height:clamp(box.height*sy,12,3000)}:{}),x:clamp((block.editor?.x||0)+(kind.includes('w')?bounds.width*(1-sx):0)+(box.left-bounds.left)*(sx-1),-4000,4000),y:clamp((block.editor?.y||0)+(kind.includes('n')?bounds.height*(1-sy):0)+(box.top-bounds.top)*(sy-1),-4000,4000)}];}));
     }
     g.frames=constrainLayoutFrames(g.layout||[],g.frames);
@@ -454,7 +454,7 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
       if(current?.kind!=='image'||!current.ambassador||current.editor?.locked)return;
       changeBlock(editCommunityBlock({...current,ambassador:current.ambassador},ambassador));
     }} onClose={()=>{setDesign(false);host.closePanel();}}/>,host.panelHost)}
-    {selectionDesignActive&&one?.kind==='image'&&studioWorkspace==='tech-blog'&&isTechArtwork(one)&&host.panelHost&&host.activeId==='html-selection'&&createPortal(<TechArtworkDesign key={one.id} block={one} locked={locked} onChange={changeBlock} onClose={()=>{setDesign(false);host.closePanel();}}/>,host.panelHost)}
+    {selectionDesignActive&&one?.kind==='image'&&(studioWorkspace==='tech-blog'||studioWorkspace==='ambassadors')&&isTechArtwork(one)&&host.panelHost&&host.activeId==='html-selection'&&createPortal(<TechArtworkDesign key={one.id} block={one} locked={locked} onChange={changeBlock} onClose={()=>{setDesign(false);host.closePanel();}}/>,host.panelHost)}
     {selectionDesignActive&&one?.kind==='image'&&one.brandRole==='partner'&&host.panelHost&&host.activeId==='html-selection'&&createPortal(<BrandLogoDesign key={one.id} block={one} locked={locked} onChange={changeBlock} onClose={()=>{setDesign(false);host.closePanel();}}/>,host.panelHost)}
     {selectionDesignActive&&one?.kind==='image'&&one.badge&&host.panelHost&&host.activeId==='html-selection'&&createPortal(<PartnerBadgeDesign key={one.id} settings={one.badge} src={one.value.src} locked={locked}
       onChange={(badge:PartnerBadgeSettings,image)=>{
@@ -463,7 +463,7 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
         const width=current.editor?.widthPx||bounds?.width||320,ratio=image.width/image.height;
         changeBlock({...current,badge,value:{...current.value,src:image.src,alt:badgeFormatName(badge.format),crop:undefined,playIcon:undefined},editor:{...current.editor,widthPx:width,height:Math.max(12,Math.min(3000,width/ratio)),appearance:{imageFit:'contain'}}});
       }} onClose={()=>{setDesign(false);host.closePanel();}}/>,host.panelHost)}
-    {selectionDesignActive&&one&&!(one.kind==='image'&&(one.badge||one.ambassador||one.brandRole==='partner'||(studioWorkspace==='tech-blog'&&isTechArtwork(one))))&&host.panelHost&&host.activeId==='html-selection'&&createPortal(<div className="hcs-ui" style={{height:'100%',display:'contents'}}><PresentationElementDesign
+    {selectionDesignActive&&one&&!(one.kind==='image'&&(one.badge||one.ambassador||one.brandRole==='partner'||((studioWorkspace==='tech-blog'||studioWorkspace==='ambassadors')&&isTechArtwork(one))))&&host.panelHost&&host.activeId==='html-selection'&&createPortal(<div className="hcs-ui" style={{height:'100%',display:'contents'}}><PresentationElementDesign
       shape={{id:one.id,kind:one.kind==='text'?'text':one.kind==='image'?'image':one.kind==='shape'?one.shape:'rectangle',width:bounds?.width||100,height:bounds?.height||100,src:one.kind==='image'?one.value.src:undefined,appearance:{...(one.kind==='text'?{fill:one.value.color,fontFamily:'Camera Plain',fontSize:one.value.size,textAlign:one.value.align,fontWeight:one.value.runs.every(r=>r.bold)?700:400,italic:one.value.runs.every(r=>r.italic),underline:one.value.runs.every(r=>r.underline),lineHeight:one.value.style==='Heading 1'?102:one.value.style.startsWith('Heading')?112:150}:one.kind==='image'?{imageFit:'cover'}:{}),...one.editor?.appearance}}}
       label={one.kind==='text'?(one.value.runs.map(r=>r.text).join('').slice(0,60)||'Text'):one.kind==='image'?'Image':one.kind==='contacts'?'Contact cards':one.kind==='tasks'?'Checklist':one.kind==='media'&&one.format==='Video'?'Video':'Element'} locked={locked}
       spacingAfter={one.editor?.spacingAfter??0} onSpacingAfter={(spacingAfter:number)=>changeBlock({...one,editor:{...one.editor,spacingAfter}})} onSpacingPreview={setSpacingPreview}

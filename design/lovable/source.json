@@ -414,5 +414,34 @@
       "Replaceable monochrome partner logo"
     ],
     "scope": "Lovable workspace only; independent local drafts and original shared studio controls."
+  },
+  "appStudioTemplate": {
+    "source": "https://www.figma.com/design/sUeZcAIPXpjFAuHnPigkNm/lovable?node-id=15-72&m=dev",
+    "node": "15:72",
+    "size": [
+      1920,
+      1080
+    ],
+    "geometry": "shared/brandTemplates.mjs",
+    "assets": {
+      "15:74": "/brand/assets/app-studio-heart.svg",
+      "15:88": "/brand/assets/app-studio-logo.svg",
+      "15:98": "/brand/assets/app-studio-wordmark.svg"
+    },
+    "nativeLayers": "Original SVG artwork, individually editable solid grid lines, native Camera Plain Bold event details. The large original heart is cropped non-destructively at its authored size.",
+    "behavior": "Lovable Guidelines specimen, fresh template route, instant App Studio banner chat shortcut with no API request. Existing App Studio edits are preserved."
+  },
+  "stockholmBillboard": {
+    "source": "User-supplied codex-clipboard-d36ac70b-a265-4c51-a2f7-30a34ecb2432.png",
+    "originalSize": [
+      4479,
+      6718
+    ],
+    "webpWidths": [
+      640,
+      1280
+    ],
+    "quality": 82,
+    "framing": "Complete original photograph, no crop or artwork changes."
   }
 }

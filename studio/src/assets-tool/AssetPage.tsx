@@ -1,4 +1,5 @@
-import {brandStarterAsset} from './brandAsset';
+import {brandStarterAsset,isAppStudioAsset} from './brandAsset';
+import {requestsAppStudioTemplate} from '../../../shared/brandTemplates.mjs';
 import {studioWorkspace,studioLastAssetKey,studioOwner} from './workspace';
 import {CommunityTypographyContext} from '../studio/PresentationElementDesign';
 import {localCommunityChatAvailable,localChatStatus,localChatRequest,requestLocalDesign,materializeLocalPlan,communityPlanReplies,communityCanvasImages} from './localCommunityChat';
@@ -154,7 +155,7 @@ function AssetPageContent() {
     if (!requestedBadge) return;
     let cancelled = false;
     setLoading(true);
-    void (studioWorkspace==='ambassadors'?ambassadorAsset(requestedBadge):studioWorkspace==='lovable'?brandStarterAsset():badgeAsset(requestedBadge)).then(next => { if (!cancelled) put(next); })
+    void (studioWorkspace==='ambassadors'?ambassadorAsset(requestedBadge):studioWorkspace==='lovable'?brandStarterAsset(requestedBadge):badgeAsset(requestedBadge)).then(next => { if (!cancelled) put(next); })
       .catch(reason => { if (!cancelled) setError(reason.message); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
@@ -225,6 +226,23 @@ function AssetPageContent() {
     const run=++operation.current,document=current.current;
     setBusy(true);setGenerationStage('Refining your asset…');
     try {
+      if(studioWorkspace==='lovable'){
+        let reply='Ask me to make a banner for App Studio to open its original template. You can edit the event details directly on the canvas.';
+        if(request.sources.length){
+          reply='Attachments are not applied by this template shortcut. Use the canvas image tool to insert your artwork.';
+        }else if(requestsAppStudioTemplate(request.prompt)){
+          if(isAppStudioAsset(document))reply='This canvas already uses App Studio. Your current layout and edits are kept.';
+          else{
+            const next=await brandStarterAsset('app-studio');
+            if(!mounted.current||run!==operation.current||active.signal.aborted||current.current?.id!==document.id)return;
+            if(JSON.stringify(current.current.editor)!==JSON.stringify(document.editor))throw Error('The canvas changed. Retry to open the template.');
+            change({...next,id:document.id});setZoom(0);
+            reply='The original App Studio banner is ready. The sample event is Atlanta — December 2nd, 2026; edit that line directly on the canvas for your event.';
+          }
+        }
+        appendMessage({id:crypto.randomUUID(),createdAt:new Date().toISOString(),text:reply,user:false,workspaceChatId:request.chatId});
+        lastRequest.current=undefined;setVisual(undefined);return;
+      }
       if(!exportBoard.current)throw new Error('The asset is still opening. Please retry.');
       if(studioWorkspace==='ambassadors'&&localChat.enabled){
         // Existing editable layers describe the composition; a full export before every
@@ -280,7 +298,7 @@ function AssetPageContent() {
     }
   };
   useEffect(()=>{
-    if(busy||error||!queued.length||!readStudioConfig()?.user||studioWorkspace==='ambassadors'&&!localChat.enabled)return;
+    if(busy||error||!queued.length||(studioWorkspace!=='lovable'&&!readStudioConfig()?.user)||studioWorkspace==='ambassadors'&&!localChat.enabled)return;
     const [request,...rest]=queued;setQueued(rest);void refine(request);
   },[busy,error,queued,localChat.enabled]);
   const stop = () => { setQueued([]); operation.current++; controller.current?.abort(); controller.current = undefined; setBusy(false); setGenerationPreview(undefined); setReviewCandidate(undefined); };
@@ -346,7 +364,7 @@ function AssetPageContent() {
   };
   const runtime:WorkspaceRuntime={
     title:asset?.title??'Asset',content:null,
-    state:{enabled:studioWorkspace==='ambassadors'&&localChat.enabled,messages:assetMessages(asset).filter(message=>messageWorkspaceChat(message)===chatState.active.id),userId:readStudioConfig()?.user?.id,chats:[],activeChatId:chatState.active.id,manageDisabled:busy||!!queued.length,working:busy?generationStage:undefined,error,retryable:!!lastRequest.current,queued},
+    state:{enabled:studioWorkspace==='lovable'||studioWorkspace==='ambassadors'&&localChat.enabled,messages:assetMessages(asset).filter(message=>messageWorkspaceChat(message)===chatState.active.id),userId:readStudioConfig()?.user?.id,chats:[],activeChatId:chatState.active.id,manageDisabled:busy||!!queued.length,working:busy?generationStage:undefined,error,retryable:!!lastRequest.current,queued},
     send:(prompt,visual,sources=[])=>{const request={id:Date.now(),prompt,visual,sources,chatId:chatState.active.id};if(controller.current)setQueued(items=>[...items,request]);else void refine(request);},
     chat:()=>{},
     action:(action,id)=>{if(action==='stop')stop();else if(action==='retry'&&lastRequest.current)void refine(lastRequest.current);else if(action==='dismiss')setError('');else if(action==='remove')setQueued(items=>items.filter(item=>item.id!==id));},

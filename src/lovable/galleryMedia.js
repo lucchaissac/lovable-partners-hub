@@ -17,4 +17,5 @@ export const brandGalleryAssets = [
  gradient(4), artwork(1), artwork(2), artwork(3), artwork(4),
  gradient(3), artwork(5), artwork(6), artwork(7), gradient(8),
  artwork(8), artwork(9), artwork(10), artwork(11), artwork(12),
+ {id:'stockholm-billboard',name:'Lovable billboard in Stockholm',kind:'photo',width:1280,height:1920,src:'/brand/assets/stockholm-billboard-1280.webp',thumbnail:'/brand/assets/stockholm-billboard-640.webp'},
 ];

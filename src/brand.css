@@ -17,7 +17,10 @@
 .lovable-gallery .lovable-artwork:nth-child(14) { grid-area:5 / 9 / auto / span 3; margin-top:0px; }
 .lovable-gallery .lovable-artwork:nth-child(15) { grid-area:6 / 2 / auto / span 3; margin-top:0px; }
 .lovable-gallery .lovable-artwork:nth-child(16) { grid-area:6 / 7 / auto / span 6; margin-top:100px; }
-.lovable-gallery .lovable-artwork:nth-child(17) { grid-area:7 / 3 / auto / span 9; margin-top:0px; }
+.lovable-gallery .lovable-artwork:nth-child(17) { grid-area:7 / 1 / auto / span 7; margin-top:0px; }
+.lovable-gallery .lovable-artwork:nth-child(18) { grid-area:7 / 10 / auto / span 3; margin-top:40px; }
+.lovable-app-studio image { filter:none; }
+.lovable-app-studio { display:block; width:100%; aspect-ratio:16 / 9; background:#1b1b1b; overflow:hidden; border-radius:12px; isolation:isolate; }
 .lovable-identity-hero { display:grid; place-items:center; aspect-ratio:2.4; padding:12%; margin-top:40px; background:var(--color-surface); border-radius:16px; }
 .lovable-identity-hero img { width:100%; }
 .lovable-identity-hero .lovable-logo-dark { display:none; }

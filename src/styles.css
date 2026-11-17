@@ -362,7 +362,7 @@ input[type='checkbox'] { accent-color: #ededed; width: 15px; height: 15px; margi
  #app { padding-bottom:var(--mobile-nav-space); }
  html { scroll-padding-bottom:var(--mobile-nav-space); }
  .text-segment { padding-inline: 16px; }
- .guideline-sidebar { padding-inline: 20px; }
+ .guideline-sidebar { display:none; }
  .guideline-content { margin-inline: 20px; padding-top: 52px; }
  h1 { font-size: 38px; }
  .page-intro > p { font-size: 16px; }
@@ -371,7 +371,7 @@ input[type='checkbox'] { accent-color: #ededed; width: 15px; height: 15px; margi
  .hero-stage figcaption { left: 20px; right: 20px; font-size: 11px; }
  .hero-stage figcaption span:last-child { display: none; }
  .intro-footer, .section-bottom { flex-direction: column; align-items: flex-start; gap: 17px; }
- .guide-section { padding-block: 56px; scroll-margin-top: calc(var(--header-height) + 64px); }
+ .guide-section { padding-block: 56px; scroll-margin-top: calc(var(--header-height) + 16px); }
  .overview-section { padding-top: 0; }
  .section-heading { gap: 12px; margin-bottom: 26px; }
  .section-heading h2 { font-size: 26px; }

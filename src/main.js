@@ -55,7 +55,7 @@ window.addEventListener('keydown',event=>{if(['ArrowDown','ArrowUp','PageDown','
 function syncGuidelinePosition(){
  if(state.view!=='guidelines')return;
  if(requestedSection){markSection(requestedSection);return;}
- const line=innerWidth<=680?document.querySelector('.hub-header').getBoundingClientRect().bottom+80:innerWidth<=800?180:160;
+ const line=innerWidth<=680?document.querySelector('.hub-header').getBoundingClientRect().bottom+32:innerWidth<=800?180:160;
  const items=[...document.querySelectorAll('.guide-section')];
  const current=items.filter(el=>el.getBoundingClientRect().top<=line).at(-1)||items[0];
  if(current)markSection(current.id);

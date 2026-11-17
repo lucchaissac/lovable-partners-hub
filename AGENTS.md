@@ -111,3 +111,5 @@
 - Gallery cards reserve their authored aspect ratios before media loads; Tech blog source artwork is scaled before first paint on workspace changes. Keep gallery geometry stable during decoding. On mobile, Gallery / Guidelines / Make is fixed at the bottom with 16 px plus Safari safe-area inset, content and studio keep clear of it, and workspace controls remain at the top. The creation navigation label is “Make” on mobile and desktop.
 
 - Each workspace’s Guidelines has a compact “Incorrect usage” section before For your agent: exactly two logo examples on one row (distorted proportions and added shadow), including on mobile. Use that workspace’s original monochrome lockup or badge, short captions and quiet surfaces; keep the section secondary.
+
+- On mobile (680 px and below), hide the Guidelines section submenu entirely. Read the sections through normal scrolling; retain only the workspace controls above and Gallery / Guidelines / Make below. Deep links still scroll to their section below the top header.

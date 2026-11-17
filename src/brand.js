@@ -2,9 +2,10 @@ import assets from './lovable/assets.json';
 import './brand.css';
 import {clearSpaceDiagrams,collaborationDiagrams} from './lovable/diagrams.js';
 import {logoPlayground,mountLogoPlayground} from './lovable/logoPlayground.js';
+import {qrGuide,mountQrGuide} from './lovable/qrGuide.js';
 import {agentGuideSection} from './agentGuide.js';
 
-export const brandSections = [['overview','Overview'],['identity','Identity'],['clear-space','Clear space'],['collaborations','Co-branding'],['gradients','Animated gradients'],['color','Color'],['typography','Typography'],['photography','Photography'],['for-your-agent','For your agent'],['downloads','Downloads']];
+export const brandSections = [['overview','Overview'],['identity','Identity'],['clear-space','Clear space'],['collaborations','Co-branding'],['qr-code','QR code'],['gradients','Animated gradients'],['color','Color'],['typography','Typography'],['photography','Photography'],['for-your-agent','For your agent'],['downloads','Downloads']];
 import {brandGalleryAssets} from './lovable/galleryMedia.js';
 const escape = value => String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const source = 'https://lovablebrand.lovable.app';
@@ -27,6 +28,7 @@ export function brandGuidelines({icon}){
  <section id="identity" class="guide-section">${heading('Identity','Choose the supplied version for your background. Keep the artwork’s proportions and leave space around the logo.')}${logoPlayground()}<div class="lovable-logo-grid">${assets.logos.map(logo=>logoCard(logo,icon)).join('')}</div><div class="lovable-usage-notes"><p>Use a clear, contrasting background.</p><p>Keep the original colors and shapes.</p><p>Avoid stretching, shadows and added outlines.</p></div></section>
  <section id="clear-space" class="guide-section">${heading('Clear space','Keep text, images and edges away from the visible artwork. Leave a clear area around both the symbol and the complete logo.')}${clearSpaceDiagrams()}<p class="quiet-note">The x labels show equal spacing in these diagrams; they do not define an official minimum.</p></section>
  <section id="collaborations" class="guide-section">${heading('Co-branding','Use monochrome artwork, balance the visible size of both identities and keep equal space on either side of the divider.')}${collaborationDiagrams()}<div class="lovable-usage-notes"><p>Balance wordmark size optically.</p><p>Keep equal gaps around the divider.</p><p>Use symbols together when both brands are recognizable.</p></div></section>
+ <section id="qr-code" class="guide-section">${heading('QR code','The QR code from our Community posters: circular dots, rounded corners and the original Lovable heart. Keep it monochrome and give it room to scan.')}${qrGuide(icon)}</section>
  <section id="gradients" class="guide-section">${heading('Animated gradients','Use the original motion artwork. Preserve its colors and let it fill the composition.')}<div class="lovable-motion-grid">${brandGalleryAssets.filter(asset=>asset.id.startsWith('gradient-')).map(asset=>`<div class="lovable-gradient-preview"><video class="gallery-video" data-video-small="${asset.small}" data-video-large="${asset.src}" poster="${asset.thumbnail}" muted loop playsinline preload="none" aria-label="Animated Lovable gradient"></video></div>`).join('')}</div></section>
  <section id="color" class="guide-section">${heading('Color','The original brand palette, with black and creme neutrals. Use the colors in brand artwork and marketing.')}<div class="lovable-color-grid">${assets.colors.map(color=>`<button class="lovable-color" data-brand-copy="${color.hex}" aria-label="Copy ${color.name}: ${color.hex}"><span class="lovable-color-chip" style="--swatch:${color.hex}" aria-hidden="true"></span><span class="lovable-color-name">${color.name}</span><span class="lovable-color-value">${color.hex} ${icon('copy')}</span></button>`).join('')}</div><p class="quiet-note">Keep interface controls neutral; the brand palette is not a set of button or toggle colors.</p></section>
  <section id="typography" class="guide-section">${heading('Typography','Camera Plain is the primary Lovable typeface, used for headlines, body copy and interface text.')}<div class="lovable-type-specimen"><span>Camera Plain</span><div>Make something<br/>people love.</div><p>Aa Bb Cc Dd Ee Ff Gg Hh Ii Jj<br/>0123456789 &amp;?!</p></div><div class="intro-footer"><p>Use the original font files from the brand hub.</p>${external('/brand/typography','Get Camera Plain',icon)}</div></section>
@@ -37,7 +39,7 @@ export function brandGuidelines({icon}){
 }
 
 export function mountBrandHub(root,notify){
- const cleanupLogo=mountLogoPlayground(root);
+ const cleanupLogo=mountLogoPlayground(root),cleanupQr=mountQrGuide(root);
  const click=async event=>{
   const button=event.target.closest('[data-brand-copy]');
   if(!button)return;
@@ -45,5 +47,5 @@ export function mountBrandHub(root,notify){
   catch{notify('Copy was unavailable. Please try again.');}
  };
  root.addEventListener('click',click);
- return()=>{cleanupLogo();root.removeEventListener('click',click);};
+ return()=>{cleanupLogo();cleanupQr();root.removeEventListener('click',click);};
 }

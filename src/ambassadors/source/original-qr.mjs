@@ -1,6 +1,6 @@
 // QR geometry taken directly from the original poster, including its Lovable heart.
-export function makeOriginalQR(qrcode) {
-  const QR_SIZE=129,QR_INK='#f7f4ed';
+export function makeOriginalQR(qrcode, {ink='#f7f4ed', background=null, quietZoneModules=0}={}) {
+  const QR_SIZE=129,QR_INK=ink;
   const HEART_PATH="M83.6983 77.633C86.8021 77.633 89.3182 80.1557 89.3182 83.2677V85.4092H91.1885C94.2923 85.4092 96.8084 87.932 96.8084 91.0439C96.8084 94.1559 94.2923 96.6787 91.1885 96.6787H78.0784V83.2677C78.0784 80.1557 80.5945 77.633 83.6983 77.633Z";
   const HEART_X=78.0784,HEART_Y=77.633,HEART_W=18.73,HEART_H=19.0457;
   function roundedRect(x, y, w, h, r) {
@@ -68,7 +68,10 @@ export function makeOriginalQR(qrcode) {
     const tx = (QR_SIZE - HEART_W * heartScale) / 2 - HEART_X * heartScale + s / 2;
     const ty = (QR_SIZE - HEART_H * heartScale) / 2 - HEART_Y * heartScale - s / 2;
 
-    return `<svg viewBox="0 0 ${QR_SIZE} ${QR_SIZE}" xmlns="http://www.w3.org/2000/svg" fill="${QR_INK}">` +
+    const margin = quietZoneModules * s;
+    const viewBox = margin ? `${-margin} ${-margin} ${QR_SIZE + 2 * margin} ${QR_SIZE + 2 * margin}` : `0 0 ${QR_SIZE} ${QR_SIZE}`;
+    return `<svg viewBox="${viewBox}" xmlns="http://www.w3.org/2000/svg" fill="${QR_INK}">` +
+      (background ? `<rect x="${-margin}" y="${-margin}" width="${QR_SIZE + 2 * margin}" height="${QR_SIZE + 2 * margin}" fill="${background}"/>` : '') +
       `<path d="${d}" fill-rule="evenodd"/>` +
       dots +
       `<path d="${HEART_PATH}" transform="translate(${tx.toFixed(2)} ${ty.toFixed(2)}) scale(${heartScale})"/>` +

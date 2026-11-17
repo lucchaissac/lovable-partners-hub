@@ -1,0 +1,26 @@
+.lovable-qr-diagram { display:grid; grid-template-columns:minmax(0,1.2fr) minmax(180px,1fr); align-items:center; gap:64px; padding:48px; border-radius:16px; background:#fff; color:#1b1b1b; }
+.lovable-qr-specimen { width:100%; max-width:360px; aspect-ratio:1; justify-self:center; }
+.lovable-qr-specimen svg { display:block; width:100%; height:100%; }
+.lovable-qr-annotations { display:grid; gap:36px; }
+.lovable-qr-annotations p { position:relative; font-size:14px; line-height:1.4; margin:0; }
+.lovable-qr-annotations p::before { content:''; position:absolute; top:9px; right:calc(100% + 16px); width:48px; height:1px; background:rgb(0 0 0 / 25%); }
+.lovable-qr-annotations p::after { content:''; position:absolute; top:7px; right:calc(100% + 64px); width:5px; height:5px; border-radius:50%; background:rgb(0 0 0 / 40%); }
+.lovable-qr-annotations span { display:block; }
+.lovable-qr-annotations span + span { margin-top:4px; color:rgb(0 0 0 / 60%); }
+.lovable-qr-controls { display:flex; align-items:flex-end; gap:24px; margin-top:24px; }
+.lovable-qr-controls label { flex:1; min-width:0; display:grid; gap:8px; font-size:14px; }
+.lovable-qr-controls input { width:100%; height:40px; padding:0 12px; border:1px solid var(--color-border); border-radius:8px; background:transparent; color:var(--color-text); font:inherit; font-weight:600; }
+.lovable-qr-controls input:focus-visible { outline:1px solid var(--color-muted); outline-offset:2px; }
+.lovable-qr-download { display:flex; align-items:center; justify-content:center; gap:12px; min-height:40px; padding:0 14px; border:1px solid var(--color-border); border-radius:8px; font-size:14px; white-space:nowrap; }
+.lovable-qr-download .icon { width:16px; height:16px; }
+.lovable-qr-download[aria-disabled] { opacity:.4; pointer-events:none; }
+.lovable-qr-status { margin-top:12px; min-height:20px; color:var(--color-muted); font-size:14px; line-height:1.5; }
+@media(max-width:680px) {
+ .lovable-qr-diagram { grid-template-columns:1fr; gap:28px; padding:24px; }
+ .lovable-qr-specimen { max-width:300px; }
+ .lovable-qr-annotations { gap:20px; padding-left:24px; }
+ .lovable-qr-annotations p::before { right:calc(100% + 10px); width:10px; }
+ .lovable-qr-annotations p::after { right:calc(100% + 20px); }
+ .lovable-qr-controls { flex-wrap:wrap; gap:16px; }
+ .lovable-qr-controls label { flex-basis:100%; }
+}

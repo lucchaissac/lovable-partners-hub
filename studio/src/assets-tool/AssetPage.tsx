@@ -1,4 +1,5 @@
 import {studioWorkspace,studioLastAssetKey,studioOwner} from './workspace';
+import {CommunityTypographyContext} from '../studio/PresentationElementDesign';
 import {localCommunityChatAvailable,localChatStatus,localChatRequest,requestLocalDesign,materializeLocalPlan,communityPlanReplies} from './localCommunityChat';
 import {ambassadorAsset,migrateCommunityAsset} from './ambassadorAsset';
 import {ambassadorFormats} from '../../../src/ambassadors/catalog.js';
@@ -47,7 +48,7 @@ const locationSearch = () => window.location.search;
 type AssetRequest = {id:number;prompt:string;visual?:WorkspaceVisual;sources:StudioSource[];recorded?:boolean;chatId?:string};
 
 export default function AssetPage() {
-  return <ColorPickerPaletteProvider value={assetPalette}><WorkspaceWidgetHost><HtmlSelectionMode.Provider value={true}><HtmlEditorInsertProvider><AssetPageContent/></HtmlEditorInsertProvider></HtmlSelectionMode.Provider></WorkspaceWidgetHost></ColorPickerPaletteProvider>;
+  return <CommunityTypographyContext.Provider value={studioWorkspace==='ambassadors'}><ColorPickerPaletteProvider value={assetPalette}><WorkspaceWidgetHost><HtmlSelectionMode.Provider value={true}><HtmlEditorInsertProvider><AssetPageContent/></HtmlEditorInsertProvider></HtmlSelectionMode.Provider></WorkspaceWidgetHost></ColorPickerPaletteProvider></CommunityTypographyContext.Provider>;
 }
 function AssetPageContent() {
   const { active } = useStudioSession();

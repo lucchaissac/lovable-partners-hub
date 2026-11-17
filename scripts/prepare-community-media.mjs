@@ -12,6 +12,7 @@ const jobs=[
  ['paper-collage','examples/ai-for-impact/editorial/impact-collage-lovable-gradient.png'],
  ['mediterranean-materials','examples/malaga-community/refinement/mediterranean-materials.png'],
  ['leaf-macro','examples/ai-for-impact/editorial/nature-macro-lovable-refraction.png'],
+ ['pixel-abstraction','public/ambassadors/assets/pixel-abstraction.svg'],
 ];
 for(const [name,source,overlay] of jobs){
  const photo=await loadImage(await readFile(new URL(source,root)));

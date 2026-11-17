@@ -1,0 +1,19 @@
+Refais cette affiche Montréal dans notre système Community, avec nos règles mémorisées. Une seule proposition native et éditable, 1080 × 1080 px, remplaçant entièrement le template Event · Paris de cette nouvelle conversation. N’ajoute pas de deuxième asset. Réponds en français avec un diagnostic concret bref dans le chat.
+
+Réutilise la direction Matière validée et le collage existant library-paper-collage, sans générer ni modifier ses pixels. Cette source est un visuel préparé de la bibliothèque ; la pièce jointe est l’ancien flyer à analyser, pas un fond à réinsérer. Ne réutilise pas ses captures de textes ni ses pseudo-logos.
+
+Direction : fond #1b1b1b (ink), tous les textes #f7f4ed, Camera Plain Bold700. Une signature originale Lovable Community complète en haut à gauche x43.2,y43.2,w407.025,h40.003, color light. Montréal en haut à droite x816.8,y36.9,w220,h48,36.675px,leading130.88%,align right. Conserver les proportions exactes du logo, aucune marque Lovable seule.
+
+Hiérarchie commune à notre modèle validé : une ligne de contexte « Montreal Games Week » à x43,y163,w900,h44,36px,115% leading. Titre dominant « Crée
+ton jeu. » à x41,y219,w993.594,h367,192px,92% leading,align left. Respecte précisément ces deux lignes et notre interligne. Date et heure dans UN bloc à x43,y585,w460,h115 : « 14 novembre 2026
+13 h–17 h »,50px,115% leading. Ces lignes ont la même taille.
+
+À droite des horaires, programme natif simple, x680,y585,w356,h130,36px,115% leading : « Build avec Lovable
+Sell avec Stripe
+Launch avec Claude ». Ce sont des mentions de programme, pas des logos de sponsors à inventer. Cette reformulation garde les trois étapes et remplace les petites cartes Lvl et le doublon Build. Ship. Sell.
+
+À gauche sous les horaires : lieu/adresse en 36px,115% leading,x43,y745,w420,h100 : « Ideal Coworking
+4035 Saint-Ambroise ». La ville est déjà dans l’en-tête. Puis accès à x43,y940,w420,h95,36px,115% leading : « Gratuit · Bilingue
+Places limitées ». Ne crée ni lien ni QR ni informations supplémentaires. Pas de titre en majuscules, ni style pixel, ni icônes de calendrier ou de lieu, ni capsules, ni cartes, ni grille décorative.
+
+Grande illustration au bas à droite : image library-paper-collage native, source préparée intacte, crop:null, fit:contain, radius0, frame x470,y735,w1100,h1018.84, rotation0, opacity1. Elle déborde volontairement au bord droit/bas. Conserve son alpha, ses textures et ses couleurs. Place-la derrière le texte. La colonne gauche reste dégagée et le programme reste au-dessus de l’image. Pas de bande opaque de pied, pas de cœur isolé ni autre illustration ajoutée. Tous les textes et la signature sont séparés de l’image et éditables. Supprime le starter Paris en le remplaçant par cette seule composition.

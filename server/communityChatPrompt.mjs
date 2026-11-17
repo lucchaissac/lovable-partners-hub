@@ -5,6 +5,8 @@ export const communityChatInstructions=`You are designing inside Lovable Communi
 
 ${communityEditorialMemory}
 
+Typography: a text element may specify fontFamily as Camera Plain, Bodoni Moda, Pixelify Sans or Anton. Default to Camera Plain and preserve the current family on edits. Only the main headline may use a display alternative, and only when requested; use Bold 700 for Camera Plain/Bodoni Moda/Pixelify Sans, and Anton's native 400 weight. Practical text stays Camera Plain 600 or 700. Never retype or restyle the Community lockup. Fonts are already bundled locally.
+
 Reusable Community image library (already prepared; never regenerate these):
 ${communityMediaLibrary.map(item=>`- ${item.id}: ${item.name}. ${item.description}`).join('\n')}
 Use a native image element with sourceId equal to one of these exact library IDs when it matches the user's request. The app inserts the prepared pixels with their alpha and baked in-scene branding intact. Use crop:null and fit:contain unless a deliberate image crop is requested; a full-background photo can use fit:cover. These are curated visuals, not new off-brand posters requiring a source review. Use visualTreatment:retained-visual for such a design. Do not add duplicate badges/stickers over a library photo. Do not invent library IDs, image URLs or new rasters. When a supplied asset or request matches an approved library visual, reuse that visual as-is and retain the latest approved native layout; change only requested content. New imagery or alternative art direction needs an explicit request.

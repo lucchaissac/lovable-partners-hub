@@ -1,5 +1,6 @@
 import { toPng } from 'html-to-image';
 import { assetSchema, assetDimensions, type AssetDocument, type AssetReference } from './model';
+import {fontFacesForAsset} from '../../../shared/assetTypography.mjs';
 
 export async function readReference(file: File): Promise<AssetReference> {
   if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) throw new Error('Choose a PNG, JPG or WebP image.');
@@ -32,9 +33,11 @@ export const filename = (title: string) => title.replace(/[^\p{L}\p{N} _-]/gu, '
 export function exportSource(asset: AssetDocument) {
   download(new Blob([JSON.stringify(assetSchema.parse(asset), null, 2)], { type: 'application/json' }), `${filename(asset.title)}.asset.json`);
 }
-let fontCss: Promise<string> | undefined;
-async function embeddedAssetFonts() {
-  return fontCss ??= fetch('/fonts/CameraPlainVariable.woff2').then(async response => {
+const fontCss=new Map<string,Promise<string>>();
+async function embeddedAssetFonts(asset:AssetDocument) {
+ return (await Promise.all(fontFacesForAsset(asset).map(face=>{
+  let pending=fontCss.get(face.src);if(pending)return pending;
+  pending=fetch(face.src).then(async response => {
     if (!response.ok) throw new Error('The design font could not load. Please try again.');
     const blob = await response.blob();
     const source = await new Promise<string>((resolve, reject) => {
@@ -43,15 +46,17 @@ async function embeddedAssetFonts() {
       reader.onerror = reject;
       reader.readAsDataURL(blob);
     });
-    return `@font-face{font-family:"Camera Plain";font-weight:100 900;font-style:normal;src:url(${source}) format("woff2");}`;
-  }).catch(error => { fontCss = undefined; throw error; });
+    return `@font-face{font-family:"${face.family}";font-weight:${face.weight};font-style:${face.style};src:url(${source}) format("woff2");}`;
+  }).catch(error => { fontCss.delete(face.src); throw error; });
+  fontCss.set(face.src,pending);return pending;
+ }))).join('\n');
 }
 export async function renderPng(element: HTMLElement, asset: AssetDocument) {
   await document.fonts.ready;
   await Promise.all(Array.from(element.querySelectorAll('img')).map(image => image.decode()));
   const { width, height } = assetDimensions(asset);
   // Embed only the local brand fonts; unrelated third-party stylesheets may not expose cssRules.
-  const fontEmbedCSS = await embeddedAssetFonts();
+  const fontEmbedCSS = await embeddedAssetFonts(asset);
   const data = await toPng(element, { width, height, pixelRatio: 1, fontEmbedCSS,
     style: { transform: 'none', margin: '0' }, filter: node => !(node instanceof Element && node.hasAttribute('data-editor-only')) });
   return data;

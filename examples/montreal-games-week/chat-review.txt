@@ -1,0 +1,40 @@
+source-flyer.png
+
+Refais cette affiche Montréal dans notre système Community, avec nos règles mémorisées. Une seule proposition native et éditable, 1080 × 1080 px, remplaçant entièrement le template Event · Paris de cette nouvelle conversation. N’ajoute pas de deuxième asset. Réponds en français avec un diagnostic concret bref dans le chat.
+
+Réutilise la direction Matière validée et le collage existant library-paper-collage, sans générer ni modifier ses pixels. Cette source est un visuel préparé de la bibliothèque ; la pièce jointe est l’ancien flyer à analyser, pas un fond à réinsérer. Ne réutilise pas ses captures de textes ni ses pseudo-logos.
+
+Direction : fond #1b1b1b (ink), tous les textes #f7f4ed, Camera Plain Bold700. Une signature originale Lovable Community complète en haut à gauche x43.2,y43.2,w407.025,h40.003, color light. Montréal en haut à droite x816.8,y36.9,w220,h48,36.675px,leading130.88%,align right. Conserver les proportions exactes du logo, aucune marque Lovable seule.
+
+Hiérarchie commune à notre modèle validé : une ligne de contexte « Montreal Games Week » à x43,y163,w900,h44,36px,115% leading. Titre dominant « Crée
+ton jeu. » à x41,y219,w993.594,h367,192px,92% leading,align left. Respecte précisément ces deux lignes et notre interligne. Date et heure dans UN bloc à x43,y585,w460,h115 : « 14 novembre 2026
+13 h–17 h »,50px,115% leading. Ces lignes ont la même taille.
+
+À droite des horaires, programme natif simple, x680,y585,w356,h130,36px,115% leading : « Build avec Lovable
+Sell avec Stripe
+Launch avec Claude ». Ce sont des mentions de programme, pas des logos de sponsors à inventer. Cette reformulation garde les trois étapes et remplace les petites cartes Lvl et le doublon Build. Ship. Sell.
+
+À gauche sous les horaires : lieu/adresse en 36px,115% leading,x43,y745,w420,h100 : « Ideal Coworking
+4035 Saint-Ambroise ». La ville est déjà dans l’en-tête. Puis accès à x43,y940,w420,h95,36px,115% leading : « Gratuit · Bilingue
+Places limitées ». Ne crée ni lien ni QR ni informations supplémentaires. Pas de titre en majuscules, ni style pixel, ni icônes de calendrier ou de lieu, ni capsules, ni cartes, ni grille décorative.
+
+Grande illustration au bas à droite : image library-paper-collage native, source préparée intacte, crop:null, fit:contain, radius0, frame x470,y735,w1100,h1018.84, rotation0, opacity1. Elle déborde volontairement au bord droit/bas. Conserve son alpha, ses textures et ses couleurs. Place-la derrière le texte. La colonne gauche reste dégagée et le programme reste au-dessus de l’image. Pas de bande opaque de pied, pas de cœur isolé ni autre illustration ajoutée. Tous les textes et la signature sont séparés de l’image et éditables. Supprime le starter Paris en le remplaçant par cette seule composition.
+
+4:50 PM
+
+source-flyer.png — Hors charte. L’invitation à créer son jeu est claire. L’en-tête pixel masque l’identité Community, tandis que le slogan et les cartes dédoublent le programme.
+
+L’en-tête « Lovable × Stripe » en caractères pixel tient lieu de signature. → Utiliser la signature Lovable Community complète et placer Montréal en regard.
+Le slogan « Build. Ship. Sell. » et les cartes de niveaux font lire deux fois le programme. → Réunir les trois étapes en Camera Plain dans un bloc à droite des horaires.
+La grille, les carrés et la capsule de gratuité concurrencent les informations pratiques. → Donner la priorité au titre sur deux lignes, regrouper les informations pratiques à gauche et réserver le bas droit au collage Matière.
+
+À conserver : L’invitation à créer son jeu dans le cadre de Montreal Games Week; 14 novembre 2026, de 13 h à 17 h; Build avec Lovable, Sell avec Stripe, Launch avec Claude; Ideal Coworking, 4035 Saint-Ambroise, Montréal; Accès gratuit, événement bilingue et places limitées.
+À retirer : En-tête et mentions secondaires de co-branding; Slogan « Build. Ship. Sell. » et cartes de niveaux; Grille, carrés décoratifs, capsule de gratuité et bouton de fermeture.
+
+L’en-tête pixel, la grille et les cartes de niveaux dispersaient l’attention et répétaient le programme. Une seule affiche éditable de 1080 × 1080 px remplace Event · Paris, avec la signature Community complète, le programme en trois lignes et le collage Matière d’origine. Le bloc d’accès est calé à 43,2 px des bords gauche et bas.
+
+Ajuste uniquement le collage sélectionné : même image existante, pixels et alpha inchangés, fit contain, crop null, cadre x430,y690,width760,height760, rotation0,opacity1. Son cadrage précédent était trop coupé. Garde son ordre derrière tous les textes. Ne change absolument aucun autre calque, aucune typo, aucun texte ni la taille du canvas.
+
+4:53 PM
+
+Le collage sélectionné est repositionné à x 430, y 690 dans un cadre de 760 × 760 px, derrière tous les textes. L’image d’origine conserve sa transparence et ses proportions, sans recadrage de la source.

@@ -1,0 +1,88 @@
+{
+  "title": "Crée ton jeu. · Montréal",
+  "date": "2026-11-16",
+  "status": "Simplified manual layout preserved; flat beige pixel replacement proposed locally following Luc’s latest direction",
+  "source": {
+    "file": "source-flyer.png",
+    "providedBy": "Luc",
+    "originalFilename": "Screenshot 2026-11-16 at 2.14.54 PM.png",
+    "treatment": "Unmodified reference; essential event information retained as native editable text. Luc removed the campaign eyebrow and programme."
+  },
+  "direction": {
+    "reference": "Luc’s simplified Montréal manual layout",
+    "canvas": [
+      1080,
+      1080
+    ],
+    "background": "#1b1b1b",
+    "ink": "#f7f4ed",
+    "font": "Camera Plain Bold",
+    "headlineSize": 192,
+    "headlineLeadingPercent": 92,
+    "identity": "Original full Lovable Community lockup",
+    "city": "Montréal",
+    "visualSourceId": "library-pixel-abstraction",
+    "visualTreatment": "Flat beige stepped loop, authored as an SVG and rendered to a transparent 600 × 600 WebP for the prepared library"
+  },
+  "content": [
+    "Crée ton jeu.",
+    "14 novembre 2026",
+    "13 h–17 h",
+    "Ideal Coworking",
+    "4035 Saint-Ambroise",
+    "Gratuit · Bilingue",
+    "Places limitées"
+  ],
+  "simplified": [
+    "Montreal Games Week eyebrow",
+    "Three-line Build/Sell/Launch programme",
+    "Lvl cards",
+    "Repeated Build. Ship. Sell. slogan",
+    "Lovable-only heading",
+    "Decorative grid",
+    "Paper collage",
+    "Rejected colourful game controller"
+  ],
+  "brandTreatment": "Original full Community identity and Montréal header remain unchanged. Removed programme mentions are not restored as logos or other decorations.",
+  "references": {
+    "sourceLayout": "../malaga-community/refinement/luc-layout-reference.json",
+    "agentMemory": "../../server/communityEditorialMemory.mjs",
+    "observedLayerGeometry": "latest-local-layout.json",
+    "visibleChatReview": "chat-review.txt",
+    "initialPrompt": "prompt.txt",
+    "initialLayerGeometry": "composition.json",
+    "pixelSource": "../../public/ambassadors/assets/pixel-abstraction.svg",
+    "fontSources": "../../public/fonts/community/provenance.json"
+  },
+  "verification": [
+    "Production build and all 51 tests passed.",
+    "No artwork exports during layout verification.",
+    "Five text blocks, the full Community lockup and pixel abstraction remain separate native layers.",
+    "Verified all six non-artwork layers retain exactly the same visible DOM geometry and styling as the manual layout.",
+    "Verified Pixelify Sans persists after reload; Anton renders at its native 400 weight and Bodoni Moda at 700. Restored Camera Plain on the current poster.",
+    "Headline remains 192 px with 92% leading; practical text remains Camera Plain.",
+    "Verified the final composition at 50% editor zoom."
+  ],
+  "result": {
+    "localAssetId": "354b1a85-933b-47b9-8d08-312e26458028",
+    "localUrl": "http://127.0.0.1:5173/#ambassadors/create/354b1a85-933b-47b9-8d08-312e26458028",
+    "assetCount": 1,
+    "nativeLayers": 7,
+    "editableTextLayers": 5,
+    "replacesStartingTemplate": true,
+    "separateFromMalagaCollection": true,
+    "imageFrame": {
+      "x": 760,
+      "y": 260,
+      "width": 520,
+      "height": 520,
+      "rotation": 0
+    },
+    "imagePixelsUnchanged": true
+  },
+  "reusableCorrections": [
+    "One main message plus essential date, place and access information; never restore manually removed copy.",
+    "Gaming theme can use clean abstract pixel geometry; no automatic figurative illustration or gradient.",
+    "Display families are optional headline-only choices; the current poster stays Camera Plain unless requested otherwise."
+  ]
+}

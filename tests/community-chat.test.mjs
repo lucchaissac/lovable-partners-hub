@@ -23,6 +23,18 @@ function galleryDesign(width=1080,height=1080){
 }
 const plan={reviews:[],badgeBatch:null,summary:'Created a LinkedIn post.',designs:[galleryDesign()],edits:[],removeIds:[]};
 
+test('Community display families survive planning and remain restricted to headlines',()=>{
+ for(const fontFamily of ['Bodoni Moda','Pixelify Sans','Anton']){
+  const candidate=structuredClone(plan),headline=candidate.designs[0].elements[3];
+  Object.assign(headline,{fontFamily,weight:fontFamily==='Anton'?400:700});
+  assert.equal(validateChatPlan(candidate,request).designs[0].elements[3].fontFamily,fontFamily);
+  candidate.designs[0].elements.push({...text,id:'details',text:'14 November',fontFamily,fontSize:32,weight:fontFamily==='Anton'?400:600,frame:{...frame,x:43.2,y:800,width:500,height:60}});
+  assert.throws(()=>validateChatPlan(candidate,request),/supporting copy/);
+ }
+ const invalid=structuredClone(plan);invalid.designs[0].elements[3].fontFamily='Invented font';
+ assert.throws(()=>chatPlanSchema.parse(invalid));
+});
+
 test('Reviewed globe counterparts retain the original motif geometry and editorial type in both palettes',()=>{
  const dark=structuredClone(plan),design=dark.designs[0];
  dark.reviews=[{sourceId:'current-canvas',verdict:'on-brand',diagnosis:'Keep the existing editorial hierarchy.',issues:[],keep:['Native type and full Community logo'],remove:[],retainedVisuals:[],uncertainties:[]}];
@@ -107,6 +119,7 @@ test('A selected-element edit cannot change or remove unrelated elements',()=>{
 });
 test('The structured-output schema uses supported anyOf unions',()=>{
  const schema=z.toJSONSchema(chatPlanSchema);assert.equal(JSON.stringify(schema).includes('"oneOf"'),false);
+ const check=node=>{if(!node||typeof node!=='object')return;if(node.type==='object'&&node.properties)assert.deepEqual([...node.required].sort(),Object.keys(node.properties).sort());for(const child of Object.values(node))if(Array.isArray(child))child.forEach(check);else check(child);};check(schema);
 });
 
 test('Gallery rules reject the giant-heart demo, incorrect proportions and invented art direction',()=>{

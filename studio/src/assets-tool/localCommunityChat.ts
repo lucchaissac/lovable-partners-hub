@@ -42,9 +42,9 @@ async function brandImage(dark:boolean,width:number){
  canvas.getContext('2d')!.drawImage(image,0,0,canvas.width,canvas.height);return canvas.toDataURL('image/png');
 }
 function sentenceCase(text:string){return /[a-zà-ÿ]/.test(text)||!/[A-Z]/.test(text)?text:text.charAt(0)+text.slice(1).toLowerCase();}
-function fitText(text:string,size:number,width:number,height:number,leading:number,weight:number){
+function fitText(text:string,size:number,width:number,height:number,leading:number,weight:number,fontFamily:string){
  const ctx=document.createElement('canvas').getContext('2d')!;
- while(size>6){ctx.font=`${weight} ${size}px "Camera Plain"`;let lines=0,tooWide=false;
+ while(size>6){ctx.font=`${weight} ${size}px "${fontFamily}"`;let lines=0,tooWide=false;
   for(const paragraph of text.split('\n')){let line='';lines++;for(const word of paragraph.split(/\s+/)){if(ctx.measureText(word).width>width)tooWide=true;const next=line?`${line} ${word}`:word;if(line&&ctx.measureText(next).width>width){lines++;line=word;}else line=next;}}
   if(!tooWide&&lines*size*leading/100<=height+.1)return size;size-=1;
  }return size;
@@ -57,8 +57,10 @@ async function nativeElement(spec:ChatElement,existing:Map<string,HtmlBlock>,ima
  }
  const editor=frameOf(spec.frame);
  if(spec.kind==='text'){
-  const text=sentenceCase(spec.text),fontSize=fitText(text,spec.fontSize,spec.frame.width,spec.frame.height,spec.lineHeight,spec.weight);
-  return {id:spec.id,kind:'text',value:{runs:[{text}],style:'Text',size:fontSize,align:spec.align,color:spec.color},editor:{...old?.editor,...editor,appearance:{fontFamily:'Camera Plain',fontSize,fontWeight:spec.weight,lineHeight:spec.lineHeight,letterSpacing:0}}};
+  const text=sentenceCase(spec.text),fontFamily=spec.fontFamily??old?.editor?.appearance?.fontFamily??'Camera Plain';
+  await document.fonts.load(`${spec.weight} ${spec.fontSize}px "${fontFamily}"`,text);signal.throwIfAborted();
+  const fontSize=fitText(text,spec.fontSize,spec.frame.width,spec.frame.height,spec.lineHeight,spec.weight,fontFamily);
+  return {id:spec.id,kind:'text',value:{runs:[{text}],style:'Text',size:fontSize,align:spec.align,color:spec.color},editor:{...old?.editor,...editor,appearance:{fontFamily,fontSize,fontWeight:spec.weight,lineHeight:spec.lineHeight,letterSpacing:0}}};
  }
  if(spec.kind==='shape')return {id:spec.id,kind:'shape',shape:spec.shape,editor:{...editor,appearance:{fill:spec.fill,background:spec.fill,borderColor:spec.stroke,borderWidth:spec.strokeWidth,radius:spec.radius,lineStyle:'solid',lineWidth:Math.max(1,spec.strokeWidth)}}};
  if(spec.kind==='icon')return {id:spec.id,kind:'shape',shape:'rectangle',icon:spec.name as HtmlIconName,filled:spec.filled,editor:{...editor,appearance:{fill:spec.color}}};

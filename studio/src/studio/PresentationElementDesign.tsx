@@ -4,6 +4,8 @@ import * as Asset from "@asset/ui";
 import "./presentation-element-design.css";
 import {elementBoxStyle,elementBackgroundImage} from "./htmlElementAppearance";
 import {cornerRadiusStyle} from './htmlCornerRadius';
+import {communityDisplayFonts} from '../../../shared/assetTypography.mjs';
+export const CommunityTypographyContext=React.createContext(false);
 const STUDIO_SHAPE_TYPES = [{ id: 'rectangle', label: 'Square', name: 'Rectangle', icon: 'square' }, { id: 'circle', label: 'Circle', name: 'Circle', icon: 'circle' }, { id: 'triangle', label: 'Triangle', name: 'Triangle', icon: 'triangle' }];
 function studioShapeType(shape) { if (shape.kind === 'line') return { id: 'line', label: 'Line', name: 'Line', icon: 'slash' }; if (shape.kind === 'image') return { id: 'image', label: 'Image', name: 'Image', icon: 'image' }; if (shape.kind === 'text') return { id: 'text', label: 'Text', name: 'Text', icon: 'type' }; return STUDIO_SHAPE_TYPES.find(type => type.id === shape.kind) || STUDIO_SHAPE_TYPES[0]; }
 function studioShapeLabel(shape, index) { return shape.name || `${studioShapeType(shape).name} ${index + 1}`; }
@@ -18,7 +20,7 @@ const STUDIO_FONTS = [
   { id: 'Verdana', label: 'Verdana', css: 'Verdana, sans-serif' },
   { id: 'Courier New', label: 'Courier New', css: '"Courier New", Courier, monospace' }
 ];
-function studioFontFamily(name) { return (STUDIO_FONTS.find(font => font.id === name) || STUDIO_FONTS[0]).css; }
+function studioFontFamily(name) { return ([...STUDIO_FONTS,...communityDisplayFonts].find(font => font.id === name) || STUDIO_FONTS[0]).css; }
 
 function studioShapeAppearance(shape) { return { ...STUDIO_SHAPE_APPEARANCE, ...(shape.kind === 'image' ? { imageFit: 'contain' } : {}), ...(shape.kind === 'line' ? { fill: 'var(--ui-text)', lineWidth: 2, lineStyle: 'solid', lineCap: 'butt' } : {}), ...(shape.kind === 'text' ? studioTextAppearance(shape.appearance) : shape.appearance) }; }
 
@@ -85,9 +87,11 @@ export function StudioCornerControls({value,onChange,label='Shape',max=160,disab
 }
 
 function StudioTextControls({ value, locked, onChange }) {
+  const community=React.useContext(CommunityTypographyContext);
+  const fonts=community?communityDisplayFonts:STUDIO_FONTS;
   const weights = [{ id: '400', label: 'Regular' }, { id: '500', label: 'Medium' }, { id: '600', label: 'Semibold' }, { id: '700', label: 'Bold' }];
   return <>
-    <div className="hcs-design-design-row hcs-design-design-section"><span>Font</span><Asset.Dropdown fit value={value.fontFamily} align="end" listHeight="auto" items={STUDIO_FONTS.map(font => ({ id: font.id, label: <span style={{ fontFamily: font.css }}>{font.label}</span> }))} onChange={fontFamily => onChange({ fontFamily })} trigger={<Asset.TriggerField disabled={locked} aria-label="Font family"><span className="studio-font-label">{value.fontFamily}</span></Asset.TriggerField>} /></div>
+    <div className="hcs-design-design-row hcs-design-design-section"><span>Font</span><Asset.Dropdown fit value={value.fontFamily} align="end" listHeight="auto" items={fonts.map(font => ({ id: font.id, label: <span style={{ fontFamily: font.css }}>{font.label}</span> }))} onChange={fontFamily => onChange({ fontFamily,...(fontFamily==='Anton'?{fontWeight:400}:value.fontFamily==='Anton'?{fontWeight:700}:{}) })} trigger={<Asset.TriggerField disabled={locked} aria-label="Font family"><span className="studio-font-label">{value.fontFamily}</span></Asset.TriggerField>} /></div>
     <div className="hcs-design-design-row"><span>Size</span><StudioShapeNumber label="Text size" min={1} max={1000} value={value.fontSize} onChange={fontSize => onChange({ fontSize })} /></div>
     <div className="hcs-design-design-row"><span>Weight</span><Asset.Dropdown fit value={String(value.fontWeight)} align="end" listHeight="auto" items={weights} onChange={fontWeight => onChange({ fontWeight: Number(fontWeight) })} trigger={<Asset.TriggerField disabled={locked} aria-label="Text weight">{weights.find(item => item.id === String(value.fontWeight))?.label || 'Regular'}</Asset.TriggerField>} /></div>
     <div className="hcs-design-design-row"><span>Style</span><div className="hcs-design-text-buttons" role="group" aria-label="Text style">{['bold', 'italic', 'underline'].map(mark => {

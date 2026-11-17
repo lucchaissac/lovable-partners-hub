@@ -9,7 +9,7 @@ const color=z.string().regex(/^(#[0-9a-fA-F]{6}|transparent)$/);
 const frame=z.object({x:z.number().min(-4000).max(4000),y:z.number().min(-4000).max(4000),width:z.number().min(1).max(4000),height:z.number().min(1).max(4000),rotation:z.number().min(-360).max(360),opacity:z.number().min(0).max(1)}).strict();
 export const chatIcons=['arrow-right','arrow-up-right','check','sparkles','calendar','map-pin','clock','users','globe','plus','code','laptop','lightbulb','message-circle','star','rocket','zap','coffee','link','play','quote'];
 export const chatElementSchema=z.union([
- z.object({id,kind:z.literal('text'),frame,text:z.string().max(3000),fontSize:z.number().min(6).max(600),weight:z.union([z.literal(600),z.literal(700)]),align:z.enum(['left','center','right']),color,lineHeight:z.number().min(85).max(180)}).strict(),
+ z.object({id,kind:z.literal('text'),frame,text:z.string().max(3000),fontFamily:z.enum(['Camera Plain','Bodoni Moda','Pixelify Sans','Anton']).nullable().default(null),fontSize:z.number().min(6).max(600),weight:z.union([z.literal(400),z.literal(600),z.literal(700)]),align:z.enum(['left','center','right']),color,lineHeight:z.number().min(85).max(180)}).strict(),
  z.object({id,kind:z.literal('shape'),frame,shape:z.enum(['rectangle','circle','triangle','line']),fill:color,stroke:color,strokeWidth:z.number().min(0).max(24),radius:z.number().min(0).max(1500)}).strict(),
  z.object({id,kind:z.literal('icon'),frame,name:z.enum(chatIcons),color,filled:z.boolean()}).strict(),
  z.object({id,kind:z.literal('brand'),frame,asset:z.enum(['community-logo','globe','gradient','community-photo']),color:z.enum(['light','dark']),city:z.string().max(45)}).strict(),

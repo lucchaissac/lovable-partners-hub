@@ -71,11 +71,13 @@ export function validateCommunityDesignRules(plan,request){
    const source='sourceId'in e?request.blocks.find(b=>b.id===e.sourceId):undefined,frame=e.frame??(source?frameOf(source):null);
    if(frame&&boxOverlaps(frame,clear))reject('Keep one actual heart height of clear space around the full Community logo, including its y descender.');
    if(e.kind==='text'){
-    if(e.weight!==600&&e.weight!==700)reject('Use Camera Plain Bold 700 for headlines and Semibold 600 for supporting copy.');
+    const display=e.fontFamily&&e.fontFamily!=='Camera Plain',isHeadline=e.fontSize>=m.headlineSize*.65;
+    if(display&&!isHeadline)reject('Keep supporting copy in Camera Plain. Display fonts are reserved for the main headline.');
+    if(e.weight!==600&&e.weight!==700&&!(e.fontFamily==='Anton'&&e.weight===400&&isHeadline))reject('Use Bold 700 or Semibold 600; Anton uses its native 400 weight for the headline only.');
     if(!(light?['#1b1b1b']:['#f7f4ed','#ffffff']).includes(e.color.toLowerCase()))reject(light?'Use #1b1b1b copy on light Community artwork.':'Community copy stays light on the authored dark artwork.');
     const headlineMaximum=m.headlineSize*(editorial?1.6:1.05);
     if(e.fontSize>headlineMaximum)reject(`Keep type in the ${design.reference} hierarchy: headline maximum ${headlineMaximum.toFixed(2)}px at this width.`);
-    if(e.fontSize>=m.headlineSize*.65&&(e.align!=='left'||e.weight!==700))reject('The gallery headline is left-aligned Camera Plain Bold 700.');
+    if(isHeadline&&(e.align!=='left'||e.weight!==(e.fontFamily==='Anton'?400:700)))reject('The headline stays left-aligned and bold; Anton uses its native 400 display weight.');
     if(frame.x<m.inset*.8||frame.x+frame.width>design.width-m.inset*.8+2||frame.y<0||frame.y+frame.height>design.height-m.inset*.7+2)reject('Keep text within the reference content grid and canvas bounds.');
    }
    if((e.kind==='shape'?[e.fill,e.stroke]:e.kind==='icon'?[e.color]:[]).some(c=>!['#1b1b1b','#f7f4ed','#ffffff','transparent'].includes(c.toLowerCase())))reject('Use the original monochrome palette for native shapes and icons. Color belongs to the original globe and gradient.');

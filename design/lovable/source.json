@@ -1,0 +1,373 @@
+{
+  "source": "https://lovablebrand.lovable.app/",
+  "reviewedOn": "2026-11-17",
+  "pages": [
+    "https://lovablebrand.lovable.app/brand/logo",
+    "https://lovablebrand.lovable.app/brand/colors",
+    "https://lovablebrand.lovable.app/brand/typography",
+    "https://lovablebrand.lovable.app/brand/photos",
+    "https://lovablebrand.lovable.app/brand/banners-wallpapers",
+    "https://lovablebrand.lovable.app/inspiration"
+  ],
+  "rules": {
+    "logo": [
+      "Use supplied color variants on a contrasting background.",
+      "Preserve proportions and leave clear space.",
+      "Do not distort, recolor or add effects to the artwork."
+    ],
+    "clearSpace": "The public source specifies clear space but no numeric measure; do not invent one.",
+    "typography": "Camera Plain is the primary font. Local interface uses Luc’s minimum 600 and natural sentence case.",
+    "color": "Brand colors are for illustration and marketing, not interface buttons and toggles.",
+    "photos": "Published photography is available for press and editorial use."
+  },
+  "colors": [
+    {
+      "name": "Light blue",
+      "hex": "#4e93ff"
+    },
+    {
+      "name": "Blue",
+      "hex": "#4b73ff"
+    },
+    {
+      "name": "Violet",
+      "hex": "#bbc1ff"
+    },
+    {
+      "name": "Bubblegum",
+      "hex": "#ffa6f9"
+    },
+    {
+      "name": "Pink",
+      "hex": "#ff0178"
+    },
+    {
+      "name": "Red",
+      "hex": "#f7101d"
+    },
+    {
+      "name": "Orange",
+      "hex": "#ff6d1b"
+    },
+    {
+      "name": "Yellow",
+      "hex": "#ffa517"
+    },
+    {
+      "name": "Black",
+      "hex": "#1b1b1b"
+    },
+    {
+      "name": "Black 60%",
+      "hex": "#1b1b1b99"
+    },
+    {
+      "name": "Black 30%",
+      "hex": "#1b1b1b4d"
+    },
+    {
+      "name": "Creme",
+      "hex": "#f7f4ed"
+    },
+    {
+      "name": "Creme 60%",
+      "hex": "#f7f4ed99"
+    },
+    {
+      "name": "Creme 30%",
+      "hex": "#f7f4ed4d"
+    }
+  ],
+  "gradients": [
+    {
+      "name": "Horizontal full",
+      "css": "linear-gradient(to right, #4F88FF 0%, #5185FF 5%, #5885FF 10%, #6289FF 14%, #7491FF 19%, #91A0FF 24%, #B0ACFE 29%, #CEAFFB 33%, #E2A5F2 38%, #F388DE 43%, #FB65C2 48%, #FD49A8 52%, #FD2980 57%, #FC1A58 62%, #FA1F41 67%, #FA2733 71%, #FB3D26 76%, #FC541F 81%, #FE6A1E 86%, #FE771D 90%, #FF861B 95%, #FF8F1B 100%)"
+    },
+    {
+      "name": "Horizontal warm",
+      "css": "linear-gradient(to right, #FD49A8 0%, #FD2980 10%, #FC1A58 20%, #FA1F41 30%, #FA2733 40%, #FB3D26 50%, #FC541F 60%, #FE6A1E 70%, #FE771D 80%, #FF861B 90%, #FF8F1B 100%)"
+    },
+    {
+      "name": "Horizontal cool",
+      "css": "linear-gradient(to right, #4F88FF 0%, #5185FF 8%, #5885FF 17%, #6289FF 25%, #7491FF 33%, #91A0FF 42%, #B0ACFE 50%, #CEAFFB 58%, #E2A5F2 67%, #F388DE 75%, #FB65C2 83%, #FD49A8 92%, #FD2980 100%)"
+    },
+    {
+      "name": "Vertical full",
+      "css": "linear-gradient(to bottom, #4F88FF 0%, #5185FF 5%, #5885FF 10%, #6289FF 14%, #7491FF 19%, #91A0FF 24%, #B0ACFE 29%, #CEAFFB 33%, #E2A5F2 38%, #F388DE 43%, #FB65C2 48%, #FD49A8 52%, #FD2980 57%, #FC1A58 62%, #FA1F41 67%, #FA2733 71%, #FB3D26 76%, #FC541F 81%, #FE6A1E 86%, #FE771D 90%, #FF861B 95%, #FF8F1B 100%)"
+    },
+    {
+      "name": "Vertical warm",
+      "css": "linear-gradient(to bottom, #FD49A8 0%, #FD2980 10%, #FC1A58 20%, #FA1F41 30%, #FA2733 40%, #FB3D26 50%, #FC541F 60%, #FE6A1E 70%, #FE771D 80%, #FF861B 90%, #FF8F1B 100%)"
+    },
+    {
+      "name": "Vertical cool",
+      "css": "linear-gradient(to bottom, #4F88FF 0%, #5185FF 8%, #5885FF 17%, #6289FF 25%, #7491FF 33%, #91A0FF 42%, #B0ACFE 50%, #CEAFFB 58%, #E2A5F2 67%, #F388DE 75%, #FB65C2 83%, #FD49A8 92%, #FD2980 100%)"
+    }
+  ],
+  "logos": [
+    {
+      "id": "lockup-black",
+      "family": "Logo",
+      "tone": "black",
+      "url": "https://lovablebrand.lovable.app/logos/lockup-black.svg"
+    },
+    {
+      "id": "lockup-creme",
+      "family": "Logo",
+      "tone": "creme",
+      "url": "https://lovablebrand.lovable.app/logos/lockup-creme.svg"
+    },
+    {
+      "id": "lockup-white",
+      "family": "Logo",
+      "tone": "white",
+      "url": "https://lovablebrand.lovable.app/logos/lockup-white.svg"
+    },
+    {
+      "id": "full-black",
+      "family": "Full logo",
+      "tone": "black",
+      "url": "https://lovablebrand.lovable.app/logos/full-black.svg"
+    },
+    {
+      "id": "full-white",
+      "family": "Full logo",
+      "tone": "creme",
+      "url": "https://lovablebrand.lovable.app/logos/full-white.svg"
+    },
+    {
+      "id": "full-white-pure",
+      "family": "Full logo",
+      "tone": "white",
+      "url": "https://lovablebrand.lovable.app/logos/full-white-pure.svg"
+    },
+    {
+      "id": "logomark-color",
+      "family": "Logomark",
+      "tone": "color",
+      "url": "https://lovablebrand.lovable.app/logos/logomark-color.svg"
+    },
+    {
+      "id": "logomark-black",
+      "family": "Logomark",
+      "tone": "black",
+      "url": "https://lovablebrand.lovable.app/logos/logomark-black.svg"
+    },
+    {
+      "id": "logomark-white",
+      "family": "Logomark",
+      "tone": "white",
+      "url": "https://lovablebrand.lovable.app/logos/logomark-white.svg"
+    },
+    {
+      "id": "wordmark-black",
+      "family": "Wordmark",
+      "tone": "black",
+      "url": "https://lovablebrand.lovable.app/logos/wordmark-black.svg"
+    },
+    {
+      "id": "wordmark-creme",
+      "family": "Wordmark",
+      "tone": "creme",
+      "url": "https://lovablebrand.lovable.app/logos/wordmark-creme.svg"
+    },
+    {
+      "id": "wordmark-white",
+      "family": "Wordmark",
+      "tone": "white",
+      "url": "https://lovablebrand.lovable.app/logos/wordmark-white.svg"
+    }
+  ],
+  "media": [
+    {
+      "id": "artwork-1",
+      "kind": "gallery",
+      "height": 1684,
+      "name": "Poster — Build a Legacy",
+      "url": "https://lovablebrand.lovable.app/assets/a4-15-DLKaVlvG.png",
+      "width": 1190
+    },
+    {
+      "id": "artwork-2",
+      "kind": "gallery",
+      "height": 1600,
+      "name": "Love at Scale — Event",
+      "url": "https://lovablebrand.lovable.app/assets/lovable-x-nvidia-CXPgDVdd.png",
+      "width": 1600
+    },
+    {
+      "id": "artwork-3",
+      "kind": "gallery",
+      "height": 678,
+      "name": "Gift Card — Logo Heart",
+      "url": "https://lovablebrand.lovable.app/assets/giftcard-21-CJvE66ik.png",
+      "width": 1075
+    },
+    {
+      "id": "artwork-4",
+      "kind": "gallery",
+      "height": 474,
+      "name": "Billboard — Lovable Wordmark",
+      "url": "https://lovablebrand.lovable.app/assets/old-street-long-LSE8hzrK.png",
+      "width": 1920
+    },
+    {
+      "id": "artwork-5",
+      "kind": "gallery",
+      "height": 678,
+      "name": "Gift Card — Gradient Typography",
+      "url": "https://lovablebrand.lovable.app/assets/giftcard-17-Bj9jE6pN.png",
+      "width": 1075
+    },
+    {
+      "id": "artwork-6",
+      "kind": "gallery",
+      "height": 1800,
+      "name": "Poster — It's Possible",
+      "url": "https://lovablebrand.lovable.app/assets/old-street-possible-DzrAtKdE.png",
+      "width": 1200
+    },
+    {
+      "id": "artwork-7",
+      "kind": "gallery",
+      "height": 1935,
+      "name": "Poster — Heart Outline",
+      "url": "https://lovablebrand.lovable.app/assets/poster-heart-outline-xoQYTuMc.png",
+      "width": 1352
+    },
+    {
+      "id": "artwork-8",
+      "kind": "gallery",
+      "height": 678,
+      "name": "Gift Card — Flower Star",
+      "url": "https://lovablebrand.lovable.app/assets/giftcard-18-Dn9fhO_p.png",
+      "width": 1075
+    },
+    {
+      "id": "artwork-9",
+      "kind": "gallery",
+      "height": 1935,
+      "name": "Poster — Gradient Typography",
+      "url": "https://lovablebrand.lovable.app/assets/poster-gradient-type-BDqtAieh.png",
+      "width": 1352
+    },
+    {
+      "id": "artwork-10",
+      "kind": "gallery",
+      "height": 1350,
+      "name": "Introducing Bonuses — Dark",
+      "url": "https://lovablebrand.lovable.app/assets/rewards-visual-jKqovuKd.png",
+      "width": 1080
+    },
+    {
+      "id": "artwork-11",
+      "kind": "gallery",
+      "height": 1080,
+      "name": "Introduction — Logo Gradient",
+      "url": "https://lovablebrand.lovable.app/assets/text-layout-28-BTOqG-Df.png",
+      "width": 1920
+    },
+    {
+      "id": "artwork-12",
+      "kind": "gallery",
+      "height": 722,
+      "name": "Lovable for Designers",
+      "url": "https://lovablebrand.lovable.app/__l5e/assets-v1/5fa094da-dbdd-4b69-abde-166361c41279/designers.jpg",
+      "width": 1920
+    },
+    {
+      "id": "hero-1",
+      "kind": "gradient",
+      "height": 540,
+      "name": "Hero Gradient 1",
+      "url": "https://lovablebrand.lovable.app/gradients/hero-1-preview.jpg",
+      "width": 960
+    },
+    {
+      "id": "hero-2",
+      "kind": "gradient",
+      "height": 540,
+      "name": "Hero Gradient 2",
+      "url": "https://lovablebrand.lovable.app/gradients/hero-2-preview.jpg",
+      "width": 960
+    },
+    {
+      "id": "hero-3",
+      "kind": "gradient",
+      "height": 540,
+      "name": "Hero Gradient 3",
+      "url": "https://lovablebrand.lovable.app/gradients/hero-3-preview.jpg",
+      "width": 960
+    },
+    {
+      "id": "hero-4",
+      "kind": "gradient",
+      "height": 540,
+      "name": "Hero Gradient 4",
+      "url": "https://lovablebrand.lovable.app/gradients/hero-4-preview.jpg",
+      "width": 960
+    },
+    {
+      "id": "hero-5",
+      "kind": "gradient",
+      "height": 540,
+      "name": "Hero Gradient 5",
+      "url": "https://lovablebrand.lovable.app/gradients/hero-5-preview.jpg",
+      "width": 960
+    },
+    {
+      "id": "hero-6",
+      "kind": "gradient",
+      "height": 540,
+      "name": "Hero Gradient 6",
+      "url": "https://lovablebrand.lovable.app/gradients/hero-6-preview.jpg",
+      "width": 960
+    },
+    {
+      "id": "hero-7",
+      "kind": "gradient",
+      "height": 540,
+      "name": "Hero Gradient 7",
+      "url": "https://lovablebrand.lovable.app/gradients/hero-7-preview.jpg",
+      "width": 960
+    },
+    {
+      "id": "hero-8",
+      "kind": "gradient",
+      "height": 540,
+      "name": "Hero Gradient 8",
+      "url": "https://lovablebrand.lovable.app/gradients/hero-8-preview.jpg",
+      "width": 960
+    },
+    {
+      "id": "hero-9",
+      "kind": "gradient",
+      "height": 540,
+      "name": "Hero Gradient 9",
+      "url": "https://lovablebrand.lovable.app/gradients/hero-9-preview.jpg",
+      "width": 960
+    },
+    {
+      "id": "founders",
+      "kind": "photo",
+      "name": "Anton and Fabian",
+      "url": "https://lovablebrand.lovable.app/__l5e/assets-v1/96eb544c-df27-4c29-bb0c-c0aefb486268/Anton_Fabian_studio.jpg"
+    },
+    {
+      "id": "team",
+      "kind": "photo",
+      "name": "The Lovable team",
+      "url": "https://lovablebrand.lovable.app/__l5e/assets-v1/2ec99cf0-a77a-4c6b-95b7-03e58bbd84e9/Company_photo.jpeg"
+    }
+  ],
+  "compositionStudies": {
+    "reference": "https://design.cash.app/logo",
+    "requestedOn": "2026-11-17",
+    "scope": "Presentation reference for clear-space diagrams and collaboration compositions. Cash App ratios and policies are not Lovable standards. Square studies use original Lovable vectors.",
+    "corrections": [
+      "Omit the gradient palette section.",
+      "Use original light/dark logo files; never invert the gradient heart.",
+      "Use equal 3:2 photography frames."
+    ]
+  }
+}

@@ -1,4 +1,4 @@
-import {brandHub,mountBrandHub} from './brand.js';
+import {brandGallery,brandGuidelines,brandCreator,brandSections,mountBrandHub} from './brand.js';
 import {updateWorkspaceMetadata} from './workspaceMetadata.js';
 import {warmGallery} from './galleryLoading.js';
 import './navigation.js';
@@ -18,10 +18,10 @@ export const sections=[['overview','Overview'],['construction','Construction'],[
 const app=document.querySelector('#app');
 const state={workspace:'partners',view:'guidelines',filter:'all',tier:'Select',format:'solution-compact',year:'2026',partnerName:'',partnerImage:'',symbolSize:'large',guides:false,background:'dark',scale:2};
 let observer,assemblyObserver,toastTimer,cleanupGallery,cleanupAmbassadors,cleanupBrand;
-const currentSections=()=>state.workspace==='ambassadors'?ambassadorSections:sections;
-const currentFormats=()=>state.workspace==='ambassadors'?ambassadorFormats:FORMATS;
-const route=(view,section)=>`#${state.workspace==='ambassadors'?'ambassadors/':''}${view}${section?`/${section}`:''}`;
-function parseRoute(){const parts=location.hash.slice(1).split('/');const workspace=parts[0]==='ambassadors'?'ambassadors':'partners';if(workspace==='ambassadors')parts.shift();return {workspace,view:parts[0],section:parts[1]};}
+const currentSections=()=>state.workspace==='lovable'?brandSections:state.workspace==='ambassadors'?ambassadorSections:sections;
+const currentFormats=()=>state.workspace==='lovable'?[]:state.workspace==='ambassadors'?ambassadorFormats:FORMATS;
+const route=(view,section)=>`#${state.workspace==='lovable'?'brand/':state.workspace==='ambassadors'?'ambassadors/':''}${view}${section?`/${section}`:''}`;
+function parseRoute(){const parts=location.hash.slice(1).split('/');const workspace=parts[0]==='brand'?'lovable':parts[0]==='ambassadors'?'ambassadors':'partners';if(workspace!=='partners')parts.shift();return {workspace,view:parts[0]||'gallery',section:parts[1]};}
 const escape=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function hydrateIcons(root=document){root.querySelectorAll('select').forEach(select=>{if(select.parentElement.classList.contains('select-control'))return;const wrapper=document.createElement('span');wrapper.className='select-control';select.replaceWith(wrapper);wrapper.append(select,createElement(ChevronDown,{class:'select-chevron',width:14,height:14,'stroke-width':1.75,'aria-hidden':'true',focusable:'false'}));});root.querySelectorAll('[data-icon]').forEach(el=>el.replaceWith(createElement(icons[el.dataset.icon]||icons.grid,{class:'icon','stroke-width':1.8,'aria-hidden':'true',focusable:'false'})));}
 export function formatCard(f,compact=false){return `<article class="format-card"><button class="format-preview ${f.layout}" style="--badge-row-scale:${160/badgeGeometry('solution-horizontal',state.tier).width};--badge-height-scale:${badgeGeometry(f.id,state.tier).height/badgeGeometry(f.id,state.tier).moduleHeight}" data-customize="${f.id}" aria-label="Customize ${f.name}">${badgeSvg(f.id,{tier:state.tier})}</button><div class="format-caption"><div><h3>${f.name}</h3>${compact?'':`<p>${f.description}</p>`}</div><button class="subtle-button" data-download="${f.id}" aria-label="Download ${f.name} as .svg" title="Download .svg">${icon('download')}</button></div></article>`;}
@@ -60,19 +60,19 @@ function syncGuidelinePosition(){
 }
 window.addEventListener('scroll',()=>{if(scrollFrame)return;scrollFrame=requestAnimationFrame(()=>{scrollFrame=undefined;syncGuidelinePosition();});},{passive:true});
 function render(view=state.view,{reset=true}={}){
- showWorkspaceTransition(view==='brand'?'lovable':state.workspace);
+ showWorkspaceTransition(state.workspace);
  const showLibrary=view==='library';if(showLibrary||view==='badge')view='create';
  const requestedBadge=parseRoute().section,badge=currentFormats().some(format=>format.id===requestedBadge)||(state.workspace==='ambassadors'&&requestedBadge===ambassadorDefaultFormat)?requestedBadge:undefined,starter=state.workspace==='partners'&&requestedBadge==='grow-your-business';
  requestedSection=undefined;state.view=view;observer?.disconnect();assemblyObserver?.disconnect();cleanupGallery?.();cleanupGallery=undefined;cleanupAmbassadors?.();cleanupAmbassadors=undefined;cleanupBrand?.();cleanupBrand=undefined;
- const brand=view==='brand',ambassadors=state.workspace==='ambassadors';
+ const brand=state.workspace==='lovable',ambassadors=state.workspace==='ambassadors';
  const asset=ambassadors&&/^[a-f0-9-]{36}$/i.test(requestedBadge??'')?requestedBadge:undefined;
- app.innerHTML=brand?brandHub():view==='gallery'?(ambassadors?ambassadorGallery():gallery()):view==='create'?studio({library:showLibrary,badge,asset,starter,workspace:state.workspace}):ambassadors?ambassadorGuidelines({icon}):guidelines(state.tier,{icon,formatCard,sections});
+ app.innerHTML=brand?(view==='gallery'?brandGallery():view==='create'?brandCreator():brandGuidelines({icon})):view==='gallery'?(ambassadors?ambassadorGallery():gallery()):view==='create'?studio({library:showLibrary,badge,asset,starter,workspace:state.workspace}):ambassadors?ambassadorGuidelines({icon}):guidelines(state.tier,{icon,formatCard,sections});
  document.querySelectorAll('[data-workspace]').forEach(button=>{const selected=!brand&&button.dataset.workspace===state.workspace;button.classList.toggle('is-selected',selected);if(button.dataset.workspace!=='lovable')button.setAttribute('aria-pressed',String(selected));});
- updateWorkspaceMetadata(brand?'lovable':state.workspace);
- if(brand)cleanupBrand=mountBrandHub(app);
- document.querySelector('.section-switcher').hidden=brand;document.querySelector('#search-toggle').hidden=brand;
+ updateWorkspaceMetadata(state.workspace);
+ if(brand)cleanupBrand=mountBrandHub(app,toast);
+ document.querySelector('.section-switcher').hidden=false;document.querySelector('#search-toggle').hidden=false;
  const brandLink=document.querySelector('[data-brand-link]');brandLink.classList.toggle('is-selected',brand);if(brand)brandLink.setAttribute('aria-current','page');else brandLink.removeAttribute('aria-current');
- document.querySelector('#search-input').placeholder=ambassadors?'Search assets, spacing, guidelines…':'Search badges, spacing, guidelines…';
+ document.querySelector('#search-input').placeholder=brand?'Search identity, colors, typography…':ambassadors?'Search assets, spacing, guidelines…':'Search badges, spacing, guidelines…';
  if(ambassadors&&view!=='create')cleanupAmbassadors=mountAmbassadorPreviews(app);
  document.querySelectorAll('.section-switcher [data-view]').forEach(b=>{const active=b.dataset.view===view;b.classList.toggle('is-selected',active);if(active)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});hydrateIcons();
  if(view==='guidelines'){observer=new IntersectionObserver(syncGuidelinePosition,{rootMargin:'-100px 0px -65% 0px',threshold:0});document.querySelectorAll('.guide-section').forEach(el=>observer.observe(el));assemblyObserver=new IntersectionObserver(entries=>entries.forEach(e=>e.target.classList.toggle('is-playing',e.isIntersecting)),{threshold:.2});document.querySelectorAll('.assembly-stage,.motion-example').forEach(el=>assemblyObserver.observe(el));}
@@ -84,7 +84,7 @@ function toast(message){clearTimeout(toastTimer);const el=document.querySelector
 async function download(format,type='svg',button,master=false){if(button)button.disabled=true;try{await exportBadge(format,master?{tier:state.tier,year:'2026',partnerName:'Logo',symbolSize:'large'}:options(),type,state.scale);toast(type==='copy'?'Badge .svg copied.':`Your .${type} badge is ready.`);}catch(error){console.error(error);toast(error.message||'Export could not finish. Please try again.');}finally{if(button)button.disabled=false;}}
 document.addEventListener('submit',event=>{if(event.target.id==='badge-form')event.preventDefault();});
 document.addEventListener('click',event=>{
- if(event.target.closest('[data-brand-link]')){event.preventDefault();history.replaceState(null,'','#brand');render('brand');return;}
+ if(event.target.closest('[data-brand-link]')){event.preventDefault();state.workspace='lovable';navigate('gallery');return;}
  if(event.target.closest('[data-workspace]'))releaseSection();
  const demoControl=event.target.closest('[data-demo-pause]');if(demoControl){const demo=demoControl.closest('.motion-example'),paused=demo.classList.toggle('is-paused');demoControl.setAttribute('aria-pressed',paused);demoControl.setAttribute('aria-label',`${paused?'Play':'Pause'} ${demo.dataset.motionLabel}`);demoControl.innerHTML=icon(paused?'play':'pause');hydrateIcons(demoControl);return;}
  const pause=event.target.closest('[data-pause]');if(pause){const stage=document.querySelector('.assembly-stage'),paused=stage.classList.toggle('is-paused');pause.setAttribute('aria-pressed',paused);pause.setAttribute('aria-label',paused?'Play badge assembly':'Pause badge assembly');pause.innerHTML=icon(paused?'play':'pause');hydrateIcons(pause);return;}
@@ -114,11 +114,13 @@ dialog.addEventListener('click',event=>{if(event.target===dialog){dialog.close()
 function syncThemeButton(){const light=document.documentElement.dataset.theme==='light',button=document.querySelector('#theme-toggle');button.setAttribute('aria-label',light?'Switch to dark appearance':'Switch to light appearance');button.innerHTML=icon(light?'sun':'moon');hydrateIcons(button);}
 document.querySelector('#theme-toggle').addEventListener('click',()=>{const theme=document.documentElement.dataset.theme==='light'?'dark':'light';document.documentElement.dataset.theme=theme;try{localStorage.setItem('lovable-hub-theme',theme);}catch{}document.querySelector('meta[name="theme-color"]').content=theme==='light'?'#f7f4ed':'#1b1b1b';syncThemeButton();});
 syncThemeButton();
-function openHash(){const {workspace,view,section}=parseRoute();state.workspace=workspace;if(view==='badge'){navigate('create',currentFormats().some(format=>format.id===section)?section:undefined);return;}const valid=['brand','gallery','library','guidelines','create'].includes(view)?view:'gallery';render(valid);if(valid==='guidelines'&&currentSections().some(([id])=>id===section))requestAnimationFrame(()=>{requestSection(section);document.getElementById(section)?.scrollIntoView();});}
+function openHash(){const {workspace,view,section}=parseRoute();state.workspace=workspace;if(view==='badge'){navigate('create',currentFormats().some(format=>format.id===section)?section:undefined);return;}const valid=['gallery','library','guidelines','create'].includes(view)?view:'gallery';render(valid);if(valid==='guidelines'&&currentSections().some(([id])=>id===section))requestAnimationFrame(()=>{requestSection(section);document.getElementById(section)?.scrollIntoView();});}
 window.addEventListener('hashchange',openHash);
 const typographyReady=prepareTypography();
 if(parseRoute().workspace==='partners')await typographyReady;
 openHash();
 warmGallery(parseRoute().workspace);
-setTimeout(()=>warmGallery(parseRoute().workspace==='partners'?'ambassadors':'partners'),200);
+if(parseRoute().workspace!=='lovable')setTimeout(()=>warmGallery(parseRoute().workspace==='partners'?'ambassadors':'partners'),200);
 document.querySelectorAll('[data-workspace]').forEach(button=>button.addEventListener('pointerenter',()=>warmGallery(button.dataset.workspace)));
+
+document.querySelector('[data-brand-link]').addEventListener('pointerenter',()=>warmGallery('lovable'));

@@ -68,3 +68,9 @@ test('portrait templates retain their original sphere and gradient behind the se
  const d=compileTemplatePlan(value,request).plan.designs[0];assert.equal(d.elements.filter(e=>e.kind==='brand'&&['globe','gradient'].includes(e.asset)).length,2);
  const portrait=d.elements.find(e=>e.kind==='image');assert.equal(portrait.frame.x,64);assert.equal(portrait.frame.y,181.6);assert.equal(portrait.radius,280);
 });
+test('prepared photo contrast follows the actual photograph rather than the planner palette',()=>{
+ const value=structuredClone(intent);value.designs[0].template='editorial-photo';value.designs[0].image={sourceId:'library-flash-light',crop:null};
+ const light=compileTemplatePlan(value,request).plan.designs[0];assert.equal(light.background,'white');assert.equal(light.elements.find(e=>e.kind==='text').color,'#1b1b1b');assert.equal(light.elements.find(e=>e.asset==='community-logo').color,'dark');
+ value.designs[0].background='white';value.designs[0].image.sourceId='library-flash-dark';
+ const dark=compileTemplatePlan(value,request).plan.designs[0];assert.equal(dark.background,'ink');assert.equal(dark.elements.find(e=>e.kind==='text').color,'#f7f4ed');
+});

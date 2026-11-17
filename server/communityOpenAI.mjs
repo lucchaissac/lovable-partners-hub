@@ -64,7 +64,7 @@ export async function generateOpenAICommunityPlan(request,{env=process.env,signa
    if(contents.some(item=>item.type==='refusal'))throw Error('OpenAI could not process this request. Please adjust the brief.');
    const text=contents.filter(item=>item.type==='output_text').map(item=>item.text).join('');
    let parsed;try{parsed=JSON.parse(text);draft=compileTemplatePlan(parsed,request);break;}
-   catch(error){onValidation({attempt,error:error.message,plan:parsed});if(attempt===1)throw Error('This design did not meet the Community guidelines. Please retry with a shorter brief.');correction={correctionFeedback:error.message,rejectedPlan:parsed??null};}
+   catch(error){onValidation({attempt,error:error.message,plan:parsed});if(attempt===1)throw Error(error.name==='ZodError'?'The model returned an incomplete composition. Please retry.':error.message);correction={correctionFeedback:error.message,rejectedPlan:parsed??null};}
   }
   combined.throwIfAborted();
   if(draft.mediaRequests.length)await onLayout({templatePlan:draft.templatePlan,plan:draft.plan,pendingMedia:draft.mediaRequests.map(m=>m.id)});

@@ -24,7 +24,7 @@ export default async function handler(req,res){
   const body=typeof req.body==='string'?req.body:JSON.stringify(req.body??{});
   if(Buffer.byteLength(body)>3500000){json(res,413,{error:'These references are too large.'});return;}
   let request;try{request=chatRequestSchema.parse(JSON.parse(body));}catch{json(res,400,{error:'This design request is invalid. Please shorten it and retry.'});return;}
-  const result=await generateOpenAICommunityPlan(request,{env,signal:controller.signal,onLayout:stream.onLayout});if(!controller.signal.aborted&&!stream.finish(result))json(res,200,result);
+  const result=await generateOpenAICommunityPlan(request,{env,signal:controller.signal,onLayout:stream.onLayout,onValidation:({attempt,error})=>console.warn('Community composition validation',JSON.stringify({attempt,error:error.slice(0,300)}))});if(!controller.signal.aborted&&!stream.finish(result))json(res,200,result);
  }catch(error){if(!controller.signal.aborted){const message=error instanceof SyntaxError||error.name==='ZodError'?'The model returned an invalid design. Please retry.':error.message;if(!stream.error(message))json(res,502,{error:message});}}
  finally{res.off('close',cancelled);}
 }

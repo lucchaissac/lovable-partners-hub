@@ -83,6 +83,13 @@ function changedElement(change,request){
 }
 export function compileTemplatePlan(value,request){
  const intent=templatePlanSchema.parse(value);
+ // Prepared full-bleed photographs determine contrast, regardless of the UI theme.
+ intent.designs=intent.designs.map(spec=>{
+  const source=spec.image?.sourceId;
+  if(source==='library-flash-dark')return {...spec,background:'ink'};
+  if(['library-flash-light','library-malaga-makers'].includes(source))return {...spec,background:spec.background==='beige'?'beige':'white'};
+  return spec;
+ });
  if(intent.designs.length&&(intent.changes.length||intent.additions.length||intent.removeIds.length))throw Error('Create a composition or edit the current one, not both.');
  // An image edit already names its source. Bind its result to that same native
  // layer in code instead of making the model repeat this linkage correctly.

@@ -82,3 +82,11 @@ test('replacing a composition absorbs redundant removals of its old layers, whil
  assert.throws(()=>compileTemplatePlan({...value,replaceCurrent:false},base),/Create a composition/);
  assert.throws(()=>compileTemplatePlan(value,{...base,blocks:[{...base.blocks[0],frame:{locked:true}}]}),/Unlock/);
 });
+test('reusing a prepared photo by its canvas layer ID resolves the master and approved layout without another review',()=>{
+ const value=structuredClone(intent);value.designs[0].image={sourceId:'current-photo',crop:null};value.removeIds=['current-photo'];
+ const base={...request,startingTemplate:false,blocks:[{id:'current-photo',kind:'image',alt:'Flash · Light'}]};
+ const result=compileTemplatePlan(value,base),d=result.plan.designs[0];
+ assert.equal(result.templatePlan.designs[0].template,'editorial-photo');assert.equal(d.background,'white');
+ assert.equal(d.elements.find(e=>e.kind==='image').sourceId,'library-flash-light');assert.deepEqual(result.plan.reviews,[]);
+ assert.throws(()=>compileTemplatePlan(value,{...base,blocks:[{...base.blocks[0],alt:'Unreviewed poster'}]}),/reviewed photograph/);
+});

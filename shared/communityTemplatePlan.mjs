@@ -83,6 +83,15 @@ function changedElement(change,request){
 }
 export function compileTemplatePlan(value,request){
  const intent=templatePlanSchema.parse(value);
+ // A prepared image can be referenced by its existing canvas-layer ID. Resolve
+ // that alias to the canonical library asset, so review and layout use the master.
+ const preparedPicture=picture=>{
+  if(!picture||communityMediaById.has(picture.sourceId))return picture;
+  const block=request.blocks.find(block=>block.id===picture.sourceId&&block.kind==='image');
+  const prepared=block&&Array.from(communityMediaById.values()).find(media=>media.name===block.alt);
+  return prepared?{...picture,sourceId:prepared.id}:picture;
+ };
+ intent.designs=intent.designs.map(spec=>({...spec,image:preparedPicture(spec.image),partners:spec.partners.map(preparedPicture)}));
  // Prepared full-bleed photographs determine contrast, regardless of the UI theme.
  intent.designs=intent.designs.map(spec=>{
   const source=spec.image?.sourceId;

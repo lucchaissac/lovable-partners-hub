@@ -16,7 +16,7 @@ import { gallery, mountGallery } from './gallery.js';
 
 const icons={rectangle:RectangleHorizontal,globe:Globe,grid:Grid3X3,moon:Moon,sun:Sun,search:Search,x:X,arrow:ArrowUpRight,next:ArrowRight,chevron:ChevronDown,download:Download,check:Check,copy:Copy,upload:Upload,replay:RotateCcw,pause:Pause,play:Play};
 export const icon=name=>`<i data-icon="${name}" aria-hidden="true"></i>`;
-export const sections=[['overview','Overview'],['construction','Construction'],['connections','Connections'],['clear-space','Clear space'],['scale','Scale'],['motion','Motion'],['formats','Formats'],['color','Color'],['typography','Typography'],['for-your-agent','For your agent'],['usage','In use']];
+export const sections=[['overview','Overview'],['construction','Construction'],['connections','Connections'],['clear-space','Clear space'],['scale','Scale'],['motion','Motion'],['formats','Formats'],['color','Color'],['typography','Typography'],['incorrect-usage','Incorrect usage'],['for-your-agent','For your agent'],['usage','In use']];
 const app=document.querySelector('#app');
 const state={workspace:'partners',view:'guidelines',filter:'all',tier:'Select',format:'solution-compact',year:'2026',partnerName:'',partnerImage:'',symbolSize:'large',guides:false,background:'dark',scale:2};
 let observer,assemblyObserver,toastTimer,cleanupGallery,cleanupAmbassadors,cleanupBrand,cleanupAgentGuide,cleanupTech;
@@ -55,7 +55,7 @@ window.addEventListener('keydown',event=>{if(['ArrowDown','ArrowUp','PageDown','
 function syncGuidelinePosition(){
  if(state.view!=='guidelines')return;
  if(requestedSection){markSection(requestedSection);return;}
- const line=innerWidth<=680?235:innerWidth<=800?180:160;
+ const line=innerWidth<=680?document.querySelector('.hub-header').getBoundingClientRect().bottom+80:innerWidth<=800?180:160;
  const items=[...document.querySelectorAll('.guide-section')];
  const current=items.filter(el=>el.getBoundingClientRect().top<=line).at(-1)||items[0];
  if(current)markSection(current.id);

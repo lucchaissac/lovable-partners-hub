@@ -45,6 +45,7 @@
   box-sizing: border-box;
 }
 
+html { scrollbar-gutter: stable; }
 body {
   margin: 0;
 }
@@ -354,8 +355,12 @@ input[type='checkbox'] { accent-color: #ededed; width: 15px; height: 15px; margi
  .rule-grid { gap: 20px; }
 }
 @media (max-width: 680px) {
- :root { --header-height: 124px; --header-inset-inline: 16px; }
- .hub-header { grid-template-columns: 1fr 1fr; grid-template-areas: "start end" "sections sections"; gap: 12px; }
+ :root { --header-height: calc(72px + env(safe-area-inset-top, 0px)); --header-inset-inline: 16px; --mobile-nav-space: calc(72px + env(safe-area-inset-bottom, 0px)); }
+ .hub-header { grid-template-columns: 1fr 1fr; grid-template-areas: "start end"; gap: 12px; padding-top:calc(var(--header-inset-block) + env(safe-area-inset-top, 0px)); }
+ .hub-header .section-switcher { position:fixed; inset:auto var(--header-inset-inline) calc(16px + env(safe-area-inset-bottom, 0px)); width:auto; max-width:none; justify-self:stretch; }
+ .hub-header .section-switcher .text-segment { flex:1; padding-inline:12px; font-size:14px; }
+ #app { padding-bottom:var(--mobile-nav-space); }
+ html { scroll-padding-bottom:var(--mobile-nav-space); }
  .text-segment { padding-inline: 16px; }
  .guideline-sidebar { padding-inline: 20px; }
  .guideline-content { margin-inline: 20px; padding-top: 52px; }
@@ -366,7 +371,7 @@ input[type='checkbox'] { accent-color: #ededed; width: 15px; height: 15px; margi
  .hero-stage figcaption { left: 20px; right: 20px; font-size: 11px; }
  .hero-stage figcaption span:last-child { display: none; }
  .intro-footer, .section-bottom { flex-direction: column; align-items: flex-start; gap: 17px; }
- .guide-section { padding-block: 56px; scroll-margin-top: 215px; }
+ .guide-section { padding-block: 56px; scroll-margin-top: calc(var(--header-height) + 64px); }
  .overview-section { padding-top: 0; }
  .section-heading { gap: 12px; margin-bottom: 26px; }
  .section-heading h2 { font-size: 26px; }

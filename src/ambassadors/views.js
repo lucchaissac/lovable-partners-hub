@@ -1,3 +1,4 @@
+import {logoMisuse} from '../logoMisuse.js';
 import {agentGuideSection} from '../agentGuide.js';
 import {studioInvitation} from '../studio-preview.js';
 import {communityClearSpace} from './clear-space.js';
@@ -14,9 +15,9 @@ const galleryPhotos={
 };
 export function ambassadorGallery(){return `<section class="gallery ambassador-gallery" aria-label="Community gallery"><div class="gallery-grid">
   ${['photo','banner','kit','website','gathering','social','spotlight','speakers','badge','poster'].map(id=>{
-    const photo=galleryPhotos[id],label=photo?.label||ambassadorFormats.find(f=>f.id===id).name;
+    const photo=galleryPhotos[id],format=ambassadorFormats.find(f=>f.id===id),label=photo?.label||format.name,{width,height}=photo||format;
     const content=photo?`<img src="${photo.src}" ${photo.srcset?`srcset="${photo.srcset}"`:''} sizes="(max-width:680px) calc(100vw - 48px), (max-width:1000px) 88vw, min(58vw, 850px)" width="${photo.width}" height="${photo.height}" alt="${label}" ${id==='photo'?'fetchpriority="high"':'loading="lazy"'} decoding="async"/>`:preview(id);
-    return `<figure class="gallery-item ambassador-gallery-${id}" role="img" aria-label="${label}">${content}</figure>`;
+    return `<figure class="gallery-item ambassador-gallery-${id}" style="aspect-ratio:${width}/${height}" role="img" aria-label="${label}">${content}</figure>`;
   }).join('')}
 </div></section>`;}
 export function ambassadorGuidelines({icon}){return `<aside class="guideline-sidebar"><nav aria-label="Guideline navigation">${ambassadorSections.map(([id,label],i)=>`<a href="#ambassadors/guidelines/${id}" data-section="${id}" ${i===0?'aria-current="location"':''}>${label}</a>`).join('')}</nav></aside><div class="guideline-content ambassador-guidelines">
@@ -28,5 +29,6 @@ export function ambassadorGuidelines({icon}){return `<aside class="guideline-sid
 <section id="typography" class="guide-section">${heading('Typography','Camera Plain. Short lines, natural case and a clear hierarchy.')}<div class="type-poster"><span class="specimen-label">Camera Plain · Bold</span><div>Build something<br/>Lovable.</div><div class="specimen-specs"><span>Weight <b>700</b></span><span>Alignment <b>Left</b></span><span>Headlines <b>Compact leading</b></span></div></div><div class="scale-notes"><p>Event headline: 96 px with 88 px leading on the 1200 px grid. Keep line breaks intentional.</p><p>Details stay smaller and quieter. Long names and cities shrink to fit their reserved space.</p></div></section>
 <section id="globe" class="guide-section">${heading('Globe','The same globe connects each local community. Change the city; keep its shape, light and texture.')}<div class="ambassador-globe-pair">${preview('spotlight')}${preview('banner')}</div><div class="scale-notes"><p>The city sets the globe’s destination. Recognized city names use the kit’s offline location index.</p><p>The heart sits behind the Event globe and in front of the print compositions. Keep this layer order.</p></div></section>
 <section id="formats" class="guide-section">${heading('Formats','Six starting points, each with its own proportions.')}<div class="format-grid guide-format-grid ambassador-format-grid">${ambassadorFormats.map(f=>`<article class="format-card"><button class="format-preview" data-customize="${f.id}" aria-label="Customize ${f.name}">${preview(f.id)}</button><div class="format-caption"><div><h3>${f.name}</h3><p>${f.detail}</p></div></div></article>`).join('')}</div></section>
+${logoMisuse('<img src="/ambassadors/assets/lovable-community.svg" alt=""/>')}
 ${agentGuideSection('ambassadors')}<section id="usage" class="guide-section">${heading('In use','Adapt the content to your city, your event and your people.')}<div class="usage-notes"><p>Use the print formats for signage.</p><p>Use Event and Speakers for invitations.</p><p>Use Spotlight and Name tag for people.</p></div>${studioInvitation({workspace:'ambassadors'})}</section></div>`;}
 export function mountAmbassadorPreviews(){return()=>{};}

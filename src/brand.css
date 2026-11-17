@@ -1,6 +1,6 @@
 /* Lovable uses the shared hub shell; authored artwork keeps its original colors. */
 .gallery-item.lovable-artwork { background:#1b1b1b; }
-.lovable-artwork img { display:block; width:100%; height:auto; }
+.lovable-artwork > img { position:absolute; inset:0; display:block; width:100%; height:100%; object-fit:contain; }
 .lovable-gallery .lovable-artwork:nth-child(1) { grid-area:1 / 1 / auto / span 4; margin-top:0px; }
 .lovable-gallery .lovable-artwork:nth-child(2) { grid-area:1 / 6 / auto / span 4; margin-top:90px; }
 .lovable-gallery .lovable-artwork:nth-child(3) { grid-area:1 / 11 / auto / span 2; margin-top:20px; }

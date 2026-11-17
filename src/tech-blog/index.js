@@ -1,3 +1,4 @@
+import {logoMisuse} from '../logoMisuse.js';
 import {techBlogGuidelines as rules} from '../../shared/techBlogGuidelines.mjs';
 import specimens from './specimens.json';
 import './specimens.css';
@@ -7,7 +8,7 @@ import {agentGuideSection} from '../agentGuide.js';
 import {studioInvitation} from '../studio-preview.js';
 import {techLockup,techConstruction,techClearSpace} from './identity.js';
 
-export const techSections=[['overview','Overview'],['identity','Identity'],['construction','Construction'],['clear-space','Clear space'],['color','Color field'],['covers','Covers'],['typography','Typography'],['for-your-agent','For your agent'],['usage','In use']];
+export const techSections=[['overview','Overview'],['identity','Identity'],['construction','Construction'],['clear-space','Clear space'],['color','Color field'],['covers','Covers'],['typography','Typography'],['incorrect-usage','Incorrect usage'],['for-your-agent','For your agent'],['usage','In use']];
 const heading=(title,copy)=>`<div class="section-heading"><div><h2>${title}</h2><p>${copy}</p></div></div>`;
 const sizes={'15:33792':[520,150],'15:33887':[322,311],'15:32743':[674,337],'15:17034':[800.93,214.09],'15:13922':[256,480.5],'15:33328':[1440,64],'15:20702':[540,455],'15:24117':[540,455],'15:33156':[278,429],'network-cover':[376,211.5],'15:14047':[376,409.5],'15:13936':[376,409.5],'15:35793':[326,343],...Object.fromEntries(['33982','34568','35184','35482','34260','34876'].map(id=>['15:'+id,[390,858]])),...Object.fromEntries(['33730','33512'].map(id=>['15:'+id,[680,1153]])),...Object.fromEntries(['33356','33574'].map(id=>['15:'+id,[680,1060]]))};
 export function specimen(id){const [width,height]=sizes[id]||[1440,831];return `<div class="tech-frame" style="aspect-ratio:${width}/${height}" data-tech-width="${width}"><div class="tech-source" style="width:${width}px;height:${height}px">${specimens[id]||(id==='network-cover'?networkCover():id==='15:14047'?networkCard():desktop(id))}</div></div>`;}
@@ -31,10 +32,14 @@ export function techGuidelines({icon}){return `<aside class="guideline-sidebar">
 <section id="color" class="guide-section">${heading('Color field',rules.color)}<div class="tech-color-board"><img src="/tech-blog/color-field.svg" alt="Original orange, pink, lilac and blue Tech blog color field" width="340.51" height="69.039"/></div></section>
 <section id="covers" class="guide-section">${heading('Covers',rules.covers)}${specimen('15:32743')}<div class="intro-footer"><p>674 × 337</p><a class="text-link" href="#tech-blog/create/cover">Use template ${icon('arrow')}</a></div></section>
 <section id="typography" class="guide-section">${heading('Typography',rules.typography)}<div class="type-poster"><span class="specimen-label">Camera Plain</span><div>Inside Chats:<br/>How we build.</div><div class="specimen-specs"><span>Headline <b>700</b></span><span>Body <b>600</b></span><span>Case <b>Natural</b></span></div></div></section>
+${logoMisuse('<img src="/tech-blog/tech-logo.svg" alt=""/>')}
 ${agentGuideSection('tech-blog')}
 <section id="usage" class="guide-section">${heading('In use','Start with the cover. Make the headline yours; keep the identity and construction intact.')}${studioInvitation({workspace:'tech-blog',artwork:specimen('15:32743')})}</section></div>`;}
 
 export function mountTech(root){
- const resize=new ResizeObserver(entries=>entries.forEach(({target,contentRect})=>{target.firstElementChild.style.transform=`scale(${contentRect.width/Number(target.dataset.techWidth)})`;}));root.querySelectorAll('[data-tech-width]').forEach(frame=>resize.observe(frame));
+ const fit=(frame,width)=>{frame.firstElementChild.style.transform=`scale(${width/Number(frame.dataset.techWidth)})`;};
+ const resize=new ResizeObserver(entries=>entries.forEach(({target,contentRect})=>fit(target,contentRect.width)));
+ // Apply the source scale synchronously, before the first paint after a workspace switch.
+ root.querySelectorAll('[data-tech-width]').forEach(frame=>{fit(frame,frame.clientWidth);resize.observe(frame);});
  return()=>resize.disconnect();
 }

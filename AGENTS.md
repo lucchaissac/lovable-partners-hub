@@ -107,3 +107,7 @@
 - Community Gallery places the welcome kit third on the first row, swapping its previous position with Spotlight. Keep this order in responsive layouts and sharing previews.
 
 - Stacked Design dropdowns for vector Composition, grid Pattern and Ink fill the available panel width; do not inherit the compact 128 px inline-field width or truncate their labels.
+
+- Gallery cards reserve their authored aspect ratios before media loads; Tech blog source artwork is scaled before first paint on workspace changes. Keep gallery geometry stable during decoding. On mobile, Gallery / Guidelines / Make is fixed at the bottom with 16 px plus Safari safe-area inset, content and studio keep clear of it, and workspace controls remain at the top. The creation navigation label is “Make” on mobile and desktop.
+
+- Each workspace’s Guidelines has a compact “Incorrect usage” section before For your agent: exactly two logo examples on one row (distorted proportions and added shadow), including on mobile. Use that workspace’s original monochrome lockup or badge, short captions and quiet surfaces; keep the section secondary.

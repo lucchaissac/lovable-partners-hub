@@ -1,3 +1,4 @@
+import {logoMisuse} from './logoMisuse.js';
 import assets from './lovable/assets.json';
 import './brand.css';
 import {clearSpaceDiagrams,collaborationDiagrams} from './lovable/diagrams.js';
@@ -5,7 +6,7 @@ import {logoPlayground,mountLogoPlayground} from './lovable/logoPlayground.js';
 import {qrGuide,mountQrGuide} from './lovable/qrGuide.js';
 import {agentGuideSection} from './agentGuide.js';
 
-export const brandSections = [['overview','Overview'],['identity','Identity'],['clear-space','Clear space'],['collaborations','Co-branding'],['qr-code','QR code'],['gradients','Animated gradients'],['color','Color'],['typography','Typography'],['photography','Photography'],['for-your-agent','For your agent'],['downloads','Downloads']];
+export const brandSections = [['overview','Overview'],['identity','Identity'],['clear-space','Clear space'],['collaborations','Co-branding'],['qr-code','QR code'],['gradients','Animated gradients'],['color','Color'],['typography','Typography'],['photography','Photography'],['incorrect-usage','Incorrect usage'],['for-your-agent','For your agent'],['downloads','Downloads']];
 import {brandGalleryAssets} from './lovable/galleryMedia.js';
 const escape = value => String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const source = 'https://lovablebrand.lovable.app';
@@ -14,7 +15,7 @@ const image = (asset,eager=false) => `<img src="${asset.src}" srcset="${asset.th
 const external = (href,label,icon) => `<a class="text-link" href="${source}${href}" target="_blank" rel="noopener noreferrer">${label} ${icon('arrow')}</a>`;
 
 export function brandGallery(){
- return `<section class="gallery lovable-gallery" aria-label="Lovable gallery"><div class="gallery-grid">${brandGalleryAssets.map((asset,i)=>`<figure class="gallery-item lovable-artwork" role="img" aria-label="${escape(asset.name)}">${asset.kind==='video'?`<img src="${asset.thumbnail}" width="${asset.width}" height="${asset.height}" alt="" loading="${i<3?'eager':'lazy'}" decoding="async"/><video class="gallery-media gallery-video" data-video-small="${asset.small}" data-video-large="${asset.src}" poster="${asset.thumbnail}" width="${asset.width}" height="${asset.height}" muted loop playsinline preload="none" disablepictureinpicture disableremoteplayback aria-hidden="true" tabindex="-1"></video>`:image(asset,i<3)}</figure>`).join('')}</div></section>`;
+ return `<section class="gallery lovable-gallery" aria-label="Lovable gallery"><div class="gallery-grid">${brandGalleryAssets.map((asset,i)=>`<figure class="gallery-item lovable-artwork" style="aspect-ratio:${asset.width}/${asset.height}" role="img" aria-label="${escape(asset.name)}">${asset.kind==='video'?`<img src="${asset.thumbnail}" width="${asset.width}" height="${asset.height}" alt="" loading="${i<3?'eager':'lazy'}" decoding="async"/><video class="gallery-media gallery-video" data-video-small="${asset.small}" data-video-large="${asset.src}" poster="${asset.thumbnail}" width="${asset.width}" height="${asset.height}" muted loop playsinline preload="none" disablepictureinpicture disableremoteplayback aria-hidden="true" tabindex="-1"></video>`:image(asset,i<3)}</figure>`).join('')}</div></section>`;
 }
 
 function logoCard(logo,icon){
@@ -33,7 +34,8 @@ export function brandGuidelines({icon}){
  <section id="color" class="guide-section">${heading('Color','The original brand palette, with black and creme neutrals. Use the colors in brand artwork and marketing.')}<div class="lovable-color-grid">${assets.colors.map(color=>`<button class="lovable-color" data-brand-copy="${color.hex}" aria-label="Copy ${color.name}: ${color.hex}"><span class="lovable-color-chip" style="--swatch:${color.hex}" aria-hidden="true"></span><span class="lovable-color-name">${color.name}</span><span class="lovable-color-value">${color.hex} ${icon('copy')}</span></button>`).join('')}</div><p class="quiet-note">Keep interface controls neutral; the brand palette is not a set of button or toggle colors.</p></section>
  <section id="typography" class="guide-section">${heading('Typography','Camera Plain is the primary Lovable typeface, used for headlines, body copy and interface text.')}<div class="lovable-type-specimen"><span>Camera Plain</span><div>Make something<br/>people love.</div><p>Aa Bb Cc Dd Ee Ff Gg Hh Ii Jj<br/>0123456789 &amp;?!</p></div><div class="intro-footer"><p>Use the original font files from the brand hub.</p>${external('/brand/typography','Get Camera Plain',icon)}</div></section>
  <section id="photography" class="guide-section">${heading('Photography','Original founder and company photographs, available for press and editorial use.')}<div class="lovable-photo-grid">${assets.media.filter(asset=>asset.kind==='photo').map(asset=>`<article>${image(asset)}<div class="format-caption"><h3>${asset.name}</h3><a class="subtle-button" href="${asset.url}" target="_blank" rel="noopener noreferrer" aria-label="Open original photo: ${asset.name}">${icon('arrow')}</a></div></article>`).join('')}</div></section>
- ${agentGuideSection('lovable')}
+ ${logoMisuse('<img src="/brand/assets/full-white-pure.svg" alt=""/>')}
+${agentGuideSection('lovable')}
  <section id="downloads" class="guide-section">${heading('Downloads','Original files, ready to use.')}<div class="lovable-downloads">${[['/brand/logo','Logos and symbols','Vector masters'],['/brand/banners-wallpapers','Banners and wallpapers','Social covers and desktop backgrounds'],['/brand/photos','Photography','Full-resolution originals']].map(([href,title,detail])=>`<a href="${source}${href}" target="_blank" rel="noopener noreferrer"><span>${title}<small>${detail}</small></span>${icon('arrow')}</a>`).join('')}</div></section>
  </div>`;
 }

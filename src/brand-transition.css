@@ -36,3 +36,5 @@ html[data-theme='light'] .brand-transition { color: #1b1b1b; }
 @media (prefers-reduced-motion: reduce) {
   .brand-transition { display: none; }
 }
+
+@media (max-width:680px) { .brand-transition { padding-bottom:calc(var(--mobile-nav-space) + 16px); } }

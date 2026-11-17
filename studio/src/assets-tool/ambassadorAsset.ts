@@ -1,11 +1,11 @@
-import {ambassadorFormats,ambassadorPreview} from '../../../src/ambassadors/catalog.js';
+import {ambassadorDefaultFormat,ambassadorFormats,ambassadorPreview} from '../../../src/ambassadors/catalog.js';
 import {defaultAmbassador,type AmbassadorSettings} from './ambassadorSettings';
 import {makeNode,type AssetDocument} from './model';
 import {createCommunityLayers} from './communityLayers';
 import {communityBlocks} from './communityDocument';
 export {renderAmbassador} from '../../../src/ambassadors/render.js';
 
-export async function ambassadorAsset(formatId='social',personalization?:AmbassadorSettings):Promise<AssetDocument>{
+export async function ambassadorAsset(formatId=ambassadorDefaultFormat,personalization?:AmbassadorSettings):Promise<AssetDocument>{
  const format=ambassadorFormats.find(f=>f.id===formatId);if(!format)throw Error('This community format could not be found.');
  const settings={...(personalization??defaultAmbassador()),format:format.id as AmbassadorSettings['format']};
  const preview=await fetch(ambassadorPreview(format.id));if(!preview.ok)throw Error('The community template could not load.');

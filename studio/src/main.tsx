@@ -1,4 +1,5 @@
 import {studioWorkspace,studioLastAssetKey} from './assets-tool/workspace';
+import {ambassadorDefaultFormat} from '../../src/ambassadors/catalog.js';
 import {StrictMode,useEffect} from 'react';
 import {createRoot} from 'react-dom/client';
 import {MemoryRouter,Navigate,Route,Routes,useLocation} from 'react-router-dom';
@@ -14,5 +15,5 @@ const entryParams = new URLSearchParams(window.location.search);
 const requestedBadge = entryParams.get('badge');
 const requestedAsset = studioWorkspace==='ambassadors'&&/^[a-f0-9-]{36}$/i.test(entryParams.get('asset')??'')?entryParams.get('asset'):null;
 const requestedStarter = studioWorkspace==='partners' && entryParams.get('starter')==='grow-your-business';
-const initialRoute = requestedAsset ? `/assets/${requestedAsset}` : requestedStarter ? '/assets/new' : requestedBadge ? `/assets/new?badge=${encodeURIComponent(requestedBadge)}` : lastAsset ? `/assets/${lastAsset}` : studioWorkspace==='ambassadors'?'/assets/new?badge=social':'/assets/new';
+const initialRoute = requestedAsset ? `/assets/${requestedAsset}` : requestedStarter ? '/assets/new' : requestedBadge ? `/assets/new?badge=${encodeURIComponent(requestedBadge)}` : lastAsset ? `/assets/${lastAsset}` : studioWorkspace==='ambassadors'?`/assets/new?badge=${ambassadorDefaultFormat}`:'/assets/new';
 createRoot(document.getElementById('root')!).render(<StrictMode><MemoryRouter initialEntries={[initialRoute]}><App/></MemoryRouter></StrictMode>);

@@ -2,7 +2,7 @@ import {studioWorkspace,studioLastAssetKey,studioOwner} from './workspace';
 import {CommunityTypographyContext} from '../studio/PresentationElementDesign';
 import {localCommunityChatAvailable,localChatStatus,localChatRequest,requestLocalDesign,materializeLocalPlan,communityPlanReplies} from './localCommunityChat';
 import {ambassadorAsset,migrateCommunityAsset} from './ambassadorAsset';
-import {ambassadorFormats} from '../../../src/ambassadors/catalog.js';
+import {ambassadorDefaultFormat,ambassadorFormats} from '../../../src/ambassadors/catalog.js';
 import {communityTemplate,communitySettings,syncCommunityDocument} from './communityDocument';
 import {CommunityRenderErrors,useCommunityRendering} from './CommunityRendering';
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
@@ -55,7 +55,7 @@ function AssetPageContent() {
   const insert = useHtmlEditorInsert();
   const { id } = useParams(), navigate = useNavigate(), location=useLocation();
   const owner = studioOwner(readStudioConfig()?.user?.id);
-  const requestedBadge = !id ? (new URLSearchParams(location.search).get('badge') || (studioWorkspace==='ambassadors'?'social':null)) : null;
+  const requestedBadge = !id ? (new URLSearchParams(location.search).get('badge') || (studioWorkspace==='ambassadors'?ambassadorDefaultFormat:null)) : null;
   const [asset, setAsset] = useState<AssetDocument | undefined>(() => id || requestedBadge ? undefined : starterAsset()), current = useRef<AssetDocument | undefined>(asset);
   const [recent, setRecent] = useState<AssetDocument[]>([]);
   const [recentLoading, setRecentLoading] = useState(true);

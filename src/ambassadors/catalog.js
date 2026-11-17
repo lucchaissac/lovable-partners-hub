@@ -1,3 +1,4 @@
+export const ambassadorDefaultFormat = 'spotlight';
 export const ambassadorFormats = [
  {id:'banner',name:'Roll-up',width:850,height:2000,detail:'85 × 200 cm'},
  {id:'poster',name:'Poster',width:1440,height:720,detail:'72 × 36 in'},

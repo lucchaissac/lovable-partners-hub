@@ -510,3 +510,7 @@
 .tech-source .t507{position:absolute;display:flex;inset:90.99% 42.8% 7.32% 56.25%;align-items:center;justify-content:center}
 /* The signature is a Regular 400 brand-artwork exception, not reading copy. */
 .tech-source .t292 { background-image:var(--tech-color-gradient) !important; }
+
+/* Crop once in canvas coordinates: mirrored children must not mirror the mask. */
+.tech-source .t264 { display:block; left:0; top:0; width:674px; height:337px; clip-path:inset(28.08px 28.782px 28.086px 393.87px); }
+.tech-source .t264 [style*="mask-image"] { mask-image:none !important; }

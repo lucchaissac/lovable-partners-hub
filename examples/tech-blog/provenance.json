@@ -45,8 +45,36 @@
       "fontSize": 13.541,
       "xHeightUnits": 1044,
       "unitsPerEm": 2048,
-      "colorSpace": "OKLCH shorter hue",
+      "colorSpace": "Smooth shape-preserving OKLCH interpolation between five original anchors",
       "correction": "Luc\u2019s November 17 reference: lowercase x-height and baseline alignment, excluding the g descender."
-    }
+    },
+    "labelToColorGap": 9.708845410156258,
+    "diagramRatios": "Rounded to one decimal: 0.3x logo-to-label, 0.9x label-to-field, 3.2x field width, 0.6x field height, 0.2x radius."
+  },
+  "coverMask": {
+    "source": "15:32799",
+    "rectangle": [
+      393.87,
+      28.08,
+      251.348,
+      280.834
+    ],
+    "correction": "Crop the complete group in canvas coordinates, outside mirrored child transforms."
+  },
+  "galleryMotion": {
+    "source": "566fd459-5241-4404-af8c-0d8a6f1cc044-Lovable_technical-blog.mp4",
+    "originalBytes": 8952644,
+    "durationSeconds": 4.97,
+    "variants": [
+      {
+        "width": 1280,
+        "bytes": 2295201
+      },
+      {
+        "width": 720,
+        "bytes": 574693
+      }
+    ],
+    "placement": "First gallery item; use shared visibility/reduced-motion playback."
   }
 }

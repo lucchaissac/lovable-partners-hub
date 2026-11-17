@@ -1,3 +1,5 @@
+import {compileTemplatePlan} from '../../../shared/communityTemplatePlan.mjs';
+import {preparedCommunityGlobe,communityGradientPreview} from '../../../shared/communityPreparedArtwork.mjs';
 import {z} from 'zod';
 import {chatPlanSchema,chatRequestSchema,validateChatPlan} from '../../../shared/communityChat.mjs';
 import {communityDesignMetrics} from '../../../shared/communityDesignRules.mjs';
@@ -12,13 +14,15 @@ import {htmlEditorSchema,type HtmlBlock,type HtmlEditorState,type HtmlIconName} 
 import type {StudioSource} from '../studio/sources';
 import {communityMediaById} from '../../../shared/communityMediaLibrary.mjs';
 import {communityMediaSource} from './communityMedia';
+import {generatedMediaSchema,requestWithMedia} from '../../../shared/communityMediaPlan.mjs';
 
 export type ChatPlan=z.infer<typeof chatPlanSchema>;
 type ChatElement=ChatPlan['edits'][number];
-export const localCommunityChatAvailable=import.meta.env.DEV&&['localhost','127.0.0.1','[::1]'].includes(window.location.hostname);
+// Availability is decided by the server; this contains no credential or provider configuration.
+export const localCommunityChatAvailable=true;
 export async function localChatStatus(signal?:AbortSignal):Promise<{enabled:boolean;reason?:string}>{
  if(!localCommunityChatAvailable)return {enabled:false};
- try{const response=await fetch('/api/community-chat',{signal});if(!response.ok)return {enabled:false,reason:'The local chat is unavailable.'};return await response.json();}catch{return {enabled:false,reason:'The local chat is unavailable.'};}
+ try{const response=await fetch('/api/community-chat',{signal});if(!response.ok)return {enabled:false,reason:'The Community chat is unavailable.'};return await response.json();}catch{return {enabled:false,reason:'The Community chat is unavailable.'};}
 }
 const blocksOf=(editor:HtmlEditorState)=>editor.pages.flatMap(page=>page.sections.flatMap(section=>section.columns.flat()));
 export function localChatRequest(document:AssetDocument,prompt:string,sources:StudioSource[],context?:string,preview?:string,availablePageSlots=64){
@@ -29,10 +33,40 @@ export function localChatRequest(document:AssetDocument,prompt:string,sources:St
   sources:sources.map((source,index)=>({id:`attachment-${index}`,name:source.name,kind:source.kind,...(source.kind==='image'?{image:source.image}:{text:source.kind==='link'?`${source.url}\n${source.text}`.slice(0,20000):source.encoding?'Compressed HTML attachment omitted; use an image or plain text reference.':source.text.slice(0,20000)})})),
  });
 }
-export async function requestLocalDesign(request:ReturnType<typeof localChatRequest>,signal:AbortSignal):Promise<ChatPlan>{
- if(!localCommunityChatAvailable)throw Error('Chat is available in the local Community demo only.');
- const response=await fetch('/api/community-chat',{method:'POST',signal,headers:{'Content-Type':'application/json','X-Lovable-Local':'1'},body:JSON.stringify(request)});
- const value=await response.json();if(!response.ok)throw Error(value.error||'Could not create this design.');return validateChatPlan(value,request);
+export async function communityCanvasImages(document:AssetDocument,context?:string){
+ let selected:string[]=[];try{if(context?.startsWith('HTML_SELECTION '))selected=JSON.parse(context.slice(15)).blockIds??[];}catch{}
+ const blocks=blocksOf(nativeDocument(document)).filter((block):block is Extract<HtmlBlock,{kind:'image'}>=>block.kind==='image'&&!block.ambassadorElement&&!['Lovable Community','community-logo','Gradient','gradient'].includes(block.value.alt));
+ const candidates=(selected.length?blocks.filter(block=>selected.includes(block.id)):blocks).slice(0,2);
+ return Promise.all(candidates.map(async block=>{
+  const image=new Image();image.src=block.value.src;await image.decode();
+  const canvas=window.document.createElement('canvas');let longest=1024,encoded='';
+  do{const scale=Math.min(1,longest/Math.max(image.naturalWidth,image.naturalHeight));canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));canvas.getContext('2d')!.drawImage(image,0,0,canvas.width,canvas.height);encoded=canvas.toDataURL('image/webp',.82);longest=Math.round(longest*.75);}while(encoded.length>400000&&longest>=256);
+  if(encoded.length>400000)throw Error('This image is too large to prepare for editing.');
+  return {id:block.id,image:encoded};
+ }));
+}
+type DesignResponse={plan:ChatPlan;media:z.infer<typeof generatedMediaSchema>;preserveGeometry:boolean};
+export async function requestLocalDesign(request:ReturnType<typeof localChatRequest>,signal:AbortSignal,onLayout?:(result:DesignResponse)=>Promise<void>):Promise<DesignResponse>{
+ const response=await fetch('/api/community-chat',{method:'POST',signal,headers:{'Content-Type':'application/json','X-Lovable-Local':'1','Accept':'application/x-ndjson'},body:JSON.stringify(request)});
+ const decode=(value:any,preview=false):DesignResponse=>{
+  if(value.error)throw Error(value.error);
+  const media=generatedMediaSchema.parse(preview?[]:value.plan?value.media:[]);
+  const compiled=value.templatePlan?compileTemplatePlan(value.templatePlan,request):null;
+  return {plan:compiled?.plan??validateChatPlan(value.plan??value,requestWithMedia(request,media)),media,preserveGeometry:!!compiled};
+ };
+ if(!response.ok){const value=await response.json();throw Error(value.error||'Could not create this design.');}
+ if(!response.headers.get('content-type')?.includes('application/x-ndjson'))return decode(await response.json());
+ if(!response.body)throw Error('The design response was empty.');
+ const reader=response.body.getReader(),decoder=new TextDecoder();let buffer='',result:DesignResponse|undefined;
+ try{for(;;){const {done,value}=await reader.read();if(done)break;signal.throwIfAborted();buffer+=decoder.decode(value,{stream:true});if(buffer.length>4000000)throw Error('The design response is too large.');let end;
+  while((end=buffer.indexOf('\n'))>=0){const line=buffer.slice(0,end);buffer=buffer.slice(end+1);if(!line.trim())continue;const event=JSON.parse(line);
+   if(event.type==='error')throw Error(event.error);
+   if(event.type==='layout'&&onLayout)await onLayout(decode(event,true));
+   if(event.type==='complete')result=decode(event);
+  }
+ }}finally{await reader.cancel().catch(()=>{});reader.releaseLock();}
+ if(!result)throw Error('The connection ended before the design was ready. Please retry.');
+ return result;
 }
 const frameOf=(frame:NonNullable<ChatElement['frame']>)=>({position:'absolute' as const,x:frame.x,y:frame.y,widthPx:frame.width,height:frame.height,rotation:frame.rotation,opacity:frame.opacity});
 const brandSvg=(dark:boolean)=>`data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${COMMUNITY_VIEWBOX}">${dark?COMMUNITY_MARKUP.replaceAll('#F7F4ED','#1b1b1b'):COMMUNITY_MARKUP}</svg>`)}`;
@@ -46,7 +80,7 @@ function fitText(text:string,size:number,width:number,height:number,leading:numb
  const ctx=document.createElement('canvas').getContext('2d')!;
  while(size>6){ctx.font=`${weight} ${size}px "${fontFamily}"`;let lines=0,tooWide=false;
   for(const paragraph of text.split('\n')){let line='';lines++;for(const word of paragraph.split(/\s+/)){if(ctx.measureText(word).width>width)tooWide=true;const next=line?`${line} ${word}`:word;if(line&&ctx.measureText(next).width>width){lines++;line=word;}else line=next;}}
-  if(!tooWide&&lines*size*leading/100<=height+.1)return size;size-=1;
+  if(!tooWide&&lines*size*leading/100<=height+.5)return size;size-=1;
  }return size;
 }
 async function nativeElement(spec:ChatElement,existing:Map<string,HtmlBlock>,images:Map<string,string>,signal:AbortSignal):Promise<HtmlBlock>{
@@ -60,7 +94,7 @@ async function nativeElement(spec:ChatElement,existing:Map<string,HtmlBlock>,ima
   const text=sentenceCase(spec.text),fontFamily=spec.fontFamily??old?.editor?.appearance?.fontFamily??'Camera Plain';
   await document.fonts.load(`${spec.weight} ${spec.fontSize}px "${fontFamily}"`,text);signal.throwIfAborted();
   const fontSize=fitText(text,spec.fontSize,spec.frame.width,spec.frame.height,spec.lineHeight,spec.weight,fontFamily);
-  return {id:spec.id,kind:'text',value:{runs:[{text}],style:'Text',size:fontSize,align:spec.align,color:spec.color},editor:{...old?.editor,...editor,appearance:{fontFamily,fontSize,fontWeight:spec.weight,lineHeight:spec.lineHeight,letterSpacing:0}}};
+  return {id:spec.id,kind:'text',value:{runs:[{text}],style:'Text',size:fontSize,align:spec.align,color:spec.color},editor:{...old?.editor,...editor,appearance:{fontFamily,fontSize,fontWeight:spec.weight,lineHeight:spec.lineHeight,letterSpacing:spec.letterSpacing??old?.editor?.appearance?.letterSpacing??0}}};
  }
  if(spec.kind==='shape')return {id:spec.id,kind:'shape',shape:spec.shape,editor:{...editor,appearance:{fill:spec.fill,background:spec.fill,borderColor:spec.stroke,borderWidth:spec.strokeWidth,radius:spec.radius,lineStyle:'solid',lineWidth:Math.max(1,spec.strokeWidth)}}};
  if(spec.kind==='icon')return {id:spec.id,kind:'shape',shape:'rectangle',icon:spec.name as HtmlIconName,filled:spec.filled,editor:{...editor,appearance:{fill:spec.color}}};
@@ -79,14 +113,14 @@ async function nativeElement(spec:ChatElement,existing:Map<string,HtmlBlock>,ima
   src=(await renderAmbassador(ambassador,{element:'qr',pixels:Math.max(512,Math.ceil(spec.frame.width*3)),signal})).src;
  }else{
   alt=spec.asset;
-  if(spec.asset==='community-logo')src=await brandImage(spec.color==='dark',spec.frame.width);
+  if(spec.asset==='community-logo'){src=await brandImage(spec.color==='dark',spec.frame.width);alt='Lovable Community';}
   if(spec.asset==='community-photo'){src='/ambassadors/community-montreal-1600.webp';fit='cover';}
-  if(spec.asset==='gradient')src='/ambassadors/assets/heart-overlay.png';
-  if(spec.asset==='globe'){ambassador={...defaultAmbassador(),city:spec.city||'Paris'};ambassadorElement='globe';src=(await renderAmbassador(ambassador,{element:'globe',pixels:1600,signal})).src;}
+  if(spec.asset==='gradient')src=communityGradientPreview;
+  if(spec.asset==='globe'){ambassador={...defaultAmbassador(),city:spec.city||'Paris'};ambassadorElement='globe';src=preparedCommunityGlobe(ambassador)??(await renderAmbassador(ambassador,{element:'globe',pixels:1600,signal})).src;}
  }
  return {id:spec.id,kind:'image',...(ambassador?{ambassador,ambassadorElement}:{}),value:{src,alt,caption:'',alignment:'center',width:100,...(crop?{crop}:{})},editor:{...editor,appearance:{imageFit:fit,radius}}};
 }
-export async function materializeLocalPlan(plan:ChatPlan,base:AssetDocument,sources:StudioSource[],signal:AbortSignal):Promise<AssetDocument[]>{
+export async function materializeLocalPlan(plan:ChatPlan,base:AssetDocument,sources:StudioSource[],signal:AbortSignal,media:z.infer<typeof generatedMediaSchema>=[],options:{preview?:boolean;preserveGeometry?:boolean}={}):Promise<AssetDocument[]>{
  await Promise.all([document.fonts.load('600 32px "Camera Plain"'),document.fonts.load('700 120px "Camera Plain"')]);
  await document.fonts.ready;
  if(plan.badgeBatch){
@@ -99,11 +133,12 @@ export async function materializeLocalPlan(plan:ChatPlan,base:AssetDocument,sour
   }
   return results;
  }
- const existing=new Map(blocksOf(nativeDocument(base)).map(block=>[block.id,block])),images=new Map(sources.flatMap((s,i)=>s.kind==='image'?[[`attachment-${i}`,s.image] as const]:[]));
+ const existing=new Map(blocksOf(nativeDocument(base)).map(block=>[block.id,block])),images=new Map<string,string>(sources.flatMap((s,i)=>s.kind==='image'?[[`attachment-${i}`,s.image] as const]:[]));
+ for(const item of media)images.set(item.id,item.image);
  if(!plan.designs.length){
   const editor=structuredClone(nativeDocument(base));
   for(const id of [...plan.removeIds,...plan.edits.map(e=>e.id)])if(existing.get(id)?.editor?.locked)throw Error('Unlock the selected element before editing it with chat.');
-  const edits=new Map<string,HtmlBlock>();for(const spec of plan.edits)edits.set(spec.id,await nativeElement(spec,existing,images,signal));
+  const edits=new Map<string,HtmlBlock>();for(const spec of plan.edits){if(options.preview&&spec.kind==='image'&&spec.sourceId.startsWith('media-'))continue;edits.set(spec.id,await nativeElement(spec,existing,images,signal));}
   for(const page of editor.pages)for(const section of page.sections)section.columns=section.columns.map(column=>column.flatMap(block=>{if(plan.removeIds.includes(block.id))return [];const edited=edits.get(block.id);if(edited){edits.delete(block.id);return [edited];}return [block];}));
   editor.pages[0].sections[0].columns[0].push(...edits.values());signal.throwIfAborted();
   return [assetSchema.parse({...base,editor:htmlEditorSchema.parse(editor),updatedAt:Date.now()})];
@@ -112,8 +147,9 @@ export async function materializeLocalPlan(plan:ChatPlan,base:AssetDocument,sour
  for(const design of plan.designs){
   const metrics=communityDesignMetrics(design.reference,design.width,design.height);
   const blocks:HtmlBlock[]=[];for(const spec of design.elements){
+   if(options.preview&&spec.kind==='image'&&spec.sourceId.startsWith('media-'))continue;
    const block=await nativeElement(spec,existing,images,signal);
-   if(design.reference==='social'&&spec.kind==='text'&&/footer|caption/i.test(spec.id)&&block.kind==='text'){
+   if(!options.preserveGeometry&&design.reference==='social'&&spec.kind==='text'&&/footer|caption/i.test(spec.id)&&block.kind==='text'){
     // Equal visible insets, including font bearings and the last line's descenders.
     // CSS positions a line box; it does not position the actual letter shapes.
     const ctx=document.createElement('canvas').getContext('2d')!,size=block.value.size;

@@ -9,7 +9,7 @@ const color=z.string().regex(/^(#[0-9a-fA-F]{6}|transparent)$/);
 const frame=z.object({x:z.number().min(-4000).max(4000),y:z.number().min(-4000).max(4000),width:z.number().min(1).max(4000),height:z.number().min(1).max(4000),rotation:z.number().min(-360).max(360),opacity:z.number().min(0).max(1)}).strict();
 export const chatIcons=['arrow-right','arrow-up-right','check','sparkles','calendar','map-pin','clock','users','globe','plus','code','laptop','lightbulb','message-circle','star','rocket','zap','coffee','link','play','quote'];
 export const chatElementSchema=z.union([
- z.object({id,kind:z.literal('text'),frame,text:z.string().max(3000),fontFamily:z.enum(['Camera Plain','Bodoni Moda','Pixelify Sans','Anton']).nullable().default(null),fontSize:z.number().min(6).max(600),weight:z.union([z.literal(400),z.literal(600),z.literal(700)]),align:z.enum(['left','center','right']),color,lineHeight:z.number().min(85).max(180)}).strict(),
+ z.object({id,kind:z.literal('text'),frame,text:z.string().max(3000),fontFamily:z.enum(['Camera Plain','Bodoni Moda','Pixelify Sans','Anton']).nullable().default(null),fontSize:z.number().min(6).max(600),letterSpacing:z.number().min(-20).max(50).nullable().default(null),weight:z.union([z.literal(400),z.literal(600),z.literal(700)]),align:z.enum(['left','center','right']),color,lineHeight:z.number().min(85).max(180)}).strict(),
  z.object({id,kind:z.literal('shape'),frame,shape:z.enum(['rectangle','circle','triangle','line']),fill:color,stroke:color,strokeWidth:z.number().min(0).max(24),radius:z.number().min(0).max(1500)}).strict(),
  z.object({id,kind:z.literal('icon'),frame,name:z.enum(chatIcons),color,filled:z.boolean()}).strict(),
  z.object({id,kind:z.literal('brand'),frame,asset:z.enum(['community-logo','globe','gradient','community-photo']),color:z.enum(['light','dark']),city:z.string().max(45)}).strict(),
@@ -36,8 +36,9 @@ export const chatRequestSchema=z.object({
  conversation:z.array(z.object({user:z.boolean(),text:z.string().max(8000)}).strict()).max(16),
  sources:z.array(z.object({id,name:z.string().max(160),kind:z.enum(['image','text','link']),text:z.string().max(20000).optional(),image:z.string().max(400000).regex(/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/).optional()}).strict()).max(6),
  preview:z.string().max(2000000).regex(/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/).optional(),
+ canvasImages:z.array(z.object({id,image:z.string().max(400000).regex(/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/)}).strict()).max(2).optional(),
 }).strict();
-export function validateChatPlan(value,request){
+export function validateChatPlanContent(value,request,options={}){
  const plan=chatPlanSchema.parse(value);
  if(request.startingTemplate&&(plan.designs.length||plan.badgeBatch))plan.replaceCurrent=true;
  if(plan.badgeBatch&&(plan.designs.length||plan.edits.length||plan.removeIds.length))throw Error('Create a badge batch separately from other designs or edits.');
@@ -63,5 +64,7 @@ export function validateChatPlan(value,request){
   }
  }
  if(plan.removeIds.some(id=>!request.blocks.some(b=>b.id===id)))throw Error('Cannot remove an unknown element.');
- return validateCommunityDesignRules(validateCommunityReview(plan,request),request);
+ return validateCommunityReview(plan,request,options);
 }
+
+export function validateChatPlan(value,request){return validateCommunityDesignRules(validateChatPlanContent(value,request),request);}

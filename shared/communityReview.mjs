@@ -16,12 +16,12 @@ export const reviewSchema=z.object({
 export const imageCropSchema=z.object({x:z.number().min(0).max(1),y:z.number().min(0).max(1),width:z.number().positive().max(1),height:z.number().positive().max(1)}).strict();
 const reject=message=>{throw new CommunityDesignRuleError(message);};
 
-export function validateCommunityReview(plan,request){
+export function validateCommunityReview(plan,request,{approvedLayout=false}={}){
  const sources=new Map(request.sources.filter(source=>source.kind==='image').map(source=>[source.id,source]));
  if(request.preview)sources.set('current-canvas',{id:'current-canvas'});
  const elements=[...plan.designs.flatMap(design=>design.elements),...plan.edits];
  if(new Set(plan.reviews.map(review=>review.sourceId)).size!==plan.reviews.length)reject('Review each source once.');
- if(plan.designs.length&&request.sources.some(source=>source.kind==='image'&&!plan.reviews.some(review=>review.sourceId===source.id)))reject('Inspect each attached image before designing: state what to keep, what to correct, and why.');
+ if(plan.designs.length&&request.sources.some(source=>source.kind==='image'&&!source.prepared&&!plan.reviews.some(review=>review.sourceId===source.id)))reject('Inspect each attached image before designing: state what to keep, what to correct, and why.');
  for(const review of plan.reviews){
   if(!sources.has(review.sourceId))reject('Review an actual attached image or the supplied current-canvas preview.');
   if(['off-brand','needs-refinement'].includes(review.verdict)&&!review.issues.length)reject('Explain the specific brand problems and their corrections.');
@@ -43,14 +43,15 @@ export function validateCommunityReview(plan,request){
   const images=design.elements.filter(element=>element.kind==='image');
   if(design.visualTreatment==='retained-visual'&&!images.some(image=>{
    const prepared=communityMediaById.get(image.sourceId);
-   return prepared?prepared.kind!=='partner-logo':plan.reviews.some(review=>review.retainedVisuals.some(visual=>visual.elementId===image.id&&visual.sourceId===image.sourceId&&visual.kind!=='partner-logo'));
+   const generated=sources.get(image.sourceId);
+   return prepared?prepared.kind!=='partner-logo':generated?.prepared?generated.preparedKind!=='partner-logo':plan.reviews.some(review=>review.retainedVisuals.some(visual=>visual.elementId===image.id&&visual.sourceId===image.sourceId&&visual.kind!=='partner-logo'));
   }))reject('A retained-visual composition needs a reviewed photograph or illustration. A partner logo is not the main illustration.');
   if(!design.elements.some(element=>element.kind==='text'&&element.text.trim().length>2&&!/^lovable(?:\s+community)?[.!]?$/i.test(element.text.trim())))reject('Build a complete communication asset with meaningful content, not an isolated logo.');
   if(design.elements.some(element=>element.kind==='text'&&/^lovable(?:\s+community)?[.!]?$/i.test(element.text.trim())))reject('Use the original full Lovable Community lockup; never retype or substitute a standalone Lovable wordmark.');
   if(plan.reviews.length){
    if(design.elements.some(element=>element.kind==='reuse'))reject('For a reviewed redesign, rebuild text and identity as native layers and reference retained images explicitly.');
    const foreground=design.elements.filter(element=>['text','qr'].includes(element.kind));
-   for(let i=0;i<foreground.length;i++)for(const other of foreground.slice(i+1)){
+   for(let i=0;!approvedLayout&&i<foreground.length;i++)for(const other of foreground.slice(i+1)){
     const a=foreground[i].frame,b=other.frame;
     if(Math.min(a.x+a.width,b.x+b.width)-Math.max(a.x,b.x)>1&&Math.min(a.y+a.height,b.y+b.height)-Math.max(a.y,b.y)>1)reject(`Separate the foreground elements ${foreground[i].id} and ${other.id}; their frames overlap.`);
    }

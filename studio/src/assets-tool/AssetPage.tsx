@@ -1,6 +1,6 @@
 import {studioWorkspace,studioLastAssetKey,studioOwner} from './workspace';
 import {CommunityTypographyContext} from '../studio/PresentationElementDesign';
-import {localCommunityChatAvailable,localChatStatus,localChatRequest,requestLocalDesign,materializeLocalPlan,communityPlanReplies} from './localCommunityChat';
+import {localCommunityChatAvailable,localChatStatus,localChatRequest,requestLocalDesign,materializeLocalPlan,communityPlanReplies,communityCanvasImages} from './localCommunityChat';
 import {ambassadorAsset,migrateCommunityAsset} from './ambassadorAsset';
 import {ambassadorDefaultFormat,ambassadorFormats} from '../../../src/ambassadors/catalog.js';
 import {communityTemplate,communitySettings,syncCommunityDocument} from './communityDocument';
@@ -81,6 +81,7 @@ function AssetPageContent() {
   const [libraryOpen,setLibraryOpen]=useState(() => new URLSearchParams(locationSearch()).get('panel') === 'library');
   const [reviewCandidate,setReviewCandidate]=useState<AssetDocument>();
   const [generationStage,setGenerationStage]=useState('Designing your asset…');
+  const [generationPreview,setGenerationPreview]=useState<AssetDocument>();
   const [saveState, setSaveState] = useState(''), [exporting, setExporting] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [loading, setLoading] = useState(!!id || !!requestedBadge);
@@ -224,14 +225,21 @@ function AssetPageContent() {
     setBusy(true);setGenerationStage('Refining your asset…');
     try {
       if(!exportBoard.current)throw new Error('The asset is still opening. Please retry.');
-      const png=await renderPng(exportBoard.current,document);
       if(studioWorkspace==='ambassadors'&&localChat.enabled){
-        const rendered=await visionReference({name:'Current asset',src:png,...assetDimensions(document)});
-        const payload=localChatRequest(document,request.prompt,request.sources,request.visual?.context,rendered.src,Math.max(0,MAX_ASSET_PAGES-assetPages(document,recent).length));
+        // Existing editable layers describe the composition; a full export before every
+        // message delays even a simple text change. Only a visual audit needs it.
+        const needsPreview=/\b(review|analyse|analyze|inspect|audit|critique)\b/i.test(request.prompt);
+        const rendered=needsPreview?await visionReference({name:'Current asset',src:await renderPng(exportBoard.current,document),...assetDimensions(document)}):undefined;
+        const payload=localChatRequest(document,request.prompt,request.sources,request.visual?.context,rendered?.src,Math.max(0,MAX_ASSET_PAGES-assetPages(document,recent).length));
+        payload.canvasImages=await communityCanvasImages(document,request.visual?.context);
         setGenerationStage(request.sources.some(source=>source.kind==='image')?'Reviewing your asset…':'Designing your asset…');
-        const plan=await requestLocalDesign(payload,active.signal);
+        const {plan,media,preserveGeometry}=await requestLocalDesign(payload,active.signal,async preview=>{
+          setGenerationStage('Preparing the image…');
+          const drafts=await materializeLocalPlan(preview.plan,document,request.sources,active.signal,[],{preview:true,preserveGeometry:preview.preserveGeometry});
+          if(mounted.current&&run===operation.current&&!active.signal.aborted&&drafts[0])setGenerationPreview({...drafts[0],id:document.id});
+        });
         setGenerationStage('Building your canvas…');
-        const designs=await materializeLocalPlan(plan,document,request.sources,active.signal);
+        const designs=await materializeLocalPlan(plan,document,request.sources,active.signal,media,{preserveGeometry});
         if(JSON.stringify([current.current?.editor,current.current?.dimensions,current.current?.background])!==JSON.stringify([document.editor,document.dimensions,document.background]))throw Error('The canvas changed during generation. Retry to keep your latest edits.');
         if(!mounted.current||run!==operation.current||current.current?.id!==document.id)return;
         if(plan.designs.length||plan.badgeBatch){
@@ -253,6 +261,7 @@ function AssetPageContent() {
         }
         lastRequest.current=undefined;setVisual(undefined);return;
       }
+      const png=await renderPng(exportBoard.current,document);
       const [reference,rendered]=await Promise.all([visionReference(document.reference),visionReference({name:'Current asset',src:png,...assetDimensions(document)})]);
       active.signal.throwIfAborted();
       const result=await studioApi<{editor:HtmlEditorState;summary:string}>('asset-refine',{
@@ -266,14 +275,14 @@ function AssetPageContent() {
     } catch(reason) {
       if(mounted.current&&run===operation.current&&!active.signal.aborted)setError(reason instanceof Error?reason.message:'Could not refine this asset. Please retry.');
     } finally {
-      if(run===operation.current){controller.current=undefined;if(mounted.current)setBusy(false);}
+      if(run===operation.current){controller.current=undefined;if(mounted.current){setBusy(false);setGenerationPreview(undefined);}}
     }
   };
   useEffect(()=>{
     if(busy||error||!queued.length||!readStudioConfig()?.user||studioWorkspace==='ambassadors'&&!localChat.enabled)return;
     const [request,...rest]=queued;setQueued(rest);void refine(request);
   },[busy,error,queued,localChat.enabled]);
-  const stop = () => { setQueued([]); operation.current++; controller.current?.abort(); controller.current = undefined; setBusy(false); setReviewCandidate(undefined); };
+  const stop = () => { setQueued([]); operation.current++; controller.current?.abort(); controller.current = undefined; setBusy(false); setGenerationPreview(undefined); setReviewCandidate(undefined); };
   const loadImage = async (file?: File) => {
     if (!file || busy || readingFile.current) return;
     if(file.name.toLowerCase().endsWith('.json')){await importSource(file);return;}
@@ -450,7 +459,7 @@ function AssetPageContent() {
     {loading ? <div className="asset-empty"><p role="status">Opening your asset…</p></div> : !asset ? <AssetHome reading={reading} onBrowse={() => upload.current?.click()}>
       {(recentLoading || recent.length > 0) && <AssetRecents loading={recentLoading}>{recent.map(item=><AssetLibraryCard key={item.id} asset={item} onOpen={()=>navigate(`/assets/${item.id}`)}/>)}</AssetRecents>}
     </AssetHome> : <>
-      <div className="we-body asset-workspace"><WorkspaceChat singleAsset preserveSourceTransparency={studioWorkspace==='ambassadors'} placeholder="Ask Lovable…"/>{studioWorkspace==='ambassadors'?<CommunityCanvas toolbar={canvasToolbar} asset={asset} pages={pages} generating={busy} busy={busy||addingPage||changingTemplate} zoom={zoom} onZoom={setZoom} onChange={change} onOpen={openCommunityPage} onAdd={(afterId,kind)=>void addCommunityPage(afterId,kind)} onOverview={()=>setVisual(undefined)} onRename={renameCommunityPage} onMove={(pageId,targetId,side)=>void arrangeCommunityPages('move',pageId,targetId,side)} onRemove={pageId=>void arrangeCommunityPages('remove',pageId)} onUndoArrangement={pageArrangement?()=>void arrangeCommunityPages('undo'):undefined}/>:<AssetCanvas toolbar={canvasToolbar} asset={asset} onChange={change} preview={false} busy={busy} zoom={zoom} onZoom={setZoom} />}
+      <div className="we-body asset-workspace"><WorkspaceChat singleAsset preserveSourceTransparency={studioWorkspace==='ambassadors'} placeholder="Ask Lovable…"/>{studioWorkspace==='ambassadors'?<CommunityCanvas toolbar={canvasToolbar} asset={generationPreview??asset} pages={generationPreview?pages.map(page=>page.id===asset.id?generationPreview:page):pages} generating={busy} busy={busy||addingPage||changingTemplate} zoom={zoom} onZoom={setZoom} onChange={change} onOpen={openCommunityPage} onAdd={(afterId,kind)=>void addCommunityPage(afterId,kind)} onOverview={()=>setVisual(undefined)} onRename={renameCommunityPage} onMove={(pageId,targetId,side)=>void arrangeCommunityPages('move',pageId,targetId,side)} onRemove={pageId=>void arrangeCommunityPages('remove',pageId)} onUndoArrangement={pageArrangement?()=>void arrangeCommunityPages('undo'):undefined}/>:<AssetCanvas toolbar={canvasToolbar} asset={asset} onChange={change} preview={false} busy={busy} zoom={zoom} onZoom={setZoom} />}
         <AssetDesignPanel mobileOpen={designOpen} onClose={()=>setDesignOpen(false)} asset={asset} onChange={change} onImport={() => upload.current?.click()}/>
       </div>
       <div className="asset-export-host" aria-hidden="true"><Artwork ref={exportBoard} asset={reviewCandidate??asset} /></div>

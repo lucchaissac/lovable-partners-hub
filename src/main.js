@@ -7,14 +7,14 @@ import './navigation.js';
 import { showWorkspaceTransition } from './brand-transition.js';
 import {ambassadorDefaultFormat,ambassadorFormats,ambassadorSections} from './ambassadors/catalog.js';
 import {ambassadorGallery,ambassadorGuidelines,mountAmbassadorPreviews} from './ambassadors/views.js';
-import { createElement, CodeXml, Globe, Grid3X3, Moon, Sun, Search, X, ArrowUpRight, ArrowRight, ChevronDown, Download, Check, Copy, Upload, RotateCcw, Pause, Play } from 'lucide';
+import { createElement, Monitor, Globe, Grid3X3, Moon, Sun, Search, X, ArrowUpRight, ArrowRight, ChevronDown, Download, Check, Copy, Upload, RotateCcw, Pause, Play } from 'lucide';
 import { FORMATS, TIERS, FIGMA_FILE, badgeSvg, badgeGeometry, prepareTypography } from './badges.js';
 import { exportBadge } from './export.js';
 import { guidelines } from './guidelines.js';
 import { studio } from './studio.js';
 import { gallery, mountGallery } from './gallery.js';
 
-const icons={code:CodeXml,globe:Globe,grid:Grid3X3,moon:Moon,sun:Sun,search:Search,x:X,arrow:ArrowUpRight,next:ArrowRight,chevron:ChevronDown,download:Download,check:Check,copy:Copy,upload:Upload,replay:RotateCcw,pause:Pause,play:Play};
+const icons={monitor:Monitor,globe:Globe,grid:Grid3X3,moon:Moon,sun:Sun,search:Search,x:X,arrow:ArrowUpRight,next:ArrowRight,chevron:ChevronDown,download:Download,check:Check,copy:Copy,upload:Upload,replay:RotateCcw,pause:Pause,play:Play};
 export const icon=name=>`<i data-icon="${name}" aria-hidden="true"></i>`;
 export const sections=[['overview','Overview'],['construction','Construction'],['connections','Connections'],['clear-space','Clear space'],['scale','Scale'],['motion','Motion'],['formats','Formats'],['color','Color'],['typography','Typography'],['for-your-agent','For your agent'],['usage','In use']];
 const app=document.querySelector('#app');

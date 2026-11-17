@@ -10,8 +10,8 @@
     <meta name="description" content="The Lovable partner hub." />
     <title>Lovable Partners</title>
     <meta property="og:title" content="Lovable Partners" />
-    <link id="workspace-favicon" rel="icon" type="image/svg+xml" href="/brand/favicon-partners.svg?v=2" />
-    <script>(()=>{const key=location.hash.slice(1).split('/')[0]==='brand'?'lovable':location.hash.startsWith('#ambassadors')?'ambassadors':location.hash.startsWith('#tech-blog')?'tech-blog':'partners',title={lovable:'Lovable',partners:'Lovable Partners',ambassadors:'Lovable Community','tech-blog':'Lovable Tech blog'}[key];document.title=title;document.querySelector('#workspace-favicon').href='/brand/favicon-'+key+'.svg?v=2';document.querySelector('meta[property="og:title"]').content=title;})()</script>
+    <link id="workspace-favicon" rel="icon" type="image/svg+xml" href="/brand/favicon-partners.svg?v=3" />
+    <script>(()=>{const key=location.hash.slice(1).split('/')[0]==='brand'?'lovable':location.hash.startsWith('#ambassadors')?'ambassadors':location.hash.startsWith('#tech-blog')?'tech-blog':'partners',title={lovable:'Lovable',partners:'Lovable Partners',ambassadors:'Lovable Community','tech-blog':'Lovable Tech blog'}[key];document.title=title;document.querySelector('#workspace-favicon').href='/brand/favicon-'+key+'.svg?v=3';document.querySelector('meta[property="og:title"]').content=title;})()</script>
     <link rel="preload" href="/fonts/CameraPlainVariable.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="/src/styles.css" />
     <link rel="stylesheet" href="/src/brand-transition.css" />
@@ -21,21 +21,24 @@
     <header class="hub-header" aria-label="Brand workspaces">
       <div class="header-start">
         <div class="segmented workspace-switcher" role="group" aria-label="Workspaces">
-          <a class="icon-segment" data-brand-link href="#brand" aria-label="Lovable" title="Lovable">
+          <a class="icon-segment" data-brand-link href="#brand" aria-label="Lovable">
             <svg class="icon lovable-mark" viewBox="0 0 42.5092 43.2257" fill="currentColor" aria-hidden="true">
               <path d="M12.7548 0C19.7991 0 25.5096 5.72557 25.5096 12.7884V17.6488H29.7544C36.7987 17.6488 42.5092 23.3744 42.5092 30.4373C42.5092 37.5001 36.7987 43.2257 29.7544 43.2257H0V12.7884C0 5.72557 5.71052 0 12.7548 0Z" />
             </svg>
+            <span class="workspace-tooltip" role="tooltip">Lovable</span>
           </a>
-          <button class="icon-segment is-selected" data-workspace="partners" aria-label="Partners" title="Partners" aria-pressed="true">
+          <button class="icon-segment is-selected" data-workspace="partners" aria-label="Partners" aria-pressed="true">
             <svg class="partner-workspace-mark" viewBox="0 0 160 160" fill="none" aria-hidden="true">
               <rect x="5.7" y="5.7" width="148.6" height="148.6" rx="30.3" stroke="currentColor" stroke-width="11.4" />
               <svg x="32.6483" y="32" width="94.7034" height="96" viewBox="0 0 82.2357 83.3616" fill="currentColor"><path d="M24.6746 0C38.3019 0 49.3493 11.0419 49.3493 24.6628V34.0361H57.5613C71.1884 34.0361 82.2357 45.0781 82.2357 58.6989C82.2357 72.32 71.1884 83.3616 57.5613 83.3616H0V24.6628C0 11.0419 11.0472 0 24.6746 0Z"/></svg>
             </svg>
+            <span class="workspace-tooltip" role="tooltip">Partners</span>
           </button>
-          <button class="icon-segment" data-workspace="ambassadors" aria-label="Ambassadors" title="Ambassadors" aria-pressed="false">
+          <button class="icon-segment" data-workspace="ambassadors" aria-label="Community" aria-pressed="false">
             <i data-icon="globe" aria-hidden="true"></i>
+            <span class="workspace-tooltip" role="tooltip">Community</span>
           </button>
-          <button class="icon-segment" data-workspace="tech-blog" aria-label="Tech blog" title="Tech blog" aria-pressed="false"><i data-icon="code" aria-hidden="true"></i></button>
+          <button class="icon-segment" data-workspace="tech-blog" aria-label="Tech blog" aria-pressed="false"><i data-icon="monitor" aria-hidden="true"></i><span class="workspace-tooltip" role="tooltip">Tech blog</span></button>
         </div>
       </div>
 

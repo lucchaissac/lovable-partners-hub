@@ -130,6 +130,11 @@ body {
 }
 
 .workspace-switcher { gap: calc(var(--segment-inset) / 2); }
+.workspace-switcher .icon-segment { position:relative; }
+.workspace-switcher [data-workspace="tech-blog"] .icon rect { fill:currentColor; }
+.workspace-tooltip { position:absolute; top:calc(100% + 12px); left:50%; transform:translateX(-50%); padding:6px 10px; border:1px solid var(--color-border); border-radius:8px; background:var(--color-panel); color:var(--color-text); font-size:12px; font-weight:600; line-height:1.5; white-space:nowrap; pointer-events:none; opacity:0; visibility:hidden; transition:opacity 120ms,visibility 120ms; }
+.workspace-switcher .icon-segment:is(:hover,:focus-visible) .workspace-tooltip { opacity:1; visibility:visible; transition-delay:240ms; }
+@media(prefers-reduced-motion:reduce){.workspace-tooltip{transition:none}}
 .partner-workspace-mark { display: block; width: 19px; height: 19px; }
 .workspace-switcher [aria-disabled="true"] { cursor: default; }
 

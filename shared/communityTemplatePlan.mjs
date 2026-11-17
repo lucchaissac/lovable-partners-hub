@@ -90,6 +90,9 @@ export function compileTemplatePlan(value,request){
   if(['library-flash-light','library-malaga-makers'].includes(source))return {...spec,background:spec.background==='beige'?'beige':'white'};
   return spec;
  });
+ // A full replacement already removes the old layers. Models sometimes repeat
+ // that removal explicitly; absorb it instead of rejecting an otherwise valid layout.
+ if(intent.designs.length&&intent.replaceCurrent&&intent.removeIds.every(id=>request.blocks.some(block=>block.id===id)))intent.removeIds=[];
  if(intent.designs.length&&(intent.changes.length||intent.additions.length||intent.removeIds.length))throw Error('Create a composition or edit the current one, not both.');
  // An image edit already names its source. Bind its result to that same native
  // layer in code instead of making the model repeat this linkage correctly.

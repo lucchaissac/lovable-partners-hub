@@ -74,3 +74,11 @@ test('prepared photo contrast follows the actual photograph rather than the plan
  value.designs[0].background='white';value.designs[0].image.sourceId='library-flash-dark';
  const dark=compileTemplatePlan(value,request).plan.designs[0];assert.equal(dark.background,'ink');assert.equal(dark.elements.find(e=>e.kind==='text').color,'#f7f4ed');
 });
+test('replacing a composition absorbs redundant removals of its old layers, while retaining ownership checks',()=>{
+ const base={...request,startingTemplate:false,blocks:[{id:'old-title',kind:'text',text:'Old poster'}]};
+ const value={...intent,removeIds:['old-title']};
+ assert.deepEqual(compileTemplatePlan(value,base).plan.removeIds,[]);
+ assert.throws(()=>compileTemplatePlan({...value,removeIds:['unknown']},base),/Create a composition/);
+ assert.throws(()=>compileTemplatePlan({...value,replaceCurrent:false},base),/Create a composition/);
+ assert.throws(()=>compileTemplatePlan(value,{...base,blocks:[{...base.blocks[0],frame:{locked:true}}]}),/Unlock/);
+});

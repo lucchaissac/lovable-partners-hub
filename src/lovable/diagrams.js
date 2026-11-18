@@ -4,6 +4,7 @@ const box = (x,y,w,h) => `<rect class="guide" x="${x}" y="${y}" width="${w}" hei
 const hMeasure = (x1,x2,y,label='x') => `<path class="measure" d="M${x1} ${y-5}v10m0 -5H${x2}m0 -5v10"/><text x="${(x1+x2)/2}" y="${y-13}">${label}</text>`;
 const vMeasure = (x,y1,y2,label='x') => `<path class="measure" d="M${x-5} ${y1}h10m-5 0V${y2}m-5 0h10"/><text x="${x-20}" y="${(y1+y2)/2+8}">${label}</text>`;
 const figure = (label,body) => `<figure><div class="lovable-study"><svg class="lovable-diagram" viewBox="0 0 600 600" role="img" aria-label="${label}">${body}</svg></div><figcaption>${label}</figcaption></figure>`;
+export {box as diagramBox,hMeasure,vMeasure,figure as diagramFigure};
 
 export function clearSpaceDiagrams(){
  const symbol=box(160,160,280,280)+box(230,230,140,140)+artwork('symbol',230,230,140,140)+hMeasure(160,230,300)+hMeasure(370,440,300)+vMeasure(300,160,230)+vMeasure(300,370,440);

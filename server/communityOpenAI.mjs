@@ -4,6 +4,7 @@ import {templatePlanSchema,compileTemplatePlan} from '../shared/communityTemplat
 import {communityChatContext} from './communityChatContext.mjs';
 import {blobBudgetStore,budgetConfig,createBudget,planReservation} from './communityBudget.mjs';
 import {prepareCommunityMedia,communityImageModel} from './communityImageTools.mjs';
+import {communityProposalPolicy} from '../shared/communityProposalPolicy.mjs';
 
 export const communityOpenAIModel='gpt-5.4-mini-2026-03-17';
 const missingKey='The OpenAI demo key is not configured on the server.';
@@ -21,21 +22,21 @@ export function openAICommunityBody(context,correction){
  let selected=[];try{if(payload.context?.startsWith('HTML_SELECTION '))selected=JSON.parse(payload.context.slice(15)).blockIds??[];}catch{}
  const previous=correction?.rejectedPlan;
  const mixed=previous?.designs?.length&&(previous.changes?.length||previous.additions?.length||previous.removeIds?.length);
- const attachedStarter=payload.startingTemplate&&payload.sources?.some(source=>source.kind==='image')&&payload.prompt==='Refine the current asset using the attached reference. Preserve its essential content.';
- const mode=selected.length?'edit':mixed?(previous.replaceCurrent||payload.startingTemplate?'replace':'create'):attachedStarter?'replace':null;
+ const proposals=communityProposalPolicy(payload);
+ const mode=selected.length?'edit':proposals?'replace':mixed?(previous.replaceCurrent||payload.startingTemplate?'replace':'create'):null;
  const schema=strictSchema(z.toJSONSchema(templatePlanSchema));
  if(mode){
   schema.properties.replaceCurrent={type:'boolean',const:mode==='replace'};
   schema.properties.badgeBatch={type:'null'};
   if(mode==='edit')schema.properties.designs.maxItems=0;
   else{
-   schema.properties.designs.minItems=attachedStarter?Math.min(4,(payload.availablePageSlots??64)+1):1;
-   if(attachedStarter){schema.properties.designs.maxItems=4;if((payload.availablePageSlots??64)>=3)schema.properties.mediaRequests.minItems=1;}
+   schema.properties.designs.minItems=proposals?.count??1;
+   if(proposals){schema.properties.designs.maxItems=proposals.count;if(proposals.sourceObject)schema.properties.mediaRequests.minItems=1;}
    for(const key of ['changes','additions','removeIds'])schema.properties[key].maxItems=0;
   }
  }
  const operation=mode==='edit'?'Edit only the selected existing layers. Return designs:[] and replaceCurrent:false.':mode?
-  `Return complete designs only, with replaceCurrent:${mode==='replace'}. changes, additions and removeIds must be empty. Incorporate any meaningful corrections from the rejected plan into the design fields themselves. ${attachedStarter?'The current canvas is an unused starter. Review and preserve the essential facts of the ATTACHED artwork, not the demonstration title, city or footer. Produce four complete proposals with the same source facts: three distinct prepared visual/layout directions, followed by a fourth source-inspired generated object. For the fourth, use editorial-source-object and one mediaRequest operation edit targeting a meaningful cropped element of the actual attachment. Reinterpret its silhouette into a simple isolated graphic object without its old lettering, logos or poster background. Keep the generated image on its own layer. Never substitute another library image or globe for this fourth direction. Every proposal keeps the event title, date and edition when visible. Use a visible illustration or original globe; never a dark shape on a dark canvas.':''}`:'';
+  `Return complete designs only, with replaceCurrent:${mode==='replace'}. changes, additions and removeIds must be empty. Incorporate any meaningful corrections from the rejected plan into the design fields themselves. ${proposals?`Review and preserve the essential facts of the ATTACHED artwork, not the demonstration title, city or footer. Extract sourceFacts once: title (main event name only), city, date and edition. Unknown facts are null. The compiler binds these same facts into EVERY proposal, including city; never keep Paris from the starter when the source says another city. Produce exactly ${proposals.count} complete proposals. Use distinct prepared visual/layout directions: an appropriate abstraction, photography, then the approved event collage. ${proposals.sourceObject?'The fourth is editorial-source-object with one mediaRequest operation edit targeting a focused crop of a meaningful element of the actual attachment. Reinterpret its silhouette into a simple isolated graphic object without its old lettering, logos or poster background. Keep the generated image on its own layer. Never substitute a library image or globe for this fourth direction.':''} Every proposal keeps the event title, date and edition when visible. Keep edition/date out of the main headline and place them in practical copy. Never show dark artwork on a dark canvas.`:''}`:'';
  return {model:communityOpenAIModel,store:false,service_tier:'default',reasoning:{effort:'none'},max_output_tokens:6500,
   instructions:communityTemplateInstructions+'\nFor attached posters, extract their facts into native text fields. Set image:null unless there is a useful clean visual crop; never reuse a complete off-brand poster. A glyph or partner logo belongs in partners, never in the main image slot.'+(operation?'\nOperation for this request: '+operation:''),
   input:[{role:'user',content:[{type:'input_text',text:JSON.stringify({...context.payload,...correction})},...context.images.flatMap((image,index)=>[

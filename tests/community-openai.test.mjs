@@ -7,6 +7,7 @@ import {monochromeGlyph} from '../server/communityImageTools.mjs';
 import {validateMediaPlan} from '../shared/communityMediaPlan.mjs';
 import {chatRequestSchema} from '../shared/communityChat.mjs';
 import {productionRequestAllowed} from '../api/community-chat.mjs';
+import {communityProposalPolicy} from '../shared/communityProposalPolicy.mjs';
 
 function store(limit=1_000_000){let version=0,state={version:1,spent:0,limit,reservations:{},expiresAt:Date.now()+60000};return {read:async()=>({state:structuredClone(state),version}),write:async(next,etag)=>{if(etag!==version)return false;state=structuredClone(next);version++;return true;}};}
 const env={OPENAI_API_KEY:'not-a-real-key',COMMUNITY_OPENAI_PROJECT:'demo',COMMUNITY_OPENAI_EXPIRES_AT:new Date(Date.now()+60000).toISOString(),BLOB_READ_WRITE_TOKEN:'not-a-real-token',COMMUNITY_BUDGET_PATH:'test'};
@@ -71,6 +72,23 @@ test('each image is labelled next to its pixels and source posters retain readab
  }
  assert.match(content[1].text,/not facts/);assert.match(content[5].text,/Preserve these facts/);
  assert.equal(content[2].detail,'low');assert.equal(content[6].detail,'high');
+});
+test('typed on-brand requests use four proposals on starters and existing canvases, respecting explicit scope and count',()=>{
+ const base={sources:[{id:'attachment-0',kind:'image'}]};
+ for(const prompt of ['make on brand','Make it on-brand please','mets cette affiche dans la charte','Corrige cette affiche','Make this flyer on brand'])for(const startingTemplate of [false,true]){
+  const payload={...base,prompt,startingTemplate},schema=openAICommunityBody({payload,images:[]}).text.format.schema.properties;
+  assert.equal(schema.designs.minItems,4,prompt);assert.equal(schema.designs.maxItems,4);assert.equal(schema.replaceCurrent.const,true);
+  assert.equal(schema.changes.maxItems,0);assert.equal(schema.mediaRequests.minItems,1);
+ }
+ for(const [prompt,count] of [['Make on brand, one version only',1],['Make it on-brand, deux propositions',2],['Make on brand, 3 versions',3],['Make on brand without alternatives',1]]){
+  const payload={...base,prompt};assert.equal(communityProposalPolicy(payload).count,count);
+  const schema=openAICommunityBody({payload,images:[]}).text.format.schema.properties;
+  assert.equal(schema.designs.minItems,count);assert.equal(schema.designs.maxItems,count);assert.notEqual(schema.mediaRequests.minItems,1);
+ }
+ for(const prompt of ['Review only: is this on brand?','Just review this on-brand poster','Change only the title','Make on brand, uniquement la couleur'])assert.equal(communityProposalPolicy({...base,prompt}),null,prompt);
+ assert.equal(communityProposalPolicy({...base,prompt:'make on brand',context:'HTML_SELECTION {"blockIds":["headline"]}'}),null);
+ assert.equal(communityProposalPolicy({sources:[],prompt:'make on brand'}),null);
+ assert.equal(communityProposalPolicy({...base,prompt:'make on brand',availablePageSlots:1}).count,2);
 });
 test('mixed planner output is corrected into a complete editable replacement through the provider flow',async()=>{
  const request={prompt:'Rebuild this poster',title:'Event',width:1080,height:1080,startingTemplate:true,blocks:[{id:'old-title',kind:'text',text:'Build something lovable.'}],sources:[],conversation:[]};

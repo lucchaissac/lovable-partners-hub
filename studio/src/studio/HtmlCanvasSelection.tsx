@@ -1,3 +1,6 @@
+import {canvasClipboardType,canvasClipboardPrefix,copiedCanvasBlocks,pasteCanvasBlocks} from './canvasClipboard';
+import {blockAppearance,mixedAppearance,patchSelectionAppearance} from './selectionAppearance';
+import {htmlBlockSchema} from './htmlEditorModel';
 import {TechArtworkDesign} from '../assets-tool/TechArtworkDesign';
 import {isTechArtwork} from '../assets-tool/techArtwork';
 import {BrandLogoDesign} from '../assets-tool/BrandLogoDesign';
@@ -41,11 +44,11 @@ const clamp = (n:number,min:number,max:number) => Math.max(min,Math.min(max,n));
 
 export function htmlFrameStyle(block: HtmlBlock): CSSProperties {
   const f=block.editor||{};const a=block.kind==='shape'?{}:f.appearance||{};const minimumWidth=htmlBlockMinWidth(block);
-  return {...elementBoxStyle(f.appearance,block.kind==='text'&&block.value.list==='bullet'),'--hcs-list-size':block.kind==='text'?`${block.value.size}px`:undefined,'--hcs-list-color':block.kind==='text'?block.value.color:undefined,'--hcs-list-line':a.lineHeight!==undefined?a.lineHeight/100:1.25,'--hcs-image-ratio':block.kind==='image'?block.value.aspectRatio:undefined,width:htmlElementWidth(f), maxWidth:f.position==='absolute'?undefined:'100%', minWidth:minimumWidth?(f.position==='absolute'?minimumWidth:`min(${minimumWidth}px, 100%)`):0, left:f.position==='absolute'?`${f.x||0}px`:`clamp(0px, ${f.x||0}px, max(0px, calc(100% - ${htmlElementWidth(f)||'100%'})))`, minHeight:f.height, top:f.position==='absolute'?`${f.y||0}px`:undefined, transform:`translateY(${f.position==='absolute'?0:f.y||0}px) rotate(${f.rotation||0}deg)`,transformOrigin:'center',mixBlendMode:f.appearance?.blendMode,opacity:a.opacity!==undefined?a.opacity/100:f.opacity,...cornerRadiusStyle(a,f.radius),background:block.kind!=='text'&&block.kind!=='image'?a.fill:undefined,border:a.borderWidth?`${a.borderWidth}px solid ${a.borderColor||'var(--ui-text)'}`:undefined,boxShadow:a.shadow==='soft'?'var(--ui-shadow-sm)':a.shadow==='strong'?'var(--ui-shadow-md)':undefined,'--hcs-text-size':a.fontSize!==undefined?`${a.fontSize}px`:undefined,'--hcs-font':a.fontFamily==='Arial'?'var(--ui-font)':a.fontFamily,'--hcs-text-spacing':a.letterSpacing!==undefined?`${a.letterSpacing}px`:undefined,'--hcs-text-line':a.lineHeight!==undefined?a.lineHeight/100:undefined,'--hcs-text-weight':a.fontWeight,'--hcs-text-transform':'none','--hcs-image-fit':a.imageFit, '--hcs-image-height':block.kind==='image'&&f.height?`${elementContentHeight(f.height,f.appearance)}px`:undefined} as CSSProperties;
+  return {...elementBoxStyle(f.appearance,block.kind==='text'&&block.value.list==='bullet'),'--hcs-list-size':block.kind==='text'?`${block.value.size}px`:undefined,'--hcs-list-color':block.kind==='text'?block.value.color:undefined,'--hcs-list-line':a.lineHeight!==undefined?a.lineHeight/100:1.25,'--hcs-image-ratio':block.kind==='image'?block.value.aspectRatio:undefined,width:htmlElementWidth(f), maxWidth:f.position==='absolute'?undefined:'100%', minWidth:minimumWidth?(f.position==='absolute'?minimumWidth:`min(${minimumWidth}px, 100%)`):0, left:f.position==='absolute'?`${f.x||0}px`:`clamp(0px, ${f.x||0}px, max(0px, calc(100% - ${htmlElementWidth(f)||'100%'})))`, minHeight:f.height, top:f.position==='absolute'?`${f.y||0}px`:undefined, transform:`translateY(${f.position==='absolute'?0:f.y||0}px) rotate(${f.rotation||0}deg)`,transformOrigin:'center',mixBlendMode:f.appearance?.blendMode,opacity:a.opacity!==undefined?a.opacity/100:f.opacity,...cornerRadiusStyle(a,f.radius),background:block.kind!=='text'&&block.kind!=='image'?a.fill:undefined,border:a.borderWidth?`${a.borderWidth}px solid ${a.borderColor||'var(--ui-text)'}`:undefined,boxShadow:a.shadow==='soft'?'var(--ui-shadow-sm)':a.shadow==='strong'?'var(--ui-shadow-md)':undefined,'--hcs-text-size':a.fontSize!==undefined?`${a.fontSize}px`:undefined,'--hcs-font':a.fontFamily==='Arial'?'var(--ui-font)':a.fontFamily,'--hcs-text-spacing':a.letterSpacing!==undefined?`${a.letterSpacing}px`:undefined,'--hcs-text-line':a.lineHeight!==undefined?a.lineHeight/100:undefined,'--hcs-text-weight':a.fontWeight,'--hcs-text-transform':a.uppercase?'uppercase':'none','--hcs-image-fit':a.imageFit, '--hcs-image-height':block.kind==='image'&&f.height?`${elementContentHeight(f.height,f.appearance)}px`:undefined} as CSSProperties;
 }
 
-export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1, fixedCanvas = false, save, onSelect, onReplace, onEditButton, onAddSection }: {
-  root: RefObject<HTMLDivElement | null>; state: HtmlEditorState; pageId: string; editable: boolean; zoom?: number; fixedCanvas?: boolean; save: Save;
+export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1, fixedCanvas = false, imageSources = {}, save, onSelect, onReplace, onEditButton, onAddSection }: {
+  root: RefObject<HTMLDivElement | null>; state: HtmlEditorState; pageId: string; editable: boolean; zoom?: number; fixedCanvas?: boolean; imageSources?: Record<string,string>; save: Save;
   onSelect: (element?: Element) => void; onReplace:(id:string,fill?:boolean)=>void; onAddSection:(id:string,after:boolean,anchor:HTMLElement)=>void; onEditButton:(block:Extract<HtmlBlock,{kind:'cta'}>)=>void;
 }) {
   const rect = (el: Element) => { const r=el.getBoundingClientRect(); return {left:r.left/zoom,top:r.top/zoom,width:r.width/zoom,height:r.height/zoom,right:r.right/zoom,bottom:r.bottom/zoom}; };
@@ -71,6 +74,7 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
   const selectedSections=page.sections.filter(s=>sectionIds.includes(s.id)),sectionSelection=selectedSections.length>0,multipleSections=selectedSections.length>1;
   const selectedSection=selectedSections.length===1?selectedSections[0]:undefined;
   const members=blocks.filter(b=>ids.includes(b.id)), locked=selectedSections.some(s=>s.locked)||members.some(b=>b.editor?.locked), one=members.length===1?members[0]:undefined;
+  const multiDesign=members.length>1&&members.every(block=>block.kind===members[0].kind)&&['text','shape','image'].includes(members[0].kind);
   const layeredSelection=!sectionSelection&&members.length>0&&(fixedCanvas||members.every(b=>b.editor?.position==='absolute'));
   const layerAvailability=layerOrderAvailability(rendered,ids);
   const layerItems=[
@@ -81,13 +85,13 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
   ];
   const hasWidgetTools=!!one&&(['contacts','tasks','synced'].includes(one.kind)||(one.kind==='inventory'&&['Table','Library list','Forms'].includes(one.content?.type||'')));
   const hasWidgetDesign=!!one&&(['contacts','tasks'].includes(one.kind)||(one.kind==='inventory'&&one.content?.type==='Table'));
-  const selectionDesignActive=mode&&design&&!!(selectedSection||(one&&!hasWidgetDesign));
+  const selectionDesignActive=mode&&design&&!!(selectedSection||multiDesign||(one&&!hasWidgetDesign));
   useLayoutEffect(()=>{if(!selectionDesignActive)host.panelChanged('html-selection',false);},[selectionDesignActive,host.panelChanged]);
   useLayoutEffect(()=>{if(mode&&host.panelOpen&&host.activeId!=='html-selection'&&host.activeId!==HTML_INSERT_PANEL_ID&&host.activeId!==one?.id)host.closePanel();},[mode,host.panelOpen,host.activeId,one?.id,host.closePanel]);
   useEffect(()=>{if(host.activeId&&host.activeId!=='html-selection')setDesign(false);},[host.activeId]);
   const element=(id:string)=>root.current?.querySelector<HTMLElement>(`#block-${CSS.escape(id)}`);
   const clear=()=>{setSectionId('');setIds([]);setEditingId('');setDesign(false);setMenu(false);onSelect(undefined);};
-  const choose=(next:string[])=>{setSectionId('');setIds(next);setEditingId('');onSelect(next.length===1?(element(next[0])||undefined):undefined);};
+  const choose=(next:string[])=>{setSectionId('');setIds(next);setEditingId('');if(next.length>1){const chosen=blocks.filter(block=>next.includes(block.id));if(chosen.every(block=>block.kind===chosen[0]?.kind)&&['text','shape','image'].includes(chosen[0]?.kind)){setDesign(true);host.panelChanged('html-selection',true);}}onSelect(next.length===1?(element(next[0])||undefined):undefined);};
   useEffect(()=>{clear();},[pageId,mode]);
   const communityTemplateId=blocks.find(block=>block.kind==='image'&&block.ambassador&&!block.ambassadorElement)?.id;
   useEffect(()=>{if(!enabled||!communityTemplateId)return;choose([communityTemplateId]);setDesign(true);host.panelChanged('html-selection',true);},[communityTemplateId,enabled]);
@@ -382,6 +386,31 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
     };
     document.addEventListener('pointerdown',outside);document.addEventListener('keydown',key);return()=>{document.removeEventListener('pointerdown',outside);document.removeEventListener('keydown',key);};
   },[enabled,ids,members,locked,one,sectionIds.join(','),selectedSection]);
+  useEffect(()=>{
+    if(!enabled||!fixedCanvas)return;
+    const editingTarget=(event:ClipboardEvent)=>event.defaultPrevented||!(event.target instanceof Element)||!!event.target.closest('input,textarea,[contenteditable=true],[role=menu],[role=dialog],.workspace-widget-panelhost,.we-chat');
+    const copy=(event:ClipboardEvent)=>{
+      if(editingTarget(event)||!members.length||!event.clipboardData)return;
+      const payload=JSON.stringify({version:1,blocks:copiedCanvasBlocks(members,imageSources)});
+      event.clipboardData.setData(canvasClipboardType,payload);
+      event.clipboardData.setData('text/plain',canvasClipboardPrefix+payload);
+      event.preventDefault();
+    };
+    const paste=(event:ClipboardEvent)=>{
+      if(editingTarget(event)||!event.clipboardData)return;
+      const plain=event.clipboardData.getData('text/plain'),raw=event.clipboardData.getData(canvasClipboardType)||(plain.startsWith(canvasClipboardPrefix)?plain.slice(canvasClipboardPrefix.length):'');
+      if(!raw||raw.length>80_000_000)return;
+      try{
+        const payload=JSON.parse(raw);if(payload.version!==1||!Array.isArray(payload.blocks)||payload.blocks.length>80)return;
+        const blocks=payload.blocks.map((block:unknown)=>htmlBlockSchema.parse(block));
+        const result=pasteCanvasBlocks(source.current,pageId,blocks,root.current?.clientWidth||1080,page.sections[0]?.minHeight||1080);
+        if(!result)return;
+        event.preventDefault();save(result.state);choose(result.ids);root.current?.focus({preventScroll:true});
+      }catch{/* Leave unsupported clipboard contents to the native paste handler. */}
+    };
+    document.addEventListener('copy',copy);document.addEventListener('paste',paste);
+    return()=>{document.removeEventListener('copy',copy);document.removeEventListener('paste',paste);};
+  },[enabled,fixedCanvas,members,pageId,imageSources]);
   const handlers=useRef({finish,move,startMarquee});handlers.current={finish,move,startMarquee};
   useEffect(()=>{if(!enabled)return;const up=()=>handlers.current.finish(),cancel=()=>handlers.current.finish(true);window.addEventListener('pointerup',up,true);window.addEventListener('pointercancel',cancel,true);window.addEventListener('blur',cancel);return()=>{window.removeEventListener('pointerup',up,true);window.removeEventListener('pointercancel',cancel,true);window.removeEventListener('blur',cancel);};},[enabled]);
   useEffect(()=>{
@@ -426,7 +455,7 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
           {sectionSelection&&<div className="hcs-widget-identity"><span className="hcs-widget-label"><Icon name={fixedCanvas?'frame':insertPanel.enabled?'rectangle-horizontal':'layout-template'} size={16}/><span>{multipleSections?`${selectedSections.length} sections`:selectedSection!.name}</span></span></div>}{hasWidgetTools&&<div className="hcs-widget-identity" ref={setWidgetIdentityHost}/>}
           {toolButton(locked?'Unlock selection':'Lock selection',locked?'lock':'lock-open',()=>action(locked?'unlock':'lock'))}
           {hasWidgetTools&&<div className="hcs-widget-tools" ref={setWidgetToolbarHost}/>}
-          {((one&&!hasWidgetDesign)||selectedSection)&&toolButton(selectedSection?'Edit section design':'Edit element design','paintbrush-vertical',()=>{setDesign(v=>!v);host.panelChanged('html-selection',!design);})}
+          {((one&&!hasWidgetDesign)||multiDesign||selectedSection)&&toolButton(selectedSection?'Edit section design':'Edit element design','paintbrush-vertical',()=>{setDesign(v=>!v);host.panelChanged('html-selection',!design);})}
           {one?.kind==='shape'&&one.icon&&<HtmlIconMenu value={one.icon} onAdd={name=>changeBlock({...one,icon:name})} trigger={<Button size="sm" variant="ghost" aria-label="Change icon" leadingIcon={<LucideGlyph name={one.icon} size={16}/>}/>}/>}
           {one?.kind==='shape'&&one.icon&&<Button size="sm" variant="ghost" aria-label="Filled icon" active={!!one.filled} onClick={()=>changeBlock({...one,filled:!one.filled})} leadingIcon={<Icon name="circle" size={16} fill={one.filled?'currentColor':'none'}/>}/>}
           {members.some(b=>b.editor?.groupId)&&toolButton('Ungroup elements','layers',()=>{const next=structuredClone(source.current);for(const page of next.pages)for(const section of page.sections)for(const block of section.columns.flat())if(ids.includes(block.id)&&block.editor)delete block.editor.groupId;save(next);})}
@@ -463,6 +492,10 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
         const width=current.editor?.widthPx||bounds?.width||320,ratio=image.width/image.height;
         changeBlock({...current,badge,value:{...current.value,src:image.src,alt:badgeFormatName(badge.format),crop:undefined,playIcon:undefined},editor:{...current.editor,widthPx:width,height:Math.max(12,Math.min(3000,width/ratio)),appearance:{imageFit:'contain'}}});
       }} onClose={()=>{setDesign(false);host.closePanel();}}/>,host.panelHost)}
+    {selectionDesignActive&&multiDesign&&host.panelHost&&host.activeId==='html-selection'&&createPortal(<div className="hcs-ui" style={{height:'100%',display:'contents'}}><PresentationElementDesign
+      shape={{id:ids.join('-'),kind:members[0].kind==='shape'?members[0].shape:members[0].kind,width:bounds?.width||100,height:bounds?.height||100,appearance:blockAppearance(members[0])}}
+      label={`${members.length} ${members[0].kind==='text'?'texts':members[0].kind==='image'?'images':'shapes'}`} locked={locked} mixed={mixedAppearance(members)} multiple
+      onChange={(appearance:NonNullable<ElementFrame['appearance']>)=>save(patchSelectionAppearance(source.current,ids,appearance))} onClose={()=>{setDesign(false);host.closePanel();}}/></div>,host.panelHost)}
     {selectionDesignActive&&one&&!(one.kind==='image'&&(one.badge||one.ambassador||one.brandRole==='partner'||((studioWorkspace==='tech-blog'||studioWorkspace==='ambassadors')&&isTechArtwork(one))))&&host.panelHost&&host.activeId==='html-selection'&&createPortal(<div className="hcs-ui" style={{height:'100%',display:'contents'}}><PresentationElementDesign
       shape={{id:one.id,kind:one.kind==='text'?'text':one.kind==='image'?'image':one.kind==='shape'?one.shape:'rectangle',width:bounds?.width||100,height:bounds?.height||100,src:one.kind==='image'?one.value.src:undefined,appearance:{...(one.kind==='text'?{fill:one.value.color,fontFamily:'Camera Plain',fontSize:one.value.size,textAlign:one.value.align,fontWeight:one.value.runs.every(r=>r.bold)?700:400,italic:one.value.runs.every(r=>r.italic),underline:one.value.runs.every(r=>r.underline),lineHeight:one.value.style==='Heading 1'?102:one.value.style.startsWith('Heading')?112:150}:one.kind==='image'?{imageFit:'cover'}:{}),...one.editor?.appearance}}}
       label={one.kind==='text'?(one.value.runs.map(r=>r.text).join('').slice(0,60)||'Text'):one.kind==='image'?'Image':one.kind==='contacts'?'Contact cards':one.kind==='tasks'?'Checklist':one.kind==='media'&&one.format==='Video'?'Video':'Element'} locked={locked}

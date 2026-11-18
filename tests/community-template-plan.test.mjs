@@ -62,7 +62,7 @@ test('the fourth starter proposal uses the actual source crop and a separate gen
  const source={id:'attachment-0',kind:'image',name:'Poster'};
  const input={...request,sources:[source],prompt:'Refine the current asset using the attached reference. Preserve its essential content.'};
  const fields=[{slot:'city',text:'Athens'},{slot:'title',text:'Vibe &\nbuild'},{slot:'details',text:'18 November\nVol. IX'}];
- const value={...intent,designs:[
+ const value={...intent,sourceFacts:{title:'Vibe & build',city:'Athens',date:'18 November',edition:'Vol. IX'},designs:[
   {...design,template:'editorial-pixel',fields,image:{sourceId:'library-pixel-abstraction',crop:null}},
   {...design,template:'editorial-photo',fields,image:{sourceId:'library-flash-light',crop:null}},
   {...design,template:'editorial-event-collage',fields,image:{sourceId:'library-paper-collage',crop:null}},
@@ -73,10 +73,21 @@ test('the fourth starter proposal uses the actual source crop and a separate gen
  assert.equal(fourth.elements.find(e=>e.kind==='image').crop,null);
  assert.equal(fourth.elements.filter(e=>e.asset==='community-logo').length,1);
  assert.ok(fourth.elements.some(e=>e.kind==='text'&&e.text==='18 November\nVol. IX'));
+ for(const d of plan.designs){assert.ok(d.elements.some(e=>e.kind==='text'&&e.text==='Athens'));assert.ok(d.elements.some(e=>e.kind==='text'&&e.text.includes('18 November')));}
  const substituted=structuredClone(value);substituted.designs[3].image.sourceId='library-paper-collage';
  assert.throws(()=>compileTemplatePlan(substituted,input),/fourth proposal/);
  const uncropped=structuredClone(value);uncropped.mediaRequests[0].crop=null;
  assert.throws(()=>compileTemplatePlan(uncropped,input),/focused crop/);
+ const typed={...input,prompt:'Make on brand',startingTemplate:false};
+ assert.equal(compileTemplatePlan(value,typed).plan.designs.length,4);
+ assert.throws(()=>compileTemplatePlan({...value,designs:value.designs.slice(0,1)},typed),/4 complete distinct proposals/);
+ const staleFacts=structuredClone(value);
+ for(const d of staleFacts.designs)d.fields=[{slot:'city',text:'Paris'},{slot:'title',text:'Vibe & Build vol. IX'},{slot:'details',text:'Example date'}];
+ for(const d of compileTemplatePlan(staleFacts,typed).plan.designs){
+  assert.ok(d.elements.some(e=>e.text==='Athens'));
+  assert.ok(!d.elements.some(e=>e.text==='Paris'||e.text?.includes('Example date')||e.text==='Vibe & Build vol. IX'));
+  assert.ok(d.elements.some(e=>e.kind==='text'&&e.text.replace(/\s+/g,' ')==='Vibe & build'));
+ }
 });
 test('generated visual references preserve native identity and never resize the working canvas',()=>{
  const value=structuredClone(intent);Object.assign(value.designs[0],{template:'editorial-nature',image:{sourceId:'media-leaf',crop:null}});

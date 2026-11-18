@@ -58,7 +58,7 @@
 .hev .hev-section .hev-block[style*="--hcs-text-size"] .ewb-text-content {font-size:var(--hcs-text-size)!important;}
 .hev .hev-section .hev-block[style*="--hcs-text-spacing"] .ewb-text-content,.hev .hev-block[style*="--hcs-text-spacing"] .ewb-text-content * {letter-spacing:var(--hcs-text-spacing);}
 .hev .hev-section .hev-block[style*="--hcs-text-line"] .ewb-text-content {line-height:var(--hcs-text-line);}
-.hev .hev-section .hev-block[style*="--hcs-text-transform"] .ewb-text-content {text-transform:var(--hcs-text-transform);}
+.hev .hev-section .hev-block[style*="--hcs-text-transform"] .ewb-text-content,.hev .hev-section .hev-block[style*="--hcs-text-transform"] .ewb-text-content * {text-transform:var(--hcs-text-transform);}
 .hev .hev-section .hev-block[style*="--hcs-image-fit"] .ewb-image-content {object-fit:var(--hcs-image-fit);}
 
 

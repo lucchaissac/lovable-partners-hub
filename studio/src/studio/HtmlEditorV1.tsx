@@ -300,7 +300,7 @@ export function HtmlEditorV1({initialDesign, canvasOnly=false, zoom=1, imageSour
         trigger={<Button size="sm" variant="ghost" leadingIcon={icon('plus')} aria-label={`Add content in ${page.sections.find(s => s.id === section)?.name}, position ${index + 1}`}>{empty && !canvasSelection.mode ? 'Add content' : undefined}</Button>} />}
     </HtmlInsertionGap> : null;
   };
-  const canvasSelection = useHtmlCanvasSelection({root,state,zoom,fixedCanvas:canvasOnly,pageId:page.id,editable,save,onSelect:setSelected,onReplace:(id,fill)=>pickFile(id,'image',fill),onEditButton:setButtonEdit,onAddSection:(id,after,anchor)=>openSectionInsert(page.sections.findIndex(s=>s.id===id)+(after?1:0),anchor)});
+  const canvasSelection = useHtmlCanvasSelection({root,state,zoom,fixedCanvas:canvasOnly,imageSources,pageId:page.id,editable,save,onSelect:setSelected,onReplace:(id,fill)=>pickFile(id,'image',fill),onEditButton:setButtonEdit,onAddSection:(id,after,anchor)=>openSectionInsert(page.sections.findIndex(s=>s.id===id)+(after?1:0),anchor)});
   const initialDesignApplied=useRef(false);
   const initialDesignKey=JSON.stringify(initialDesign);
   useEffect(()=>{

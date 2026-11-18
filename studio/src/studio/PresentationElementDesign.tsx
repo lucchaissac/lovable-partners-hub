@@ -1,5 +1,6 @@
 // @ts-nocheck -- Generated from the approved presentation prototype. Edit its source, then run scripts/sync-design-panel.py.
 import * as React from "react";
+import {LucideGlyph} from "./LucideGlyph";
 import * as Asset from "@asset/ui";
 import "./presentation-element-design.css";
 import {elementBoxStyle,elementBackgroundImage} from "./htmlElementAppearance";
@@ -49,18 +50,18 @@ function studioTextAppearance(appearance = {}) {
   const value = { fill: 'var(--ui-text)', fontFamily: 'Camera Plain', fontSize: 32, fontWeight: 400, italic: false, underline: false, uppercase: false, textAlign: 'left', letterSpacing: 0, lineHeight: 120, ...appearance };
   return { ...value, fontSize: studioInteger(value.fontSize, 32, 1, 1000), letterSpacing: studioInteger(value.letterSpacing, 0, -20, 100), lineHeight: studioInteger(value.lineHeight, 120, 50, 300) };
 }
-export function StudioShapeNumber({ label, value, min = 0, max = 100, suffix = 'px', onChange }) {
+export function StudioShapeNumber({ label, value, mixed = false, min = 0, max = 100, suffix = 'px', onChange }) {
   const normalized = studioInteger(value, min, min, max);
-  const [draft, setDraft] = React.useState(String(normalized));
-  React.useEffect(() => setDraft(String(normalized)), [normalized]);
+  const [draft, setDraft] = React.useState(mixed?'':String(normalized));
+  React.useEffect(() => setDraft(mixed?'':String(normalized)), [normalized,mixed]);
   function commit(raw) {
     const next = studioInteger(raw.trim() === '' ? min : raw, normalized, min, max);
     setDraft(String(next)); onChange(next);
   }
-  return <Asset.Input className="hcs-design-design-number" type="number" min={min} max={max} step={1} aria-label={label} value={draft} trailingIcon={<span>{suffix}</span>} onChange={event => {
+  return <Asset.Input className="hcs-design-design-number" type="number" min={min} max={max} step={1} aria-label={label} placeholder={mixed?'Mixed':undefined} value={draft} trailingIcon={<span>{suffix}</span>} onChange={event => {
     const raw = event.target.value; setDraft(raw);
     if (raw !== '' && Number.isFinite(Number(raw))) onChange(studioInteger(raw, normalized, min, max));
-  }} onBlur={() => commit(draft)} onKeyDown={event => {
+  }} onBlur={() => {if(!mixed||draft.trim()!=='')commit(draft);}} onKeyDown={event => {
     if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
       event.preventDefault(); const current = draft.trim() === '' ? normalized : Number(draft);
       commit(String((Number.isFinite(current) ? current : normalized) + (event.key === 'ArrowUp' ? 1 : -1) * (event.shiftKey ? 10 : 1)));
@@ -86,22 +87,23 @@ export function StudioCornerControls({value,onChange,label='Shape',max=160,disab
   return <fieldset disabled={disabled} className="hcs-design-design-fields"><div className="hcs-design-padding"><div className="hcs-design-design-row"><span>Corners</span><div className="hcs-design-padding-controls">{!split&&<StudioShapeNumber label={`${label} corner radius`} min={0} max={max} value={values[0]} onChange={all}/>}<Asset.SegmentedControl size="sm" aria-label={`${label} corners`} value={split?'corners':'all'} onChange={mode=>{setSplit(mode==='corners');if(mode==='all')all(values[0]);}} items={[{value:'all',label:'All corners',iconOnly:true,leadingIcon:<Asset.Icon name="square" size={16}/>},{value:'corners',label:'Individual corners',iconOnly:true,leadingIcon:<Asset.Icon name="scan" size={16}/>}]} /></div></div>{split&&<div className="hcs-design-padding-sides">{corners.map((corner,i)=><label key={corner}><StudioShapeNumber label={`${label} ${names[i]} corner radius`} min={0} max={max} suffix="" value={values[i]} onChange={n=>onChange({[`radius${corner}`]:n})}/><span>{['TL','TR','BR','BL'][i]}</span></label>)}</div>}</div></fieldset>;
 }
 
-function StudioTextControls({ value, locked, onChange }) {
+function StudioTextControls({ value, locked, onChange, mixed = {} }) {
   const community=React.useContext(CommunityTypographyContext);
   const fonts=community?communityDisplayFonts:STUDIO_FONTS;
   const weights = [{ id: '400', label: 'Regular' }, { id: '500', label: 'Medium' }, { id: '600', label: 'Semibold' }, { id: '700', label: 'Bold' }];
   return <>
-    <div className="hcs-design-design-row hcs-design-design-section"><span>Font</span><Asset.Dropdown fit value={value.fontFamily} align="end" listHeight="auto" items={fonts.map(font => ({ id: font.id, label: <span style={{ fontFamily: font.css }}>{font.label}</span> }))} onChange={fontFamily => onChange({ fontFamily,...(fontFamily==='Anton'?{fontWeight:400}:value.fontFamily==='Anton'?{fontWeight:700}:{}) })} trigger={<Asset.TriggerField disabled={locked} aria-label="Font family"><span className="studio-font-label">{value.fontFamily}</span></Asset.TriggerField>} /></div>
-    <div className="hcs-design-design-row"><span>Size</span><StudioShapeNumber label="Text size" min={1} max={1000} value={value.fontSize} onChange={fontSize => onChange({ fontSize })} /></div>
-    <div className="hcs-design-design-row"><span>Weight</span><Asset.Dropdown fit value={String(value.fontWeight)} align="end" listHeight="auto" items={weights} onChange={fontWeight => onChange({ fontWeight: Number(fontWeight) })} trigger={<Asset.TriggerField disabled={locked} aria-label="Text weight">{weights.find(item => item.id === String(value.fontWeight))?.label || 'Regular'}</Asset.TriggerField>} /></div>
-    <div className="hcs-design-design-row"><span>Style</span><div className="hcs-design-text-buttons" role="group" aria-label="Text style">{['bold', 'italic', 'underline'].map(mark => {
-      const active = mark === 'bold' ? value.fontWeight >= 700 : value[mark];
+    <div className="hcs-design-design-row hcs-design-design-section"><span>Font</span><Asset.Dropdown fit value={mixed.fontFamily?undefined:value.fontFamily} align="end" listHeight="auto" items={fonts.map(font => ({ id: font.id, label: <span style={{ fontFamily: font.css }}>{font.label}</span> }))} onChange={fontFamily => onChange({ fontFamily,...(fontFamily==='Anton'?{fontWeight:400}:value.fontFamily==='Anton'?{fontWeight:700}:{}) })} trigger={<Asset.TriggerField disabled={locked} aria-label="Font family"><span className="studio-font-label">{mixed.fontFamily?'Mixed':value.fontFamily}</span></Asset.TriggerField>} /></div>
+    <div className="hcs-design-design-row"><span>Size</span><StudioShapeNumber label="Text size" mixed={mixed.fontSize} min={1} max={1000} value={value.fontSize} onChange={fontSize => onChange({ fontSize })} /></div>
+    <div className="hcs-design-design-row"><span>Weight</span><Asset.Dropdown fit value={mixed.fontWeight?undefined:String(value.fontWeight)} align="end" listHeight="auto" items={weights} onChange={fontWeight => onChange({ fontWeight: Number(fontWeight) })} trigger={<Asset.TriggerField disabled={locked} aria-label="Text weight">{mixed.fontWeight?'Mixed':weights.find(item => item.id === String(value.fontWeight))?.label || 'Regular'}</Asset.TriggerField>} /></div>
+    <div className="hcs-design-design-row"><span>Style</span><div className="hcs-design-text-buttons" role="group" aria-label="Text style">{['bold', 'italic', 'underline', 'uppercase'].map(mark => {
+      const isMixed=mixed[mark==='bold'?'fontWeight':mark];
+      const active = !isMixed && (mark === 'bold' ? value.fontWeight >= 700 : value[mark]);
       const label = mark[0].toUpperCase() + mark.slice(1);
-      return <Asset.Tooltip key={mark} label={label} side="bottom"><Asset.Button variant="neutral" aria-label={label} aria-pressed={active} active={active} disabled={locked} leadingIcon={<Asset.Icon name={mark} size={16} />} onClick={() => onChange(mark === 'bold' ? { fontWeight: active ? 400 : 700 } : { [mark]: !active })} /></Asset.Tooltip>;
+      return <Asset.Tooltip key={mark} label={label} side="bottom"><Asset.Button variant="neutral" aria-label={label} aria-pressed={isMixed?'mixed':active} active={active} disabled={locked} leadingIcon={<LucideGlyph name={mark==='uppercase'?'case-upper':mark} size={16} />} onClick={() => onChange(mark === 'bold' ? { fontWeight: active ? 400 : 700 } : { [mark]: !active })} /></Asset.Tooltip>;
     })}</div></div>
-    <div className="hcs-design-design-row"><span>Alignment</span><div className="hcs-design-text-buttons" role="group" aria-label="Text alignment">{['left', 'center', 'right'].map(align => <Asset.Tooltip key={align} label={`Align ${align}`} side="bottom"><Asset.Button variant="neutral" aria-label={`Align ${align}`} aria-pressed={value.textAlign === align} active={value.textAlign === align} disabled={locked} leadingIcon={<Asset.Icon name={`align-${align}`} size={16} />} onClick={() => onChange({ textAlign: align })} /></Asset.Tooltip>)}</div></div>
-    <div className="hcs-design-design-row hcs-design-design-section"><span>Letter spacing</span><StudioShapeNumber label="Letter spacing" min={-20} max={100} value={value.letterSpacing} onChange={letterSpacing => onChange({ letterSpacing })} /></div>
-    <div className="hcs-design-design-row"><span>Line height</span><StudioShapeNumber label="Line height" min={50} max={300} suffix="%" value={value.lineHeight} onChange={lineHeight => onChange({ lineHeight })} /></div>
+    <div className="hcs-design-design-row"><span>Alignment</span><div className="hcs-design-text-buttons" role="group" aria-label="Text alignment">{['left', 'center', 'right'].map(align => <Asset.Tooltip key={align} label={`Align ${align}`} side="bottom"><Asset.Button variant="neutral" aria-label={`Align ${align}`} aria-pressed={mixed.textAlign?'mixed':value.textAlign === align} active={!mixed.textAlign&&value.textAlign === align} disabled={locked} leadingIcon={<Asset.Icon name={`align-${align}`} size={16} />} onClick={() => onChange({ textAlign: align })} /></Asset.Tooltip>)}</div></div>
+    <div className="hcs-design-design-row hcs-design-design-section"><span>Letter spacing</span><StudioShapeNumber label="Letter spacing" mixed={mixed.letterSpacing} min={-20} max={100} value={value.letterSpacing} onChange={letterSpacing => onChange({ letterSpacing })} /></div>
+    <div className="hcs-design-design-row"><span>Line height</span><StudioShapeNumber label="Line height" mixed={mixed.lineHeight} min={50} max={300} suffix="%" value={value.lineHeight} onChange={lineHeight => onChange({ lineHeight })} /></div>
   </>;
 }
 
@@ -118,23 +120,23 @@ export function PresentationElementAdvanced({id,value,locked=false,onChange,padd
   </fieldset></details>;
 }
 
-export function PresentationElementDesign({ shape, label, locked, onChange, onReplace, onUndo = undefined, onRedo = undefined, absolutePosition = false, onAbsolutePosition = undefined as undefined | ((absolute: boolean) => void), resizeWithSection = true, onResizeWithSection = undefined as undefined | ((follow: boolean) => void), onSpacingPreview=undefined as undefined | ((kind:'padding'|'after'|null)=>void), spacingAfter=0, onSpacingAfter=undefined as undefined | ((value:number)=>void), onFillImage=undefined as undefined | (()=>void), onClose }) {
+export function PresentationElementDesign({ shape, label, locked, mixed = {}, multiple = false, onChange, onReplace = undefined as undefined | (()=>void), onUndo = undefined, onRedo = undefined, absolutePosition = false, onAbsolutePosition = undefined as undefined | ((absolute: boolean) => void), resizeWithSection = true, onResizeWithSection = undefined as undefined | ((follow: boolean) => void), onSpacingPreview=undefined as undefined | ((kind:'padding'|'after'|null)=>void), spacingAfter=0, onSpacingAfter=undefined as undefined | ((value:number)=>void), onFillImage=undefined as undefined | (()=>void), onClose }) {
   const value = studioShapeAppearance(shape);
   const defaults = studioShapeAppearance({ kind: shape.kind });
   const changed = Object.keys(value).some(key => value[key] !== defaults[key]);
   return <aside id="html-element-design" className="hcs-design-design-panel" aria-label="Shape design" onKeyDown={event => { if ((onUndo || onRedo) && (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'z') { event.preventDefault(); event.stopPropagation(); (event.shiftKey ? onRedo : onUndo)?.(); return; } if (event.key === 'Escape' && !event.defaultPrevented) { event.preventDefault(); event.stopPropagation(); onClose(); } }}>
     <header className="we-panel-header"><span className="hcs-design-design-title"><Asset.Icon name={studioShapeType(shape).icon} size={16} /><Asset.Tooltip label={label} onlyWhenTruncated><strong tabIndex={0}>{label}</strong></Asset.Tooltip>{locked && <Asset.Icon name="lock" size={14} />}</span><Asset.Tooltip label="Close design" side="bottom"><Asset.Button variant="ghost" size="sm" aria-label="Close shape design" leadingIcon={<Asset.Icon name="panel-right" size={16} />} onClick={onClose} /></Asset.Tooltip></header>
     <div className="hcs-design-design-body">
-      <fieldset disabled={locked} className="hcs-design-design-fields" aria-label="Shape appearance">{shape.kind==="image"&&<div className="hcs-design-design-section" style={{display:"grid",gap:"var(--ui-space-3)",paddingBottom:"var(--ui-space-4)"}}><span>Image</span><img src={shape.src} alt={label} style={{width:"100%",height:120,objectFit:"contain",background:"var(--ui-bg-subtle)",borderRadius:"var(--ui-radius-section)"}}/><Asset.Button variant="neutral" disabled={locked} leadingIcon={<Asset.Icon name="image" size={16}/>} onClick={onReplace}>Replace image</Asset.Button></div>}
-        {shape.kind !== "image" && <div className="hcs-design-design-row"><span>{['text', 'line'].includes(shape.kind) ? 'Color' : 'Fill'}</span><StudioShapeColor label={shape.kind === "text" ? "Text color" : "Shape fill"} value={value.fill} disabled={locked} onChange={fill => onChange({ fill })} /></div>}
-        {['text','image'].includes(shape.kind)&&<div className="hcs-design-design-row"><span>Background</span><StudioShapeColor label="Element background" value={value.background??'transparent'} disabled={locked} onChange={background=>onChange({background})}/></div>}
+      <fieldset disabled={locked} className="hcs-design-design-fields" aria-label="Shape appearance">{shape.kind==="image"&&!multiple&&<div className="hcs-design-design-section" style={{display:"grid",gap:"var(--ui-space-3)",paddingBottom:"var(--ui-space-4)"}}><span>Image</span><img src={shape.src} alt={label} style={{width:"100%",height:120,objectFit:"contain",background:"var(--ui-bg-subtle)",borderRadius:"var(--ui-radius-section)"}}/><Asset.Button variant="neutral" disabled={locked} leadingIcon={<Asset.Icon name="image" size={16}/>} onClick={onReplace}>Replace image</Asset.Button></div>}
+        {shape.kind !== "image" && <div className="hcs-design-design-row"><span>{['text', 'line'].includes(shape.kind) ? 'Color' : 'Fill'}</span><StudioShapeColor label={shape.kind === "text" ? "Text color" : "Shape fill"} value={value.fill} mixed={mixed.fill} disabled={locked} onChange={fill => onChange({ fill })} /></div>}
+        {['text','image'].includes(shape.kind)&&<div className="hcs-design-design-row"><span>Background</span><StudioShapeColor label="Element background" value={value.background??'transparent'} mixed={mixed.background} disabled={locked} onChange={background=>onChange({background})}/></div>}
         {shape.kind==='image'&&<div className="hcs-design-design-row"><span>Content</span><Asset.Dropdown value={value.imageVisible===false?'color':'image'} items={[{id:'image',label:'Image'},{id:'color',label:'Color'}]} onChange={mode=>onChange({imageVisible:mode==='image',...(mode==='color'&&!value.background?{background:'var(--ui-bg-subtle)'}:{})})} trigger={<Asset.TriggerField aria-label="Image content" disabled={locked}>{value.imageVisible===false?'Color':'Image'}</Asset.TriggerField>}/></div>}
         {onFillImage&&!['text','image','line'].includes(shape.kind)&&<div className="hcs-design-design-section"><div className="hcs-design-design-row"><span>Image fill</span><Asset.Button variant="neutral" disabled={locked} leadingIcon={<Asset.Icon name="image" size={16}/>} onClick={onFillImage}>{value.backgroundImage?'Replace':'Add image'}</Asset.Button></div>{value.backgroundImage&&<><img src={value.backgroundImage} alt="Shape fill" style={{width:'100%',height:96,objectFit:'contain',borderRadius:'var(--ui-radius-section)',background:'var(--ui-bg-subtle)'}}/><div className="hcs-design-design-row"><Asset.Button variant="ghost" disabled={locked} onClick={()=>onChange({backgroundImage:undefined})}>Remove image</Asset.Button><Asset.Dropdown value={value.backgroundFit??'cover'} items={[{id:'contain',label:'Fit'},{id:'cover',label:'Fill'}]} onChange={backgroundFit=>onChange({backgroundFit})} trigger={<Asset.TriggerField aria-label="Shape image fit">{value.backgroundFit==='contain'?'Fit':'Fill'}</Asset.TriggerField>}/></div></>}</div>}
-        <div className="hcs-design-design-row"><span>Opacity</span><StudioShapeNumber label="Shape opacity" suffix="%" value={value.opacity} onChange={opacity => onChange({ opacity })} /></div>
+        <div className="hcs-design-design-row"><span>Opacity</span><StudioShapeNumber label="Shape opacity" mixed={mixed.opacity} suffix="%" value={value.opacity} onChange={opacity => onChange({ opacity })} /></div>
         {shape.kind === 'line' && <><div className="hcs-design-design-row"><span>Thickness</span><StudioShapeNumber label="Line thickness" min={1} max={24} value={value.lineWidth || 2} onChange={lineWidth => onChange({ lineWidth })} /></div><div className="hcs-design-design-row"><span>Dashed</span><Asset.Switch size="sm" aria-label="Dashed line" checked={value.lineStyle === 'dashed'} onChange={dashed => onChange({ lineStyle: dashed ? 'dashed' : 'solid' })} /></div></>}
         {shape.kind !== 'line' && shape.kind !== 'circle' && shape.kind !== 'text' && (shape.kind==='triangle'?<div className="hcs-design-design-row"><span>Corners</span><StudioShapeNumber label="Shape corner radius" value={value.radius} max={Math.floor(Math.min(shape.width,shape.height)/2)} onChange={radius=>onChange({radius})}/></div>:<StudioCornerControls key={shape.id??label} value={value} disabled={locked} max={Math.floor(Math.min(shape.width,shape.height)/2)} onChange={onChange}/>)}
         {shape.kind === 'image' && <div className="hcs-design-design-row"><span>Fit</span><Asset.Dropdown value={value.imageFit} align="end" listHeight="auto" items={[{ id: 'contain', label: 'Fit' }, { id: 'cover', label: 'Fill' }]} onChange={imageFit => onChange({ imageFit })} trigger={<Asset.TriggerField className="hcs-design-design-shadow" aria-label="Image fit" disabled={locked} trailingIcon={<Asset.Icon name="chevron-down" size={14} />}>{value.imageFit === 'cover' ? 'Fill' : 'Fit'}</Asset.TriggerField>} /></div>}
-        {shape.kind === "text" && <StudioTextControls value={value} locked={locked} onChange={onChange} />}
+        {shape.kind === "text" && <StudioTextControls value={value} locked={locked} mixed={mixed} onChange={onChange} />}
         {shape.kind !== 'line' && shape.kind !== "text" && <><div className="hcs-design-design-section">
           <div className="hcs-design-design-row"><span>Border</span><StudioShapeNumber label="Shape border width" value={value.borderWidth} max={24} onChange={borderWidth => onChange({ borderWidth })} /></div>
           <div className="hcs-design-design-row"><span>Color</span><StudioShapeColor label="Shape border color" value={value.borderColor} disabled={locked} onChange={borderColor => onChange({ borderColor })} /></div>
@@ -203,7 +205,7 @@ export function PresentationShapeSurface({ shape, style, className }) {
 }
 function studioTextStyle(shape) {
   const value = studioShapeAppearance(shape);
-  return { color: value.fill, opacity: value.opacity / 100, fontFamily: studioFontFamily(value.fontFamily), fontSize: value.fontSize, fontWeight: value.fontWeight, fontStyle: value.italic ? 'italic' : 'normal', textDecoration: value.underline ? 'underline' : 'none', textTransform: 'none', letterSpacing: value.letterSpacing, lineHeight: value.lineHeight / 100, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', textAlign: value.textAlign };
+  return { color: value.fill, opacity: value.opacity / 100, fontFamily: studioFontFamily(value.fontFamily), fontSize: value.fontSize, fontWeight: value.fontWeight, fontStyle: value.italic ? 'italic' : 'normal', textDecoration: value.underline ? 'underline' : 'none', textTransform: value.uppercase ? 'uppercase' : 'none', letterSpacing: value.letterSpacing, lineHeight: value.lineHeight / 100, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', textAlign: value.textAlign };
 }
 
 export function PresentationShapeMenu({ disabled, onAdd, includeLine = false }) {

@@ -4,12 +4,14 @@ import {reviewSchema,imageCropSchema} from './communityReview.mjs';
 import {mediaRequestSchema,validateMediaPlan} from './communityMediaPlan.mjs';
 import {communityTemplateGeometry,cameraBoldAdvances} from './communityTemplateGeometry.mjs';
 import {communityMediaById,communityMediaLayouts} from './communityMediaLibrary.mjs';
+import {communityProposalPolicy} from './communityProposalPolicy.mjs';
 
 const id=z.string().min(1).max(80).regex(/^[a-zA-Z0-9-]+$/);
 const picture=z.object({sourceId:id,crop:imageCropSchema.nullable()}).strict();
 export const communityTemplateIds=Object.keys(communityTemplateGeometry);
 export const templatePlanSchema=z.object({
  summary:z.string().min(1).max(1200),replaceCurrent:z.boolean(),reviews:z.array(reviewSchema).max(7),badgeBatch:chatPlanSchema.shape.badgeBatch,
+ sourceFacts:z.object({title:z.string().min(1).max(200),city:z.string().max(45).nullable(),date:z.string().max(150).nullable(),edition:z.string().max(80).nullable()}).strict().nullable().default(null),
  designs:z.array(z.object({title:z.string().min(1).max(100),template:z.enum(communityTemplateIds),width:z.number().int().min(200).max(2560).nullable(),height:z.number().int().min(200).max(2560).nullable(),background:z.enum(['ink','white','beige','#ff0178']),
   fields:z.array(z.object({slot:z.string().min(1).max(40),text:z.string().max(500)}).strict()).max(20),
   image:picture.nullable(),partners:z.array(picture).max(2),headlineFont:z.enum(['Camera Plain','Bodoni Moda','Pixelify Sans','Anton']).nullable(),
@@ -83,6 +85,25 @@ function changedElement(change,request){
 }
 export function compileTemplatePlan(value,request){
  const intent=templatePlanSchema.parse(value);
+ const proposals=communityProposalPolicy(request);
+ if(proposals){
+  if(intent.designs.length!==proposals.count)throw Error(`This on-brand request needs ${proposals.count} complete distinct proposals, not a single canvas edit. Return designs only and extract the attachment's sourceFacts once.`);
+  if(!intent.sourceFacts)throw Error('Extract sourceFacts from the actual attachment: main title, city, date and edition. Do not reuse demonstration copy or Paris from the current starter.');
+  intent.replaceCurrent=true;
+  const facts=intent.sourceFacts,details=[facts.date,facts.edition].filter(Boolean).join('\n');
+  intent.designs=intent.designs.map(spec=>{
+   const layers=communityTemplateGeometry[spec.template].layers;
+   const headline=layers.find(layer=>['title','headline','name'].includes(layer.key))?.key??'title';
+   const detailSlot=['details','subtitle','intro','eventFooter','footer'].find(key=>layers.some(layer=>layer.key===key));
+   const oldTitle=spec.fields.find(field=>field.slot===headline)?.text;
+   const title=oldTitle?.replace(/\s+/g,' ').trim().toLowerCase()===facts.title.replace(/\s+/g,' ').trim().toLowerCase()?oldTitle:facts.title;
+   const practical=[facts.date,facts.edition,details].filter(Boolean).map(text=>text.replace(/\s+/g,' ').trim().toLowerCase());
+   const fields=spec.fields.filter(field=>!['title','headline','name','city','date','edition',detailSlot].includes(field.slot)&&!practical.includes(field.text.replace(/\s+/g,' ').trim().toLowerCase())&&!/^lovable(?:\s+community)?[.!]?$/i.test(field.text.trim()));
+   fields.push({slot:headline,text:title},{slot:'city',text:facts.city??''});
+   if(details)fields.push({slot:detailSlot??'details',text:details});
+   return {...spec,fields};
+  });
+ }
  // Resolve the starter replacement before checking redundant old-layer operations.
  if(request.startingTemplate&&intent.designs.length)intent.replaceCurrent=true;
  intent.changes=intent.changes.filter(change=>!request.blocks.some(block=>block.id===change.id)||
@@ -159,8 +180,7 @@ export function compileTemplatePlan(value,request){
   const onlyGlobe=intent.designs.every(spec=>!spec.image&&communityTemplateGeometry[spec.template].layers.some(layer=>layer.kind==='globe'));
   if(directions.size<2||onlyGlobe)throw Error('These proposals repeat the same visual. Reuse distinct prepared templates: editorial-photo with library-flash-light or library-flash-dark, editorial-collage with library-paper-collage, and editorial-pixel with library-pixel-abstraction. Keep every supplied event fact in each proposal.');
  }
- const starterReview=request.startingTemplate&&request.prompt==='Refine the current asset using the attached reference. Preserve its essential content.'&&request.sources.some(source=>source.kind==='image');
- if(starterReview&&intent.designs.length===4){
+ if(proposals?.sourceObject){
   const fourth=intent.designs[3],media=intent.mediaRequests.find(item=>item.id===fourth.image?.sourceId);
   if(fourth.template!=='editorial-source-object'||media?.operation!=='edit'||!request.sources.some(source=>source.kind==='image'&&source.id===media.sourceId)||!media.crop||media.crop.width*media.crop.height>.8){
    throw Error('The fourth proposal must use editorial-source-object and a generated edit of a focused crop from the actual attachment. Keep its typography and Community identity native; do not substitute a library image or the complete source poster.');

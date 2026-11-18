@@ -1,45 +1,4 @@
-@font-face {
-  font-family: "Camera Plain";
-  src: url("/fonts/CameraPlainVariable.woff2") format("woff2");
-  font-style: normal;
-  font-weight: 100 900;
-  font-display: swap;
-}
-
-:root {
-  color-scheme: dark;
-  --color-background: #1b1b1b;
-  --color-surface: rgb(255 255 255 / 5%);
-  --color-selected: rgb(255 255 255 / 14%);
-  --color-text: rgb(255 255 255 / 92%);
-  --color-muted: rgb(255 255 255 / 64%);
-  --control-size: 40px;
-  --segment-inset: 4px;
-  --header-height: 72px;
-  --header-inset-block: 16px;
-  --header-inset-inline: 24px;
-  --icon-size: 20px;
-  --radius-pill: 999px;
-  --color-dim: rgb(255 255 255 / 38%);
-  --color-border: rgb(255 255 255 / 8%);
-  --header-background: rgb(27 27 27 / 92%);
-  --color-panel: #202020;
-  --color-panel-hover: #252525;
-  --color-specimen: var(--color-surface);
-  --preview-ink: #fff;
-  --preview-guide: rgb(255 255 255 / 38%);
-  --preview-image-filter: brightness(1) invert(0);
-  --color-ink: #1b1b1b;
-  --color-guide: rgb(255 255 255 / 58%);
-
-  font-family: "Camera Plain", Arial, sans-serif;
-  font-weight: 600;
-  color: var(--color-text);
-  background: var(--color-background);
-  font-synthesis: none;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+@import '../shared/hubTheme.css';
 
 * {
   box-sizing: border-box;

@@ -1,0 +1,38 @@
+{
+  "reference": "https://id-preview--23ff7bbc-4e1a-4b4d-9e61-a7b08629373a.lovable.app/",
+  "reviewed": "2026-11-18",
+  "route": "/demo/1000-opportunities",
+  "purpose": "An isolated redesign demonstration, outside the hub navigation.",
+  "content": "Campaign name, host, February 14, 2027 deadline, eight workshop outcomes and 60-minute duration retained from the reference. Dates remain unannounced. Copy condensed; no invented results or testimonials.",
+  "portrait": {
+    "source": "https://id-preview--23ff7bbc-4e1a-4b4d-9e61-a7b08629373a.lovable.app/__l5e/assets-v1/5e4afeb4-0bfb-449b-9b9f-89caedfa305d/nicole-alos-color.jpeg",
+    "outputs": [
+      "/demos/1000-opportunities/nicole-alos-400.webp",
+      "/demos/1000-opportunities/nicole-alos-800.webp"
+    ],
+    "treatment": "Full source framing, resized and compressed as WebP. No retouching."
+  },
+  "identity": [
+    "/ambassadors/assets/lovable-community-white.svg",
+    "/ambassadors/assets/paris-globe-1080.webp",
+    "/ambassadors/assets/heart-overlay.webp"
+  ],
+  "header": "Original full Community lockup only, following Luc’s later correction. Opaque #1b1b1b background while scrolling. No city is stated on the homepage, ambassador profile or first workshop page.",
+  "removed": [
+    "Animated headline and counters",
+    "Sound",
+    "Repeated calls to action between every section",
+    "Empty progress metrics",
+    "Featured-builder placeholders",
+    "Prize and free-credit promises without supporting details",
+    "Decorative uppercase and tracking"
+  ],
+  "interactions": "Workshop filters and details are functional. Registration is explicitly a local preview, with no requests or persistence. Links to the original initiative and event pages are provided.",
+  "toggle": "DEMO_OPPORTUNITIES_ENABLED=false removes the build entry and returns 404 in development. Defaults to true. Restart/rebuild after changing it.",
+  "organizer": {
+    "source": "https://id-preview--23ff7bbc-4e1a-4b4d-9e61-a7b08629373a.lovable.app/__l5e/assets-v1/fddac3f3-474f-46e6-84a1-7e2637d2dfc8/socratyc-ai-studios-white.webp",
+    "output": "/demos/1000-opportunities/socratyc-ai-studios-white.webp",
+    "treatment": "Original transparent artwork, unchanged, placed beneath the hero actions."
+  },
+  "refinements": "Date before hero actions at the same size as the introduction; explicit line break after Lovable. Gradient behind the globe. Practical copy uses 18 px and 16 px, with a 16 px minimum on mobile. No animations or transitions."
+}

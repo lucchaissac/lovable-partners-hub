@@ -4,6 +4,7 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "rewrites": [
+    {"source":"/demo/1000-opportunities","destination":"/demo/1000-opportunities/index.html"},
     {"source":"/brand","destination":"/brand/index.html"},
     {"source":"/partners","destination":"/partners/index.html"},
     {"source":"/community","destination":"/community/index.html"},

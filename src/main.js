@@ -3,6 +3,7 @@ import {mountAgentGuide} from './agentGuide.js';
 import {brandGallery,brandGuidelines,brandSections,mountBrandHub} from './brand.js';
 import {updateWorkspaceMetadata} from './workspaceMetadata.js';
 import {warmGallery} from './galleryLoading.js';
+import {setThemeInstantly} from '../shared/instantTheme.js';
 import './navigation.js';
 import { showWorkspaceTransition } from './brand-transition.js';
 import {ambassadorDefaultFormat,ambassadorFormats,ambassadorSections} from './ambassadors/catalog.js';
@@ -116,7 +117,7 @@ document.querySelector('#close-search').addEventListener('click',()=>dialog.clos
 document.querySelector('#search-input').addEventListener('input',event=>searchResults(event.target.value));
 dialog.addEventListener('click',event=>{if(event.target===dialog){dialog.close();return;}const result=event.target.closest('[data-search-format],[data-search-section]');if(!result)return;dialog.close();if(result.dataset.searchFormat){state.format=result.dataset.searchFormat;navigate('create',state.format);}else navigate('guidelines',result.dataset.searchSection);});
 function syncThemeButton(){const light=document.documentElement.dataset.theme==='light',button=document.querySelector('#theme-toggle');button.setAttribute('aria-label',light?'Switch to dark appearance':'Switch to light appearance');button.innerHTML=icon(light?'sun':'moon');hydrateIcons(button);}
-document.querySelector('#theme-toggle').addEventListener('click',()=>{const theme=document.documentElement.dataset.theme==='light'?'dark':'light';document.documentElement.dataset.theme=theme;try{localStorage.setItem('lovable-hub-theme',theme);}catch{}document.querySelector('meta[name="theme-color"]').content=theme==='light'?'#f7f4ed':'#1b1b1b';syncThemeButton();});
+document.querySelector('#theme-toggle').addEventListener('click',()=>{const theme=document.documentElement.dataset.theme==='light'?'dark':'light';setThemeInstantly(theme);try{localStorage.setItem('lovable-hub-theme',theme);}catch{}document.querySelector('meta[name="theme-color"]').content=theme==='light'?'#f7f4ed':'#1b1b1b';syncThemeButton();});
 syncThemeButton();
 function openHash(){const {workspace,view,section}=parseRoute();state.workspace=workspace;if(view==='badge'){navigate('create',currentFormats().some(format=>format.id===section)?section:undefined);return;}const valid=['gallery','library','guidelines','create'].includes(view)?view:'gallery';render(valid);if(valid==='guidelines'&&currentSections().some(([id])=>id===section))requestAnimationFrame(()=>{requestSection(section);document.getElementById(section)?.scrollIntoView();});}
 window.addEventListener('hashchange',openHash);

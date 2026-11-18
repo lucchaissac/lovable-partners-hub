@@ -115,3 +115,5 @@
 - On mobile (680 px and below), hide the Guidelines section submenu entirely. Read the sections through normal scrolling; retain only the workspace controls above and Gallery / Guidelines / Make below. Deep links still scroll to their section below the top header.
 
 - The bare shared root URL opens the Lovable Gallery (first workspace), with Lovable sharing metadata. Keep explicit workspace paths and legacy hashes pointing to their own content.
+
+- Light/dark changes are immediate in both the hub and embedded studio, with no color, background, border, SVG ink or filter interpolation. Suppress transitions only during the theme switch; retain ordinary interactions and running artwork animations.

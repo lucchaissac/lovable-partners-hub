@@ -1,0 +1,7 @@
+/* Only suppress transitions during the theme change; artwork animations keep running. */
+html[data-theme-switching],
+html[data-theme-switching] *,
+html[data-theme-switching]::before,
+html[data-theme-switching]::after,
+html[data-theme-switching] *::before,
+html[data-theme-switching] *::after { transition:none !important; }

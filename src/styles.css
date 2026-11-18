@@ -669,17 +669,6 @@ input[type='checkbox'] { accent-color: #ededed; width: 15px; height: 15px; margi
 :where(.guide-section:not(#color), .format-preview) [stroke="rgba(255,255,255,.38)"] { stroke:var(--preview-guide); }
 :where(.guide-section:not(#color), .format-preview) image { filter:var(--preview-image-filter); }
 
-/* Change paint only: do not interrupt the 3D transforms or restart their timelines. */
-:root,
-:where(.family-card, .construction-board, .diagram-stage, .connection-board, .scale-board,
-.motion-rule, .motion-surface, .type-poster, .type-card, .usage-examples figure) {
- transition:background-color 260ms ease, color 260ms ease, border-color 260ms ease;
-}
-:where(.guide-section:not(#color), .format-preview) svg :is(g, path, rect, text) {
- transition:fill 260ms ease, stroke 260ms ease;
-}
-:where(.guide-section:not(#color), .format-preview) image { transition:filter 260ms ease; }
-
 .motion-assembly .assembly-stage { height:220px;min-height:0;margin:0;padding:28px; }
 .motion-assembly .assembly-badge { max-width:100%; }
 .motion-assembly figcaption { align-items:flex-start;gap:12px; }

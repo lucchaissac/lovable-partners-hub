@@ -7,6 +7,7 @@ import { canvasAgent } from './canvasAgent';
 import { sourceIsInline, deferredSourceText, isHtmlSource, sourceLimits, sourcesSchema, sourceUrlSchema, type StudioSource, type SourceReference } from './sources';
 import { sourceFileAccept, textFileSource } from './sourceFiles';
 import { WorkspaceExternalLink } from './WorkspaceExternalLink';
+import {listenForFileDragEnd} from './fileDragLifecycle';
 
 const menuItems = [
   { id: 'images', label: 'Add images', icon: 'image' },
@@ -115,12 +116,7 @@ export function useStudioSources(disabled: boolean, onError: (message: string) =
   const [reading, setReading] = useState(false);
   const [dragging, setDragging] = useState(false);
   const dragDepth = useRef(0);
-  useEffect(() => {
-    const reset = () => { dragDepth.current = 0; setDragging(false); };
-    const escape = (event: KeyboardEvent) => { if (event.key === 'Escape') reset(); };
-    window.addEventListener('dragend', reset); window.addEventListener('drop', reset); window.addEventListener('blur', reset); window.addEventListener('keydown', escape);
-    return () => { window.removeEventListener('dragend', reset); window.removeEventListener('drop', reset); window.removeEventListener('blur', reset); window.removeEventListener('keydown', escape); };
-  }, []);
+  useEffect(() => listenForFileDragEnd(() => { dragDepth.current = 0; setDragging(false); }), []);
   const working = useRef(false);
   const epoch = useRef(0);
   const controller = useRef<AbortController | null>(null);

@@ -46,6 +46,7 @@ import { exportPng, renderPng, exportSource, readReference, visionReference } fr
 import { listAssets, loadAssetCollection, saveAsset, saveAssets } from './storage';
 import './assets.css';
 import {AssetScreenMenu} from './AssetScreenMenu';
+import {listenForFileDragEnd} from '../studio/fileDragLifecycle';
 
 const locationSearch = () => window.location.search;
 
@@ -88,6 +89,7 @@ function AssetPageContent() {
   const [generationPreview,setGenerationPreview]=useState<AssetDocument>();
   const [saveState, setSaveState] = useState(''), [exporting, setExporting] = useState(false);
   const [dragging, setDragging] = useState(false);
+  useEffect(() => listenForFileDragEnd(() => setDragging(false)), []);
   const [loading, setLoading] = useState(!!id || !!requestedBadge);
   useEffect(()=>{
     if(studioWorkspace!=='partners'&&asset?.id&&!loading)window.parent.postMessage({type:studioWorkspace==='tech-blog'?'lovable-tech-asset':studioWorkspace==='lovable'?'lovable-brand-asset':'lovable-community-asset',id:asset.id},window.location.origin);
@@ -369,10 +371,10 @@ function AssetPageContent() {
   };
   const runtime:WorkspaceRuntime={
     title:asset?.title??'Asset',content:null,
-    state:{enabled:studioWorkspace==='lovable'||studioWorkspace==='ambassadors'&&localChat.enabled,messages:assetMessages(asset).filter(message=>messageWorkspaceChat(message)===chatState.active.id),userId:readStudioConfig()?.user?.id,chats:[],activeChatId:chatState.active.id,manageDisabled:busy||!!queued.length,working:busy?generationStage:undefined,error,retryable:!!lastRequest.current,queued},
+    state:{enabled:studioWorkspace==='lovable'||studioWorkspace==='ambassadors'&&localChat.enabled,messages:assetMessages(asset).filter(message=>messageWorkspaceChat(message)===chatState.active.id),userId:readStudioConfig()?.user?.id,chats:[],activeChatId:chatState.active.id,manageDisabled:busy||!!queued.length,working:busy?generationStage:undefined,error:error||loadError,retryable:!!lastRequest.current,queued},
     send:(prompt,visual,sources=[])=>{const request={id:Date.now(),prompt,visual,sources,chatId:chatState.active.id};if(controller.current)setQueued(items=>[...items,request]);else void refine(request);},
     chat:()=>{},
-    action:(action,id)=>{if(action==='stop')stop();else if(action==='retry'&&lastRequest.current)void refine(lastRequest.current);else if(action==='dismiss')setError('');else if(action==='remove')setQueued(items=>items.filter(item=>item.id!==id));},
+    action:(action,id)=>{if(action==='stop')stop();else if(action==='retry'&&lastRequest.current)void refine(lastRequest.current);else if(action==='dismiss'){setError('');setLoadError('');}else if(action==='remove')setQueued(items=>items.filter(item=>item.id!==id));},
 
   };
   const template=communitySettings(asset),templateFormat=asset?.community?.layout==='graphic'?graphicEventFormat:ambassadorFormats.find(format=>format.id===template?.format);
@@ -484,18 +486,18 @@ function AssetPageContent() {
       <Dropdown align="end" items={[{id:'png',label:`.png · ${assetDimensions(asset).width} × ${assetDimensions(asset).height}`,leadingIcon:<Icon name="image" size={16}/>},{id:'source',label:'Editable source',leadingIcon:<Icon name="file-text" size={16}/>}]} onChange={value=>{if(value==='png')void exportImage();else exportSource(asset);}} trigger={<Button variant="primary" disabled={busy||changingTemplate} loading={exporting}>Export</Button>}/>
     </div>
   </div>;
-  return <CommunityRenderErrors.Provider value={communityErrors}><WorkspaceRuntimeContext.Provider value={runtime}><WorkspaceSelectionContext.Provider value={{visual,setVisual}}><div className="workspace-editor asset-app" data-asset data-workspace={studioWorkspace} data-view="editor" style={assetTheme as CSSProperties} data-history={historyVersion} onDragOver={event => { if (!event.defaultPrevented && !(event.target as Element).closest('.we-chat') && event.dataTransfer.types.includes('Files') && !busy) { event.preventDefault(); setDragging(true); } }} onDragLeave={event => { if (!event.currentTarget.contains(event.relatedTarget as Node)) setDragging(false); }} onDrop={event => { if(event.defaultPrevented || (event.target as Element).closest('.we-chat'))return; event.preventDefault(); setDragging(false); void loadImage(event.dataTransfer.files[0]); }}>
+  return <CommunityRenderErrors.Provider value={communityErrors}><WorkspaceRuntimeContext.Provider value={runtime}><WorkspaceSelectionContext.Provider value={{visual,setVisual}}><div className="workspace-editor asset-app" data-asset data-workspace={studioWorkspace} data-view="editor" style={assetTheme as CSSProperties} data-history={historyVersion} onDragOverCapture={event => { if ((event.target as Element).closest('.we-chat')) setDragging(false); }} onDragOver={event => { if (!event.defaultPrevented && !(event.target as Element).closest('.we-chat') && event.dataTransfer.types.includes('Files') && !busy) { event.preventDefault(); setDragging(true); } }} onDragLeave={event => { if (!event.currentTarget.contains(event.relatedTarget as Node)) setDragging(false); }} onDrop={event => { setDragging(false); if(event.defaultPrevented || (event.target as Element).closest('.we-chat'))return; event.preventDefault(); void loadImage(event.dataTransfer.files[0]); }}>
     <input ref={upload} type="file" hidden accept="image/png,image/jpeg,image/webp,video/mp4,video/webm,video/ogg,video/quicktime,.asset.json,.json" aria-label="Upload image, video or editable source" onChange={event => { void loadImage(event.target.files?.[0]); event.target.value = ''; }} />
 
-    {(error||loadError) && <div className="asset-notice" role="alert"><Icon name="circle-alert" size={16} /><span>{error||loadError}</span><Button variant="ghost" size="sm" aria-label="Dismiss error" onClick={() => {setError('');setLoadError('');}} leadingIcon={<Icon name="x" size={16} />} /></div>}
-    {loading ? <div className="asset-empty"><p role="status">Opening your asset…</p></div> : !asset ? <AssetHome reading={reading} onBrowse={() => upload.current?.click()}>
+
+    {loading ? <div className="asset-empty"><p role="status">Opening your asset…</p></div> : !asset ? <div className="we-body asset-workspace"><WorkspaceChat singleAsset/><AssetHome reading={reading} onBrowse={() => upload.current?.click()}>
       {(recentLoading || recent.length > 0) && <AssetRecents loading={recentLoading}>{recent.map(item=><AssetLibraryCard key={item.id} asset={item} onOpen={()=>navigate(`/assets/${item.id}`)}/>)}</AssetRecents>}
-    </AssetHome> : <>
+    </AssetHome></div> : <>
       <div className="we-body asset-workspace"><WorkspaceChat singleAsset preserveSourceTransparency={studioWorkspace!=='partners'} placeholder="Ask Lovable…"/>{studioWorkspace==='ambassadors'?<CommunityCanvas toolbar={canvasToolbar} asset={generationPreview??asset} pages={generationPreview?pages.map(page=>page.id===asset.id?generationPreview:page):pages} generating={busy} busy={busy||addingPage||changingTemplate} zoom={zoom} onZoom={setZoom} onChange={change} onOpen={openCommunityPage} onAdd={(afterId,kind)=>void addCommunityPage(afterId,kind)} onOverview={()=>setVisual(undefined)} onRename={renameCommunityPage} onMove={(pageId,targetId,side)=>void arrangeCommunityPages('move',pageId,targetId,side)} onRemove={pageId=>void arrangeCommunityPages('remove',pageId)} onUndoArrangement={pageArrangement?()=>void arrangeCommunityPages('undo'):undefined}/>:<AssetCanvas toolbar={canvasToolbar} asset={asset} onChange={change} preview={false} busy={busy} zoom={zoom} onZoom={setZoom} />}
         <AssetDesignPanel mobileOpen={designOpen} onClose={()=>setDesignOpen(false)} asset={asset} onChange={change} onImport={() => upload.current?.click()}/>
       </div>
       <div className="asset-export-host" aria-hidden="true"><Artwork ref={exportBoard} asset={reviewCandidate??asset} /></div>
     </>}
-    {dragging && <div className="asset-drop-overlay"><Icon name="upload" size={32} /><strong>Drop your image or video</strong></div>}
+    {dragging && <div className="asset-drop-overlay"><Icon name="upload" size={20} /><strong>Drop your image or video</strong></div>}
   </div></WorkspaceSelectionContext.Provider></WorkspaceRuntimeContext.Provider></CommunityRenderErrors.Provider>;
 }

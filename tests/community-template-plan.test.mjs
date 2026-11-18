@@ -7,6 +7,18 @@ import {communityChatPlugin} from '../server/communityChat.mjs';
 const request={prompt:'Create a new Community poster',title:'Event',width:1080,height:1080,startingTemplate:true,blocks:[],sources:[],conversation:[]};
 const design={title:'Build together',template:'event-square',width:null,height:null,background:'ink',fields:[{slot:'city',text:'Paris'},{slot:'title',text:'Build something\nlovable.'},{slot:'eventFooter',text:'Meet your local Lovable community.'}],image:null,partners:[],headlineFont:null};
 const intent={summary:'Created the approved composition.',replaceCurrent:true,reviews:[],badgeBatch:null,designs:[design],changes:[],additions:[],removeIds:[],mediaRequests:[]};
+test('pixel artwork is visible on dark, pink and light proposals without losing event facts',()=>{
+ const value={...intent,designs:['ink','#ff0178','white'].map(background=>({...design,background,template:'editorial-pixel',image:{sourceId:background==='#ff0178'?'library-pixel-bloom':'library-pixel-abstraction-dark',crop:null},fields:[{slot:'city',text:'Athens'},{slot:'title',text:'Vibe & build'},{slot:'details',text:'18 November'},{slot:'footer',text:'Vol. IX'}]}))};
+ const {plan,templatePlan}=compileTemplatePlan(value,request);
+ assert.equal(plan.designs.length,3);
+ for(const [index,d] of plan.designs.entries()){
+  const light=index===2;
+  assert.equal(d.elements.find(e=>e.kind==='image').sourceId,index===1?'library-pixel-bloom':light?'library-pixel-abstraction-dark':'library-pixel-abstraction');
+  assert.equal(d.elements.find(e=>e.asset==='community-logo').color,light?'dark':'light');
+  assert.ok(d.elements.some(e=>e.text==='18 November'));assert.ok(d.elements.some(e=>e.text==='Vol. IX'));
+ }
+ assert.deepEqual(compileTemplatePlan(templatePlan,request).plan,plan);
+});
 test('the approved square starter is compiled deterministically, without model coordinates',()=>{
  const {plan}=compileTemplatePlan(intent,request),d=plan.designs[0],by=key=>d.elements.find(e=>e.id===`d0-${key}`);
  assert.deepEqual([d.width,d.height],[1080,1080]);assert.equal(plan.replaceCurrent,true);
@@ -16,6 +28,10 @@ test('the approved square starter is compiled deterministically, without model c
  assert.deepEqual(d.elements.map(e=>e.id),['d0-logo','d0-city','d0-title','d0-globe','d0-glow','d0-eventFooter']);
  assert.equal(by('globe').frame.width,1340);assert.equal(by('glow').frame.rotation,-18.2698);
  assert.equal(intent.designs[0].width,null);
+});
+test('colored globe scenes and three repeated globe proposals require a corrected plan',()=>{
+ assert.throws(()=>compileTemplatePlan({...intent,designs:[{...design,background:'#ff0178'}]},request),/Never place the heart\/globe/);
+ assert.throws(()=>compileTemplatePlan({...intent,designs:['ink','white','beige'].map(background=>({...design,background}))},request),/repeat the same visual/);
 });
 test('Málaga reuses the latest manual artwork and stacked sponsor marks',()=>{
  const value=structuredClone(intent);Object.assign(value.designs[0],{template:'editorial-materials',background:'beige',fields:[{slot:'city',text:'Málaga'},{slot:'title',text:'Let’s\nbuild it.'},{slot:'details',text:'11 December\n19:00–22:00'}],image:{sourceId:'library-mediterranean-materials',crop:null},partners:[{sourceId:'library-malaga-startups',crop:null},{sourceId:'library-startup-oasis',crop:null}]});
@@ -102,4 +118,29 @@ test('reusing a prepared photo by its canvas layer ID resolves the master and ap
  assert.equal(result.templatePlan.designs[0].template,'editorial-photo');assert.equal(d.background,'white');
  assert.equal(d.elements.find(e=>e.kind==='image').sourceId,'library-flash-light');assert.deepEqual(result.plan.reviews,[]);
  assert.throws(()=>compileTemplatePlan(value,{...base,blocks:[{...base.blocks[0],alt:'Unreviewed poster'}]}),/reviewed photograph/);
+});
+test('an uncropped off-brand poster becomes a complete native replacement instead of a failed request',()=>{
+ const source={id:'attachment-0',kind:'image',name:'Vibe & build'};
+ const review={sourceId:source.id,verdict:'off-brand',diagnosis:'The source uses an unrelated neon identity.',issues:[{area:'identity',problem:'Community signature is missing.',correction:'Use the full original Community lockup.'}],keep:['Event name and edition'],remove:[],retainedVisuals:[],uncertainties:[]};
+ for(const crop of [null,{x:0,y:0,width:1,height:1}]){
+  const value=structuredClone(intent);value.reviews=[review];Object.assign(value.designs[0],{fields:[{slot:'title',text:'Vibe & build'},{slot:'eventFooter',text:'Vol. IX'}],image:{sourceId:source.id,crop}});
+  const input={...request,sources:[source]},result=compileTemplatePlan(value,input);
+  assert.equal(result.templatePlan.designs[0].image,null);
+  assert.equal(result.plan.designs[0].elements.some(e=>e.kind==='image'&&e.sourceId===source.id),false);
+  assert.ok(result.plan.designs[0].elements.some(e=>e.kind==='text'&&e.text.replace(/\s+/g,' ')==='Vibe & build'));
+  assert.ok(result.plan.designs[0].elements.some(e=>e.asset==='community-logo'));
+  assert.match(result.plan.summary,/omitted/);
+  assert.deepEqual(compileTemplatePlan(result.templatePlan,input).plan,result.plan);
+ }
+});
+test('a valid reviewed crop stays intact and partner marks cannot become the main illustration',()=>{
+ const value=structuredClone(intent);value.designs[0].image={sourceId:'library-malaga-startups',crop:null};
+ const d=compileTemplatePlan(value,request).plan.designs[0];
+ assert.equal(d.visualTreatment,'brand-scene');
+ assert.ok(d.elements.some(e=>e.id.includes('partner-')&&e.sourceId==='library-malaga-startups'));
+ const crop={x:.05,y:.6,width:.9,height:.25};
+ value.designs[0].image={sourceId:'attachment-0',crop};
+ value.reviews=[{sourceId:'attachment-0',verdict:'needs-refinement',diagnosis:'Keep the clean photo crop.',issues:[{area:'identity',problem:'Wrong logo.',correction:'Use Community.'}],keep:['Photograph'],remove:['Old identity'],retainedVisuals:[],uncertainties:[]}];
+ const result=compileTemplatePlan(value,{...request,sources:[{id:'attachment-0',kind:'image',name:'Poster'}]});
+ assert.deepEqual(result.plan.designs[0].elements.find(e=>e.kind==='image'&&e.sourceId==='attachment-0').crop,crop);
 });

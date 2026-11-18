@@ -133,7 +133,7 @@
 .hcs-source-text {white-space:pre-wrap;overflow-wrap:anywhere;font:13px/1.5 var(--ui-font);}
 .hcs-chat-notice {font:13px/1.4 var(--ui-font);margin:0 0 var(--ui-space-2);color:var(--ui-text-secondary);}
 .we-chat-conversation[data-source-drag] {position:relative;}
-.hcs-chat-drop {position:absolute;inset:var(--ui-space-3);z-index:100;display:flex;gap:var(--ui-space-2);align-items:center;justify-content:center;border:1px solid var(--ui-border);border-radius:var(--ui-radius-lg);background:var(--ui-bg);pointer-events:none;}
+.hcs-chat-drop {position:absolute;inset:var(--ui-space-3);z-index:100;display:flex;gap:var(--ui-space-2);align-items:center;justify-content:center;border:0;outline:0;font-weight:600;border-radius:var(--ui-radius-lg);background:var(--ui-bg);pointer-events:none;}
 .hcs-widget-label>span {max-width:240px;overflow:hidden;text-overflow:ellipsis;}
 
 /* Only the plus button owns its hit area; empty insertion space selects the section. */

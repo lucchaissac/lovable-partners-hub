@@ -50,7 +50,7 @@ test('planner has fixed pricing model, bounded output, strict native JSON and no
 test('an image-only starter request and a mixed-plan retry cannot mix full designs and old-layer edits',()=>{
  const payload={prompt:'Refine the current asset using the attached reference. Preserve its essential content.',startingTemplate:true,sources:[{id:'attachment-0',kind:'image'}]};
  const body=openAICommunityBody({payload,images:[]}),properties=body.text.format.schema.properties;
- assert.equal(properties.replaceCurrent.const,true);assert.equal(properties.designs.minItems,1);
+ assert.equal(properties.replaceCurrent.const,true);assert.equal(properties.designs.minItems,3);assert.equal(properties.designs.maxItems,3);
  for(const key of ['changes','additions','removeIds'])assert.equal(properties[key].maxItems,0);
  assert.match(body.instructions,/essential facts of the ATTACHED artwork/);
  const selected=openAICommunityBody({payload:{...payload,context:'HTML_SELECTION {"blockIds":["photo"]}'},images:[]});
@@ -60,6 +60,17 @@ test('an image-only starter request and a mixed-plan retry cannot mix full desig
  const retry=openAICommunityBody({payload:{prompt:'Rebuild this poster',sources:[]},images:[]},correction);
  assert.equal(retry.text.format.schema.properties.changes.maxItems,0);
  assert.match(retry.instructions,/Incorporate any meaningful corrections/);
+});
+test('each image is labelled next to its pixels and source posters retain readable detail',()=>{
+ const images=[{role:'Approved gallery master',reference:'event-square',data:'master'},{role:'Current editable canvas, not a brand master',sourceId:'current-canvas',data:'canvas'},{role:'User attachment',sourceId:'attachment-0',data:'poster'}];
+ const content=openAICommunityBody({payload:{prompt:'Refine this'},images}).input[0].content;
+ for(let i=0;i<images.length;i++){
+  const label=JSON.parse(content[1+i*2].text);
+  assert.equal(label.role,images[i].role);assert.equal(label.sourceId,images[i].sourceId);
+  assert.equal(content[2+i*2].image_url,images[i].data);
+ }
+ assert.match(content[1].text,/not facts/);assert.match(content[5].text,/Preserve these facts/);
+ assert.equal(content[2].detail,'low');assert.equal(content[6].detail,'high');
 });
 test('mixed planner output is corrected into a complete editable replacement through the provider flow',async()=>{
  const request={prompt:'Rebuild this poster',title:'Event',width:1080,height:1080,startingTemplate:true,blocks:[{id:'old-title',kind:'text',text:'Build something lovable.'}],sources:[],conversation:[]};

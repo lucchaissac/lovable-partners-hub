@@ -10,7 +10,7 @@ const picture=z.object({sourceId:id,crop:imageCropSchema.nullable()}).strict();
 export const communityTemplateIds=Object.keys(communityTemplateGeometry);
 export const templatePlanSchema=z.object({
  summary:z.string().min(1).max(1200),replaceCurrent:z.boolean(),reviews:z.array(reviewSchema).max(7),badgeBatch:chatPlanSchema.shape.badgeBatch,
- designs:z.array(z.object({title:z.string().min(1).max(100),template:z.enum(communityTemplateIds),width:z.number().int().min(200).max(2560).nullable(),height:z.number().int().min(200).max(2560).nullable(),background:z.enum(['ink','white','beige']),
+ designs:z.array(z.object({title:z.string().min(1).max(100),template:z.enum(communityTemplateIds),width:z.number().int().min(200).max(2560).nullable(),height:z.number().int().min(200).max(2560).nullable(),background:z.enum(['ink','white','beige','#ff0178']),
   fields:z.array(z.object({slot:z.string().min(1).max(40),text:z.string().max(500)}).strict()).max(20),
   image:picture.nullable(),partners:z.array(picture).max(2),headlineFont:z.enum(['Camera Plain','Bodoni Moda','Pixelify Sans','Anton']).nullable(),
  }).strict()).max(6),
@@ -37,7 +37,7 @@ function designFromTemplate(spec,index){
  const t=communityTemplateGeometry[spec.template],isPrint=['banner','poster'].includes(spec.template);
  const width=spec.width??(isPrint?Math.round(t.width*1000/Math.max(t.width,t.height)):t.width),height=spec.height??(isPrint?Math.round(t.height*1000/Math.max(t.width,t.height)):t.height);
  const scale=width/t.width,fields=Object.fromEntries(spec.fields.map(f=>[f.slot,sentence(f.text.trim())]));
- const dark=spec.background==='ink',ink=dark?'#f7f4ed':'#1b1b1b',elements=[];
+ const dark=spec.background==='ink'||spec.background==='#ff0178',ink=dark?'#f7f4ed':'#1b1b1b',elements=[];
  const image=spec.image,photo=image&&communityMediaById.get(image.sourceId)?.category==='Photos'||spec.template==='editorial-photo';
  let visualPlaced=false;
  const layers=scaledLayers(spec.template,width,height);
@@ -96,9 +96,35 @@ export function compileTemplatePlan(value,request){
   return prepared?{...picture,sourceId:prepared.id}:picture;
  };
  intent.designs=intent.designs.map(spec=>({...spec,image:preparedPicture(spec.image),partners:spec.partners.map(preparedPicture)}));
+ // A reviewed poster is reference material, not a ready-to-use background.
+ // Preserve the extracted native copy rather than failing the whole redesign
+ // when the planner supplies no useful crop. Never invent crop coordinates.
+ const omitted=new Set();
+ const usablePicture=pic=>{
+  if(!pic)return null;
+  const review=intent.reviews.find(review=>review.sourceId===pic.sourceId);
+  if(review&&['off-brand','needs-refinement'].includes(review.verdict)&&(!pic.crop||pic.crop.width*pic.crop.height>.8)){
+   omitted.add(pic.sourceId);return null;
+  }
+  return pic;
+ };
+ intent.designs=intent.designs.map(spec=>{
+  let image=usablePicture(spec.image),partners=spec.partners.map(usablePicture).filter(Boolean);
+  const mark=image&&(communityMediaById.get(image.sourceId)?.kind==='partner-logo'||intent.mediaRequests.some(media=>media.id===image.sourceId&&media.operation==='glyph'));
+  if(mark){if(!partners.some(pic=>pic.sourceId===image.sourceId)&&partners.length<2)partners.push(image);image=null;}
+  return {...spec,image,partners};
+ });
+ if(omitted.size){
+  intent.reviews=intent.reviews.map(review=>omitted.has(review.sourceId)?{...review,remove:[...review.remove,'The complete source poster image; its essential information is rebuilt as editable text.'].slice(-8)}:review);
+  intent.summary=(intent.summary+' The complete source poster image was omitted; its information is rebuilt with editable text and the original Community identity.').slice(0,1200);
+ }
  // Prepared full-bleed photographs determine contrast, regardless of the UI theme.
  intent.designs=intent.designs.map(spec=>{
   const source=spec.image?.sourceId;
+  if(['library-pixel-abstraction','library-pixel-abstraction-dark'].includes(source)){
+   const light=spec.background==='white'||spec.background==='beige';
+   return {...spec,image:{...spec.image,sourceId:light?'library-pixel-abstraction-dark':'library-pixel-abstraction'}};
+  }
   if(source==='library-flash-dark')return {...spec,background:'ink'};
   if(['library-flash-light','library-malaga-makers'].includes(source))return {...spec,background:spec.background==='beige'?'beige':'white'};
   return spec;
@@ -121,6 +147,14 @@ export function compileTemplatePlan(value,request){
   const fields=spec.fields.map(field=>['eventFooter','footer'].includes(field.slot)&&['editorial-photo','editorial-collage','editorial-nature'].includes(approved)?{...field,slot:'subtitle'}:field);
   return {...spec,template:approved,fields};
  });
+ if(intent.designs.some(spec=>spec.background==='#ff0178'&&!spec.image&&communityTemplateGeometry[spec.template].layers.some(layer=>layer.kind==='globe'))){
+  throw Error('Never place the heart/globe scene on a colored background. For pink use a prepared abstract artwork with its editorial layout, keeping the same event facts.');
+ }
+ if(intent.designs.length>=3){
+  const directions=new Set(intent.designs.map(spec=>spec.image?.sourceId?.replace(/-(dark|light)$/,'')??spec.template));
+  const onlyGlobe=intent.designs.every(spec=>!spec.image&&communityTemplateGeometry[spec.template].layers.some(layer=>layer.kind==='globe'));
+  if(directions.size<2||onlyGlobe)throw Error('These proposals repeat the same visual. Reuse distinct prepared templates: editorial-photo with library-flash-light or library-flash-dark, editorial-collage with library-paper-collage, and editorial-pixel with library-pixel-abstraction. Keep every supplied event fact in each proposal.');
+ }
  const designs=intent.designs.map(designFromTemplate),edits=[...intent.changes.map(c=>changedElement(c,request)),...intent.additions];
  const elements=[...designs.flatMap(d=>d.elements),...edits];
  const reviews=intent.reviews.filter(review=>request.sources.some(s=>s.kind==='image'&&s.id===review.sourceId)||review.sourceId==='current-canvas'&&request.preview).map(review=>({...review,retainedVisuals:elements.filter(e=>e.kind==='image'&&e.sourceId===review.sourceId).map(e=>({elementId:e.id,sourceId:e.sourceId,kind:e.id.includes('partner-')?'partner-logo':'illustration',reason:'Retained useful visual from the supplied source.'}))}));

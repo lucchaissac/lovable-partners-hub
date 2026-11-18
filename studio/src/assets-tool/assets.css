@@ -64,7 +64,7 @@
 .asset-notice > span { flex: 1; }
 .asset-empty { display: grid; place-items: center; flex: 1; }
 .asset-export-host { position: fixed; top: 0; left: -30000px; pointer-events: none; }
-.asset-drop-overlay { position: absolute; inset: var(--ui-space-2); z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--ui-space-4); background: color-mix(in srgb, var(--ui-bg) 95%, transparent); outline: 2px solid var(--ui-accent); border-radius: var(--ui-space-4); pointer-events: none; color: var(--ui-accent); }
+.asset-drop-overlay { position: absolute; inset: var(--ui-space-2); z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--ui-space-4); background: color-mix(in srgb, var(--ui-bg) 95%, transparent); outline: 0; border: 0; border-radius: var(--ui-space-4); pointer-events: none; color: var(--ui-accent); }
 .asset-generating-overlay { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle, color-mix(in srgb, var(--ui-accent) 35%, transparent) 1px, transparent 1.5px) 0 0 / 16px 16px, color-mix(in srgb, var(--ui-bg) 70%, transparent); overflow: hidden; }
 .asset-generating-overlay::after { content: ''; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 20%, color-mix(in srgb, var(--ui-bg) 85%, transparent) 50%, transparent 80%); animation: asset-wave 2.5s ease-in-out infinite; }
 @keyframes asset-wave { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
@@ -174,3 +174,5 @@
 /* Community generation leaves the artwork visible under a dense, static dot grid. */
 .asset-app[data-workspace="ambassadors"] .asset-generating-overlay { background: radial-gradient(circle, rgb(var(--studio-fg-rgb) / 24%) .8px, transparent 1px) 0 0 / 8px 8px; }
 .asset-app[data-workspace="ambassadors"] .asset-generating-overlay::after { content: none; animation: none; }
+
+.asset-drop-overlay strong { font-weight: 600; }

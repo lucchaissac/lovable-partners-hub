@@ -519,9 +519,9 @@
 .studio-prototype-list .ui-table-row-actions { right: var(--ui-space-6); }
 
 .studio-page { position: relative; }
-.studio-file-drop-overlay { position: absolute; inset: 12px; z-index: 50; display: grid; place-items: center; pointer-events: none; border: 2px solid var(--ui-border-strong, var(--ui-border)); border-radius: var(--ui-radius-composer); background: color-mix(in srgb, var(--ui-bg) 92%, transparent); }
+.studio-file-drop-overlay { position: absolute; inset: 12px; z-index: 50; display: grid; place-items: center; pointer-events: none; border: 0; outline: 0; border-radius: var(--ui-radius-composer); background: color-mix(in srgb, var(--ui-bg) 92%, transparent); }
 .studio-file-drop-overlay > div { display: flex; align-items: center; flex-direction: column; gap: var(--ui-space-2); padding: var(--ui-space-6); }
-.studio-file-drop-overlay strong { font-weight: 500; }
+.studio-file-drop-overlay strong { font-weight: 600; }
 .studio-file-drop-overlay span { color: var(--ui-text-muted); font-size: var(--ui-fs-small); }
 
 .shell .studio-play { position: relative; inset: auto; height: 100%; z-index: auto; }

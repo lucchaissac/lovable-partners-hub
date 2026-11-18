@@ -58,3 +58,10 @@
 .community-page-grid>.ui-dropdown-root{display:flex;min-width:0;width:100%}
 .asset-app .community-page-grid .community-page-add-tile{width:100%;min-width:0;flex:1}
 .asset-app .community-page-strip .community-page-add-tile{width:64px;min-width:64px}
+.asset-playback-controls{display:flex;align-items:center;gap:2px;margin-left:6px;padding-left:6px;border-left:1px solid var(--ui-border)}
+.community-pages-footer .asset-playback-progress{width:88px;min-width:48px;margin-inline:8px}
+.asset-playback-stack{justify-content:center}
+.asset-playback-preview{position:relative;overflow:hidden;cursor:pointer;isolation:isolate}
+.asset-playback-preview>[data-playback-from],.asset-playback-preview>[data-playback-to]{position:absolute;inset:0;pointer-events:none}
+.asset-playback-preview .asset-artwork{background-color:transparent!important}
+@container lovable-preview (max-width:680px){.community-pages-footer .community-page-controls{flex-wrap:wrap}.community-pages-footer .asset-playback-progress{display:block;width:64px}}

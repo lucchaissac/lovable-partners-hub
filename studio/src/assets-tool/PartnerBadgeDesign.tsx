@@ -3,10 +3,12 @@ import { useEffect, useRef, useState } from 'react';
 import { Button, Icon, Input } from '@asset/ui';
 import { badgeFormats, badgeFormatName, type PartnerBadgeSettings } from './partnerBadgeSettings';
 import { importPartnerLogo, renderPartnerBadge } from './partnerBadge';
+import { ImageAppearanceControls } from './ImageAppearanceControls';
+import type { HtmlBlock } from '../studio/htmlEditorModel';
 import './partner-badge.css';
 
 type RenderedBadge = Awaited<ReturnType<typeof renderPartnerBadge>>;
-export function PartnerBadgeDesign({settings,src,locked,onChange,onClose}:{settings:PartnerBadgeSettings;src:string;locked:boolean;onChange:(settings:PartnerBadgeSettings,image:RenderedBadge)=>void;onClose:()=>void}) {
+export function PartnerBadgeDesign({block,settings,src,locked,onChange,onAppearanceChange,onClose}:{block:Extract<HtmlBlock,{kind:'image'}>;settings:PartnerBadgeSettings;src:string;locked:boolean;onChange:(settings:PartnerBadgeSettings,image:RenderedBadge)=>void;onAppearanceChange:(block:Extract<HtmlBlock,{kind:'image'}>)=>void;onClose:()=>void}) {
   const [draft,setDraft]=useState(settings),[busy,setBusy]=useState(false),[uploading,setUploading]=useState(false),[error,setError]=useState('');
   const input=useRef<HTMLInputElement>(null),generation=useRef(0),latest=useRef(draft);latest.current=draft;
   const signature=JSON.stringify(settings);
@@ -51,6 +53,6 @@ export function PartnerBadgeDesign({settings,src,locked,onChange,onClose}:{setti
         {draft.partnerImage&&<Button variant="ghost" onClick={()=>void update({...draft,partnerImage:'',logoName:undefined})}>Remove logo</Button>}
         <p>SVG, PNG or JPG. Plain backgrounds are removed automatically. Your logo is centered and fitted.</p>
       </div>
-    </fieldset>{error&&<p className="partner-badge-error" role="alert">{error}</p>}</div>
+    </fieldset><ImageAppearanceControls block={block} onChange={onAppearanceChange} locked={locked||uploading||busy} label="Badge"/>{error&&<p className="partner-badge-error" role="alert">{error}</p>}</div>
   </aside>;
 }

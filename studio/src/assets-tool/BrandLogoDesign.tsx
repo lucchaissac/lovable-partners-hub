@@ -3,6 +3,7 @@ import {useRef,useState,useEffect} from 'react';
 import {Button,Icon,Input} from '@asset/ui';
 import type {HtmlBlock} from '../studio/htmlEditorModel';
 import {importPartnerLogo} from './partnerBadge';
+import {ImageAppearanceControls} from './ImageAppearanceControls';
 import './partner-badge.css';
 
 type ImageBlock=Extract<HtmlBlock,{kind:'image'}>;
@@ -10,7 +11,7 @@ type ImageBlock=Extract<HtmlBlock,{kind:'image'}>;
 export function fittedBrandLogo(block:ImageBlock,src:string,name:string,width:number,height:number):ImageBlock{
  const frame=block.editor??{},w=frame.widthPx??306,h=frame.height??136;
  const scale=Math.min(w/width,h/height),nextW=width*scale,nextH=height*scale;
- return {...block,value:{...block.value,src,alt:name,crop:undefined,playIcon:undefined},editor:{...frame,x:(frame.x??0)+(w-nextW)/2,y:(frame.y??0)+(h-nextH)/2,widthPx:nextW,height:nextH,appearance:{...frame.appearance,imageFit:'contain',radius:0}}};
+ return {...block,value:{...block.value,src,alt:name,crop:undefined,playIcon:undefined},editor:{...frame,x:(frame.x??0)+(w-nextW)/2,y:(frame.y??0)+(h-nextH)/2,widthPx:nextW,height:nextH,appearance:{imageFit:'contain',...frame.appearance}}};
 }
 export function BrandLogoControls({block,onChange,locked=false}:{block:ImageBlock;onChange:(block:ImageBlock)=>void;locked?:boolean}){
  const input=useRef<HTMLInputElement>(null),[busy,setBusy]=useState(false),[error,setError]=useState('');
@@ -36,6 +37,7 @@ export function BrandLogoControls({block,onChange,locked=false}:{block:ImageBloc
   <input ref={input} type="file" hidden accept="image/svg+xml,image/png,image/jpeg,image/webp" aria-label="Upload collaboration logo" onChange={event=>void upload(event.target.files?.[0])}/>
   <Button variant="neutral" leadingIcon={<Icon name="upload" size={16}/>} onClick={()=>input.current?.click()}>{busy?'Preparing logo…':'Replace partner logo'}</Button>
   <div className="brand-logo-position">{([['x','X'],['y','Y'],['widthPx','Width'],['height','Height']] as const).map(([key,label])=><label key={key} className="partner-badge-field"><span>{label}</span><Input inputSize="sm" type="number" step={1} aria-label={`Logo ${label.toLowerCase()}`} value={Math.round((block.editor?.[key]??0)*100)/100} onChange={event=>updateFrame(key,event.target.valueAsNumber)}/></label>)}</div>
+  <ImageAppearanceControls block={block} onChange={onChange} locked={locked||busy} label="Logo"/>
   <p>SVG, PNG or JPG. Trimmed, converted to white and fitted proportionally.</p>
   {error&&<p className="partner-badge-error" role="alert">{error}</p>}
  </fieldset>;

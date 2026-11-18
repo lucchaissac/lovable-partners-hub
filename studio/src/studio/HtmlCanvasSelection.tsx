@@ -485,12 +485,12 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
     }} onClose={()=>{setDesign(false);host.closePanel();}}/>,host.panelHost)}
     {selectionDesignActive&&one?.kind==='image'&&(studioWorkspace==='tech-blog'||studioWorkspace==='ambassadors')&&isTechArtwork(one)&&host.panelHost&&host.activeId==='html-selection'&&createPortal(<TechArtworkDesign key={one.id} block={one} locked={locked} onChange={changeBlock} onClose={()=>{setDesign(false);host.closePanel();}}/>,host.panelHost)}
     {selectionDesignActive&&one?.kind==='image'&&one.brandRole==='partner'&&host.panelHost&&host.activeId==='html-selection'&&createPortal(<BrandLogoDesign key={one.id} block={one} locked={locked} onChange={changeBlock} onClose={()=>{setDesign(false);host.closePanel();}}/>,host.panelHost)}
-    {selectionDesignActive&&one?.kind==='image'&&one.badge&&host.panelHost&&host.activeId==='html-selection'&&createPortal(<PartnerBadgeDesign key={one.id} settings={one.badge} src={one.value.src} locked={locked}
+    {selectionDesignActive&&one?.kind==='image'&&one.badge&&host.panelHost&&host.activeId==='html-selection'&&createPortal(<PartnerBadgeDesign key={one.id} block={one} settings={one.badge} src={one.value.src} locked={locked} onAppearanceChange={changeBlock}
       onChange={(badge:PartnerBadgeSettings,image)=>{
         const current=source.current.pages.flatMap(page=>page.sections.flatMap(section=>section.columns.flat())).find(block=>block.id===one.id);
         if(current?.kind!=='image'||current.editor?.locked)return;
         const width=current.editor?.widthPx||bounds?.width||320,ratio=image.width/image.height;
-        changeBlock({...current,badge,value:{...current.value,src:image.src,alt:badgeFormatName(badge.format),crop:undefined,playIcon:undefined},editor:{...current.editor,widthPx:width,height:Math.max(12,Math.min(3000,width/ratio)),appearance:{imageFit:'contain'}}});
+        changeBlock({...current,badge,value:{...current.value,src:image.src,alt:badgeFormatName(badge.format),crop:undefined,playIcon:undefined},editor:{...current.editor,widthPx:width,height:Math.max(12,Math.min(3000,width/ratio)),appearance:{imageFit:'contain',...current.editor?.appearance}}});
       }} onClose={()=>{setDesign(false);host.closePanel();}}/>,host.panelHost)}
     {selectionDesignActive&&multiDesign&&host.panelHost&&host.activeId==='html-selection'&&createPortal(<div className="hcs-ui" style={{height:'100%',display:'contents'}}><PresentationElementDesign
       shape={{id:ids.join('-'),kind:members[0].kind==='shape'?members[0].shape:members[0].kind,width:bounds?.width||100,height:bounds?.height||100,appearance:blockAppearance(members[0])}}

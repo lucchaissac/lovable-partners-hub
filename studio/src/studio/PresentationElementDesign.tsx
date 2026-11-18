@@ -121,14 +121,10 @@ export function PresentationElementAdvanced({id,value,locked=false,onChange,padd
   </fieldset></details>;
 }
 
-export function PresentationElementDesign({ shape, label, locked, mixed = {}, multiple = false, onChange, onReplace = undefined as undefined | (()=>void), onUndo = undefined, onRedo = undefined, absolutePosition = false, onAbsolutePosition = undefined as undefined | ((absolute: boolean) => void), resizeWithSection = true, onResizeWithSection = undefined as undefined | ((follow: boolean) => void), onSpacingPreview=undefined as undefined | ((kind:'padding'|'after'|null)=>void), spacingAfter=0, onSpacingAfter=undefined as undefined | ((value:number)=>void), onFillImage=undefined as undefined | (()=>void), onClose }) {
-  const value = studioShapeAppearance(shape);
-  const defaults = studioShapeAppearance({ kind: shape.kind });
-  const changed = Object.keys(value).some(key => value[key] !== defaults[key]);
-  return <aside id="html-element-design" className="hcs-design-design-panel" aria-label="Shape design" onKeyDown={event => { if ((onUndo || onRedo) && (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'z') { event.preventDefault(); event.stopPropagation(); (event.shiftKey ? onRedo : onUndo)?.(); return; } if (event.key === 'Escape' && !event.defaultPrevented) { event.preventDefault(); event.stopPropagation(); onClose(); } }}>
-    <DesignPanelHeader title={label} locked={locked} closeLabel="Close shape design" onClose={onClose}/>
-    <div className="hcs-design-design-body">
-      <fieldset disabled={locked} className="hcs-design-design-fields" aria-label="Shape appearance">{shape.kind==="image"&&!multiple&&<div className="hcs-design-design-section" style={{display:"grid",gap:"var(--ui-space-3)",paddingBottom:"var(--ui-space-4)"}}><span>Image</span><img src={shape.src} alt={label} style={{width:"100%",height:120,objectFit:"contain",background:"var(--ui-bg-subtle)",borderRadius:"var(--ui-radius-section)"}}/><Asset.Button variant="neutral" disabled={locked} leadingIcon={<Asset.Icon name="image" size={16}/>} onClick={onReplace}>Replace image</Asset.Button></div>}
+/** Shared appearance fields for native elements and specialized image assets. */
+export function PresentationElementAppearanceFields({shape,label,locked=false,mixed={},onChange,onFillImage=undefined as undefined | (()=>void)}) {
+  const value=studioShapeAppearance(shape);
+  return <>
         {shape.kind !== "image" && <div className="hcs-design-design-row"><span>{['text', 'line'].includes(shape.kind) ? 'Color' : 'Fill'}</span><StudioShapeColor label={shape.kind === "text" ? "Text color" : "Shape fill"} value={value.fill} mixed={mixed.fill} disabled={locked} onChange={fill => onChange({ fill })} /></div>}
         {['text','image'].includes(shape.kind)&&<div className="hcs-design-design-row"><span>Background</span><StudioShapeColor label="Element background" value={value.background??'transparent'} mixed={mixed.background} disabled={locked} onChange={background=>onChange({background})}/></div>}
         {shape.kind==='image'&&<div className="hcs-design-design-row"><span>Content</span><Asset.Dropdown value={value.imageVisible===false?'color':'image'} items={[{id:'image',label:'Image'},{id:'color',label:'Color'}]} onChange={mode=>onChange({imageVisible:mode==='image',...(mode==='color'&&!value.background?{background:'var(--ui-bg-subtle)'}:{})})} trigger={<Asset.TriggerField aria-label="Image content" disabled={locked}>{value.imageVisible===false?'Color':'Image'}</Asset.TriggerField>}/></div>}
@@ -143,6 +139,18 @@ export function PresentationElementDesign({ shape, label, locked, mixed = {}, mu
           <div className="hcs-design-design-row"><span>Color</span><StudioShapeColor label="Shape border color" value={value.borderColor} disabled={locked} onChange={borderColor => onChange({ borderColor })} /></div>
         </div>
         <div className="hcs-design-design-row hcs-design-design-section"><span>Shadow</span><Asset.Dropdown value={value.shadow} align="end" listHeight="auto" items={[{ id: 'none', label: 'None' }, { id: 'soft', label: 'Soft' }, { id: 'strong', label: 'Strong' }]} onChange={shadow => onChange({ shadow })} trigger={<Asset.TriggerField className="hcs-design-design-shadow" aria-label="Shape shadow" disabled={locked} trailingIcon={<Asset.Icon name="chevron-down" size={14} />}>{value.shadow === 'strong' ? 'Strong' : value.shadow === 'soft' ? 'Soft' : 'None'}</Asset.TriggerField>} /></div></>}
+  </>;
+}
+
+export function PresentationElementDesign({ shape, label, locked, mixed = {}, multiple = false, onChange, onReplace = undefined as undefined | (()=>void), onUndo = undefined, onRedo = undefined, absolutePosition = false, onAbsolutePosition = undefined as undefined | ((absolute: boolean) => void), resizeWithSection = true, onResizeWithSection = undefined as undefined | ((follow: boolean) => void), onSpacingPreview=undefined as undefined | ((kind:'padding'|'after'|null)=>void), spacingAfter=0, onSpacingAfter=undefined as undefined | ((value:number)=>void), onFillImage=undefined as undefined | (()=>void), onClose }) {
+  const value = studioShapeAppearance(shape);
+  const defaults = studioShapeAppearance({ kind: shape.kind });
+  const changed = Object.keys(value).some(key => value[key] !== defaults[key]);
+  return <aside id="html-element-design" className="hcs-design-design-panel" aria-label="Shape design" onKeyDown={event => { if ((onUndo || onRedo) && (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'z') { event.preventDefault(); event.stopPropagation(); (event.shiftKey ? onRedo : onUndo)?.(); return; } if (event.key === 'Escape' && !event.defaultPrevented) { event.preventDefault(); event.stopPropagation(); onClose(); } }}>
+    <DesignPanelHeader title={label} locked={locked} closeLabel="Close shape design" onClose={onClose}/>
+    <div className="hcs-design-design-body">
+      <fieldset disabled={locked} className="hcs-design-design-fields" aria-label="Shape appearance">{shape.kind==="image"&&!multiple&&<div className="hcs-design-design-section" style={{display:"grid",gap:"var(--ui-space-3)",paddingBottom:"var(--ui-space-4)"}}><span>Image</span><img src={shape.src} alt={label} style={{width:"100%",height:120,objectFit:"contain",background:"var(--ui-bg-subtle)",borderRadius:"var(--ui-radius-section)"}}/><Asset.Button variant="neutral" disabled={locked} leadingIcon={<Asset.Icon name="image" size={16}/>} onClick={onReplace}>Replace image</Asset.Button></div>}
+        <PresentationElementAppearanceFields shape={shape} label={label} locked={locked} mixed={mixed} onChange={onChange} onFillImage={onFillImage}/>
         {(onAbsolutePosition || onSpacingAfter || (shape.kind === 'image' && onResizeWithSection)) && <PresentationElementAdvanced id={shape.id??label} value={value} locked={locked} onChange={onChange} padding={shape.kind!=='line'} onSpacingPreview={onSpacingPreview} spacingAfter={spacingAfter} onSpacingAfter={onSpacingAfter} absolutePosition={absolutePosition} onAbsolutePosition={onAbsolutePosition} resizeWithSection={resizeWithSection} onResizeWithSection={shape.kind==='image'?onResizeWithSection:undefined}/>}
       </fieldset>
     </div>

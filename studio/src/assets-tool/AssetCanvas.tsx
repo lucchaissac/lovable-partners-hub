@@ -3,6 +3,8 @@ import {Button,Dropdown,Icon,Tooltip} from '@asset/ui';
 import {workspaceAssetTemplates} from './assetTemplates';
 import {studioWorkspace} from './workspace';
 import {Artwork} from './Artwork';
+import {AssetPlaybackPreview} from './AssetPlaybackPreview';
+import {useAssetPlayback} from './useAssetPlayback';
 import {assetDimensions,type AssetDocument} from './model';
 import {MAX_ASSET_PAGES} from './assetSeries';
 import './communityCanvas.css';
@@ -27,6 +29,8 @@ export function AssetCanvas({toolbar,asset,pages,busy,generating,zoom,onZoom,onC
  const suppressOpen=useRef(0);
  const zoomAnchor=useRef<{id:string;x:number;y:number;clientX:number;clientY:number}|undefined>(undefined),gestureZoomBase=useRef(1);
  const [grid,setGrid]=useState(false),[thumbnails,setThumbnails]=useState(true);
+ const showPlayback=!grid&&thumbnails&&pages.length>1&&pages.some(page=>page.animation?.enabled);
+ const playback=useAssetPlayback(pages,asset.id,showPlayback&&!busy,onOpen);
  const size=assetDimensions(asset),fit=Math.min(1,Math.max(.1,(bounds.width-80)/size.width),Math.max(.1,(bounds.height-156)/size.height)),scale=zoom||fit;
  const pageInset=16;
  const index=Math.max(0,pages.findIndex(page=>page.id===asset.id)),locked=busy||pages.length>=MAX_ASSET_PAGES;
@@ -34,6 +38,7 @@ export function AssetCanvas({toolbar,asset,pages,busy,generating,zoom,onZoom,onC
  useEffect(()=>{if(generating)setGrid(false);},[generating]);
  useLayoutEffect(()=>{
   if(grid)return;const host=viewport.current;if(!host)return;
+  if(playback.active){host.scrollTo({top:0,left:Math.max(0,(host.scrollWidth-host.clientWidth)/2)});return;}
   const anchor=zoomAnchor.current;
   if(anchor){
    const board=host.querySelector<HTMLElement>(`[data-page-id="${anchor.id}"] .asset-scaled-board`);
@@ -42,7 +47,7 @@ export function AssetCanvas({toolbar,asset,pages,busy,generating,zoom,onZoom,onC
   }
   const page=host.querySelector<HTMLElement>(`[data-page-id="${asset.id}"]`);
   if(page){const y=page.getBoundingClientRect().top-host.getBoundingClientRect().top+host.scrollTop;host.scrollTo({top:Math.max(0,y-pageInset),left:Math.max(0,(host.scrollWidth-host.clientWidth)/2)});}
- },[asset.id,grid,scale,busy,bounds.height]);
+ },[asset.id,grid,scale,busy,bounds.height,playback.active]);
  useEffect(()=>{
   const host=viewport.current;if(!host||grid)return;
   const pinch=(next:number,clientX:number,clientY:number,target:EventTarget|null)=>{
@@ -58,7 +63,7 @@ export function AssetCanvas({toolbar,asset,pages,busy,generating,zoom,onZoom,onC
   return()=>{host.removeEventListener('wheel',wheel);host.removeEventListener('gesturestart',gestureStart);host.removeEventListener('gesturechange',gestureChange);};
  },[asset.id,grid,scale,onZoom]);
  useEffect(()=>{const host=strip.current,target=host?.querySelector<HTMLElement>('[aria-current="page"]');if(host&&target){const box=target.getBoundingClientRect(),view=host.getBoundingClientRect();if(box.left<view.left||box.right>view.right)host.scrollBy({left:box.left-view.left-(view.width-box.width)/2});}},[asset.id,thumbnails,grid]);
- const open=(id:string)=>{if(busy||performance.now()<suppressOpen.current)return;onOpen(id);setGrid(false);};
+ const open=(id:string)=>{if(busy||performance.now()<suppressOpen.current)return;playback.reset();onOpen(id);setGrid(false);};
  const navigateThumbnail=(event:KeyboardEvent<HTMLButtonElement>,i:number)=>{
   if(busy||event.altKey||event.ctrlKey||event.metaKey||event.shiftKey)return;
   const host=event.currentTarget.closest<HTMLElement>('.community-page-grid,.community-page-strip');
@@ -72,10 +77,10 @@ export function AssetCanvas({toolbar,asset,pages,busy,generating,zoom,onZoom,onC
   const target=Math.max(0,Math.min(pages.length-1,next));
   tiles[target]?.focus({preventScroll:true});
   if(grid)tiles[target]?.scrollIntoView({block:'nearest',inline:'nearest'});
-  onOpen(pages[target].id);
+  open(pages[target].id);
  };
- const overview=()=>{if(busy)return;setGrid(value=>!value);onOverview();};
- const add=(afterId:string,kind:string)=>{if(locked)return;setGrid(false);onAdd(afterId,kind);};
+ const overview=()=>{if(busy)return;playback.reset();setGrid(value=>!value);onOverview();};
+ const add=(afterId:string,kind:string)=>{if(locked)return;playback.reset();setGrid(false);onAdd(afterId,kind);};
  const dragStart=(event:DragEvent,id:string)=>{if(busy){event.preventDefault();return;}event.dataTransfer.setData('text/plain',id);event.dataTransfer.effectAllowed='move';setDragged(id);};
  const dragOver=(event:DragEvent<HTMLElement>,id:string,vertical=false)=>{if(!dragged||dragged===id||busy)return;event.preventDefault();event.stopPropagation();event.dataTransfer.dropEffect='move';const box=event.currentTarget.getBoundingClientRect(),after=vertical?event.clientY>box.top+box.height/2:event.clientX>box.left+box.width/2;setDropTarget({id,side:after?'after':'before'});};
  const drop=(event:DragEvent,id:string)=>{if(!dragged)return;event.preventDefault();event.stopPropagation();suppressOpen.current=performance.now()+300;if(dropTarget?.id===id&&dragged!==id)onMove(dragged,id,dropTarget.side);setDragged(undefined);setDropTarget(undefined);};
@@ -91,8 +96,9 @@ export function AssetCanvas({toolbar,asset,pages,busy,generating,zoom,onZoom,onC
   <button className="community-page-tile" draggable={!busy} onDragStart={event=>dragStart(event,page.id)} onDragEnd={endDrag} aria-label={`${grid?'Open':'Go to'} asset ${i+1}: ${page.title}`} aria-current={page.id===asset.id?'page':undefined} tabIndex={page.id===asset.id?0:-1} disabled={busy} onKeyDown={event=>navigateThumbnail(event,i)} onClick={()=>open(page.id)}><AssetThumbnail asset={page}/><span>{i+1}<span>{page.title}</span></span></button>{actions(page,i)}
  </div>;
  return <div className="we-main asset-canvas-area community-canvas">{toolbar}
-  <div ref={viewport} className="asset-canvas-scroll studio-workspace-scroll" data-html-selection-surface={!grid&&!busy||undefined} aria-label={grid?'Asset grid':'Asset canvas'}>
+  <div ref={viewport} className="asset-canvas-scroll studio-workspace-scroll" data-html-selection-surface={!grid&&!busy&&!playback.active||undefined} aria-label={grid?'Asset grid':'Asset canvas'}>
    {grid?<div className="community-page-grid">{pages.map(tile)}<AddAsset compact disabled={locked} onAdd={kind=>add(asset.id,kind)}/></div>:
+   playback.active?<AssetPlaybackPreview from={pages[playback.position.index]} to={pages[playback.position.index+1]} progress={playback.position.progress} smart={playback.position.smart} reducedMotion={playback.reducedMotion} scale={scale} playing={playback.playing} time={playback.time} onExit={playback.reset}/>:
    <div className="community-page-stack" style={{paddingTop:pageInset,paddingBottom:pageInset}}>{pages.map((page,i)=>{
     const dimensions=assetDimensions(page),selected=page.id===asset.id;
     return <section key={page.id} className="community-canvas-page" data-page-id={page.id} data-drop={dropTarget?.id===page.id?dropTarget.side:undefined} onDragOver={event=>dragOver(event,page.id,true)} onDrop={event=>drop(event,page.id)} aria-label={`Asset ${i+1}: ${page.title}`} style={{width:dimensions.width*scale}}>
@@ -109,10 +115,16 @@ export function AssetCanvas({toolbar,asset,pages,busy,generating,zoom,onZoom,onC
   {!grid&&thumbnails&&pages.length>1&&<nav ref={strip} className="community-page-strip" aria-label="Asset thumbnails">{pages.map(tile)}<AddAsset compact disabled={locked} onAdd={kind=>add(asset.id,kind)}/></nav>}
   <div className="asset-canvas-footer community-pages-footer"><span className="community-canvas-dimensions">{size.width} × {size.height}</span>
    <div className="community-page-controls">{onUndoArrangement&&<Tooltip label="Undo page change" side="top"><Button size="sm" variant="ghost" aria-label="Undo page change" disabled={busy} leadingIcon={<Icon name="undo-2" size={16}/>} onClick={onUndoArrangement}/></Tooltip>}<Tooltip label={grid?'Back to canvas':'Grid view'} side="top"><Button size="sm" variant="ghost" aria-label={grid?'Back to canvas':'Grid view'} aria-pressed={grid} disabled={busy} leadingIcon={<Icon name="layout-grid" size={16} fill="currentColor" strokeWidth={0}/>} onClick={overview}/></Tooltip>
-    <Tooltip label="Asset thumbnails" side="top"><Button size="sm" variant="ghost" aria-label="Asset thumbnails" aria-expanded={thumbnails&&!grid&&pages.length>1} disabled={busy} leadingIcon={<Icon name="gallery-thumbnails" size={16}/>} onClick={()=>{setGrid(false);setThumbnails(value=>grid||!value);}}/></Tooltip>
+    <Tooltip label="Asset thumbnails" side="top"><Button size="sm" variant="ghost" aria-label="Asset thumbnails" aria-expanded={thumbnails&&!grid&&pages.length>1} disabled={busy} leadingIcon={<Icon name="gallery-thumbnails" size={16}/>} onClick={()=>{playback.reset();setGrid(false);setThumbnails(value=>grid||!value);}}/></Tooltip>
     <Button size="sm" variant="ghost" aria-label={`Asset ${index+1} of ${pages.length}. Open grid`} disabled={busy} onClick={overview}>{index+1} / {pages.length}</Button>
     <Button size="sm" variant="ghost" aria-label="Previous asset" disabled={busy||index===0} leadingIcon={<Icon name="chevron-left" size={14}/>} onClick={()=>open(pages[index-1].id)}/>
     <Button size="sm" variant="ghost" aria-label="Next asset" disabled={busy||index===pages.length-1} leadingIcon={<Icon name="chevron-right" size={14}/>} onClick={()=>open(pages[index+1].id)}/>
+    {showPlayback&&<div className="asset-playback-controls" role="group" aria-label="Animation playback">
+     <Tooltip label="Go to beginning" side="top"><Button size="sm" variant="ghost" aria-label="Go to beginning" disabled={busy} leadingIcon={<Icon name="skip-back" size={16}/>} onClick={()=>playback.jump(0)}/></Tooltip>
+     <Tooltip label={playback.playing?'Pause animation':'Play animation'} side="top"><Button size="sm" variant="ghost" aria-label={playback.playing?'Pause animation':'Play animation'} disabled={busy} leadingIcon={<Icon name={playback.playing?'pause':'play'} size={16}/>} onClick={playback.toggle}/></Tooltip>
+     <Tooltip label="Go to end" side="top"><Button size="sm" variant="ghost" aria-label="Go to end" disabled={busy} leadingIcon={<Icon name="skip-forward" size={16}/>} onClick={()=>playback.jump(pages.length-1)}/></Tooltip>
+     <input type="range" className="asset-zoom-range asset-playback-progress" aria-label="Animation progress" aria-valuetext={`${(playback.time/1000).toFixed(1)} / ${(playback.total/1000).toFixed(1)} s`} min={0} max={playback.total} step={1} value={Math.round(playback.time)} disabled={busy} onChange={event=>playback.seek(Number(event.target.value))} style={{background:`linear-gradient(to right, var(--ui-text-muted) ${playback.time/playback.total*100}%, var(--ui-border) ${playback.time/playback.total*100}%)`}}/>
+    </div>}
    </div>
    <div className="asset-zoom"><input type="range" className="asset-zoom-range" min={10} max={300} step={1} disabled={grid} value={Math.round(scale*100)} aria-label="Zoom" aria-valuetext={`${Math.round(scale*100)}%`} onChange={event=>onZoom(Number(event.target.value)/100)}/>
     <Dropdown align="end" placement="top" listHeight="auto" value={zoom?String(Math.round(scale*100)):'fit'} items={[{id:'fit',label:'Fit'}, {kind:'separator'},...[200,125,100,75,50,25].map(value=>({id:String(value),label:`${value}%`}))]} onChange={value=>onZoom(value==='fit'?0:Number(value)/100)} trigger={<Button variant="ghost" size="sm" disabled={grid} aria-label={`Zoom: ${Math.round(scale*100)}%`}>{Math.round(scale*100)}%</Button>}/>

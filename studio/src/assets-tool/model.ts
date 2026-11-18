@@ -42,7 +42,7 @@ export const referenceSchema = z.object({
   src: z.string().max(17_000_000).regex(/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+=*$/),
   width: z.number().int().positive().max(20000), height: z.number().int().positive().max(20000),
 }).strict();
-// Canvas animation is opt-in metadata for now; still exports keep their current rendering.
+// Canvas animation is opt-in; still exports keep their authored rendering.
 export const canvasAnimationSchema = z.object({
   enabled: z.boolean().default(false),
   transition: z.enum(['instant', 'smart-animate']).default('smart-animate'),

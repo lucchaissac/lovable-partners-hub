@@ -1,6 +1,4 @@
 import {applyCommunityContrast} from './communityGraphic';
-import {brandPartnerBlock,updateBrandPartner} from './brandAsset';
-import {BrandLogoControls} from './BrandLogoDesign';
 import { useEffect, useState } from 'react';
 import { Button, Icon, Tooltip } from '@asset/ui';
 import { WorkspaceInspector, useWorkspaceWidgetHost } from '../studio/WorkspaceWidgetHost';
@@ -17,7 +15,6 @@ export function AssetDesignPanel({ asset, onChange, onImport, mobileOpen, onClos
   const [collapsed, setCollapsed] = useState(false);
   useEffect(() => { if (panelOpen || mobileOpen) setCollapsed(false); }, [panelOpen, mobileOpen]);
   const { width, height } = assetDimensions(asset);
-  const partner=studioWorkspace==='lovable'?brandPartnerBlock(asset):undefined;
   return <aside className="lovable-design" aria-label="Design panel" data-collapsed={collapsed || undefined} data-mobile-open={mobileOpen || undefined} data-selection={panelOpen || undefined}>
     {collapsed && <div className="lovable-design-rail"><Tooltip label="Expand design panel" side="bottom"><Button variant="ghost" aria-label="Expand design panel" leadingIcon={<Icon name="panel-right-open" size={16}/>} onClick={()=>setCollapsed(false)}/></Tooltip></div>}
     <div className="lovable-design-content">
@@ -29,7 +26,6 @@ export function AssetDesignPanel({ asset, onChange, onImport, mobileOpen, onClos
         <CanvasAnimationDesign asset={asset} onChange={onChange}/>
       </div>
       {asset.community?.layout==='graphic'&&<div className="lovable-design-section"><label className="community-contrast-toggle"><input type="checkbox" checked={asset.community.autoContrast!==false} onChange={event=>{const next={...asset,community:{...asset.community!,autoContrast:event.target.checked}};onChange(event.target.checked?applyCommunityContrast(next):next);}}/>Auto contrast</label></div>}
-      {partner&&<div className="lovable-design-section brand-logo-controls"><h2>Partner logo</h2><BrandLogoControls block={partner} onChange={block=>onChange(updateBrandPartner(asset,block))}/></div>}
     </div>}
     </div>
   </aside>;

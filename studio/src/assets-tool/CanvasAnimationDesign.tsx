@@ -4,7 +4,7 @@ import { defaultCanvasAnimation, type AssetDocument } from './model';
 
 type Props = { asset: AssetDocument; onChange: (asset: AssetDocument) => void };
 
-/** Settings only: the shared maker keeps its current canvas and export behavior. */
+/** The outgoing transition for this canvas in collection playback. */
 export function CanvasAnimationDesign({ asset, onChange }: Props) {
   const animation = asset.animation ?? defaultCanvasAnimation;
   const update = (patch: Partial<typeof animation>) => onChange({

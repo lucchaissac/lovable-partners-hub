@@ -5,7 +5,7 @@ export const workspaceShares={
  ambassadors:{path:'/community',hash:'#ambassadors/gallery',title:'Lovable Community',description:'Lovable Community assets, guidelines and design studio.',image:'/share/community.jpg',alt:'Community — posters and photography from the Lovable Community gallery'},
  'tech-blog':{path:'/tech-blog',hash:'#tech-blog/gallery',title:'Lovable Tech blog',description:'Lovable Tech blog covers, guidelines and design studio.',image:'/share/tech-blog.jpg',alt:'Tech blog — covers from the Lovable Tech blog gallery'},
 };
-export function workspaceFromPath(path){return Object.keys(workspaceShares).find(key=>workspaceShares[key].path===path.replace(/\/$/,''))??'partners';}
+export function workspaceFromPath(path){const normalized=path.replace(/\/$/,'');if(!normalized||normalized==='/index.html')return 'lovable';return Object.keys(workspaceShares).find(key=>workspaceShares[key].path===normalized)??'partners';}
 const escape=value=>String(value).replace(/[&"<>]/g,c=>({'&':'&amp;','"':'&quot;','<':'&lt;','>':'&gt;'}[c]));
 export function shareHead(workspace){
  const s=workspaceShares[workspace]??workspaceShares.partners,url=shareOrigin+s.path,image=shareOrigin+s.image+'?v=1';

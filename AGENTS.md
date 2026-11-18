@@ -113,3 +113,5 @@
 - Each workspace’s Guidelines has a compact “Incorrect usage” section before For your agent: exactly two logo examples on one row (distorted proportions and added shadow), including on mobile. Use that workspace’s original monochrome lockup or badge, short captions and quiet surfaces; keep the section secondary.
 
 - On mobile (680 px and below), hide the Guidelines section submenu entirely. Read the sections through normal scrolling; retain only the workspace controls above and Gallery / Guidelines / Make below. Deep links still scroll to their section below the top header.
+
+- The bare shared root URL opens the Lovable Gallery (first workspace), with Lovable sharing metadata. Keep explicit workspace paths and legacy hashes pointing to their own content.

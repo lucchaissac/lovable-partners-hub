@@ -12,7 +12,7 @@
     <title>Lovable Partners</title>
     <meta property="og:title" content="Lovable Partners" />
     <!-- share:end -->
-    <script>(()=>{if(location.hash)return;const routes={'/brand':'#brand/gallery','/partners':'#gallery','/community':'#ambassadors/gallery','/tech-blog':'#tech-blog/gallery'},hash=routes[location.pathname.replace(/\/$/,'')];if(hash)history.replaceState(history.state,'',location.pathname+location.search+hash)})()</script>
+    <script>(()=>{if(location.hash)return;const routes={'':'#brand/gallery','/index.html':'#brand/gallery','/brand':'#brand/gallery','/partners':'#gallery','/community':'#ambassadors/gallery','/tech-blog':'#tech-blog/gallery'},hash=routes[location.pathname.replace(/\/$/,'')];if(hash)history.replaceState(history.state,'',location.pathname+location.search+hash)})()</script>
     <link id="workspace-favicon" rel="icon" type="image/svg+xml" href="/brand/favicon-partners.svg?v=4" />
     <script>(()=>{const key=location.hash.slice(1).split('/')[0]==='brand'?'lovable':location.hash.startsWith('#ambassadors')?'ambassadors':location.hash.startsWith('#tech-blog')?'tech-blog':'partners',title={lovable:'Lovable',partners:'Lovable Partners',ambassadors:'Lovable Community','tech-blog':'Lovable Tech blog'}[key];document.title=title;document.querySelector('#workspace-favicon').href='/brand/favicon-'+key+'.svg?v=4';document.querySelector('meta[property="og:title"]').content=title;})()</script>
     <link rel="preload" href="/fonts/CameraPlainVariable.woff2" as="font" type="font/woff2" crossorigin />

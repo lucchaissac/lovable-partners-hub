@@ -4,7 +4,7 @@ import {readFile} from 'node:fs/promises';
 import ts from 'typescript';
 const source=await readFile(new URL('../studio/src/studio/selectionScale.ts',import.meta.url),'utf8');
 const compiled=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText;
-const {scaleSelection,selectionResizeFactor,patchScaledSelection}=await import(`data:text/javascript;base64,${Buffer.from(compiled).toString('base64')}`);
+const {scaleSelection,selectionResizeFactor,modifiedScaleOrigin,patchScaledSelection}=await import(`data:text/javascript;base64,${Buffer.from(compiled).toString('base64')}`);
 const close=(a,b)=>assert.ok(Math.abs(a-b)<1e-8,`${a} ≠ ${b}`);
 const item=(id,x,y,width,height,rotation=0)=>({id,width,height,parentWidth:1200,frame:{position:'absolute',x,y,widthPx:width,height,rotation,groupId:'group'},box:{left:x+100,top:y+200,width,height}});
 test('A group scales its type, stroke, padding and corners with its layout while preserving native content',()=>{
@@ -55,4 +55,20 @@ test('All resize handles use the fixed origin, including centered edge and corne
  close(selectionResizeFactor(bounds,{x:50,y:25},'se',[0,0]),1.25);
  const single=item('a',100,200,200,100,35),frames=scaleSelection([single],[],single.box,1.5,[.5,.5],false).frames;
  close(frames.a.x+frames.a.widthPx/2,200);close(frames.a.y+frames.a.height/2,250);
+});
+test('Option + Shift resizes around the center even when the saved origin is a corner',()=>{
+ const keys={shiftKey:true,altKey:true,ctrlKey:false,metaKey:false},saved=[0,0];
+ const origin=modifiedScaleOrigin(keys,saved);
+ assert.deepEqual(origin,[.5,.5]);assert.deepEqual(saved,[0,0]);
+ const a=item('a',100,200,200,100),b=item('b',400,200,100,100),bounds={left:200,top:400,width:400,height:100};
+ for(const items of [[a],[a,b]]){
+  const box=items.length===1?a.box:bounds,factor=selectionResizeFactor(box,{x:50,y:0},'e',origin);
+  const {frames}=scaleSelection(items,[],box,factor,origin);
+  const left=Math.min(...items.map(i=>frames[i.id].x)),right=Math.max(...items.map(i=>frames[i.id].x+frames[i.id].widthPx));
+  close((left+right)/2,items.length===1?200:300);
+ }
+ assert.equal(modifiedScaleOrigin({...keys,shiftKey:false},saved),undefined);
+ assert.equal(modifiedScaleOrigin({...keys,altKey:false},saved),undefined);
+ assert.deepEqual(modifiedScaleOrigin({...keys,altKey:false,metaKey:true},saved),saved);
+ assert.deepEqual(modifiedScaleOrigin({...keys,altKey:false,ctrlKey:true},saved),saved);
 });

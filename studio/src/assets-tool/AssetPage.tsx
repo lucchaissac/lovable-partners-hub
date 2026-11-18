@@ -20,7 +20,7 @@ import { readStudioConfig, studioApi } from '../studio/client';
 
 import { AssetCanvas } from './AssetCanvas';
 import {workspaceTemplateAsset} from './assetTemplates';
-import {assetPages,animateAssetPages,insertAssetPages,replaceAssetPage,linkAssetPages,moveAssetPage,MAX_ASSET_PAGES} from './assetSeries';
+import {assetPages,animateAssetPages,insertAssetPages,replaceAssetPage,linkAssetPages,moveAssetPages,removeAssetPages,duplicateAssetPages,MAX_ASSET_PAGES} from './assetSeries';
 import { AssetLibrary } from './AssetLibrary';
 import { badgeAsset, starterAsset } from './starter';
 import { AssetDesignPanel } from './AssetDesignPanel';
@@ -470,7 +470,7 @@ function AssetPageContent() {
     setRecent(items=>items.map(item=>item.id===pageId?next:item));
     saves.current=saves.current.then(()=>saveAsset(owner,next)).catch(reason=>setError(reason.message));
   };
-  const arrangeAssetPages=async(action:'move'|'remove'|'undo',pageId?:string,targetId?:string,side:'before'|'after'='before')=>{
+  const arrangeAssetPages=async(action:'move'|'remove'|'undo',pageIds:string[]=[],targetId?:string,side:'before'|'after'='before')=>{
     if(busy||addingPage||changingTemplate||!current.current)return;
     setAddingPage(true);setError('');
     try{
@@ -481,24 +481,41 @@ function AssetPageContent() {
         if(!pageArrangement)return;
         const documents=new Map([...all,current.current].map(page=>[page.id,page]));
         next=linkAssetPages(pageArrangement.flatMap(id=>documents.has(id)?[documents.get(id)!]:[]));
-      }else if(action==='move')next=moveAssetPage(collection,pageId!,targetId!,side);
+        detached=collection.filter(page=>!next.some(item=>item.id===page.id)).map(page=>({...page,series:undefined}));
+      }else if(action==='move')next=moveAssetPages(collection,pageIds,targetId!,side);
       else{
-        if(collection.length<=1)return;
-        detached=collection.filter(page=>page.id===pageId).map(page=>({...page,series:undefined}));
-        next=linkAssetPages(collection.filter(page=>page.id!==pageId));
+        const removed=removeAssetPages(collection,pageIds);
+        next=removed.pages;detached=removed.detached;
+        if(next===collection)return;
       }
       if(!next.length)return;
       await saveAssets(owner,[...next,...detached]);
       if(!mounted.current)return;
       setPageArrangement(action==='undo'?undefined:collection.map(page=>page.id));
       setRecent([...next,...detached,...all.filter(page=>![...next,...detached].some(item=>item.id===page.id))]);
-      const selected=next.find(page=>page.id===current.current!.id)??next[Math.min(collection.findIndex(page=>page.id===pageId),next.length-1)]??next[0];
+      const selected=next.find(page=>page.id===current.current!.id)??next[Math.min(collection.findIndex(page=>pageIds.includes(page.id)),next.length-1)]??next[0];
       if(selected.id!==current.current.id){
         pageHistory.current.set(current.current.id,{past:past.current,future:future.current});
         const history=pageHistory.current.get(selected.id);past.current=history?.past??[];future.current=history?.future??[];
       }
       put(selected);setVisual(undefined);setHistoryVersion(value=>value+1);
     }catch(reason){if(mounted.current)setError(reason instanceof Error?reason.message:'Could not update the asset order.');}
+    finally{if(mounted.current)setAddingPage(false);}
+  };
+  const duplicatePages=async(ids:string[])=>{
+    if(busy||addingPage||changingTemplate||!current.current)return;
+    setAddingPage(true);setError('');
+    try{
+      await saves.current;
+      const all=await listAssets(owner),collection=assetPages(current.current,all),result=duplicateAssetPages(collection,ids);
+      await saveAssets(owner,result.pages);
+      if(!mounted.current)return;
+      pageHistory.current.set(current.current.id,{past:past.current,future:future.current});past.current=[];future.current=[];
+      setPageArrangement(collection.map(page=>page.id));
+      setRecent([...result.pages,...all.filter(page=>!result.pages.some(item=>item.id===page.id))]);
+      put(result.pages.find(page=>page.id===result.ids[0])!);setVisual(undefined);setHistoryVersion(value=>value+1);
+      return result.ids;
+    }catch(reason){if(mounted.current)setError(reason instanceof Error?reason.message:'Could not duplicate these assets.');}
     finally{if(mounted.current)setAddingPage(false);}
   };
   const canvasToolbar = asset && <div className="lovable-canvas-toolbar">
@@ -523,7 +540,7 @@ function AssetPageContent() {
     {loading ? <div className="asset-empty"><p role="status">Opening your asset…</p></div> : !asset ? <div className="we-body asset-workspace"><WorkspaceChat singleAsset/><AssetHome reading={reading} onBrowse={() => upload.current?.click()}>
       {(recentLoading || recent.length > 0) && <AssetRecents loading={recentLoading}>{recent.map(item=><AssetLibraryCard key={item.id} asset={item} onOpen={()=>navigate(`/assets/${item.id}`)}/>)}</AssetRecents>}
     </AssetHome></div> : <>
-      <div className="we-body asset-workspace"><WorkspaceChat singleAsset preserveSourceTransparency={studioWorkspace!=='partners'} placeholder="Ask Lovable…"/><AssetCanvas toolbar={canvasToolbar} asset={generationPreview??asset} pages={generationPreview?pages.map(page=>page.id===asset.id?generationPreview:page):pages} generating={busy} busy={busy||addingPage||changingTemplate} zoom={zoom} onZoom={setZoom} onChange={change} onOpen={openAssetPage} onAdd={(afterId,kind)=>void addAssetPage(afterId,kind)} onOverview={()=>setVisual(undefined)} onRename={renameAssetPage} onMove={(pageId,targetId,side)=>void arrangeAssetPages('move',pageId,targetId,side)} onRemove={pageId=>void arrangeAssetPages('remove',pageId)} onUndoArrangement={pageArrangement?()=>void arrangeAssetPages('undo'):undefined}/>
+      <div className="we-body asset-workspace"><WorkspaceChat singleAsset preserveSourceTransparency={studioWorkspace!=='partners'} placeholder="Ask Lovable…"/><AssetCanvas toolbar={canvasToolbar} asset={generationPreview??asset} pages={generationPreview?pages.map(page=>page.id===asset.id?generationPreview:page):pages} generating={busy} busy={busy||addingPage||changingTemplate} zoom={zoom} onZoom={setZoom} onChange={change} onOpen={openAssetPage} onAdd={(afterId,kind)=>void addAssetPage(afterId,kind)} onOverview={()=>setVisual(undefined)} onDuplicate={duplicatePages} onRename={renameAssetPage} onMove={(pageId,targetId,side)=>void arrangeAssetPages('move',pageId,targetId,side)} onRemove={pageId=>void arrangeAssetPages('remove',pageId)} onUndoArrangement={pageArrangement?()=>void arrangeAssetPages('undo'):undefined}/>
         <AssetDesignPanel mobileOpen={designOpen} onClose={()=>setDesignOpen(false)} asset={asset} onChange={change} onImport={() => upload.current?.click()}/>
       </div>
       <div className="asset-export-host" aria-hidden="true"><Artwork ref={exportBoard} asset={reviewCandidate??asset} /></div>

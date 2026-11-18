@@ -61,7 +61,9 @@ export function useAssetPlayback(pages: AssetDocument[], activeId: string, enabl
     const key=(event:KeyboardEvent)=>{
       if(event.defaultPrevented||event.repeat||event.isComposing||event.code!=='Space'||event.ctrlKey||event.metaKey||event.altKey||event.shiftKey)return;
       const target=event.target;
-      if(!(target instanceof Element)||target.closest('input,textarea,select,[contenteditable]:not([contenteditable=false]),[role=menu],[role=dialog],[role=slider],button:not(.community-page-tile),a'))return;
+      if(!(target instanceof Element))return;
+      const progress=target.matches('input.asset-playback-progress');
+      if(!progress&&target.closest('input,textarea,select,[contenteditable]:not([contenteditable=false]),[role=menu],[role=dialog],[role=slider],button:not(.community-page-tile),a'))return;
       event.preventDefault();toggleRef.current();
     };
     window.addEventListener('keydown',key);

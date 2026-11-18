@@ -2,6 +2,11 @@ import type {HtmlBlock,HtmlEditorState} from './htmlEditorModel';
 import type {ElementFrame,Rect} from './htmlSelectionOperations';
 
 export type ScaleOrigin=[number,number];
+export function modifiedScaleOrigin(keys:{shiftKey:boolean;altKey:boolean;ctrlKey:boolean;metaKey:boolean},origin:ScaleOrigin):ScaleOrigin|undefined{
+ if(!keys.shiftKey)return;
+ if(keys.altKey)return [.5,.5];
+ if(keys.ctrlKey||keys.metaKey)return origin;
+}
 type ScaleItem={id:string;frame:ElementFrame;box:Rect;width:number;height:number;parentWidth:number;minWidth?:number};
 const dimensions={padding:[0,160],paddingTop:[0,160],paddingRight:[0,160],paddingBottom:[0,160],paddingLeft:[0,160],radius:[0,1500],radiusTopLeft:[0,1500],radiusTopRight:[0,1500],radiusBottomLeft:[0,1500],radiusBottomRight:[0,1500],borderWidth:[0,24],lineWidth:[1,24],fontSize:[1,1000],letterSpacing:[-20,100]} as const;
 

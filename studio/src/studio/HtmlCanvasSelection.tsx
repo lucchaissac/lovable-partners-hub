@@ -1,5 +1,5 @@
 import {IconDesignControls} from './IconDesignControls';
-import {scaleSelection,selectionResizeFactor,patchScaledSelection,type ScaleOrigin} from './selectionScale';
+import {scaleSelection,selectionResizeFactor,modifiedScaleOrigin,patchScaledSelection,type ScaleOrigin} from './selectionScale';
 import {SelectionScaleControls} from './SelectionScaleControls';
 import {canvasLayerAction} from '../assets-tool/canvasLayers';
 import {useMakerDesign} from '../assets-tool/MakerDesignContext';
@@ -47,7 +47,7 @@ type Save = (state: HtmlEditorState, copies?: Record<string, string>) => void;
 const menuSurface = '.we-chat,.we-review-asset,.hcs-ui,.ui-dropdown-content,.ui-popover-content,.ui-color-popover,[role="menu"],[role="dialog"],.workspace-widget-panelhost';
 const handles = [['nw',0,0,'top left corner'],['n',50,0,'top edge'],['ne',100,0,'top right corner'],['e',100,50,'right edge'],['se',100,100,'bottom right corner'],['s',50,100,'bottom edge'],['sw',0,100,'bottom left corner'],['w',0,50,'left edge']] as const;
 type DropTarget = { absolute?: boolean; x?: number; section: string; column: number; index: number; width: number; y?: number; line: Rect };
-type Gesture = { scaled?:boolean; layout?: LayoutItem[]; drop?: DropTarget; cursor?: {x:number;y:number}; kind: string; pointer: number; x: number; y: number; bounds: Rect; blocks: { block: HtmlBlock; box: Rect; width: number; parentWidth: number }[]; initial: HtmlEditorState; frames: Record<string, ElementFrame>; moved: boolean;targets:Rect[];section?:{id:string;width:number;widthPx?:number;parentWidth:number} };
+type Gesture = { pivot?:ScaleOrigin; scaled?:boolean; layout?: LayoutItem[]; drop?: DropTarget; cursor?: {x:number;y:number}; kind: string; pointer: number; x: number; y: number; bounds: Rect; blocks: { block: HtmlBlock; box: Rect; width: number; parentWidth: number }[]; initial: HtmlEditorState; frames: Record<string, ElementFrame>; moved: boolean;targets:Rect[];section?:{id:string;width:number;widthPx?:number;parentWidth:number} };
 
 const clamp = (n:number,min:number,max:number) => Math.max(min,Math.min(max,n));
 
@@ -103,7 +103,7 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
   useEffect(()=>{if(host.activeId&&host.activeId!=='html-selection')setDesign(false);},[host.activeId]);
   const element=(id:string)=>root.current?.querySelector<HTMLElement>(`#block-${CSS.escape(id)}`);
   const clear=()=>{setSectionId('');setIds([]);setEditingId('');setDesign(false);setMenu(false);onSelect(undefined);};
-  const choose=(next:string[])=>{setSectionId('');setIds(next);setEditingId('');if(next.length>1){setDesign(true);host.panelChanged('html-selection',true);}onSelect(next.length===1?(element(next[0])||undefined):undefined);};
+  const choose=(next:string[])=>{setSectionId('');setIds(next);setEditingId('');if(next.length&&(makerDesign?makerDesign.visible:next.length>1)){setDesign(true);host.panelChanged('html-selection',true);}onSelect(next.length===1?(element(next[0])||undefined):undefined);};
   useLayoutEffect(()=>{
     if(!enabled||!makerDesign)return;
     const select=(next:string[])=>{
@@ -362,7 +362,7 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
       const group=block.editor?.groupId;
       const selectableIds=ids.filter(id=>blocks.some(b=>b.id===id&&!b.editor?.locked&&!b.editor?.hidden));
       const next=event.altKey?[id!]:additive?(selectableIds.includes(id!)?selectableIds.filter(i=>i!==id):[...selectableIds,id!]):selectableIds.includes(id!)?selectableIds:group?blocks.filter(b=>b.editor?.groupId===group&&!b.editor?.locked&&!b.editor?.hidden).map(b=>b.id):[id!];
-      choose(next);if(next.length===1&&block.kind==='image'&&(block.badge||block.ambassador||block.brandRole||((studioWorkspace==='tech-blog'||studioWorkspace==='ambassadors')&&isTechArtwork(block)))){setDesign(true);host.panelChanged('html-selection',true);}if(!additive)begin(event,'move',blocks.filter(b=>next.includes(b.id)));return;
+      choose(next);if(!makerDesign&&next.length===1&&block.kind==='image'&&(block.badge||block.ambassador||block.brandRole||((studioWorkspace==='tech-blog'||studioWorkspace==='ambassadors')&&isTechArtwork(block)))){setDesign(true);host.panelChanged('html-selection',true);}if(!additive)begin(event,'move',blocks.filter(b=>next.includes(b.id)));return;
     }
     if(target.closest('button,a,input,textarea,[role=tab],.hev-section-tools,.hev-column-resizer'))return;
     if(target.closest('.hev-content'))startMarquee(event,target.closest<HTMLElement>('.hev-section'));
@@ -373,7 +373,8 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
     const g=gesture.current;if(!g)return;if(event.pointerId!==g.pointer)return;if(!(event.buttons&1)){finish();return;}
     const dx=(event.clientX/zoom)-g.x,dy=(event.clientY/zoom)-g.y;if(!g.moved&&Math.hypot(dx,dy)<3)return;g.moved=true;
     const {kind,bounds}=g;
-    g.scaled=false;
+    const resizeOrigin=modifiedScaleOrigin(event,scaleOrigin);
+    g.scaled=false;g.pivot=undefined;
     let moveGuides:Guide[]=[];
     if(g.section){
       const next=structuredClone(g.initial),section=next.pages.flatMap(p=>p.sections).find(s=>s.id===g.section!.id)!;
@@ -390,7 +391,7 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
       g.frames=rotateSelectionFrames(g.blocks.map(({block,box})=>({id:block.id,frame:block.editor??{},box})),bounds,angle);
     }else if(kind==='line-start'||kind==='line-end'){
       const {block,width}=g.blocks[0];
-      g.scaled=event.shiftKey&&(event.ctrlKey||event.metaKey);
+      g.scaled=!!resizeOrigin;
       g.frames={[block.id]:resizeCanvasLine(block.editor??{},width,{x:dx,y:dy},kind==='line-end'?'end':'start',g.scaled)};
     }else if(kind==='move'){
       g.cursor={x:(event.clientX/zoom),y:(event.clientY/zoom)};g.drop=findDrop((event.clientX/zoom),(event.clientY/zoom),g);setDropTarget(g.drop||null);
@@ -398,11 +399,10 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
       const snapped=event.altKey?{delta:raw,guides:[]}:snapHtmlMove(bounds,raw,g.targets);moveGuides=snapped.guides;
       g.frames=Object.fromEntries(g.blocks.map(({block})=>[block.id,{...block.editor,x:clamp((block.editor?.x||0)+snapped.delta.x,-4000,4000),y:clamp((block.editor?.y||0)+snapped.delta.y,-4000,4000)}]));
     }
-    else if((g.blocks.length>1&&g.blocks.every(({block})=>block.editor?.groupId&&block.editor.groupId===g.blocks[0].block.editor?.groupId))||(event.shiftKey&&(event.ctrlKey||event.metaKey))){
-      const aroundOrigin=event.shiftKey&&(event.ctrlKey||event.metaKey);
-      const origin:ScaleOrigin=aroundOrigin?scaleOrigin:[kind.includes('w')?1:kind.includes('e')?0:.5,kind.includes('n')?1:kind.includes('s')?0:.5];
+    else if((g.blocks.length>1&&g.blocks.every(({block})=>block.editor?.groupId&&block.editor.groupId===g.blocks[0].block.editor?.groupId))||resizeOrigin){
+      const origin:ScaleOrigin=resizeOrigin??[kind.includes('w')?1:kind.includes('e')?0:.5,kind.includes('n')?1:kind.includes('s')?0:.5];
       const result=scaleSelection(g.layout??[],g.blocks.map(item=>item.block),bounds,selectionResizeFactor(bounds,{x:dx,y:dy},kind,origin),origin,g.blocks.length>1);
-      g.frames=result.frames;g.scaled=true;
+      g.frames=result.frames;g.scaled=true;g.pivot=origin;
     }
     else{
       const xFactor=kind.includes('w')?-1:1,yFactor=kind.includes('n')?-1:1;
@@ -494,7 +494,7 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
         {members.length>1&&geometry.boxes.map((b,i)=><div key={i} className="hcs-member" style={{left:b.left-visible.left,top:b.top-visible.top,width:b.width,height:b.height}}/>)}
         {multipleSections?geometry.boxes.map((box,index)=>selectedSections[index]&&<div key={selectedSections[index].id} className="hcs-selection hcs-section-selection" role="group" aria-label={`Selected section: ${selectedSections[index].name}`} data-section={selectedSections[index].id} style={{left:box.left+sectionInset-visible.left,top:box.top+sectionInset-visible.top,width:Math.max(0,box.width-sectionInset*2),height:Math.max(0,box.height-sectionInset*2)}}/>):<div className="hcs-selection" data-absolute={one?.editor?.position==='absolute'||undefined} role="group" aria-label={selectedSection?'Selected section':members.length>1?`${members.length} selected elements`:'Selected element'} style={{left:frame.left-visible.left,top:frame.top-visible.top,width:frame.width,height:frame.height}}>
           {!locked&&one?.editor?.position==='absolute'&&['top','right','bottom','left'].map(edge=><span key={edge} className="hcs-absolute-drag-edge hcs-ui" data-edge={edge} onPointerDown={event=>begin(event,'move')}/>)}
-          {selectedGroup&&<span className="hcs-scale-pivot" aria-hidden="true" style={{left:`${scaleOrigin[0]*100}%`,top:`${scaleOrigin[1]*100}%`}}/>}
+          {selectedGroup&&<span className="hcs-scale-pivot" aria-hidden="true" style={{left:`${(gesture.current?.pivot??scaleOrigin)[0]*100}%`,top:`${(gesture.current?.pivot??scaleOrigin)[1]*100}%`}}/>}
           {!locked&&selectedLine&&(['start','end'] as const).map(end=>{const side=end==='end'?1:-1;return <button key={end} className="hcs-handle hcs-ui" data-corner data-line-end={end} style={{left:frame.width/2+side*Math.cos(lineAngle)*lineLength/2,top:frame.height/2+side*Math.sin(lineAngle)*lineLength/2,cursor:Math.abs(Math.cos(lineAngle))>.7?'ew-resize':'ns-resize'}} aria-label={`Resize line ${end}`} onPointerDown={e=>begin(e,`line-${end}`)}/>;})}
           {!locked&&!selectedLine&&!(fixedCanvas&&sectionSelection)&&handles.filter(([h])=>selectedSection?['e','w'].includes(h):h.length===2||(h==='n'||h==='s'?bounds.width:bounds.height)>=48).map(([h,x,y,label])=><button key={h} className="hcs-handle hcs-ui" data-handle={h} data-section-edge={selectedSection?true:undefined} data-corner={h.length===2||undefined} style={{left:`${x}%`,top:`${y}%`}} aria-label={`Resize selection from ${label}`} onPointerDown={e=>begin(e,h)}/>)}
         </div>}

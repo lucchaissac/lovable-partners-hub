@@ -6,11 +6,27 @@ export function linkAssetPages(pages:AssetDocument[]):AssetDocument[]{
  return pages.map(page=>({...page,series}));
 }
 export function moveAssetPage(pages:AssetDocument[],id:string,targetId:string,side:'before'|'after'):AssetDocument[]{
- const page=pages.find(item=>item.id===id);
- if(!page||!pages.some(item=>item.id===targetId))throw Error('The selected asset is no longer in this canvas.');
- if(id===targetId)return pages;
- const rest=pages.filter(item=>item.id!==id),at=rest.findIndex(item=>item.id===targetId)+(side==='after'?1:0);
- return linkAssetPages([...rest.slice(0,at),page,...rest.slice(at)]);
+ return moveAssetPages(pages,[id],targetId,side);
+}
+/** Move the selected pages as one ordered block, preserving their editable documents. */
+export function moveAssetPages(pages:AssetDocument[],ids:string[],targetId:string,side:'before'|'after'):AssetDocument[]{
+ const picked=new Set(ids);
+ if(!picked.size||ids.some(id=>!pages.some(page=>page.id===id))||!pages.some(page=>page.id===targetId))throw Error('The selected asset is no longer in this canvas.');
+ if(picked.has(targetId))return pages;
+ const moving=pages.filter(page=>picked.has(page.id)),rest=pages.filter(page=>!picked.has(page.id)),at=rest.findIndex(page=>page.id===targetId)+(side==='after'?1:0);
+ const next=[...rest.slice(0,at),...moving,...rest.slice(at)];
+ return next.every((page,i)=>page===pages[i])?pages:linkAssetPages(next);
+}
+export function removeAssetPages(pages:AssetDocument[],ids:string[]){
+ const picked=new Set(ids),remaining=pages.filter(page=>!picked.has(page.id));
+ if(!remaining.length||remaining.length===pages.length)return {pages,detached:[] as AssetDocument[]};
+ return {pages:linkAssetPages(remaining),detached:pages.filter(page=>picked.has(page.id)).map(page=>({...page,series:undefined}))};
+}
+export function duplicateAssetPages(pages:AssetDocument[],ids:string[],freshId:()=>string=()=>crypto.randomUUID(),now=Date.now()){
+ const picked=new Set(ids),selected=pages.filter(page=>picked.has(page.id));
+ if(!selected.length||selected.length!==picked.size)throw Error('The selected asset is no longer in this canvas.');
+ const copies=selected.map(page=>({...structuredClone(page),id:freshId(),title:`${page.title.slice(0,93)} · Copy`,updatedAt:now}));
+ return {pages:insertAssetPages(pages,selected.at(-1)!.id,copies),ids:copies.map(page=>page.id)};
 }
 /** Resolve saved siblings in their authored order; the open document is always freshest. */
 export function assetPages(current:AssetDocument,saved:AssetDocument[]):AssetDocument[]{

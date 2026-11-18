@@ -895,6 +895,124 @@ export const communityTemplateGeometry={
    }
   ]
  },
+ "editorial-event-collage": {
+  "width": 1080,
+  "height": 1080,
+  "reference": "social",
+  "layers": [
+   {
+    "kind": "image",
+    "key": "visual",
+    "x": 0,
+    "y": 520,
+    "w": 1160,
+    "h": 1160
+   },
+   {
+    "kind": "logo",
+    "key": "logo",
+    "x": 43.2,
+    "y": 43.2,
+    "w": 407.025,
+    "h": 40.003
+   },
+   {
+    "kind": "text",
+    "key": "city",
+    "x": 816.8,
+    "y": 36.9,
+    "w": 220,
+    "h": 48,
+    "size": 36.675,
+    "leading": 48,
+    "weight": "bold",
+    "align": "right"
+   },
+   {
+    "kind": "text",
+    "key": "title",
+    "x": 43.2,
+    "y": 150,
+    "w": 650,
+    "h": 350,
+    "size": 180,
+    "leading": 165.6,
+    "weight": "bold",
+    "align": "left"
+   },
+   {
+    "kind": "text",
+    "key": "details",
+    "x": 50,
+    "y": 540,
+    "w": 426.797,
+    "h": 170,
+    "size": 52,
+    "leading": 57.2,
+    "weight": "bold",
+    "align": "left"
+   }
+  ]
+ },
+ "editorial-source-object": {
+  "width": 1080,
+  "height": 1080,
+  "reference": "social",
+  "layers": [
+   {
+    "kind": "image",
+    "key": "visual",
+    "x": 60,
+    "y": 720,
+    "w": 1080,
+    "h": 400
+   },
+   {
+    "kind": "logo",
+    "key": "logo",
+    "x": 43.2,
+    "y": 43.2,
+    "w": 407.025,
+    "h": 40.003
+   },
+   {
+    "kind": "text",
+    "key": "city",
+    "x": 816.8,
+    "y": 36.9,
+    "w": 220,
+    "h": 48,
+    "size": 36.675,
+    "leading": 48,
+    "weight": "bold",
+    "align": "right"
+   },
+   {
+    "kind": "text",
+    "key": "title",
+    "x": 43.2,
+    "y": 150,
+    "w": 650,
+    "h": 350,
+    "size": 180,
+    "leading": 165.6,
+    "weight": "bold",
+    "align": "left"
+   },
+   {
+    "kind": "text",
+    "key": "details",
+    "x": 50,
+    "y": 540,
+    "w": 426.797,
+    "h": 170,
+    "size": 52,
+    "leading": 57.2,
+    "weight": "bold",
+    "align": "left"
+   }
+  ]
+ },
  "editorial-nature": {
   "width": 1080,
   "height": 1080,

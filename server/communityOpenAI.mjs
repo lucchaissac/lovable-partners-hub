@@ -29,13 +29,13 @@ export function openAICommunityBody(context,correction){
   schema.properties.badgeBatch={type:'null'};
   if(mode==='edit')schema.properties.designs.maxItems=0;
   else{
-   schema.properties.designs.minItems=attachedStarter?Math.min(3,(payload.availablePageSlots??64)+1):1;
-   if(attachedStarter)schema.properties.designs.maxItems=3;
+   schema.properties.designs.minItems=attachedStarter?Math.min(4,(payload.availablePageSlots??64)+1):1;
+   if(attachedStarter){schema.properties.designs.maxItems=4;if((payload.availablePageSlots??64)>=3)schema.properties.mediaRequests.minItems=1;}
    for(const key of ['changes','additions','removeIds'])schema.properties[key].maxItems=0;
   }
  }
  const operation=mode==='edit'?'Edit only the selected existing layers. Return designs:[] and replaceCurrent:false.':mode?
-  `Return complete designs only, with replaceCurrent:${mode==='replace'}. changes, additions and removeIds must be empty. Incorporate any meaningful corrections from the rejected plan into the design fields themselves. ${attachedStarter?'The current canvas is an unused starter. Review and preserve the essential facts of the ATTACHED artwork, not the demonstration title, city or footer. Produce three complete proposals with the same source facts: distinct relevant visual/layout directions, including a light counterpart. Every proposal keeps the event title, date and edition when visible. Use a visible illustration or original globe; never a dark shape on a dark canvas.':''}`:'';
+  `Return complete designs only, with replaceCurrent:${mode==='replace'}. changes, additions and removeIds must be empty. Incorporate any meaningful corrections from the rejected plan into the design fields themselves. ${attachedStarter?'The current canvas is an unused starter. Review and preserve the essential facts of the ATTACHED artwork, not the demonstration title, city or footer. Produce four complete proposals with the same source facts: three distinct prepared visual/layout directions, followed by a fourth source-inspired generated object. For the fourth, use editorial-source-object and one mediaRequest operation edit targeting a meaningful cropped element of the actual attachment. Reinterpret its silhouette into a simple isolated graphic object without its old lettering, logos or poster background. Keep the generated image on its own layer. Never substitute another library image or globe for this fourth direction. Every proposal keeps the event title, date and edition when visible. Use a visible illustration or original globe; never a dark shape on a dark canvas.':''}`:'';
  return {model:communityOpenAIModel,store:false,service_tier:'default',reasoning:{effort:'none'},max_output_tokens:6500,
   instructions:communityTemplateInstructions+'\nFor attached posters, extract their facts into native text fields. Set image:null unless there is a useful clean visual crop; never reuse a complete off-brand poster. A glyph or partner logo belongs in partners, never in the main image slot.'+(operation?'\nOperation for this request: '+operation:''),
   input:[{role:'user',content:[{type:'input_text',text:JSON.stringify({...context.payload,...correction})},...context.images.flatMap((image,index)=>[

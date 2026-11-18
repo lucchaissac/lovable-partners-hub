@@ -32,6 +32,8 @@ const base=[{kind:'logo',key:'logo',x:43.2,y:43.2,w:407.025,h:40.003},{kind:'tex
 const sub={kind:'text',key:'subtitle',x:610,y:180,w:426.8,h:180,size:52,leading:57.2,weight:'bold',align:'right'};
 layouts['editorial-photo']={width:1080,height:1080,reference:'social',layers:[{kind:'image',key:'visual',x:0,y:0,w:1080,h:1080},...base,{...sub,x:600,w:436.8,h:135,size:50,leading:55}]};
 layouts['editorial-collage']={width:1080,height:1080,reference:'social',layers:[{kind:'image',key:'visual',x:0,y:520,w:1160,h:1160},...base,{...sub,y:330,h:170}]};
+layouts['editorial-event-collage']={width:1080,height:1080,reference:'social',layers:await readManual('examples/vibe-build/latest-local-layout.json',['visual','logo','city','title','details'])};
+layouts['editorial-source-object']={...layouts['editorial-event-collage'],layers:layouts['editorial-event-collage'].layers.map(layer=>layer.key==='visual'?{...layer,x:60,y:720,w:1080,h:400}:layer)};
 layouts['editorial-nature']={width:1080,height:1080,reference:'social',layers:[{kind:'image',key:'visual',x:300,y:430,w:970,h:970},...base,sub]};
 layouts['editorial-globe']={width:1080,height:1080,reference:'social',layers:[{kind:'globe',key:'globe',x:300,y:330,w:1450,h:1450},{kind:'glow',key:'glow',x:-700,y:80,w:2340,h:2358.91,rotation:-18.2698},...base,{...sub,x:43.2,y:515,w:600,h:145,align:'left'}]};
 const advances={};for(let code=32;code<384;code++){const c=String.fromCharCode(code);advances[c]=Math.round(bold.charToGlyph(c).advanceWidth/bold.unitsPerEm*10000)/10000;}

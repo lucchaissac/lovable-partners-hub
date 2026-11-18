@@ -1,0 +1,17 @@
+{
+  "title": "Vibe & build · Approved event collage",
+  "approvedAt": "2026-11-17",
+  "reference": "Screenshot 2026-11-17 at 17.17.32.png",
+  "layout": "latest-local-layout.json",
+  "capture": "Read-only DOM geometry of the user's manually refined third asset in the local studio",
+  "canvas": {"width": 1080, "height": 1080, "background": "#f7f4ed"},
+  "visual": "library-paper-collage",
+  "rules": [
+    "Preserve the full Community signature and Athens opposite at the top.",
+    "Keep Vibe & / build in its existing large upper-left frame.",
+    "Keep 18 November / Vol. IX together beneath the headline at the left.",
+    "Keep the oversized prepared collage cropped at the right and bottom.",
+    "This correction supersedes the earlier right-aligned details for this event; do not alter unrelated approved campaigns."
+  ],
+  "fourthDirection": "Append a separately generated isolated object inspired by one meaningful element of the source image, such as its sign/plaque silhouette. Preserve the first three manually refined assets. Typography and Community identity remain native editable layers."
+}

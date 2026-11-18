@@ -155,6 +155,13 @@ export function compileTemplatePlan(value,request){
   const onlyGlobe=intent.designs.every(spec=>!spec.image&&communityTemplateGeometry[spec.template].layers.some(layer=>layer.kind==='globe'));
   if(directions.size<2||onlyGlobe)throw Error('These proposals repeat the same visual. Reuse distinct prepared templates: editorial-photo with library-flash-light or library-flash-dark, editorial-collage with library-paper-collage, and editorial-pixel with library-pixel-abstraction. Keep every supplied event fact in each proposal.');
  }
+ const starterReview=request.startingTemplate&&request.prompt==='Refine the current asset using the attached reference. Preserve its essential content.'&&request.sources.some(source=>source.kind==='image');
+ if(starterReview&&intent.designs.length===4){
+  const fourth=intent.designs[3],media=intent.mediaRequests.find(item=>item.id===fourth.image?.sourceId);
+  if(fourth.template!=='editorial-source-object'||media?.operation!=='edit'||!request.sources.some(source=>source.kind==='image'&&source.id===media.sourceId)||!media.crop||media.crop.width*media.crop.height>.8){
+   throw Error('The fourth proposal must use editorial-source-object and a generated edit of a focused crop from the actual attachment. Keep its typography and Community identity native; do not substitute a library image or the complete source poster.');
+  }
+ }
  const designs=intent.designs.map(designFromTemplate),edits=[...intent.changes.map(c=>changedElement(c,request)),...intent.additions];
  const elements=[...designs.flatMap(d=>d.elements),...edits];
  const reviews=intent.reviews.filter(review=>request.sources.some(s=>s.kind==='image'&&s.id===review.sourceId)||review.sourceId==='current-canvas'&&request.preview).map(review=>({...review,retainedVisuals:elements.filter(e=>e.kind==='image'&&e.sourceId===review.sourceId).map(e=>({elementId:e.id,sourceId:e.sourceId,kind:e.id.includes('partner-')?'partner-logo':'illustration',reason:'Retained useful visual from the supplied source.'}))}));

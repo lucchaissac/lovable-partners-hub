@@ -50,7 +50,7 @@ test('planner has fixed pricing model, bounded output, strict native JSON and no
 test('an image-only starter request and a mixed-plan retry cannot mix full designs and old-layer edits',()=>{
  const payload={prompt:'Refine the current asset using the attached reference. Preserve its essential content.',startingTemplate:true,sources:[{id:'attachment-0',kind:'image'}]};
  const body=openAICommunityBody({payload,images:[]}),properties=body.text.format.schema.properties;
- assert.equal(properties.replaceCurrent.const,true);assert.equal(properties.designs.minItems,3);assert.equal(properties.designs.maxItems,3);
+ assert.equal(properties.replaceCurrent.const,true);assert.equal(properties.designs.minItems,4);assert.equal(properties.designs.maxItems,4);assert.equal(properties.mediaRequests.minItems,1);
  for(const key of ['changes','additions','removeIds'])assert.equal(properties[key].maxItems,0);
  assert.match(body.instructions,/essential facts of the ATTACHED artwork/);
  const selected=openAICommunityBody({payload:{...payload,context:'HTML_SELECTION {"blockIds":["photo"]}'},images:[]});

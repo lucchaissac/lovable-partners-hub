@@ -1,0 +1,34 @@
+[
+  {
+    "align": "start",
+    "alt": "Paper collage",
+    "kind": "image",
+    "style": "box-sizing: border-box; --hcs-padding-top: 0px; --hcs-padding-left: 0px; --hcs-list-line: 1.25; width: 1160px; min-width: 0px; left: 0px; min-height: 1160px; top: 520px; transform: translateY(0px) rotate(0deg); transform-origin: center center; opacity: 1; border-radius: 0px; --hcs-text-transform: none; --hcs-image-fit: contain; --hcs-image-height: 1160px;",
+    "text": ""
+  },
+  {
+    "align": "start",
+    "alt": "Lovable Community",
+    "kind": "image",
+    "style": "box-sizing: border-box; --hcs-padding-top: 0px; --hcs-padding-left: 0px; --hcs-list-line: 1.25; width: 407.025px; min-width: 0px; left: 43.2px; min-height: 40.003px; top: 43.2px; transform: translateY(0px) rotate(0deg); transform-origin: center center; opacity: 1; border-radius: 0px; --hcs-text-transform: none; --hcs-image-fit: contain; --hcs-image-height: 40.003px;",
+    "text": ""
+  },
+  {
+    "align": "right",
+    "kind": "text",
+    "style": "box-sizing: border-box; --hcs-padding-top: 0px; --hcs-padding-left: 0px; --hcs-list-size: 36.675px; --hcs-list-color: #1b1b1b; --hcs-list-line: 1.30879345603272; width: 220px; min-width: 0px; left: 816.8px; min-height: 48px; top: 36.9px; transform: translateY(0px) rotate(0deg); transform-origin: center center; opacity: 1; --hcs-text-size: 36.675px; --hcs-font: Camera Plain; --hcs-text-spacing: 0px; --hcs-text-line: 1.30879345603272; --hcs-text-weight: 700; --hcs-text-transform: none;",
+    "text": "Athens"
+  },
+  {
+    "align": "left",
+    "kind": "text",
+    "style": "box-sizing: border-box; --hcs-padding-top: 0px; --hcs-padding-left: 0px; --hcs-list-size: 180px; --hcs-list-color: #1b1b1b; --hcs-list-line: 0.92; width: 650px; min-width: 0px; left: 43.2px; min-height: 350px; top: 150px; transform: translateY(0px) rotate(0deg); transform-origin: center center; opacity: 1; --hcs-text-size: 180px; --hcs-font: Camera Plain; --hcs-text-spacing: 0px; --hcs-text-line: 0.92; --hcs-text-weight: 700; --hcs-text-transform: none;",
+    "text": "Vibe &\nbuild"
+  },
+  {
+    "align": "left",
+    "kind": "text",
+    "style": "box-sizing: border-box; --hcs-padding-top: 0px; --hcs-padding-left: 0px; --hcs-list-size: 52px; --hcs-list-color: #1b1b1b; --hcs-list-line: 1.1; width: 426.797px; min-width: 0px; left: 50px; min-height: 170px; top: 540px; transform: translateY(0px) rotate(0deg); transform-origin: center center; opacity: 1; --hcs-text-size: 52px; --hcs-font: Camera Plain; --hcs-text-spacing: 0px; --hcs-text-line: 1.1; --hcs-text-weight: 700; --hcs-text-transform: none;",
+    "text": "18 November\nVol. IX"
+  }
+]

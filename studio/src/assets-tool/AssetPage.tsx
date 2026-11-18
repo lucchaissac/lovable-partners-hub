@@ -1,3 +1,4 @@
+import {MakerDesignProvider} from './MakerDesignContext';
 import {graphicEventFormat,applyCommunityContrast} from './communityGraphic';
 import {techStarterAsset} from './techAsset';
 import {brandStarterAsset,isAppStudioAsset} from './brandAsset';
@@ -53,7 +54,7 @@ const locationSearch = () => window.location.search;
 type AssetRequest = {id:number;prompt:string;visual?:WorkspaceVisual;sources:StudioSource[];recorded?:boolean;chatId?:string};
 
 export default function AssetPage() {
-  return <CommunityTypographyContext.Provider value={studioWorkspace==='ambassadors'}><ColorPickerPaletteProvider value={studioWorkspace==='ambassadors'?communityPalette:assetPalette}><WorkspaceWidgetHost><HtmlSelectionMode.Provider value={true}><HtmlEditorInsertProvider><AssetPageContent/></HtmlEditorInsertProvider></HtmlSelectionMode.Provider></WorkspaceWidgetHost></ColorPickerPaletteProvider></CommunityTypographyContext.Provider>;
+  return <CommunityTypographyContext.Provider value={studioWorkspace==='ambassadors'}><ColorPickerPaletteProvider value={studioWorkspace==='ambassadors'?communityPalette:assetPalette}><WorkspaceWidgetHost><HtmlSelectionMode.Provider value={true}><MakerDesignProvider><HtmlEditorInsertProvider><AssetPageContent/></HtmlEditorInsertProvider></MakerDesignProvider></HtmlSelectionMode.Provider></WorkspaceWidgetHost></ColorPickerPaletteProvider></CommunityTypographyContext.Provider>;
 }
 function AssetPageContent() {
   const { active } = useStudioSession();

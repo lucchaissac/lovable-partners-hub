@@ -1,3 +1,4 @@
+import {useMakerDesign} from '../assets-tool/MakerDesignContext';
 import {renderedTechSource} from '../assets-tool/techArtwork';
 import { readHtmlVideo } from './readHtmlVideo';
 import {LucideGlyph} from './LucideGlyph';
@@ -22,7 +23,7 @@ import { htmlFrameStyle, useHtmlCanvasSelection } from './HtmlCanvasSelection';
 import { WidgetInsertMenu } from '../protos/widget-dropdown';
 import { htmlInsertOptions, useHtmlEditorInsert, useHtmlInsertPanel } from './HtmlEditorInsert';
 import { WorkspaceSyncedSection } from './WorkspaceSyncedSection';
-import { useContext, useEffect, useRef, useState, type CSSProperties, type DragEvent, type PointerEvent } from 'react';
+import { useContext, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type DragEvent, type PointerEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { Button, ColorPicker, Dialog, DialogBody, DialogFooter, DialogHeader, Dropdown, Icon, Input, Tabs, TabsItem, TabsList, TabsTrigger, TabsTriggerIcon, Tooltip } from '@asset/ui';
 import { EditorImageBlock, EditorTextBlock, type EditorChecklistValue } from '../components/editor-widgets';
@@ -53,6 +54,8 @@ type Rename = { type: 'page' | 'section'; id?: string; name: string };
 export function HtmlEditorV1({initialDesign, canvasOnly=false, zoom=1, imageSources={}}:{initialDesign?:{sectionId:string}|{blockId:string}; canvasOnly?:boolean; zoom?:number; imageSources?:Record<string,string>} = {}) {
   const editing = useContext(WorkspaceEditingContext), host = useWorkspaceWidgetHost();
   const shared = useContext(HtmlEditorSharedContext);
+  const makerDesign=useMakerDesign();
+  const insertedBlock=useRef<{id:string;design:boolean}|undefined>(undefined);
   const editable = !!editing.onEdit && !shared;
   const insertHandler = useHtmlEditorInsert();
   const insertPanel = useHtmlInsertPanel();
@@ -135,7 +138,10 @@ export function HtmlEditorV1({initialDesign, canvasOnly=false, zoom=1, imageSour
       if(block.kind==='text'){block.value={...block.value,size:28,color:'var(--ui-text)'};block.editor={...block.editor,appearance:{...block.editor?.appearance,fontFamily:'Camera Plain',fontSize:28,fontWeight:600,lineHeight:125}};}
       index=stateRef.current.pages.flatMap(p=>p.sections).find(s=>s.id===section)?.columns[column].length??index;
     }
-    const kind = block.kind; sectionChange(section, s => s.columns[column].splice(index, 0, block));
+    const kind = block.kind;
+    if(canvasOnly&&canvasSelection.enabled)insertedBlock.current={id:block.id,design:makerDesign?.visible??host.panelOpen};
+    sectionChange(section, s => s.columns[column].splice(index, 0, block));
+    if(canvasOnly&&canvasSelection.enabled)return;
     requestAnimationFrame(() => {
       const element = document.getElementById(`block-${block.id}`); element?.scrollIntoView({ block: 'nearest', behavior: 'instant' });
       if (kind === 'text') element?.querySelector<HTMLElement>('[contenteditable=true]')?.focus({ preventScroll: true });
@@ -301,6 +307,14 @@ export function HtmlEditorV1({initialDesign, canvasOnly=false, zoom=1, imageSour
     </HtmlInsertionGap> : null;
   };
   const canvasSelection = useHtmlCanvasSelection({root,state,zoom,fixedCanvas:canvasOnly,imageSources,pageId:page.id,editable,save,onSelect:setSelected,onReplace:(id,fill)=>pickFile(id,'image',fill),onEditButton:setButtonEdit,onAddSection:(id,after,anchor)=>openSectionInsert(page.sections.findIndex(s=>s.id===id)+(after?1:0),anchor)});
+  useLayoutEffect(()=>{
+    const pending=insertedBlock.current;if(!pending||!canvasSelection.enabled)return;
+    const block=state.pages.flatMap(page=>page.sections.flatMap(section=>section.columns.flat())).find(block=>block.id===pending.id);
+    if(!block)return;
+    insertedBlock.current=undefined;
+    canvasSelection.inserted(block,pending.design);
+    requestAnimationFrame(()=>document.getElementById(`block-${block.id}`)?.scrollIntoView({block:'nearest',behavior:'instant'}));
+  });
   const initialDesignApplied=useRef(false);
   const initialDesignKey=JSON.stringify(initialDesign);
   useEffect(()=>{
@@ -366,7 +380,7 @@ export function HtmlEditorV1({initialDesign, canvasOnly=false, zoom=1, imageSour
         <section id={`section-${section.id}`} className="hev-section" data-generating={progress?.sectionIds.includes(section.id)||undefined} aria-busy={progress?.sectionIds.includes(section.id)||undefined} data-section={section.id} data-section-name={section.name} data-locked={section.locked||undefined} data-appearance={section.appearance} style={{ ...htmlSectionStyle(section),transformOrigin:'center',background: section.background, '--hev-padding': `${section.padding}px`, '--hev-padding-top':`${section.paddingTop??section.padding}px`, '--hev-padding-bottom':`${section.paddingBottom??section.padding}px`, '--hev-block-gap':`${section.blockGap??24}px`, '--hev-min-height': `${section.minHeight||0}px`, '--hev-column-gap': `${section.gap ?? (section.id==='welcome'?64:40)}px`, '--hev-content-width':section.contentWidth?`${section.contentWidth}px`:'none', '--hev-vertical-align':section.verticalAlign??(section.id==='welcome'?'center':'start') } as CSSProperties}>
           {editable && <header className="hev-section-tools"><span>{section.name}</span><div><Tooltip label="Section design"><Button size="sm" variant="ghost" aria-label={`Design ${section.name} section`} onClick={() => { setSectionDesign(section.id); host.panelChanged(`section-${section.id}`, true); }}>{icon('paintbrush-vertical')}</Button></Tooltip><Dropdown align="end" width={208} listHeight="auto" items={[{ id: 'rename', label: 'Rename section' }, { id: 'duplicate', label: 'Duplicate section' }, { id: 'up', label: 'Move up', disabled: sectionIndex === 0 }, { id: 'down', label: 'Move down', disabled: sectionIndex === page.sections.length - 1 }, { id: 'delete', label: 'Delete section' }]} onChange={action => sectionAction(action, section)} trigger={<Button size="sm" variant="ghost" aria-label={`${section.name} section options`}>{icon('ellipsis')}</Button>} /></div></header>}
           <div className="hev-columns" data-columns={section.columns.length} data-resizing={resize?.id===section.id||undefined} style={{gridTemplateColumns:(resize?.id===section.id?resize.weights:sectionWeights(section)).map(w=>`minmax(0, ${w}fr)`).join(" ")}}>{section.columns.map((column, c) => <div className="hev-column" key={c}>
-            {column.map((block, index) => <div className="hev-block-wrap" key={block.id} data-position={block.editor?.position} style={{paddingBottom:block.editor?.position==='absolute'?undefined:Math.max(0,block.editor?.y||0)+(block.editor?.spacingAfter??0)}}>
+            {column.map((block, index) => block.editor?.hidden?null:<div className="hev-block-wrap" key={block.id} data-position={block.editor?.position} style={{paddingBottom:block.editor?.position==='absolute'?undefined:Math.max(0,block.editor?.y||0)+(block.editor?.spacingAfter??0)}}>
               {insertion(section.id, c, index)}
               <div id={`block-${block.id}`} className="hev-block" data-image-hidden={block.kind==='image'&&block.editor?.appearance?.imageVisible===false||undefined} data-generating={progress?.blockIds.includes(block.id)||undefined} aria-busy={progress?.blockIds.includes(block.id)||undefined} style={htmlFrameStyle(block)} data-editing={canvasSelection.editingId===block.id||undefined} data-locked={block.editor?.locked||undefined} draggable={!canvasSelection.mode && editable && ['image','pdf','media'].includes(block.kind)} onDragStart={e=>{if(!editable)return;e.stopPropagation();e.dataTransfer.setData('application/x-asset-block',block.id);e.dataTransfer.effectAllowed='move';setDragging(block.id);}} onDragEnd={()=>{setDragging(undefined);setDrop('');}} data-kind={block.kind} data-list={block.kind==='text'?block.value.list:undefined} data-play-icon={block.kind==='image'&&block.value.playIcon||undefined} data-style={block.kind === 'text' ? block.value.style : undefined} data-selected={(canvasSelection.enabled?canvasSelection.ids.includes(block.id):selected?.id === `block-${block.id}`) || undefined} onClick={e => { if (editable) setSelected((e.target as HTMLElement).closest('[data-workspace-widget]') ?? e.currentTarget); }}>
                 {editable && <div className="hev-block-tools"><Tooltip label="Drag to move"><button type="button" className="hev-drag" draggable aria-label={`Move ${contentTypes.find(t => t.id === block.kind)?.label}`} onDragStart={e => { e.dataTransfer.setData('application/x-asset-block', block.id); e.dataTransfer.effectAllowed = 'move'; setDragging(block.id); }} onDragEnd={() => { setDragging(undefined); setDrop(''); }}>{icon('grip-vertical')}</button></Tooltip><Dropdown width={190} align="end" listHeight="auto" items={[{ id: 'up', label: 'Move up', disabled: index === 0 }, { id: 'down', label: 'Move down', disabled: index === column.length - 1 }, ...(block.kind === 'cta' ? [{ id: 'edit', label: 'Edit button' }] : []), ...(block.kind === 'pdf' ? [{ id: 'replace', label: 'Replace PDF' }] : []), { id: 'delete', label: 'Delete block' }]} onChange={action => { if (action === 'edit' && block.kind === 'cta') setButtonEdit(block); else if (action === 'delete') removeBlock(block.id); else if (action === 'replace') pickFile(block.id, 'pdf'); else save(moveHtmlBlock(stateRef.current, block.id, section.id, c, action === 'up' ? index - 1 : index + 2)); }} trigger={<Button size="sm" variant="ghost" aria-label={`${contentTypes.find(t => t.id === block.kind)?.label} block options`}>{icon('ellipsis')}</Button>} /></div>}

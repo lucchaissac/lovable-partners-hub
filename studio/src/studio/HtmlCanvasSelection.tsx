@@ -1,6 +1,8 @@
+import {useMakerDesign} from '../assets-tool/MakerDesignContext';
 import {canvasClipboardType,canvasClipboardPrefix,copiedCanvasBlocks,pasteCanvasBlocks} from './canvasClipboard';
 import {blockAppearance,mixedAppearance,patchSelectionAppearance,selectionDesignKind} from './selectionAppearance';
 import {translateCanvasSelection} from './selectionPosition';
+import {rotateSelectionFrames} from './selectionRotation';
 import {SelectionPositionControls} from './SelectionPositionControls';
 import {htmlBlockSchema} from './htmlEditorModel';
 import {TechArtworkDesign} from '../assets-tool/TechArtworkDesign';
@@ -55,6 +57,7 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
 }) {
   const rect = (el: Element) => { const r=el.getBoundingClientRect(); return {left:r.left/zoom,top:r.top/zoom,width:r.width/zoom,height:r.height/zoom,right:r.right/zoom,bottom:r.bottom/zoom}; };
   const mode=useContext(HtmlSelectionMode), enabled=mode&&editable, host=useWorkspaceWidgetHost(), editing=useContext(WorkspaceEditingContext);
+  const makerDesign=useMakerDesign();
   const communityCanvas=!!root.current?.closest('.community-canvas');
   const insertPanel = useHtmlInsertPanel();
   const [sectionIds,setSectionIds]=useState<string[]>([]);
@@ -94,6 +97,17 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
   const element=(id:string)=>root.current?.querySelector<HTMLElement>(`#block-${CSS.escape(id)}`);
   const clear=()=>{setSectionId('');setIds([]);setEditingId('');setDesign(false);setMenu(false);onSelect(undefined);};
   const choose=(next:string[])=>{setSectionId('');setIds(next);setEditingId('');if(next.length>1){setDesign(true);host.panelChanged('html-selection',true);}onSelect(next.length===1?(element(next[0])||undefined):undefined);};
+  useLayoutEffect(()=>{
+    if(!enabled||!makerDesign)return;
+    const select=(next:string[])=>{
+      choose(next.filter(id=>blocks.some(block=>block.id===id)));
+      setDesign(true);host.panelChanged('html-selection',true);
+    };
+    makerDesign.select.current=select;
+    return()=>{if(makerDesign.select.current===select)makerDesign.select.current=undefined;};
+  },[enabled,blocks,makerDesign?.select,host.panelChanged]);
+  useEffect(()=>{if(enabled)makerDesign?.setSelected(ids);},[enabled,ids.join('|')]);
+  useEffect(()=>{if(enabled&&makerDesign)return()=>makerDesign.setSelected([]);},[enabled]);
   useEffect(()=>{clear();},[pageId,mode]);
   const communityTemplateId=blocks.find(block=>block.kind==='image'&&block.ambassador&&!block.ambassadorElement)?.id;
   useEffect(()=>{if(!enabled||!communityTemplateId)return;choose([communityTemplateId]);setDesign(true);host.panelChanged('html-selection',true);},[communityTemplateId,enabled]);
@@ -199,6 +213,7 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
     });
   }
   function patch(values:ElementFrame){if(locked)return;const items=layoutItems(members);save(patchHtmlFrames(source.current,constrainLayoutFrames(items,Object.fromEntries(members.map(block=>{const frame=items.find(item=>item.id===block.id)?.frame||block.editor||{};return [block.id,{...frame,...values,...(values.x!==undefined?{x:(frame.x||0)+values.x-(block.editor?.x||0)}:{}),...(values.y!==undefined?{y:(frame.y||0)+values.y-(block.editor?.y||0)}:{})}];})))));}
+  function rotateBy(degrees:number){if(locked)return;const items=layoutItems(members),bounds=selectionBounds(items.map(item=>item.box));if(bounds)save(patchHtmlFrames(source.current,constrainLayoutFrames(items,rotateSelectionFrames(items,bounds,degrees))));}
   function setAbsolute(absolute: boolean){
     if(!one||locked)return;
     const el=element(one.id),col=el?.closest<HTMLElement>('.hev-column'),section=el?.closest<HTMLElement>('.hev-section');
@@ -253,7 +268,8 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
     if(!selected.length||selected.some(b=>b.editor?.locked))return;
     event.preventDefault();event.stopPropagation();
     const layout=layoutItems(selected);
-    const items=selected.map(block=>{const el=element(block.id)!,item=layout.find(item=>item.id===block.id)!;return {block:{...block,editor:item.frame},box:rect(el),width:item.width,parentWidth:item.parentWidth};});
+    const items=selected.flatMap(block=>{const el=element(block.id),item=layout.find(item=>item.id===block.id);return el&&item?[{block:{...block,editor:item.frame},box:rect(el),width:item.width,parentWidth:item.parentWidth}]:[];});
+    if(!items.length)return;
     const bounds=selectionBounds(items.map(i=>i.box))!;
     const chosen=new Set(selected.map(b=>b.id));
     const sections=[...new Set(items.map(i=>element(i.block.id)?.closest('.hev-section')).filter((s):s is HTMLElement=>!!s))];
@@ -300,6 +316,7 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
     const initial=target.closest<HTMLElement>('.hev-block');
     const hit=(el:HTMLElement)=>{
       const b=blocks.find(b=>`block-${b.id}`===el.id);
+      if(b?.editor?.locked||b?.editor?.hidden)return false;
       if(studioWorkspace==='tech-blog'&&b?.kind==='image'&&isTechArtwork(b)&&b.value.src.includes('curves')){
         const r=el.getBoundingClientRect(),angle=(b.editor?.rotation??0)*Math.PI/180,dx=(x-r.left-r.width/2)/zoom,dy=(y-r.top-r.height/2)/zoom;
         const u=(dx*Math.cos(angle)+dy*Math.sin(angle))/el.offsetWidth+.5,v=(-dx*Math.sin(angle)+dy*Math.cos(angle))/el.offsetHeight+.5;
@@ -327,7 +344,8 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
       event.preventDefault();event.stopPropagation();root.current?.focus({preventScroll:true});
       const additive=event.shiftKey||event.metaKey||event.ctrlKey;
       const group=block.editor?.groupId;
-      const next=event.altKey?[id!]:additive?(ids.includes(id!)?ids.filter(i=>i!==id):[...ids,id!]):ids.includes(id!)?ids:group?blocks.filter(b=>b.editor?.groupId===group).map(b=>b.id):[id!];
+      const selectableIds=ids.filter(id=>blocks.some(b=>b.id===id&&!b.editor?.locked&&!b.editor?.hidden));
+      const next=event.altKey?[id!]:additive?(selectableIds.includes(id!)?selectableIds.filter(i=>i!==id):[...selectableIds,id!]):selectableIds.includes(id!)?selectableIds:group?blocks.filter(b=>b.editor?.groupId===group&&!b.editor?.locked&&!b.editor?.hidden).map(b=>b.id):[id!];
       choose(next);if(next.length===1&&block.kind==='image'&&(block.badge||block.ambassador||block.brandRole||((studioWorkspace==='tech-blog'||studioWorkspace==='ambassadors')&&isTechArtwork(block)))){setDesign(true);host.panelChanged('html-selection',true);}if(!additive)begin(event,'move',blocks.filter(b=>next.includes(b.id)));return;
     }
     if(target.closest('button,a,input,textarea,[role=tab],.hev-section-tools,.hev-column-resizer'))return;
@@ -352,7 +370,7 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
       const cx=bounds.left+bounds.width/2,cy=bounds.top+bounds.height/2;
       let angle=(Math.atan2((event.clientY/zoom)-cy,(event.clientX/zoom)-cx)-Math.atan2(g.y-cy,g.x-cx))*180/Math.PI;
       if(event.shiftKey)angle=Math.round(angle/15)*15;
-      g.frames=Object.fromEntries(g.blocks.map(({block})=>[block.id,{...block.editor,rotation:((block.editor?.rotation||0)+angle+540)%360-180}]));
+      g.frames=rotateSelectionFrames(g.blocks.map(({block,box})=>({id:block.id,frame:block.editor??{},box})),bounds,angle);
     }else if(kind==='move'){
       g.cursor={x:(event.clientX/zoom),y:(event.clientY/zoom)};g.drop=findDrop((event.clientX/zoom),(event.clientY/zoom),g);setDropTarget(g.drop||null);
       const raw=event.shiftKey?(Math.abs(dx)>Math.abs(dy)?{x:dx,y:0}:{x:0,y:dy}):{x:dx,y:dy};
@@ -378,7 +396,7 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
       if(e.defaultPrevented||(!ids.length&&!sectionIds.length&&!marqueeStart.current)||!(e.target instanceof Element)||e.target.closest('input,textarea,[contenteditable=true],[role=menu],[role=dialog],.workspace-widget-panelhost'))return;
       if(e.key==='Escape'){e.preventDefault();if(gesture.current||marqueeStart.current)finish(true);else clear();return;}
       if(gesture.current||marqueeStart.current){if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='z'){e.preventDefault();finish(true);}return;}
-      if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='a'){e.preventDefault();if(insertPanel.enabled&&sectionSelection){setSectionIds(page.sections.map(s=>s.id));return;}choose(page.sections.filter(s=>!s.locked).flatMap(s=>s.columns.flat()).filter(b=>!b.editor?.locked).map(b=>b.id));return;}
+      if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='a'){e.preventDefault();if(insertPanel.enabled&&sectionSelection){setSectionIds(page.sections.map(s=>s.id));return;}choose(page.sections.filter(s=>!s.locked).flatMap(s=>s.columns.flat()).filter(b=>!b.editor?.locked&&!b.editor?.hidden).map(b=>b.id));return;}
       if(locked)return;
       if(layeredSelection&&(e.metaKey||e.ctrlKey)&&(e.code==='BracketLeft'||e.code==='BracketRight')){e.preventDefault();arrange(e.code==='BracketRight'?(e.shiftKey?'bring-to-front':'bring-forward'):(e.shiftKey?'send-to-back':'send-backward'));return;}
       if(e.key==='Delete'||e.key==='Backspace'){e.preventDefault();action('delete');}
@@ -452,7 +470,7 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
           const edge=insertPanel.enabled&&(after?page.sections.at(-1)?.id:page.sections[0]?.id)===sectionId;
           return <Tooltip key={String(after)} label={after?'Add section below':'Add section above'}><Button className="hcs-section-add hcs-ui" data-section-edge={edge?(after?'end':'start'):undefined} variant="ghost" size="sm" aria-label={after?'Add section below selection':'Add section above selection'} leadingIcon={<Icon name="plus" size={16}/>} style={{left:frame.left+frame.width/2-visible.left,top:(edge?bounds.top+(after?bounds.height:0):frame.top+(after?frame.height:0))-visible.top}} onClick={event=>onAddSection(sectionId,after,event.currentTarget)}/></Tooltip>;
         })}
-        {!locked&&!sectionSelection&&<Button className="hcs-rotate hcs-ui" size="sm" variant="ghost" aria-label="Rotate selection" data-rotating={gesture.current?.kind==='rotate'||undefined} leadingIcon={<Icon name="rotate-cw" size={14}/>} style={{left:rotateLeft,top:rotateTop,visibility:!communityCanvas&&gesture.current?.kind==='rotate'?'hidden':undefined}} onPointerDown={e=>begin(e,'rotate')} onKeyDown={e=>{if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();e.stopPropagation();patch({rotation:clamp((one?.editor?.rotation||0)+(e.key==='ArrowRight'?1:-1)*(e.shiftKey?15:1),-360,360)});}}}/>}
+        {!locked&&!sectionSelection&&<Button className="hcs-rotate hcs-ui" size="sm" variant="ghost" aria-label="Rotate selection" data-rotating={gesture.current?.kind==='rotate'||undefined} leadingIcon={<Icon name="rotate-cw" size={14}/>} style={{left:rotateLeft,top:rotateTop,visibility:!communityCanvas&&gesture.current?.kind==='rotate'?'hidden':undefined}} onPointerDown={e=>begin(e,'rotate')} onKeyDown={e=>{if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();e.stopPropagation();rotateBy((e.key==='ArrowRight'?1:-1)*(e.shiftKey?15:1));}}}/>}
         <div ref={toolbar} className="hcs-toolbar hcs-ui" data-section={insertPanel.enabled&&sectionSelection||undefined} data-pinned={geometry.toolbar.fixed||undefined} role="toolbar" aria-label="Selected element actions" style={{position:geometry.toolbar.fixed?'fixed':undefined,left:geometry.toolbar.left-(geometry.toolbar.fixed?0:visible.left),top:geometry.toolbar.top-(geometry.toolbar.fixed?0:visible.top),visibility:gesture.current||insertPanel.enabled&&sectionSelection&&!geometry.boxes.some(box=>box.top+box.height>viewport.top&&box.top<viewport.top+viewport.height)?'hidden':undefined}}>
           {sectionSelection&&<div className="hcs-widget-identity"><span className="hcs-widget-label"><Icon name={fixedCanvas?'frame':insertPanel.enabled?'rectangle-horizontal':'layout-template'} size={16}/><span>{multipleSections?`${selectedSections.length} sections`:selectedSection!.name}</span></span></div>}{hasWidgetTools&&<div className="hcs-widget-identity" ref={setWidgetIdentityHost}/>}
           {toolButton(locked?'Unlock selection':'Lock selection',locked?'lock':'lock-open',()=>action(locked?'unlock':'lock'))}
@@ -500,8 +518,8 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
       positionControls={<SelectionPositionControls blocks={members} onChange={delta=>{if(!locked)save(translateCanvasSelection(source.current,ids,delta));}}/>}
       onChange={(appearance:NonNullable<ElementFrame['appearance']>)=>save(patchSelectionAppearance(source.current,ids,appearance))} onClose={()=>{setDesign(false);host.closePanel();}}/></div>,host.panelHost)}
     {selectionDesignActive&&one&&!(one.kind==='image'&&(one.badge||one.ambassador||one.brandRole==='partner'||((studioWorkspace==='tech-blog'||studioWorkspace==='ambassadors')&&isTechArtwork(one))))&&host.panelHost&&host.activeId==='html-selection'&&createPortal(<div className="hcs-ui" style={{height:'100%',display:'contents'}}><PresentationElementDesign
-      shape={{id:one.id,kind:one.kind==='text'?'text':one.kind==='image'?'image':one.kind==='shape'?one.shape:'rectangle',width:bounds?.width||100,height:bounds?.height||100,src:one.kind==='image'?one.value.src:undefined,appearance:{...(one.kind==='text'?{fill:one.value.color,fontFamily:'Camera Plain',fontSize:one.value.size,textAlign:one.value.align,fontWeight:one.value.runs.every(r=>r.bold)?700:400,italic:one.value.runs.every(r=>r.italic),underline:one.value.runs.every(r=>r.underline),lineHeight:one.value.style==='Heading 1'?102:one.value.style.startsWith('Heading')?112:150}:one.kind==='image'?{imageFit:'cover'}:{}),...one.editor?.appearance}}}
-      label={one.kind==='text'?(one.value.runs.map(r=>r.text).join('').slice(0,60)||'Text'):one.kind==='image'?'Image':one.kind==='contacts'?'Contact cards':one.kind==='tasks'?'Checklist':one.kind==='media'&&one.format==='Video'?'Video':'Element'} locked={locked}
+      shape={{id:one.id,kind:one.kind==='text'?'text':one.kind==='image'?'image':one.kind==='shape'?one.shape:'rectangle',width:bounds?.width||100,height:bounds?.height||100,src:one.kind==='image'?one.value.src:undefined,appearance:{...(one.kind==='text'?{fill:one.value.color,fontFamily:'Camera Plain',fontSize:one.value.size,textAlign:one.value.align,fontWeight:one.value.runs.every(r=>r.bold)?700:400,italic:one.value.runs.length>0&&one.value.runs.every(r=>r.italic),underline:one.value.runs.length>0&&one.value.runs.every(r=>r.underline),lineHeight:one.value.style==='Heading 1'?102:one.value.style.startsWith('Heading')?112:150}:one.kind==='image'?{imageFit:'cover'}:{}),...one.editor?.appearance}}}
+      label={one.kind==='text'?(one.value.runs.map(r=>r.text).join('').slice(0,60)||'Text'):one.kind==='image'?'Image':one.kind==='contacts'?'Contact cards':one.kind==='tasks'?'Checklist':one.kind==='media'&&one.format==='Video'?'Video':one.kind==='shape'&&one.shape==='line'?'Line':'Element'} locked={locked}
       spacingAfter={one.editor?.spacingAfter??0} onSpacingAfter={(spacingAfter:number)=>changeBlock({...one,editor:{...one.editor,spacingAfter}})} onSpacingPreview={setSpacingPreview}
       onFillImage={one.kind==='shape'?()=>onReplace(one.id,true):undefined}
       absolutePosition={one.editor?.position==='absolute'} onAbsolutePosition={setAbsolute}
@@ -517,8 +535,13 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
     onChange={(appearance:NonNullable<ElementFrame['appearance']>)=>changeBlock({...one,editor:{...one.editor,appearance:{...one.editor?.appearance,...appearance}}})}
     spacingAfter={one.editor?.spacingAfter??0} onSpacingAfter={(spacingAfter:number)=>changeBlock({...one,editor:{...one.editor,spacingAfter}})} onSpacingPreview={setSpacingPreview}
     absolutePosition={one.editor?.position==='absolute'} onAbsolutePosition={setAbsolute}/>:null;
-  return {mode,enabled,ids,sectionId,sectionIds,selectSection:(id:string,range=false,toggle=false)=>{if(enabled)chooseSection(id,range,toggle);},designSection:(id:string)=>{if(!enabled)return;chooseSection(id);setDesign(true);host.panelChanged('html-selection',true);},editingId,textToolbarHost,widgetToolbarHost,widgetIdentityHost,widgetDesign,rendered,ui,clear,edit:editBlock,designElement:(id:string)=>{if(!enabled||!blocks.some(block=>block.id===id))return;choose([id]);setDesign(true);host.panelChanged('html-selection',true);},transforming:!!draft,select:(el?:Element)=>{if(!enabled)return;const id=el?.closest('.hev-block')?.id.replace('block-','');if(id)choose([id]);},
-    rootProps:enabled?{tabIndex:0,onPointerDownCapture:pointerDown,onPointerMove:move,onPointerUp:()=>finish(),onPointerCancel:()=>finish(true),onClickCapture:(e:React.MouseEvent)=>{const b=(e.target as Element).closest('.hev-block');if(b&&b.id!==`block-${editingId}`){e.preventDefault();e.stopPropagation();}},onDoubleClickCapture:(e:React.MouseEvent)=>{if((e.target as Element).closest('.hev-section[data-locked]')){e.preventDefault();return;}const id=hitElement(e.target as Element,e.clientX,e.clientY)?.id.replace('block-',''),block=blocks.find(b=>b.id===id);if(block){e.preventDefault();e.stopPropagation();editBlock(block);}},onContextMenu:(e:React.MouseEvent)=>{const id=(e.target as Element).closest('.hev-block')?.id.replace('block-','');if(id){e.preventDefault();if(!ids.includes(id))choose([id]);setMenu(true);}}}:{}
+  return {mode,enabled,ids,sectionId,sectionIds,selectSection:(id:string,range=false,toggle=false)=>{if(enabled)chooseSection(id,range,toggle);},designSection:(id:string)=>{if(!enabled)return;chooseSection(id);setDesign(true);host.panelChanged('html-selection',true);},editingId,textToolbarHost,widgetToolbarHost,widgetIdentityHost,widgetDesign,rendered,ui,clear,edit:editBlock,inserted:(block:HtmlBlock,openDesign:boolean)=>{
+    if(!enabled)return;
+    if(block.kind==='text')editBlock(block);else choose([block.id]);
+    setDesign(openDesign);host.panelChanged('html-selection',openDesign);
+    if(openDesign)makerDesign?.setTab('canvas');
+  },designElement:(id:string)=>{if(!enabled||!blocks.some(block=>block.id===id))return;choose([id]);setDesign(true);host.panelChanged('html-selection',true);},transforming:!!draft,select:(el?:Element)=>{if(!enabled)return;const id=el?.closest('.hev-block')?.id.replace('block-','');if(id)choose([id]);},
+    rootProps:enabled?{tabIndex:0,onPointerDownCapture:pointerDown,onPointerMove:move,onPointerUp:()=>finish(),onPointerCancel:()=>finish(true),onClickCapture:(e:React.MouseEvent)=>{const b=(e.target as Element).closest('.hev-block');if(b&&b.id!==`block-${editingId}`){e.preventDefault();e.stopPropagation();}},onDoubleClickCapture:(e:React.MouseEvent)=>{if((e.target as Element).closest('.hev-section[data-locked]')){e.preventDefault();return;}const id=hitElement(e.target as Element,e.clientX,e.clientY)?.id.replace('block-',''),block=blocks.find(b=>b.id===id);if(block){e.preventDefault();e.stopPropagation();editBlock(block);}},onContextMenu:(e:React.MouseEvent)=>{const id=hitElement(e.target as Element,e.clientX,e.clientY)?.id.replace('block-','');if(id){e.preventDefault();if(!ids.includes(id))choose([id]);setMenu(true);}}}:{}
   };
 }
 

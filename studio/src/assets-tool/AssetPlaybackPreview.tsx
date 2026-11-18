@@ -13,7 +13,7 @@ function snapshot(element: Element, frame = false): Keyframe {
   return result;
 }
 function blocks(asset: AssetDocument) {
-  return nativeDocument(asset).pages[0].sections.flatMap(section => section.columns.flat()).map(block =>
+  return nativeDocument(asset).pages[0].sections.flatMap(section => section.columns.flat()).filter(block=>!block.editor?.hidden).map(block =>
     block.kind === 'image' && block.value.src === REFERENCE_IMAGE ? { ...block, value: { ...block.value, src: asset.reference.src } } : block);
 }
 

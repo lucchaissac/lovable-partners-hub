@@ -2,7 +2,7 @@ import type {HtmlBlock,HtmlEditorState} from './htmlEditorModel';
 type Appearance=NonNullable<NonNullable<HtmlBlock['editor']>['appearance']>;
 export function blockAppearance(block:HtmlBlock):Appearance {
   return {fill:'var(--ui-border)',opacity:(block.editor?.opacity??1)*100,background:'transparent',radius:block.editor?.radius??0,borderWidth:0,borderColor:'var(--ui-text)',shadow:'none',...(block.kind==='image'?{imageFit:block.brandRole||block.badge?'contain' as const:'cover' as const,imageVisible:true}:{}),fontFamily:'Camera Plain',fontSize:32,fontWeight:400,italic:false,underline:false,uppercase:false,textAlign:'left',letterSpacing:0,lineHeight:120,
-    ...(block.kind==='text'?{fill:block.value.color,fontSize:block.value.size,textAlign:block.value.align,fontWeight:block.value.runs.every(run=>run.bold)?700:400,italic:block.value.runs.every(run=>run.italic),underline:block.value.runs.every(run=>run.underline),lineHeight:block.value.style==='Heading 1'?102:block.value.style.startsWith('Heading')?112:150}:{}),...block.editor?.appearance};
+    ...(block.kind==='text'?{fill:block.value.color,fontSize:block.value.size,textAlign:block.value.align,fontWeight:block.value.runs.every(run=>run.bold)?700:400,italic:block.value.runs.length>0&&block.value.runs.every(run=>run.italic),underline:block.value.runs.length>0&&block.value.runs.every(run=>run.underline),lineHeight:block.value.style==='Heading 1'?102:block.value.style.startsWith('Heading')?112:150}:{}),...block.editor?.appearance};
 }
 export function mixedAppearance(blocks:HtmlBlock[]) {
   const values=blocks.map(blockAppearance),first=values[0]??{};

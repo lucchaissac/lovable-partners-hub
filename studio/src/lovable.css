@@ -101,10 +101,10 @@ html, body, #root { background: var(--studio-background); color: var(--ui-text);
 .lovable-design .we-panel-header { height: var(--maker-design-header-height); flex: 0 0 var(--maker-design-header-height); padding: 0 16px 0 var(--maker-design-inset); font-size: 14px; }
 .lovable-design .we-panel-header strong { font-size: inherit; font-weight: 600; }
 .lovable-design-default > .we-panel-header { padding-left: 0; padding-right: 8px; }
-.lovable-design .hcs-design-design-body { padding: 24px 8px 24px var(--maker-design-inset); }
+.lovable-design .hcs-design-design-body { padding: 16px 8px 24px var(--maker-design-inset); }
 .lovable-panel-title { height: 48px; display: flex; align-items: center; justify-content: space-between; font-size: 14px; }
 .lovable-panel-title > svg { color: var(--ui-text-muted); }
-.lovable-design-section { display: flex; flex-direction: column; gap: 16px; padding: 24px 0; }
+.lovable-design-section { display: flex; flex-direction: column; gap: 16px; padding: 16px 0; }
 .asset-app .lovable-design-section h2 { font-size: 13px; font-weight: 600; }
 .lovable-design-section p { font-size: 13px; color: var(--ui-text-muted); }
 .lovable-dimensions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }

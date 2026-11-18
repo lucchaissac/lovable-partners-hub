@@ -1,3 +1,4 @@
+import {partnershipDivider} from './brandDivider';
 import {assetSchema, makeNode, type AssetDocument} from './model';
 import {nativeDocument} from './nativeDocument';
 import {rasterLibraryAsset, type LibraryAsset} from './badgeLibrary';
@@ -27,7 +28,7 @@ export async function brandStarterAsset(template='collaboration'):Promise<AssetD
  editor.pages[0].sections[0].columns=[[ 
   image('brand-glow','/ambassadors/assets/heart-overlay.webp','Lovable gradient',-600,-280,2400,2400),
   image('brand-identity','/brand/assets/full-white-pure.svg','Lovable logo',190,307,358,65.19,'identity'),
-  {id:'brand-divider',kind:'shape',shape:'rectangle',editor:{position:'absolute',x:616,y:307,widthPx:2,height:65.19,appearance:{fill:'#ffffff',radius:0}}},
+  partnershipDivider(),
   image('brand-partner','/brand/assets/cerebras-logo-white.svg','Cerebras logo',686,272,306,136,'partner'),
  ]];
  return assetSchema.parse({...doc,editor});

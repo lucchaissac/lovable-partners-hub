@@ -1,0 +1,22 @@
+Importe ce projet comme une page autonome, en préservant fidèlement son rendu et ses interactions. Le code fourni est la référence, ainsi que les captures dans references/. La démo de référence est https://lovable-brands.vercel.app/1000-opportunities.
+
+Commence par reproduire la page, avant toute proposition de nouveau design. Si tu adaptes le projet à ta stack, garde les classes CSS, les valeurs, les assets et le comportement. Monte et nettoie correctement les listeners et le renderer à chaque changement de route pour éviter les doubles animations.
+
+À conserver :
+- Camera Plain locale, graisse 600 minimum, titres 700 lorsque prévu. Aucune typographie entièrement en majuscules, aucune transformation uppercase.
+- Fond #1b1b1b, couches blanches existantes, header fixe opaque.
+- Signature complète Lovable Community | San Francisco.
+- Texte, retours à la ligne, échelle des H2, espacements et responsive du code fourni.
+- CTA blancs sans flèche ; mêmes libellés et comportements.
+- Globe Three.js réel, original, avec les fichiers de public/ambassadors/scene. Ne le remplace pas par une image statique ou un autre globe.
+- Glow Figma en deux couches SVG : bleus/rose clair derrière, globe au milieu, rose vif/orange devant. Garde les tracés, flous et couleurs OKLCH.
+- Le globe tourne vers San Francisco. Le cœur reste à son point final sur la surface et apparaît uniquement par scale et rotation, avec léger rebond. Il ne voyage pas depuis un autre endroit.
+- Pulsation légère du cœur et onde lumineuse sur les points. Pause hors écran et dans un onglet masqué. Respect de prefers-reduced-motion.
+- Au scroll, le globe descend entre les couches ; le glow grandit et tourne depuis le bas à gauche. Le mouvement est doux et réversible.
+- Filtres et détails des huit ateliers, ancres sous le header, lien de section active blanc.
+- Formulaire explicitement démonstratif, sans backend et sans envoi de données.
+- noindex, nofollow dans les métadonnées et les en-têtes de la page sur ton hébergement.
+
+Conserve tous les fichiers statiques sur la même origine que la page, notamment l'iframe du renderer, ses modules Three.js, land.json et ses assets. Aucun secret ni compte externe n'est nécessaire. Ne crée ni base de données, ni authentification, ni inscription réelle pour reproduire cette démo.
+
+Vérifie ensuite le rendu desktop et mobile, l'introduction du globe, le scroll dans les deux sens, les filtres, les dialogues et le mode de mouvement réduit. Indique les éventuelles différences avant de les modifier.

@@ -24,7 +24,7 @@
     "Repeated calls to action between every section",
     "Empty progress metrics",
     "Featured-builder placeholders",
-    "Unsupported prize promises",
+    "Prize and drawing mentions",
     "Decorative uppercase and tracking"
   ],
   "interactions": "Workshop filters and details are functional. Registration is explicitly a local preview, with no requests or persistence. Links to the original initiative and event pages are provided.",
@@ -44,7 +44,7 @@
       -122.42
     ],
     "capturePixels": 2160,
-    "treatment": "Original Three.js globe starts on the opposite hemisphere and rotates to San Francisco. Its original heart follows an arcing tangent-space path, turning into position with eased overshoot and settling at scale 6.4. The dots reveal outward from the heart. Afterwards, a quiet double heartbeat repeats every 4.2 seconds, launching another spherical light wave over the existing dots without dimming the whole map. Live motion pauses outside the hero and in hidden tabs. Reduced motion uses only a final 2160 px still and releases the renderer. Globe entrance retains the 1400 ms fade/scale/blur from bottom-left, with no entrance blur remaining; base transform remains translate(-144px,-80px) scale(1.4), plus a 10° centre tilt. All changes are opt-in for this isolated demo.",
+    "treatment": "Original Three.js globe starts on the opposite hemisphere and rotates to San Francisco. Its original heart stays anchored to its final San Francisco surface point throughout the entrance. Only its scale and local rotation change, from small and tilted to its final orientation with a slight overshoot, settling at scale 6.4; no translation or depth flight. The dots reveal outward from the heart. Afterwards, a quiet double heartbeat repeats every 4.2 seconds, launching another spherical light wave over the existing dots without dimming the whole map. Live motion pauses outside the hero and in hidden tabs. Reduced motion uses only a final 2160 px still and releases the renderer. Globe entrance retains the 1400 ms fade/scale/blur from bottom-left, with no entrance blur remaining; base transform remains translate(-144px,-80px) scale(1.4), plus a 10° centre tilt. All changes are opt-in for this isolated demo.",
     "bokeh": "Bottom-left for this demo only: original focal-blur direction mirrored horizontally from -28° to -152°. Original kit default remains unchanged.",
     "motion": "public/ambassadors/scene/community-intro.mjs",
     "previewPixels": 1080,
@@ -75,5 +75,33 @@
       "pixelsOverTwoLevels": 0,
       "totalPixels": 1056768
     }
+  },
+  "contentReview": {
+    "date": "2026-11-18",
+    "method": "Compared the original page and the published demo in Chrome.",
+    "retained": [
+      "Nicole Alos and Socratyc / Socratyc AI Studios",
+      "All eight original workshop topics and event identifiers, each 60 minutes",
+      "February 14, 2027 deadline; workshop dates unannounced",
+      "Free credits, live sessions and community",
+      "Goal of 1,000 projects; all experience levels welcome; public or private submission",
+      "Host startup and accelerator experience; independent ambassador-led initiative"
+    ],
+    "condensed": [
+      "Six audience benefits into three",
+      "Four how-it-works steps into three",
+      "Host biography and mission copy",
+      "Workshop names and navigation categories"
+    ],
+    "omitted": [
+      "Empty progress counters",
+      "Featured-builder placeholders",
+      "Prize and final-drawing mentions",
+      "Separate sharing, founder-network and mentor CTAs"
+    ],
+    "demoDifferences": [
+      "Registration is a local preview, not a live registration flow",
+      "San Francisco and the Lovable Brand Team demo credit were explicitly supplied by Luc, not inferred from the source"
+    ]
   }
 }

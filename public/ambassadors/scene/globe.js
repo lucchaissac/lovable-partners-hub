@@ -2813,9 +2813,6 @@ function animate() {
         }
         if (builderIntro?.motion) {
           const motion = builderIntro.motion;
-          s.translateX(motion.x);
-          s.translateY(motion.y);
-          s.translateZ(motion.lift);
           s.rotateZ(motion.angle);
         }
         s.scale.setScalar(s.userData.base * builderHeartScale * arrivalScale);

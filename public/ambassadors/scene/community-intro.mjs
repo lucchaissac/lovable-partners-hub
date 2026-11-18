@@ -6,8 +6,8 @@ export const communityArrivalDuration = 5.35;
 const loopStart = 6;
 const cycleDuration = 4.2;
 
-// All distances are local tangent-space offsets, relative to the unit globe.
-// The flight lands with zero velocity; each heartbeat returns to the same pose.
+// The heart stays anchored to its final city point throughout the entrance.
+// Only scale and local rotation change; each heartbeat returns to that pose.
 export function communityArrivalMotion(elapsed,loop = false) {
   const progress = clamp((elapsed-2.65)/1.05);
   const remaining = (1-progress) ** 3;
@@ -16,9 +16,6 @@ export function communityArrivalMotion(elapsed,loop = false) {
     turn:ease(clamp((elapsed-0.25)/2.6)),
     heart:elapsed < 2.65 ? 0 : 1 + 2.4 * back ** 3 + 1.4 * back ** 2,
     angle:-0.65 * remaining + 0.07 * Math.sin(Math.PI * progress) ** 2,
-    x:-0.2 * remaining,
-    y:0.11 * remaining + 0.18 * Math.sin(Math.PI * (1-remaining)),
-    lift:0.06 * Math.sin(Math.PI * (1-remaining)),
     radius:-0.2 + (Math.PI+0.4) * clamp((elapsed-3.45)/1.9),
     floor:0.18,
     phase:elapsed < 2.65 ? 'rotating' : elapsed < 3.45 ? 'heart' : 'wave',

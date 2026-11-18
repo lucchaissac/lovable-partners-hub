@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import sharp from 'sharp';
 import {createBudget,budgetConfig,planReservation} from '../server/communityBudget.mjs';
-import {openAICommunityBody,openAICommunityStatus,createOpenAICaller} from '../server/communityOpenAI.mjs';
+import {openAICommunityBody,openAICommunityStatus,createOpenAICaller,generateOpenAICommunityPlan} from '../server/communityOpenAI.mjs';
 import {monochromeGlyph} from '../server/communityImageTools.mjs';
 import {validateMediaPlan} from '../shared/communityMediaPlan.mjs';
 import {chatRequestSchema} from '../shared/communityChat.mjs';
@@ -46,6 +46,34 @@ test('provider errors do not leak bodies or credentials; known usage settles con
 test('planner has fixed pricing model, bounded output, strict native JSON and no executable tools',()=>{
  const body=openAICommunityBody({payload:{prompt:'Hello'},images:[]});assert.equal(body.model,'gpt-5.4-mini-2026-03-17');assert.equal(body.store,false);assert.equal(body.max_output_tokens,6500);assert.equal(body.tools,undefined);assert.equal(body.text.format.strict,true);
  assert.ok(body.instructions.includes('Original'));assert.ok(!JSON.stringify(body).includes(env.OPENAI_API_KEY));
+});
+test('an image-only starter request and a mixed-plan retry cannot mix full designs and old-layer edits',()=>{
+ const payload={prompt:'Refine the current asset using the attached reference. Preserve its essential content.',startingTemplate:true,sources:[{id:'attachment-0',kind:'image'}]};
+ const body=openAICommunityBody({payload,images:[]}),properties=body.text.format.schema.properties;
+ assert.equal(properties.replaceCurrent.const,true);assert.equal(properties.designs.minItems,1);
+ for(const key of ['changes','additions','removeIds'])assert.equal(properties[key].maxItems,0);
+ assert.match(body.instructions,/essential facts of the ATTACHED artwork/);
+ const selected=openAICommunityBody({payload:{...payload,context:'HTML_SELECTION {"blockIds":["photo"]}'},images:[]});
+ assert.equal(selected.text.format.schema.properties.designs.maxItems,0);
+ assert.equal(selected.text.format.schema.properties.replaceCurrent.const,false);
+ const correction={rejectedPlan:{replaceCurrent:true,designs:[{}],changes:[{id:'old-title',text:'New title'}]}};
+ const retry=openAICommunityBody({payload:{prompt:'Rebuild this poster',sources:[]},images:[]},correction);
+ assert.equal(retry.text.format.schema.properties.changes.maxItems,0);
+ assert.match(retry.instructions,/Incorporate any meaningful corrections/);
+});
+test('mixed planner output is corrected into a complete editable replacement through the provider flow',async()=>{
+ const request={prompt:'Rebuild this poster',title:'Event',width:1080,height:1080,startingTemplate:true,blocks:[{id:'old-title',kind:'text',text:'Build something lovable.'}],sources:[],conversation:[]};
+ const valid={summary:'Rebuilt the event.',replaceCurrent:true,reviews:[],badgeBatch:null,designs:[{title:'Vibe & build',template:'event-square',width:null,height:null,background:'ink',fields:[{slot:'title',text:'Vibe & build'},{slot:'eventFooter',text:'Vol. IX'}],image:null,partners:[],headlineFont:null}],changes:[],additions:[],removeIds:[],mediaRequests:[]};
+ const calls=[];
+ const result=await generateOpenAICommunityPlan(request,{env,budget:{reserve:async()=>String(calls.length),settle:async()=>{}},loadContext:async payload=>({payload,images:[]}),fetchImpl:async(_url,options)=>{
+  const body=JSON.parse(options.body);calls.push(body);
+  const value=calls.length===1?{...valid,changes:[{id:'old-title',text:'Vibe & build',sourceId:null,fontSize:null,color:null,dx:null,dy:null,rotation:null}]}:valid;
+  return Response.json({status:'completed',output:[{type:'message',content:[{type:'output_text',text:JSON.stringify(value)}]}]});
+ }});
+ assert.equal(calls.length,2);assert.equal(calls[1].text.format.schema.properties.changes.maxItems,0);
+ assert.equal(result.plan.replaceCurrent,true);assert.deepEqual(result.plan.edits,[]);
+ assert.ok(result.plan.designs[0].elements.some(element=>element.kind==='text'&&element.text.replace(/\s+/g,' ')==='Vibe & build'));
+ assert.ok(result.plan.designs[0].elements.some(element=>element.asset==='community-logo'));
 });
 test('production rejects other origins and never enables a Codex endpoint',()=>{
  const env={COMMUNITY_PUBLIC_ORIGIN:'https://lovable-brands.vercel.app'};

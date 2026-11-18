@@ -28,7 +28,7 @@ export function CommunityCanvas({toolbar,asset,pages,busy,generating,zoom,onZoom
  const zoomAnchor=useRef<{id:string;x:number;y:number;clientX:number;clientY:number}|undefined>(undefined),gestureZoomBase=useRef(1);
  const [grid,setGrid]=useState(false),[thumbnails,setThumbnails]=useState(true);
  const size=assetDimensions(asset),fit=Math.min(1,Math.max(.1,(bounds.width-80)/size.width),Math.max(.1,(bounds.height-156)/size.height)),scale=zoom||fit;
- const pageInset=Math.max(24,(bounds.height-size.height*scale-76)/2);
+ const pageInset=16;
  const index=Math.max(0,pages.findIndex(page=>page.id===asset.id)),locked=busy||pages.length>=MAX_ASSET_PAGES;
  useLayoutEffect(()=>{if(!viewport.current)return;const observer=new ResizeObserver(([entry])=>setBounds({width:entry.contentRect.width,height:entry.contentRect.height}));observer.observe(viewport.current);return()=>observer.disconnect();},[]);
  useEffect(()=>{if(generating)setGrid(false);},[generating]);
@@ -41,7 +41,7 @@ export function CommunityCanvas({toolbar,asset,pages,busy,generating,zoom,onZoom
    zoomAnchor.current=undefined;return;
   }
   const page=host.querySelector<HTMLElement>(`[data-page-id="${asset.id}"]`);
-  if(page){const y=page.getBoundingClientRect().top-host.getBoundingClientRect().top+host.scrollTop;host.scrollTo({top:Math.max(0,y-Math.max(24,(bounds.height-page.offsetHeight)/2)),left:Math.max(0,(host.scrollWidth-host.clientWidth)/2)});}
+  if(page){const y=page.getBoundingClientRect().top-host.getBoundingClientRect().top+host.scrollTop;host.scrollTo({top:Math.max(0,y-pageInset),left:Math.max(0,(host.scrollWidth-host.clientWidth)/2)});}
  },[asset.id,grid,scale,busy,bounds.height]);
  useEffect(()=>{
   const host=viewport.current;if(!host||grid)return;

@@ -83,6 +83,10 @@ function changedElement(change,request){
 }
 export function compileTemplatePlan(value,request){
  const intent=templatePlanSchema.parse(value);
+ // Resolve the starter replacement before checking redundant old-layer operations.
+ if(request.startingTemplate&&intent.designs.length)intent.replaceCurrent=true;
+ intent.changes=intent.changes.filter(change=>!request.blocks.some(block=>block.id===change.id)||
+  [change.text,change.sourceId,change.fontSize,change.color,change.rotation].some(value=>value!==null)||!!change.dx||!!change.dy);
  // A prepared image can be referenced by its existing canvas-layer ID. Resolve
  // that alias to the canonical library asset, so review and layout use the master.
  const preparedPicture=picture=>{

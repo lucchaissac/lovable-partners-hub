@@ -17,10 +17,28 @@ function strictSchema(value){
  return value;
 }
 export function openAICommunityBody(context,correction){
+ const payload=context.payload;
+ let selected=[];try{if(payload.context?.startsWith('HTML_SELECTION '))selected=JSON.parse(payload.context.slice(15)).blockIds??[];}catch{}
+ const previous=correction?.rejectedPlan;
+ const mixed=previous?.designs?.length&&(previous.changes?.length||previous.additions?.length||previous.removeIds?.length);
+ const attachedStarter=payload.startingTemplate&&payload.sources?.some(source=>source.kind==='image')&&payload.prompt==='Refine the current asset using the attached reference. Preserve its essential content.';
+ const mode=selected.length?'edit':mixed?(previous.replaceCurrent||payload.startingTemplate?'replace':'create'):attachedStarter?'replace':null;
+ const schema=strictSchema(z.toJSONSchema(templatePlanSchema));
+ if(mode){
+  schema.properties.replaceCurrent={type:'boolean',const:mode==='replace'};
+  schema.properties.badgeBatch={type:'null'};
+  if(mode==='edit')schema.properties.designs.maxItems=0;
+  else{
+   schema.properties.designs.minItems=1;
+   for(const key of ['changes','additions','removeIds'])schema.properties[key].maxItems=0;
+  }
+ }
+ const operation=mode==='edit'?'Edit only the selected existing layers. Return designs:[] and replaceCurrent:false.':mode?
+  `Return complete designs only, with replaceCurrent:${mode==='replace'}. changes, additions and removeIds must be empty. Incorporate any meaningful corrections from the rejected plan into the design fields themselves. ${attachedStarter?'The current canvas is an unused starter. Review and preserve the essential facts of the ATTACHED artwork, not the demonstration title, city or footer.':''}`:'';
  return {model:communityOpenAIModel,store:false,service_tier:'default',reasoning:{effort:'none'},max_output_tokens:6500,
-  instructions:communityTemplateInstructions,
+  instructions:communityTemplateInstructions+(operation?'\nOperation for this request: '+operation:''),
   input:[{role:'user',content:[{type:'input_text',text:JSON.stringify({...context.payload,...correction})},...context.images.map(image=>({type:'input_image',image_url:image.data,detail:'low'}))]}],
-  text:{format:{type:'json_schema',name:'community_design',strict:true,schema:strictSchema(z.toJSONSchema(templatePlanSchema))}}};
+  text:{format:{type:'json_schema',name:'community_design',strict:true,schema}}};
 }
 export function openAIError(status){
  if(status===401||status===403)return 'OpenAI rejected this demo key or model permission. Check the project settings.';

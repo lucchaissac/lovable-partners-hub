@@ -117,3 +117,5 @@
 - The bare shared root URL opens the Lovable Gallery (first workspace), with Lovable sharing metadata. Keep explicit workspace paths and legacy hashes pointing to their own content.
 
 - Light/dark changes are immediate in both the hub and embedded studio, with no color, background, border, SVG ink or filter interpolation. Suppress transitions only during the theme switch; retain ordinary interactions and running artwork animations.
+
+- Community image-only starter submissions rebuild the attached artwork as one complete editable replacement; do not mix designs with edits to old starter layers. Enforce one operation in the planner response schema, and fold meaningful corrections into template fields on retry. Keep selected/locked-layer checks. Asset stacks start 16 px below the toolbar instead of vertically centering with a large empty top area; the drag grip is 12 px with a usable touch target.

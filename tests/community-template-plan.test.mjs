@@ -82,6 +82,19 @@ test('replacing a composition absorbs redundant removals of its old layers, whil
  assert.throws(()=>compileTemplatePlan({...value,replaceCurrent:false},base),/Create a composition/);
  assert.throws(()=>compileTemplatePlan(value,{...base,blocks:[{...base.blocks[0],frame:{locked:true}}]}),/Unlock/);
 });
+test('a first attached-artwork replacement resolves starter intent before dropping inert old-layer edits',()=>{
+ const base={...request,blocks:[{id:'starter-title',kind:'text',text:'Build something lovable.'}]};
+ const noop={id:'starter-title',text:null,sourceId:null,fontSize:null,color:null,dx:0,dy:0,rotation:null};
+ const value={...intent,replaceCurrent:false,changes:[noop],removeIds:['starter-title']};
+ const compiled=compileTemplatePlan(value,base);
+ assert.equal(compiled.plan.replaceCurrent,true);
+ assert.deepEqual(compiled.plan.edits,[]);assert.deepEqual(compiled.plan.removeIds,[]);
+ assert.equal(compiled.plan.designs.length,1);
+ assert.deepEqual(compileTemplatePlan(compiled.templatePlan,base).plan,compiled.plan);
+ assert.throws(()=>compileTemplatePlan({...value,changes:[{...noop,text:'A meaningful edit'}]},base),/Create a composition/);
+ assert.throws(()=>compileTemplatePlan({...value,changes:[{...noop,id:'unknown'}]},base),/Create a composition/);
+ assert.throws(()=>compileTemplatePlan(value,{...base,blocks:[{...base.blocks[0],frame:{locked:true}}]}),/Unlock/);
+});
 test('reusing a prepared photo by its canvas layer ID resolves the master and approved layout without another review',()=>{
  const value=structuredClone(intent);value.designs[0].image={sourceId:'current-photo',crop:null};value.removeIds=['current-photo'];
  const base={...request,startingTemplate:false,blocks:[{id:'current-photo',kind:'image',alt:'Flash · Light'}]};

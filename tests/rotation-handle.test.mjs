@@ -27,3 +27,12 @@ test('Clamping does not put the rotation control on the object pivot',()=>{
  const position=rotationHandlePosition({left:100,top:200,width:400,height:600},{left:0,top:0,width:640,height:544},32,12);
  assert.ok(Math.hypot(position.left+16-300,position.top+16-500)>=56);
 });
+test('Short lines keep the rotation handle nearby instead of sending it to a viewport edge',()=>{
+ const visible={left:0,top:0,width:1000,height:700};
+ for(const bounds of [{left:600,top:300,width:65,height:2},{left:600,top:300,width:2,height:65},{left:600,top:300,width:23,height:1}]){
+  const result=rotationHandlePosition(bounds,visible,32,12);
+  const distance=Math.hypot(result.left+16-(bounds.left+bounds.width/2),result.top+16-(bounds.top+bounds.height/2));
+  assert.ok(distance>=56-.001&&distance<80);
+  assert.ok(Math.abs(result.left+16-(bounds.left+bounds.width/2))<1);
+ }
+});

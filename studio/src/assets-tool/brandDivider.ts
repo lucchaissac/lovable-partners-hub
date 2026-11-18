@@ -8,7 +8,7 @@ export function nativeBrandDivider(block:HtmlBlock):HtmlBlock {
  // A manually redesigned broad shape is no longer the original separator.
  if(thickness<1||thickness>24)return block;
  const length=Math.max(width,height),rotation=(frame.rotation??0)+(vertical?90:0);
- return {...block,shape:'line',editor:{...frame,x:(frame.x??616)+width/2-length/2,y:(frame.y??307)+height/2-12,widthPx:length,height:24,rotation:((rotation+180)%360+360)%360-180,appearance:{...frame.appearance,lineWidth:thickness,lineStyle:'solid'}}};
+ return {...block,shape:'line',editor:{...frame,x:(frame.x??616)+width/2-length/2,y:(frame.y??307)+height/2-thickness/2,widthPx:length,height:thickness,rotation:((rotation+180)%360+360)%360-180,appearance:{...frame.appearance,lineWidth:thickness,lineStyle:'solid'}}};
 }
 
 export function partnershipDivider():HtmlBlock {

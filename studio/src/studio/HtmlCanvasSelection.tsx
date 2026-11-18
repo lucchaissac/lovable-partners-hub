@@ -3,6 +3,7 @@ import {canvasClipboardType,canvasClipboardPrefix,copiedCanvasBlocks,pasteCanvas
 import {blockAppearance,mixedAppearance,patchSelectionAppearance,selectionDesignKind} from './selectionAppearance';
 import {translateCanvasSelection} from './selectionPosition';
 import {rotateSelectionFrames} from './selectionRotation';
+import {resizeCanvasLine} from './canvasLine';
 import {SelectionPositionControls} from './SelectionPositionControls';
 import {htmlBlockSchema} from './htmlEditorModel';
 import {TechArtworkDesign} from '../assets-tool/TechArtworkDesign';
@@ -371,6 +372,9 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
       let angle=(Math.atan2((event.clientY/zoom)-cy,(event.clientX/zoom)-cx)-Math.atan2(g.y-cy,g.x-cx))*180/Math.PI;
       if(event.shiftKey)angle=Math.round(angle/15)*15;
       g.frames=rotateSelectionFrames(g.blocks.map(({block,box})=>({id:block.id,frame:block.editor??{},box})),bounds,angle);
+    }else if(kind==='line-start'||kind==='line-end'){
+      const {block,width}=g.blocks[0];
+      g.frames={[block.id]:resizeCanvasLine(block.editor??{},width,{x:dx,y:dy},kind==='line-end'?'end':'start')};
     }else if(kind==='move'){
       g.cursor={x:(event.clientX/zoom),y:(event.clientY/zoom)};g.drop=findDrop((event.clientX/zoom),(event.clientY/zoom),g);setDropTarget(g.drop||null);
       const raw=event.shiftKey?(Math.abs(dx)>Math.abs(dy)?{x:dx,y:0}:{x:0,y:dy}):{x:dx,y:dy};
@@ -449,6 +453,8 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
   // Outlines follow the document; section controls also recompute their visible side on scroll.
   const bounds=geometry?.bounds,frame=geometry?.frame,visible=geometry?.origin,viewport=geometry?.visible,show=enabled&&bounds&&frame&&visible&&viewport;
   const sectionInset=bounds&&frame?frame.left-bounds.left:0;
+  const selectedLine=one?.kind==='shape'&&one.shape==='line'&&one.editor?.position==='absolute';
+  const lineAngle=(one?.editor?.rotation??0)*Math.PI/180,lineLength=one?.editor?.widthPx??element(one?.id??'')?.offsetWidth??0;
   const rotateSize=32/zoom,rotateInset=12/zoom,toolbarWidth=(toolbar.current?.offsetWidth||204)/zoom;
   const pinnedRotate=communityCanvas&&bounds&&viewport&&geometry?rotationHandlePosition(bounds,viewport,rotateSize,rotateInset,{left:geometry.toolbar.left-toolbarWidth/2,top:geometry.toolbar.top,width:toolbarWidth,height:(toolbar.current?.offsetHeight||36)/zoom}):undefined;
   const rotateTop=pinnedRotate&&visible?pinnedRotate.top-visible.top:bounds&&visible?clamp(bounds.top+bounds.height-visible.top+12,viewport!.top-visible.top+12,viewport!.top+viewport!.height-visible.top-44):0;
@@ -464,7 +470,8 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
         {members.length>1&&geometry.boxes.map((b,i)=><div key={i} className="hcs-member" style={{left:b.left-visible.left,top:b.top-visible.top,width:b.width,height:b.height}}/>)}
         {multipleSections?geometry.boxes.map((box,index)=>selectedSections[index]&&<div key={selectedSections[index].id} className="hcs-selection hcs-section-selection" role="group" aria-label={`Selected section: ${selectedSections[index].name}`} data-section={selectedSections[index].id} style={{left:box.left+sectionInset-visible.left,top:box.top+sectionInset-visible.top,width:Math.max(0,box.width-sectionInset*2),height:Math.max(0,box.height-sectionInset*2)}}/>):<div className="hcs-selection" data-absolute={one?.editor?.position==='absolute'||undefined} role="group" aria-label={selectedSection?'Selected section':members.length>1?`${members.length} selected elements`:'Selected element'} style={{left:frame.left-visible.left,top:frame.top-visible.top,width:frame.width,height:frame.height}}>
           {!locked&&one?.editor?.position==='absolute'&&['top','right','bottom','left'].map(edge=><span key={edge} className="hcs-absolute-drag-edge hcs-ui" data-edge={edge} onPointerDown={event=>begin(event,'move')}/>)}
-          {!locked&&!(fixedCanvas&&sectionSelection)&&handles.filter(([h])=>selectedSection?['e','w'].includes(h):h.length===2||(h==='n'||h==='s'?bounds.width:bounds.height)>=48).map(([h,x,y,label])=><button key={h} className="hcs-handle hcs-ui" data-handle={h} data-section-edge={selectedSection?true:undefined} data-corner={h.length===2||undefined} style={{left:`${x}%`,top:`${y}%`}} aria-label={`Resize selection from ${label}`} onPointerDown={e=>begin(e,h)}/>)}
+          {!locked&&selectedLine&&(['start','end'] as const).map(end=>{const side=end==='end'?1:-1;return <button key={end} className="hcs-handle hcs-ui" data-corner data-line-end={end} style={{left:frame.width/2+side*Math.cos(lineAngle)*lineLength/2,top:frame.height/2+side*Math.sin(lineAngle)*lineLength/2,cursor:Math.abs(Math.cos(lineAngle))>.7?'ew-resize':'ns-resize'}} aria-label={`Resize line ${end}`} onPointerDown={e=>begin(e,`line-${end}`)}/>;})}
+          {!locked&&!selectedLine&&!(fixedCanvas&&sectionSelection)&&handles.filter(([h])=>selectedSection?['e','w'].includes(h):h.length===2||(h==='n'||h==='s'?bounds.width:bounds.height)>=48).map(([h,x,y,label])=><button key={h} className="hcs-handle hcs-ui" data-handle={h} data-section-edge={selectedSection?true:undefined} data-corner={h.length===2||undefined} style={{left:`${x}%`,top:`${y}%`}} aria-label={`Resize selection from ${label}`} onPointerDown={e=>begin(e,h)}/>)}
         </div>}
         {selectedSection&&!fixedCanvas&&[false,true].map(after=>{
           const edge=insertPanel.enabled&&(after?page.sections.at(-1)?.id:page.sections[0]?.id)===sectionId;

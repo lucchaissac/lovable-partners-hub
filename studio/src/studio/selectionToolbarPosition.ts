@@ -43,8 +43,15 @@ export function rotationHandlePosition(bounds:{left:number;top:number;width:numb
   // Clamping a very large object can put the handle on its pivot, making a tiny
   // pointer movement produce a huge angular jump. Keep a usable lever arm.
   const cx=bounds.left+bounds.width/2,cy=bounds.top+bounds.height/2;
-  if(Math.hypot(left+size/2-cx,top+size/2-cy)<size+inset*2){
-    left=clamp(Math.abs(minX+size/2-cx)>Math.abs(maxX+size/2-cx)?minX:maxX,minX,maxX);
+  const lever=size+inset*2;
+  if(Math.hypot(left+size/2-cx,top+size/2-cy)<lever){
+    // Small selections need a slightly longer nearby lever, not a jump to the
+    // far edge of the viewport. Try each side and choose the nearest usable one.
+    const candidates=[{left:cx-size/2,top:cy+lever-size/2},{left:cx-size/2,top:cy-lever-size/2},{left:cx+lever-size/2,top:cy-size/2},{left:cx-lever-size/2,top:cy-size/2}]
+      .map(point=>({left:clamp(point.left,minX,maxX),top:clamp(point.top,minY,maxY)}))
+      .filter(point=>Math.hypot(point.left+size/2-cx,point.top+size/2-cy)>=lever-.001)
+      .sort((a,b)=>Math.hypot(a.left-left,a.top-top)-Math.hypot(b.left-left,b.top-top));
+    if(candidates.length)({left,top}=candidates[0]);
   }
   if(toolbar&&left<toolbar.left+toolbar.width+inset&&left+size>toolbar.left-inset&&top<toolbar.top+toolbar.height+inset&&top+size>toolbar.top-inset){
     const below=toolbar.top+toolbar.height+inset,above=toolbar.top-inset-size;

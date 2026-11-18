@@ -9,6 +9,8 @@
 .maker-layer-row[data-partial]{color:var(--ui-text)}
 .maker-layer-row[data-hidden]>.maker-layer-name{opacity:.5}
 .maker-layer-row>svg{flex:none}
+.maker-layer-row svg{color:rgb(var(--studio-fg-rgb));opacity:.54}
+.maker-layer-row:hover svg,.maker-layer-row[data-selected] svg,.maker-layer-row[data-partial] svg{opacity:.92}
 .maker-layer-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
 .maker-layer-count,.maker-layer-section{color:var(--ui-text-muted);font-size:12px}
 .maker-layer-expand{display:flex;align-items:center;justify-content:center;width:16px;height:24px;flex:none;padding:0;border:0;background:transparent;color:inherit;cursor:pointer}

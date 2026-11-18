@@ -1,4 +1,5 @@
 import {nativeBrandDivider} from './brandDivider';
+import {tightCanvasLine} from '../studio/canvasLine';
 import { defaultPartnerBadge, legacyBadgeFormat } from './partnerBadgeSettings';
 import { htmlEditorSchema, type HtmlBlock, type HtmlEditorState } from '../studio/htmlEditorModel.js';
 import { assetColor, assetDimensions, type AssetDocument } from './model.js';
@@ -29,7 +30,7 @@ function upgradeBadge(block:HtmlBlock,referenceSrc:string):HtmlBlock {
   return format?{...block,badge:block.badge||defaultPartnerBadge(format),value:{...block.value,src:block.value.src===REFERENCE_IMAGE?referenceSrc:block.value.src}}:block;
 }
 export function nativeDocument(asset:AssetDocument):HtmlEditorState {
-  if(asset.editor)return {...asset.editor,pages:asset.editor.pages.map(page=>({...page,sections:page.sections.map(section=>({...section,...(section.shadow?{shadow:'none' as const}:{}),columns:section.columns.map(column=>column.flatMap(block=>block.kind==='cta'?primitives(block):[upgradeBadge(nativeBrandDivider(block),asset.reference.src)]))}))}))};
+  if(asset.editor)return {...asset.editor,pages:asset.editor.pages.map(page=>({...page,sections:page.sections.map(section=>({...section,...(section.shadow?{shadow:'none' as const}:{}),columns:section.columns.map(column=>column.flatMap(block=>block.kind==='cta'?primitives(block):[upgradeBadge(tightCanvasLine(nativeBrandDivider(block)),asset.reference.src)]))}))}))};
   const blocks:HtmlBlock[]=asset.nodes.flatMap((node,index):HtmlBlock[]=>{
     const id=`a${index}-${node.id.replaceAll('_','-')}`;
     const appearance={radius:node.radius,fontFamily:'Camera Plain' as const,fontSize:node.fontSize,fontWeight:Number(node.weight),lineHeight:125,...(node.fill!=='none'?{background:assetColor(node.fill),fill:assetColor(node.fill)}:{})};

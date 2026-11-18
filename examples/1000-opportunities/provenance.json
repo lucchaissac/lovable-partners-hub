@@ -34,5 +34,5 @@
     "output": "/demos/1000-opportunities/socratyc-ai-studios-white.webp",
     "treatment": "Original transparent artwork, unchanged, placed beneath the hero actions."
   },
-  "refinements": "Date before hero actions at the same size as the introduction; explicit line break after Lovable. Gradient behind the globe. Practical copy uses 18 px and 16 px, with a 16 px minimum on mobile. No animations or transitions."
+  "refinements": "Date before hero actions at the same size as the introduction; explicit line break after Lovable. Gradient heart raised to 18% of the scene height and rotated -18 degrees, in front of the globe in an isolated stacking context, following Luc’s latest correction; all copy stays above the scene. Practical copy uses 18 px and 16 px, with a 16 px minimum on mobile. White calls to action are text-only with centered labels. Native anchor scrolling is smooth, with reduced motion respected; the artwork and other interface elements remain static."
 }

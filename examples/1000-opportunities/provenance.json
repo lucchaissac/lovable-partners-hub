@@ -1,7 +1,7 @@
 {
   "reference": "https://id-preview--23ff7bbc-4e1a-4b4d-9e61-a7b08629373a.lovable.app/",
   "reviewed": "2026-11-18",
-  "route": "/demo/1000-opportunities",
+  "route": "/1000-opportunities",
   "purpose": "An isolated redesign demonstration, outside the hub navigation.",
   "content": "Campaign name, host, February 14, 2027 deadline, eight workshop outcomes and 60-minute duration retained from the reference. Dates remain unannounced. Copy condensed; no invented results or testimonials.",
   "portrait": {
@@ -103,5 +103,7 @@
       "Registration is a local preview, not a live registration flow",
       "San Francisco and the Lovable Brand Team demo credit were explicitly supplied by Luc, not inferred from the source"
     ]
-  }
+  },
+  "legacyRoute": "/demo/1000-opportunities",
+  "indexing": "Noindex, nofollow in both HTML robots metadata and the X-Robots-Tag response header. Canonical URL is https://lovable-brands.vercel.app/1000-opportunities. Legacy demo paths permanently redirect to the clean URL. No robots.txt disallow: crawlers must be able to read the noindex directive."
 }

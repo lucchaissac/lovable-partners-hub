@@ -1,4 +1,9 @@
-export const opportunitiesDemoPath = '/demo/1000-opportunities';
+export const opportunitiesDemoPath = '/1000-opportunities';
+const sourcePath = '/demo/1000-opportunities';
+const demoPaths = new Set([
+  opportunitiesDemoPath, `${opportunitiesDemoPath}/`, `${opportunitiesDemoPath}/index.html`,
+  sourcePath, `${sourcePath}/`, `${sourcePath}/index.html`,
+]);
 
 // Enabled for this review. Set DEMO_OPPORTUNITIES_ENABLED=false and rebuild to
 // remove the entry from production; the same flag returns 404 in development.
@@ -9,14 +14,21 @@ export function opportunitiesDemoEnabled(env = {}) {
 export function demoPagesPlugin(enabled) {
   const middleware = (request, response, next) => {
     const url = new URL(request.url, 'http://localhost');
-    if (url.pathname !== opportunitiesDemoPath && !url.pathname.startsWith(`${opportunitiesDemoPath}/`)) return next();
+    if (!demoPaths.has(url.pathname)) return next();
+    response.setHeader('X-Robots-Tag', 'noindex, nofollow');
     if (!enabled) {
       response.statusCode = 404;
       response.setHeader('Content-Type', 'text/plain; charset=utf-8');
       response.end('This demo is not available.');
       return;
     }
-    if ([opportunitiesDemoPath, `${opportunitiesDemoPath}/`].includes(url.pathname)) request.url = `${opportunitiesDemoPath}/index.html${url.search}`;
+    if (url.pathname !== opportunitiesDemoPath) {
+      response.statusCode = 308;
+      response.setHeader('Location', `${opportunitiesDemoPath}${url.search}`);
+      response.end();
+      return;
+    }
+    request.url = `${sourcePath}/index.html${url.search}`;
     next();
   };
   return {

@@ -3,8 +3,17 @@
   "framework": "vite",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
+  "redirects": [
+    {"source":"/demo/1000-opportunities/:path*","destination":"/1000-opportunities","permanent":true},
+    {"source":"/1000-opportunities/","destination":"/1000-opportunities","permanent":true},
+    {"source":"/1000-opportunities/index.html","destination":"/1000-opportunities","permanent":true}
+  ],
+  "headers": [
+    {"source":"/1000-opportunities/:path*","headers":[{"key":"X-Robots-Tag","value":"noindex, nofollow"}]},
+    {"source":"/demo/1000-opportunities/:path*","headers":[{"key":"X-Robots-Tag","value":"noindex, nofollow"}]}
+  ],
   "rewrites": [
-    {"source":"/demo/1000-opportunities","destination":"/demo/1000-opportunities/index.html"},
+    {"source":"/1000-opportunities","destination":"/demo/1000-opportunities/index.html"},
     {"source":"/brand","destination":"/brand/index.html"},
     {"source":"/partners","destination":"/partners/index.html"},
     {"source":"/community","destination":"/community/index.html"},

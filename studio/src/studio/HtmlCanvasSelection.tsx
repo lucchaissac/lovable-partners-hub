@@ -1,5 +1,7 @@
 import {canvasClipboardType,canvasClipboardPrefix,copiedCanvasBlocks,pasteCanvasBlocks} from './canvasClipboard';
-import {blockAppearance,mixedAppearance,patchSelectionAppearance} from './selectionAppearance';
+import {blockAppearance,mixedAppearance,patchSelectionAppearance,selectionDesignKind} from './selectionAppearance';
+import {translateCanvasSelection} from './selectionPosition';
+import {SelectionPositionControls} from './SelectionPositionControls';
 import {htmlBlockSchema} from './htmlEditorModel';
 import {TechArtworkDesign} from '../assets-tool/TechArtworkDesign';
 import {isTechArtwork} from '../assets-tool/techArtwork';
@@ -74,7 +76,7 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
   const selectedSections=page.sections.filter(s=>sectionIds.includes(s.id)),sectionSelection=selectedSections.length>0,multipleSections=selectedSections.length>1;
   const selectedSection=selectedSections.length===1?selectedSections[0]:undefined;
   const members=blocks.filter(b=>ids.includes(b.id)), locked=selectedSections.some(s=>s.locked)||members.some(b=>b.editor?.locked), one=members.length===1?members[0]:undefined;
-  const multiDesign=members.length>1&&members.every(block=>block.kind===members[0].kind)&&['text','shape','image'].includes(members[0].kind);
+  const multiDesign=members.length>1, multiKind=selectionDesignKind(members);
   const layeredSelection=!sectionSelection&&members.length>0&&(fixedCanvas||members.every(b=>b.editor?.position==='absolute'));
   const layerAvailability=layerOrderAvailability(rendered,ids);
   const layerItems=[
@@ -91,7 +93,7 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
   useEffect(()=>{if(host.activeId&&host.activeId!=='html-selection')setDesign(false);},[host.activeId]);
   const element=(id:string)=>root.current?.querySelector<HTMLElement>(`#block-${CSS.escape(id)}`);
   const clear=()=>{setSectionId('');setIds([]);setEditingId('');setDesign(false);setMenu(false);onSelect(undefined);};
-  const choose=(next:string[])=>{setSectionId('');setIds(next);setEditingId('');if(next.length>1){const chosen=blocks.filter(block=>next.includes(block.id));if(chosen.every(block=>block.kind===chosen[0]?.kind)&&['text','shape','image'].includes(chosen[0]?.kind)){setDesign(true);host.panelChanged('html-selection',true);}}onSelect(next.length===1?(element(next[0])||undefined):undefined);};
+  const choose=(next:string[])=>{setSectionId('');setIds(next);setEditingId('');if(next.length>1){setDesign(true);host.panelChanged('html-selection',true);}onSelect(next.length===1?(element(next[0])||undefined):undefined);};
   useEffect(()=>{clear();},[pageId,mode]);
   const communityTemplateId=blocks.find(block=>block.kind==='image'&&block.ambassador&&!block.ambassadorElement)?.id;
   useEffect(()=>{if(!enabled||!communityTemplateId)return;choose([communityTemplateId]);setDesign(true);host.panelChanged('html-selection',true);},[communityTemplateId,enabled]);
@@ -275,7 +277,7 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
   function finish(cancel=false){
     const selection=marqueeStart.current;marqueeStart.current=null;setMarquee(null);
     if(selection){
-      if(cancel){setIds(selection.previousIds);setSectionIds(selection.previousSections);}
+      if(cancel){setIds(selection.previousIds);setSectionIds(selection.previousSections);}else if(ids.length>1)choose(ids);
       if(selection.capture.hasPointerCapture(selection.pointer))selection.capture.releasePointerCapture(selection.pointer);
     }
     const g=gesture.current;gesture.current=null;cancelAnimationFrame(dragScroll.current);setDraft(null);setGuides([]);setDropTarget(null);if(g)setIds(current=>[...current]);if(g?.moved&&!cancel){if(g.section){const next=structuredClone(g.initial),section=next.pages.flatMap(p=>p.sections).find(s=>s.id===g.section!.id);if(section)Object.assign(section,g.section.widthPx!==undefined?{widthPx:g.section.widthPx}:{width:g.section.width});save(next);}else if(g.drop){
@@ -493,8 +495,9 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
         changeBlock({...current,badge,value:{...current.value,src:image.src,alt:badgeFormatName(badge.format),crop:undefined,playIcon:undefined},editor:{...current.editor,widthPx:width,height:Math.max(12,Math.min(3000,width/ratio)),appearance:{imageFit:'contain',...current.editor?.appearance}}});
       }} onClose={()=>{setDesign(false);host.closePanel();}}/>,host.panelHost)}
     {selectionDesignActive&&multiDesign&&host.panelHost&&host.activeId==='html-selection'&&createPortal(<div className="hcs-ui" style={{height:'100%',display:'contents'}}><PresentationElementDesign
-      shape={{id:ids.join('-'),kind:members[0].kind==='shape'?members[0].shape:members[0].kind,width:bounds?.width||100,height:bounds?.height||100,appearance:blockAppearance(members[0])}}
-      label={`${members.length} ${members[0].kind==='text'?'texts':members[0].kind==='image'?'images':'shapes'}`} locked={locked} mixed={mixedAppearance(members)} multiple
+      shape={{id:ids.join('-'),kind:multiKind,width:Math.min(...members.map(block=>block.editor?.widthPx??bounds?.width??100)),height:Math.min(...members.map(block=>block.editor?.height??bounds?.height??100)),appearance:blockAppearance(members[0])}}
+      label={`${members.length} ${multiKind==='text'?'texts':multiKind==='image'?'images':multiKind==='selection'?'elements':'shapes'}`} locked={locked} mixed={mixedAppearance(members)} multiple
+      positionControls={<SelectionPositionControls blocks={members} onChange={delta=>{if(!locked)save(translateCanvasSelection(source.current,ids,delta));}}/>}
       onChange={(appearance:NonNullable<ElementFrame['appearance']>)=>save(patchSelectionAppearance(source.current,ids,appearance))} onClose={()=>{setDesign(false);host.closePanel();}}/></div>,host.panelHost)}
     {selectionDesignActive&&one&&!(one.kind==='image'&&(one.badge||one.ambassador||one.brandRole==='partner'||((studioWorkspace==='tech-blog'||studioWorkspace==='ambassadors')&&isTechArtwork(one))))&&host.panelHost&&host.activeId==='html-selection'&&createPortal(<div className="hcs-ui" style={{height:'100%',display:'contents'}}><PresentationElementDesign
       shape={{id:one.id,kind:one.kind==='text'?'text':one.kind==='image'?'image':one.kind==='shape'?one.shape:'rectangle',width:bounds?.width||100,height:bounds?.height||100,src:one.kind==='image'?one.value.src:undefined,appearance:{...(one.kind==='text'?{fill:one.value.color,fontFamily:'Camera Plain',fontSize:one.value.size,textAlign:one.value.align,fontWeight:one.value.runs.every(r=>r.bold)?700:400,italic:one.value.runs.every(r=>r.italic),underline:one.value.runs.every(r=>r.underline),lineHeight:one.value.style==='Heading 1'?102:one.value.style.startsWith('Heading')?112:150}:one.kind==='image'?{imageFit:'cover'}:{}),...one.editor?.appearance}}}

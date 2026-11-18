@@ -42,3 +42,34 @@ test('A common style changes only that property across mixed text values, preser
  const uniform=patchSelectionAppearance(next,['headline','date'],{fontSize:64});
  assert.equal(mixedAppearance(uniform.pages[0].sections[0].columns[0].slice(0,2)).fontSize,false);
 });
+
+const {translateCanvasSelection}=await moduleAt('selectionPosition');
+const {selectionDesignKind}=await moduleAt('selectionAppearance');
+test('Mixed images and a divider expose common properties and keep distinct content and geometry',()=>{
+ const logo={id:'logo',kind:'image',value:{src:'/logo.svg',crop:{x:2,y:3,width:200,height:100}},editor:{position:'absolute',x:40,y:100,widthPx:300,height:150,opacity:.5,appearance:{radius:18}}};
+ const divider={id:'divider',kind:'shape',shape:'rectangle',editor:{position:'absolute',x:360,y:100,widthPx:2,height:150,opacity:.8,appearance:{fill:'#ffffff'}}};
+ const second={...structuredClone(logo),id:'second',editor:{...logo.editor,x:400,opacity:undefined,appearance:{opacity:100}}};
+ assert.equal(selectionDesignKind([logo,divider,second]),'selection');
+ assert.equal(selectionDesignKind([logo,second]),'image');
+ assert.equal(mixedAppearance([logo,second]).opacity,true);
+ const original=document(logo,divider,second),next=patchSelectionAppearance(original,['logo','divider','second'],{opacity:55});
+ for(const block of next.pages[0].sections[0].columns[0]){assert.equal(block.editor.appearance.opacity,55);assert.equal(block.editor.opacity,undefined);}
+ assert.deepEqual(next.pages[0].sections[0].columns[0][0].value,logo.value);
+ assert.equal(next.pages[0].sections[0].columns[0][0].editor.appearance.radius,18);
+ assert.equal(next.pages[0].sections[0].columns[0][1].editor.widthPx,2);
+ const moved=translateCanvasSelection(next,['logo','divider','second'],{x:50,y:-20});
+ assert.deepEqual(moved.pages[0].sections[0].columns[0].map(b=>[b.editor.x,b.editor.y]),[[90,80],[410,80],[450,80]]);
+ assert.deepEqual(next.pages[0].sections[0].columns[0].map(b=>b.editor.x),[40,360,400]);
+ assert.deepEqual(moved.pages[0].sections[0].columns[0].map(b=>[b.editor.widthPx,b.editor.height]),[[300,150],[2,150],[300,150]]);
+ assert.equal(original.pages[0].sections[0].columns[0][0].editor.opacity,.5);
+});
+test('Group coordinate limits and locks never alter relative spacing or unrelated layers',()=>{
+ const a=text('a'),b=text('b');a.editor.x=3900;b.editor.x=3950;
+ const initial=document(a,b,text('other')),bounded=translateCanvasSelection(initial,['a','b'],{x:200});
+ assert.deepEqual(bounded.pages[0].sections[0].columns[0].map(b=>b.editor.x),[3950,4000,40]);
+ const locked=document(a,{...b,editor:{...b.editor,locked:true}});
+ assert.equal(translateCanvasSelection(locked,['a','b'],{x:50}),locked);
+ const sectionLocked=document(a,b);sectionLocked.pages[0].sections[0].locked=true;
+ assert.equal(translateCanvasSelection(sectionLocked,['a','b'],{x:50}),sectionLocked);
+ assert.equal(translateCanvasSelection(initial,['a','b'],{x:NaN}),initial);
+});

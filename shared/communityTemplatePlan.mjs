@@ -90,7 +90,11 @@ export function compileTemplatePlan(value,request){
  // A prepared image can be referenced by its existing canvas-layer ID. Resolve
  // that alias to the canonical library asset, so review and layout use the master.
  const preparedPicture=picture=>{
-  if(!picture||communityMediaById.has(picture.sourceId))return picture;
+  if(!picture)return picture;
+  // mediaRequests.crop selects the reference region before image generation.
+  // The returned pixels are a new complete visual, not that source's coordinate space.
+  if(intent.mediaRequests.some(media=>media.id===picture.sourceId))return {...picture,crop:null};
+  if(communityMediaById.has(picture.sourceId))return picture;
   const block=request.blocks.find(block=>block.id===picture.sourceId&&block.kind==='image');
   const prepared=block&&Array.from(communityMediaById.values()).find(media=>media.name===block.alt);
   return prepared?{...picture,sourceId:prepared.id}:picture;

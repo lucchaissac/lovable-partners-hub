@@ -66,10 +66,11 @@ test('the fourth starter proposal uses the actual source crop and a separate gen
   {...design,template:'editorial-pixel',fields,image:{sourceId:'library-pixel-abstraction',crop:null}},
   {...design,template:'editorial-photo',fields,image:{sourceId:'library-flash-light',crop:null}},
   {...design,template:'editorial-event-collage',fields,image:{sourceId:'library-paper-collage',crop:null}},
-  {...design,template:'editorial-source-object',background:'beige',fields,image:{sourceId:'media-plaque',crop:null}},
+  {...design,template:'editorial-source-object',background:'beige',fields,image:{sourceId:'media-plaque',crop:{x:.1,y:.2,width:.8,height:.5}}},
  ],reviews:[{sourceId:source.id,verdict:'off-brand',diagnosis:'Rebuild the event with its Community identity.',issues:[{area:'identity',problem:'The neon sign replaces the Community signature.',correction:'Use the intact original Community lockup.'}],keep:['Event facts and sign silhouette'],remove:['Original lettering'],retainedVisuals:[],uncertainties:[]}],mediaRequests:[{id:'media-plaque',operation:'edit',prompt:'Reinterpret this sign silhouette as a simple isolated plaque without text or branding.',sourceId:source.id,crop:{x:.1,y:.2,width:.8,height:.5},background:'transparent',color:'#1b1b1b'}]};
  const {plan}=compileTemplatePlan(value,input),fourth=plan.designs[3];
  assert.equal(plan.designs.length,4);assert.equal(fourth.elements.find(e=>e.kind==='image').sourceId,'media-plaque');
+ assert.equal(fourth.elements.find(e=>e.kind==='image').crop,null);
  assert.equal(fourth.elements.filter(e=>e.asset==='community-logo').length,1);
  assert.ok(fourth.elements.some(e=>e.kind==='text'&&e.text==='18 November\nVol. IX'));
  const substituted=structuredClone(value);substituted.designs[3].image.sourceId='library-paper-collage';

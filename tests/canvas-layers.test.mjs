@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import ts from 'typescript';
 async function moduleAt(name){const source=await readFile(new URL(`../studio/src/assets-tool/${name}.ts`,import.meta.url),'utf8');return import(`data:text/javascript;base64,${Buffer.from(ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText).toString('base64')}`);}
-const {canvasLayers,reorderCanvasLayers,canvasLayerAction}=await moduleAt('canvasLayers');
+const {canvasLayers,visibleCanvasLayers,canvasLayerRange,reorderCanvasLayers,canvasLayerAction}=await moduleAt('canvasLayers');
 const {nativeBrandDivider,partnershipDivider}=await moduleAt('brandDivider');
 const block=(id,groupId)=>({id,kind:'image',value:{src:`/${id}.png`,alt:id},editor:{position:'absolute',x:50,y:100,widthPx:200,height:100,...(groupId?{groupId}:{})}});
 const doc=(...blocks)=>({version:1,pages:[{id:'page',sections:[{id:'canvas',columns:[blocks]}]}]});
@@ -77,4 +77,24 @@ test('Hidden and locked state persist without destroying layers and can be rever
  const unlocked=canvasLayerAction(shown,['a'],'unlock').pages[0].sections[0].columns[0][0];
  assert.deepEqual({...unlocked.editor,hidden:undefined,locked:undefined},{...state.pages[0].sections[0].columns[0][0].editor,hidden:undefined,locked:undefined});
  assert.equal(state.pages[0].sections[0].columns[0][0].editor.hidden,undefined);
+});
+
+test('Shift selection includes every visible row between anchor and target in either direction',()=>{
+ const rows=visibleCanvasLayers([block('back'),block('middle'),block('front')],new Set());
+ assert.deepEqual(canvasLayerRange(rows,'front','back'),['front','middle','back']);
+ assert.deepEqual(canvasLayerRange(rows,'back','front'),['front','middle','back']);
+ assert.deepEqual(canvasLayerRange(rows,'front','middle'),['front','middle']);
+ assert.deepEqual(canvasLayerRange(rows,'front','front'),['front']);
+ assert.deepEqual(canvasLayerRange(rows,'removed','middle'),['middle']);
+});
+test('Shift selection follows expanded children and keeps collapsed groups complete without duplicates',()=>{
+ const column=[block('back'),block('a','g'),block('b','g'),block('front')];
+ const expanded=visibleCanvasLayers(column,new Set());
+ assert.deepEqual(expanded.map(row=>row.id),['front','group:g','b','a','back']);
+ assert.deepEqual(canvasLayerRange(expanded,'b','a'),['b','a']);
+ assert.deepEqual(canvasLayerRange(expanded,'a','back'),['a','back']);
+ assert.deepEqual(canvasLayerRange(expanded,'front','a'),['front','b','a']);
+ const collapsed=visibleCanvasLayers(column,new Set(['group:g']));
+ assert.deepEqual(collapsed.map(row=>row.id),['front','group:g','back']);
+ assert.deepEqual(canvasLayerRange(collapsed,'front','back'),['front','b','a','back']);
 });

@@ -3,16 +3,20 @@
 .maker-design-modes .ui-btn[aria-pressed=true],.maker-design-modes .ui-btn:hover{color:var(--ui-text);background:transparent!important}
 .lovable-design[data-inspector-tab=layers] .workspace-widget-panelhost--external{display:none}
 .maker-layers-panel{display:flex;flex-direction:column;gap:4px;padding-block:8px;min-width:0}
-.maker-layer-row{position:relative;display:flex;align-items:center;gap:8px;height:32px;padding:0 8px;box-sizing:border-box;border-radius:var(--ui-radius-item);color:var(--ui-text-muted);cursor:default;outline-offset:-2px;transition:none}
+.maker-layer-row{position:relative;display:flex;align-items:center;gap:8px;height:32px;padding:0 8px;box-sizing:border-box;border-radius:var(--ui-radius-item);color:var(--ui-text-muted);cursor:default;outline-offset:-2px;transition:none;user-select:none}
 .maker-layer-row[draggable=true]{cursor:grab}
-.maker-layer-row:hover,.maker-layer-row[data-selected]{background:rgb(var(--studio-fg-rgb) / 7%);color:var(--ui-text)}
+.maker-layer-row:hover,.maker-layer-row[data-selected]{background:rgb(var(--studio-fg-rgb) / 4%);color:var(--ui-text)}
+.maker-layer-unit[data-group]{border-radius:var(--ui-radius-item);overflow:hidden}
+.maker-layer-unit[data-group] .maker-layer-row{border-radius:0}
+.maker-layer-unit[data-group][data-selected]{background:rgb(var(--studio-fg-rgb) / 4%)}
+.maker-layer-unit[data-group][data-selected] .maker-layer-row{background:transparent}
 .maker-layer-row[data-partial]{color:var(--ui-text)}
 .maker-layer-row[data-hidden]>.maker-layer-name{opacity:.5}
 .maker-layer-row>svg{flex:none}
 .maker-layer-row svg{color:rgb(var(--studio-fg-rgb));opacity:.54}
 .maker-layer-row:hover svg,.maker-layer-row[data-selected] svg,.maker-layer-row[data-partial] svg{opacity:.92}
 .maker-layer-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
-.maker-layer-count,.maker-layer-section{color:var(--ui-text-muted);font-size:12px}
+.maker-layer-section{color:var(--ui-text-muted);font-size:12px}
 .maker-layer-expand{display:flex;align-items:center;justify-content:center;width:16px;height:24px;flex:none;padding:0;border:0;background:transparent;color:inherit;cursor:pointer}
 .maker-layer-actions{display:flex;gap:0;margin-left:auto;flex:none}
 .maker-layer-actions .maker-layer-action{width:24px;height:24px;min-width:24px;padding:0;opacity:0;pointer-events:none;transition:none;background:transparent}

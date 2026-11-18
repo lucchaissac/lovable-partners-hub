@@ -11,6 +11,16 @@ export function canvasLayers(column:HtmlBlock[]):CanvasLayer[]{
   return [{id:`group:${group}`,group:true,blocks:column.filter(item=>item.editor?.groupId===group).reverse()}];
  });
 }
+/** Selection ranges follow the visible tree, including collapsed group rows. */
+export function visibleCanvasLayers(column:HtmlBlock[],collapsed:ReadonlySet<string>):CanvasLayer[]{
+ return canvasLayers(column).flatMap(layer=>layer.group&&!collapsed.has(layer.id)?[layer,...layer.blocks.map(block=>({id:block.id,group:false,blocks:[block]}))]:[layer]);
+}
+export function canvasLayerRange(rows:CanvasLayer[],anchor:string,target:string):string[]{
+ const start=rows.findIndex(row=>row.id===anchor),end=rows.findIndex(row=>row.id===target);
+ if(end<0)return [];
+ const range=start<0?[rows[end]]:rows.slice(Math.min(start,end),Math.max(start,end)+1);
+ return [...new Set(range.flatMap(row=>row.blocks.map(block=>block.id)))];
+}
 export function canvasLayerName(block:HtmlBlock){
  if(block.kind==='text')return block.value.runs.map(run=>run.text).join('').trim().slice(0,70)||'Text';
  if(block.kind==='image')return block.value.alt?.trim()||'Image';

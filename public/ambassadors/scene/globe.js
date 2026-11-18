@@ -342,6 +342,9 @@ const DOTS_UNI = {
   uDotVar:   { value: 0.13 },   // variation de taille entre dots (0..1)
   uMinPx:    { value: BUILDER_PREVIEW ? 3 / Math.min(devicePixelRatio, 2) : 3.0 },    // plancher (px buffer) : plus de dots minuscules
   uCityMul:  { value: 1 },      // boost de taille en mode ville
+  uArrivalEnabled: { value: 0 },
+  uArrivalCenter: { value: new THREE.Vector3(0, 0, 1) },
+  uArrivalRadius: { value: -0.2 },
 };
 const DOTS_BASE = { o: 0.35 };  // opacité de référence (le mode ville la booste)
 
@@ -369,6 +372,9 @@ const dotsVertexShader = /* glsl */ `
   uniform float uDotVar;
   uniform float uMinPx;
   uniform float uCityMul;
+  uniform float uArrivalEnabled;
+  uniform vec3 uArrivalCenter;
+  uniform float uArrivalRadius;
   uniform vec3 uCityPos[${NSEG}];
   uniform float uHeartVis[${NSEG}];
   uniform float uOnlyCity;
@@ -376,6 +382,7 @@ const dotsVertexShader = /* glsl */ `
   varying float vFade;
   varying float vNight;
   varying float vLimb;
+  varying float vArrival;
   void main() {
     vPhase = aPhase;
     vLimb = 1.0;
@@ -388,6 +395,13 @@ const dotsVertexShader = /* glsl */ `
     float sel = step(0.78, aPhase);
     vNight = night * sel * (0.75 + 0.25 * sin(uTime * 1.6 + aPhase * 40.0)) * uNightMul;
     vec3 pn = normalize(position);
+    vArrival = 1.0;
+    if (uArrivalEnabled > 0.5) {
+      float distance = acos(clamp(dot(pn, normalize(uArrivalCenter)), -1.0, 1.0));
+      float revealed = 1.0 - smoothstep(uArrivalRadius - 0.12, uArrivalRadius + 0.02, distance);
+      float wave = 1.0 - smoothstep(0.02, 0.12, abs(distance - uArrivalRadius));
+      vArrival = 0.18 + 0.82 * revealed + 0.65 * wave;
+    }
     float vis = 1.0;
     float boost = aBoost;
     // masque de silhouette (TOUS les modes) : fondu d'opacité antialiasé,
@@ -425,12 +439,13 @@ const dotsFragmentShader = /* glsl */ `
   varying float vFade;
   varying float vNight;
   varying float vLimb;
+  varying float vArrival;
   void main() {
     float d = length(gl_PointCoord - 0.5);
     float a = smoothstep(0.5, 0.32, d);
     if (a < 0.01) discard;
     vec3 col = mix(uColor, vec3(1.0, 0.72, 0.25), clamp(vNight, 0.0, 1.0) * 0.85);
-    float alpha = a * uOpacity * vLimb * mix(vFade, 1.0, clamp(vNight, 0.0, 1.0));
+    float alpha = a * uOpacity * vLimb * mix(vFade, 1.0, clamp(vNight, 0.0, 1.0)) * vArrival;
     gl_FragColor = vec4(col * (1.0 + vNight * 0.8), alpha);
   }
 `;
@@ -533,6 +548,9 @@ async function buildContinents() {
       uDotVar:   DOTS_UNI.uDotVar,
       uMinPx:    DOTS_UNI.uMinPx,
       uCityMul:  DOTS_UNI.uCityMul,
+      uArrivalEnabled: DOTS_UNI.uArrivalEnabled,
+      uArrivalCenter: DOTS_UNI.uArrivalCenter,
+      uArrivalRadius: DOTS_UNI.uArrivalRadius,
       uCityPos:  DOTS_CITY.uCityPos,
       uHeartVis: DOTS_CITY.uHeartVis,
       uOnlyCity: DOTS_CITY.uOnlyCity,
@@ -781,7 +799,8 @@ const FocalBlurShader = {
   uniforms: {
     tDiffuse: { value: null },
     uRes:     { value: new THREE.Vector2(SIZE, SIZE) },
-    uAngle:   { value: -28 },
+    // Optional composition override; all existing kit previews keep their angle.
+    uAngle:   { value: PARAMS.get('bokeh') === 'bottom-left' ? -152 : -28 },
     uStart:   { value: 0.01 },
     uEnd:     { value: 0.52 },
     uMax:     { value: 18 },
@@ -1566,6 +1585,8 @@ let hdRequest = null;
 let builderRendererActive = true;
 let builderFrameListener = null;
 let builderCityRequest = null;
+let builderIntro = null;
+let builderHeartScale = 7.5;
 if (LIVE_GLOBE) {
   window.setGlobeFrameListener = (listener) => {
     builderFrameListener = typeof listener === 'function' ? listener : null;
@@ -2362,6 +2383,8 @@ const CITY_THETA = TOUR.map(([, la, lo]) => {
             break;
           case 'city':
             if (LIVE_GLOBE && Number.isInteger(m.requestId)) builderCityRequest = m.requestId;
+            if (LIVE_GLOBE) builderIntro = m.intro === 'opposite' ? {elapsed:0,from:null,to:null,heart:0} : null;
+            if (LIVE_GLOBE) builderHeartScale = Number.isFinite(m.heartScale) ? THREE.MathUtils.clamp(m.heartScale,2,10) : 7.5;
             if (typeof m.index === 'number') {
               setView(m.index, null);
             } else {
@@ -2370,6 +2393,11 @@ const CITY_THETA = TOUR.map(([, la, lo]) => {
               CUSTOM.lon = m.lon;
               placeCustomPoi();
               setView('custom', null);
+            }
+            if (LIVE_GLOBE) {
+              DOTS_UNI.uArrivalEnabled.value = builderIntro ? 1 : 0;
+              DOTS_UNI.uArrivalCenter.value.copy(latLonToVec3(cityLatDeg(), isCustom() ? CUSTOM.lon : TOUR[VIEW.city][2], 1));
+              DOTS_UNI.uArrivalRadius.value = -0.2;
             }
             break;
           case 'export': {
@@ -2633,7 +2661,29 @@ function animate() {
   }
 
   if (rotY === null) rotY = target;
-  rotY += (target - rotY) * (1 - Math.exp(-dt * (LIVE_GLOBE ? 2.8 : 5.5)));
+  if (builderIntro) {
+    if (builderIntro.to === null) {
+      builderIntro.to = target;
+      builderIntro.from = target + Math.PI;
+      rootTilt = (cityLatDeg() * Math.PI) / 180 - (V2 ? 0.54 : 0.52);
+    }
+    builderIntro.elapsed += dt;
+    const turn = Math.min(1, Math.max(0, (builderIntro.elapsed - 0.25) / 2.6));
+    rotY = THREE.MathUtils.lerp(builderIntro.from, builderIntro.to, ease(turn));
+    const heartProgress = Math.min(1, Math.max(0, (builderIntro.elapsed - 2.85) / 0.7));
+    const heartBack = heartProgress - 1;
+    builderIntro.heart = 1 + 2.4 * heartBack ** 3 + 1.4 * heartBack ** 2;
+    const waveProgress = Math.min(1, Math.max(0, (builderIntro.elapsed - 3.15) / 1.9));
+    DOTS_UNI.uArrivalRadius.value = THREE.MathUtils.lerp(-0.2, Math.PI + 0.2, waveProgress);
+    const phase = builderIntro.elapsed < 2.85 ? 'rotating' : builderIntro.elapsed < 3.15 ? 'heart' : 'wave';
+    if (phase !== builderIntro.phase) {
+      builderIntro.phase = phase;
+      parent.postMessage({type:'globe-intro-phase',phase}, location.origin);
+    }
+    target = builderIntro.to;
+  } else {
+    rotY += (target - rotY) * (1 - Math.exp(-dt * (LIVE_GLOBE ? 2.8 : 5.5)));
+  }
   world.rotation.y = rotY + DRAG.rot;
 
   // mode ville : seule l'ORIENTATION du globe change (pas sa position) —
@@ -2744,8 +2794,9 @@ function animate() {
       // mode support : seul le cœur de la ville sélectionnée, en grand
       // (proportion du template 3-197 : ~1/10 du diamètre de la sphère)
       const sel = s === poiByKey[isCustom() ? 'custom' : ORDER[VIEW.city]];
-      s.visible = sel;
-      if (sel) s.scale.setScalar(s.userData.base * 7.5);
+      const arrivalScale = builderIntro ? builderIntro.heart : 1;
+      s.visible = sel && arrivalScale > 0;
+      if (sel) s.scale.setScalar(s.userData.base * builderHeartScale * arrivalScale);
       continue;
     }
     s.visible = s.userData.visited;
@@ -2794,7 +2845,7 @@ function animate() {
 
   if (LIVE_GLOBE) {
     if (builderFrameListener) builderFrameListener(renderer.domElement);
-    if (builderCityRequest !== null && VIEW.city !== null && Math.abs(target-rotY)<0.002 && Math.abs(tiltTarget-rootTilt)<0.002) {
+    if (builderCityRequest !== null && VIEW.city !== null && (!builderIntro || builderIntro.elapsed >= 5.05) && Math.abs(target-rotY)<0.002 && Math.abs(tiltTarget-rootTilt)<0.002) {
       parent.postMessage({type:'globe-city-settled',requestId:builderCityRequest}, location.origin);
       builderCityRequest = null;
     }

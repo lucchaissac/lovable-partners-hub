@@ -21,6 +21,13 @@ function hydrateIcons(root = document) {
 const list = document.querySelector('#workshop-list');
 list.innerHTML = workshops.map(workshop => `<button type="button" class="op-workshop" data-workshop="${workshop.id}"><span class="op-workshop-audience">${workshop.audience}</span><span class="op-workshop-name">${workshop.title}</span><span class="op-workshop-duration">60 min</span><i data-icon="arrow-up-right"></i></button>`).join('');
 hydrateIcons();
+
+// One original-kit rotation toward the requested city, then a still frame.
+const globe = document.querySelector('.op-globe-canvas[data-city]');
+if (globe) {
+  import('./opportunitiesGlobe.js').then(({mountOpportunityGlobe}) => mountOpportunityGlobe(globe));
+}
+
 const count = document.querySelector('#workshop-count');
 count.textContent = `${workshops.length} workshops`;
 document.querySelectorAll('[data-track]').forEach(button => button.addEventListener('click', () => {

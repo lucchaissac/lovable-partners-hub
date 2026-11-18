@@ -10,21 +10,20 @@
       "/demos/1000-opportunities/nicole-alos-400.webp",
       "/demos/1000-opportunities/nicole-alos-800.webp"
     ],
-    "treatment": "Full source framing, resized and compressed as WebP. No retouching."
+    "treatment": "Original image resized and compressed as WebP, without retouching. Display crop fills the text-height host frame on desktop; square framing on small screens."
   },
   "identity": [
     "/ambassadors/assets/lovable-community-white.svg",
-    "/ambassadors/assets/paris-globe-1080.webp",
     "/ambassadors/assets/heart-overlay.webp"
   ],
-  "header": "Original full Community lockup only, following Luc’s later correction. Opaque #1b1b1b background while scrolling. No city is stated on the homepage, ambassador profile or first workshop page.",
+  "header": "Full Community lockup, thin vertical divider and San Francisco, explicitly requested by Luc for the demo. Equal divider gaps of one actual heart height; city type follows the kit’s city/logo ratio, with a 16 px mobile minimum. Opaque #1b1b1b background while scrolling. Header CTA matches navigation at 16 px, with 8 px vertical and 20 px horizontal padding (40 px height).",
   "removed": [
     "Animated headline and counters",
     "Sound",
     "Repeated calls to action between every section",
     "Empty progress metrics",
     "Featured-builder placeholders",
-    "Prize and free-credit promises without supporting details",
+    "Unsupported prize promises",
     "Decorative uppercase and tracking"
   ],
   "interactions": "Workshop filters and details are functional. Registration is explicitly a local preview, with no requests or persistence. Links to the original initiative and event pages are provided.",
@@ -34,5 +33,17 @@
     "output": "/demos/1000-opportunities/socratyc-ai-studios-white.webp",
     "treatment": "Original transparent artwork, unchanged, placed beneath the hero actions."
   },
-  "refinements": "Date before hero actions at the same size as the introduction; explicit line break after Lovable. Gradient heart raised to 18% of the scene height and rotated -18 degrees, in front of the globe in an isolated stacking context, following Luc’s latest correction; all copy stays above the scene. Practical copy uses 18 px and 16 px, with a 16 px minimum on mobile. White calls to action are text-only with centered labels. Native anchor scrolling is smooth, with reduced motion respected; the artwork and other interface elements remain static."
+  "refinements": "Date before hero actions at the same size as the introduction; explicit line break after Lovable. Gradient heart at top:28%, left:-25%, width:150%, with rotate(-27deg) scale(1.4), exactly as supplied by Luc, in front of the globe in an isolated stacking context, following Luc’s latest correction; all copy stays above the scene. Practical copy uses 18 px and 16 px, with a 16 px minimum on mobile. White calls to action are text-only with centered labels. Native anchor scrolling is smooth and targets the visible section intro, below the fixed header rather than the section’s outer padding, with reduced motion respected; other interface elements remain static; the later requested globe rotation is a single arrival at San Francisco. Workshop heading enlarged to 64 px on desktop with an explicit break before lowercase “to get going.” Right-hand introduction is white, with 64 px before the filters and 32 px after. Host portrait matches the complete text column height on desktop, with a 16 px gap and 32 px corners; it stacks above the text on small screens. Date is white. Hero secondary action inherits the same text size as the primary button. Hero eyebrow restored from the source at Luc’s request: Free credits · Live sessions · Community, in sentence case. Benefits icons are fully opaque white. How it works has no vertical section padding and its first step starts on the H2 row. Your host has 32 px added above the portrait/text block; its scroll anchor remains on the inner content. Footer credit spans two lines: Made on the internet / by Lovable Brand Team. All main-section H2s now share the same size and leading tokens (64 px maximum, 1.08 leading, 34 px mobile); facing introductions share white text and the same grid. The globe entrance and arrival motion is the later explicit exception to the otherwise static page. The idea headline is condensed to You see a problem. / Build the solution. to keep the enlarged heading on two lines. Step descriptions opposite the H2 are white too.",
+  "globe": {
+    "renderer": "public/ambassadors/scene/globe.js",
+    "adapter": "src/demos/opportunitiesGlobe.js",
+    "city": "San Francisco",
+    "coordinates": [
+      37.77,
+      -122.42
+    ],
+    "capturePixels": 2160,
+    "treatment": "Original Three.js Community renderer starts on the opposite hemisphere, rotates toward San Francisco in 2.6 seconds after a 250 ms hold, then grows the original location heart over 700 ms with a restrained bounce. Heart scale is reduced from 7.5 to 6.4. At 3.15 seconds a 1.9-second spherical wave starts at San Francisco and brightens the continent dots themselves; no overlay ring. The globe enters with a 1400 ms opacity/scale/blur transition from the bottom-right corner; entrance blur ends at zero. Final capture at 2160 px removes the renderer iframe to release its resources. Pause while offscreen or hidden; reduced motion displays only the settled frame. Outer CSS translate(-144px,-80px) scale(1.4), transform-origin:left top; independent 10° rotation around the globe centre. All custom motion is opt-in for this isolated demo.",
+    "bokeh": "Bottom-left for this demo only: original focal-blur direction mirrored horizontally from -28° to -152°. Original kit default remains unchanged."
+  }
 }

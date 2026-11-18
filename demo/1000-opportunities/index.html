@@ -16,8 +16,10 @@
     <a class="op-skip" href="#main">Skip to content</a>
     <header class="op-header">
       <div class="op-container op-header-inner">
-        <a class="op-identity" href="#top" aria-label="1,000 Opportunities home">
+        <a class="op-identity" href="#top" aria-label="Lovable Community, San Francisco — home">
           <img src="/ambassadors/assets/lovable-community-white.svg" width="218" height="28" alt="Lovable Community" />
+          <span class="op-identity-divider" aria-hidden="true"></span>
+          <span class="op-identity-city">San Francisco</span>
         </a>
         <nav class="op-nav" aria-label="Page navigation">
           <a href="#about">The idea</a>
@@ -32,7 +34,7 @@
       <section class="op-hero" id="top" aria-labelledby="hero-title">
         <div class="op-container op-hero-inner">
           <div class="op-hero-copy">
-            <p class="op-eyebrow">1,000 opportunities</p>
+            <p class="op-eyebrow">Free credits · Live sessions · Community</p>
             <h1 id="hero-title">Your idea.<br />Made real.</h1>
             <p class="op-intro">Build a useful app, website or tool with Lovable.<br />A community and live workshops to help you take the first step.</p>
             <p class="op-hero-date">Now through <time datetime="2027-02-14">February 14, 2027</time></p>
@@ -44,7 +46,7 @@
           </div>
           <div class="op-hero-scene" aria-hidden="true">
             <img class="op-glow" src="/ambassadors/assets/heart-overlay.webp" width="2160" height="2178" alt="" />
-            <img class="op-globe" src="/ambassadors/assets/paris-globe-1080.webp" width="1080" height="1080" alt="" fetchpriority="high" />
+            <div class="op-globe"><div class="op-globe-tilt"><canvas class="op-globe-canvas" data-city="San Francisco" width="1080" height="1080" hidden></canvas></div></div>
           </div>
         </div>
         <div class="op-container op-hero-footnote">
@@ -53,11 +55,11 @@
         </div>
       </section>
 
-      <section class="op-section op-container" id="about" aria-labelledby="about-title">
-        <div class="op-section-intro">
+      <section class="op-section op-container" aria-labelledby="about-title">
+        <div class="op-section-intro" id="about">
           <div>
             <p class="op-eyebrow">The idea</p>
-            <h2 id="about-title">You know the problem.<br />Now build the solution.</h2>
+            <h2 id="about-title">You see a problem.<br />Build the solution.</h2>
           </div>
           <p class="op-section-description">A business idea. A better way to work. Something you wish existed. This ambassador-led initiative aims to help 1,000 people turn their expertise into a working project. Every level of technical experience is welcome.</p>
         </div>
@@ -79,9 +81,9 @@
         </div>
       </section>
 
-      <section class="op-section op-container" id="workshops" aria-labelledby="workshops-title">
-        <div class="op-section-intro op-workshop-heading">
-          <div><p class="op-eyebrow">The workshops</p><h2 id="workshops-title">An hour to get going.</h2></div>
+      <section class="op-section op-container" aria-labelledby="workshops-title">
+        <div class="op-section-intro op-workshop-heading" id="workshops">
+          <div><p class="op-eyebrow">The workshops</p><h2 id="workshops-title">An hour<br />to get going.</h2></div>
           <p class="op-section-description">Practical, live sessions built around a useful outcome.<br />All workshops are 60 minutes. Dates to be announced.</p>
         </div>
         <div class="op-filters" role="group" aria-label="Filter workshops">
@@ -96,9 +98,10 @@
         <noscript><p>Enable JavaScript to filter workshops, or <a href="https://id-preview--23ff7bbc-4e1a-4b4d-9e61-a7b08629373a.lovable.app/events">browse the original event pages</a>.</p></noscript>
       </section>
 
-      <section class="op-section op-container op-host" id="host" aria-labelledby="host-title">
+      <section class="op-section op-container op-host-section" aria-labelledby="host-title">
+        <div class="op-host" id="host">
         <figure class="op-host-portrait">
-          <img src="/demos/1000-opportunities/nicole-alos-800.webp" srcset="/demos/1000-opportunities/nicole-alos-400.webp 400w, /demos/1000-opportunities/nicole-alos-800.webp 800w" sizes="(max-width: 680px) 240px, 400px" width="800" height="781" alt="Nicole Alos, your community host" loading="lazy" />
+          <img src="/demos/1000-opportunities/nicole-alos-800.webp" srcset="/demos/1000-opportunities/nicole-alos-400.webp 400w, /demos/1000-opportunities/nicole-alos-800.webp 800w" sizes="(max-width: 680px) calc(100vw - 40px), (max-width: 800px) 480px, (max-width: 1280px) 46vw, 551px" width="800" height="781" alt="Nicole Alos, your community host" loading="lazy" />
         </figure>
         <div class="op-host-copy">
           <p class="op-eyebrow">Meet your host</p>
@@ -106,6 +109,7 @@
           <p>Nicole Alos used Lovable to launch her own startup and take it into an accelerator. Now she’s helping others turn their experience into something they can build, share and grow.</p>
           <p>As a Lovable Ambassador and founder of Socratyc, she brings founders, entrepreneurs and learning professionals together to learn by doing.</p>
           <div class="op-host-signature"><strong>Nicole Alos</strong><span>Lovable Ambassador · Socratyc</span></div>
+        </div>
         </div>
       </section>
 
@@ -119,7 +123,7 @@
 
     <footer class="op-footer op-container">
       <div class="op-footer-top"><span>1,000 opportunities</span><a href="https://community.lovable.app/" target="_blank" rel="noreferrer">Explore Lovable Community <i data-icon="arrow-up-right"></i></a></div>
-      <div class="op-footer-bottom"><p>An independent initiative by Nicole Alos, Socratyc.<br />Ambassador-led. Not an official Lovable website.</p><span>Design demo · 2026</span></div>
+      <div class="op-footer-bottom"><p>An independent initiative by Nicole Alos, Socratyc.<br />Ambassador-led. Not an official Lovable website.</p><p class="op-footer-credit">Made on the internet<br />by Lovable Brand Team</p></div>
     </footer>
 
     <dialog class="op-dialog" id="join-dialog" aria-labelledby="join-title" aria-describedby="join-description">

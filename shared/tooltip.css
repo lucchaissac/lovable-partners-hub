@@ -9,13 +9,13 @@
   --hub-tooltip-text: var(--color-text, rgb(0 0 0 / 90%));
   --hub-tooltip-border: var(--color-border, rgb(0 0 0 / 10%));
 }
-.workspace-tooltip,
-.ui-tooltip,
-.ui-tooltip[data-multiline],
-.ui-avatar-tooltip,
-.ui-avatar-group-tooltip,
-.lib-ai-cta::after,
-[data-hub-tooltip]::after {
+:root .workspace-tooltip,
+:root .ui-tooltip,
+:root .ui-tooltip[data-multiline],
+:root .ui-avatar-tooltip,
+:root .ui-avatar-group-tooltip,
+:root .lib-ai-cta::after,
+:root [data-hub-tooltip]::after {
   box-sizing: border-box;
   padding: 6px 10px;
   border: 1px solid var(--hub-tooltip-border);
@@ -29,10 +29,10 @@
   transition: none;
   animation: none;
 }
-.ui-avatar-tooltip::after,
-.ui-avatar-group-tooltip::after { display: none; }
+:root .ui-avatar-tooltip::after,
+:root .ui-avatar-group-tooltip::after { display: none; }
 [data-hub-tooltip] { position: relative; }
-[data-hub-tooltip]::after {
+:root [data-hub-tooltip]::after {
   content: attr(data-hub-tooltip);
   position: absolute;
   bottom: calc(100% + 8px);

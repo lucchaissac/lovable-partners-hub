@@ -22,7 +22,43 @@ const list = document.querySelector('#workshop-list');
 list.innerHTML = workshops.map(workshop => `<button type="button" class="op-workshop" data-workshop="${workshop.id}"><span class="op-workshop-audience">${workshop.audience}</span><span class="op-workshop-name">${workshop.title}</span><span class="op-workshop-duration">60 min</span><i data-icon="arrow-up-right"></i></button>`).join('');
 hydrateIcons();
 
-// One original-kit rotation toward the requested city, then a still frame.
+const sectionLinks = [...document.querySelectorAll('.op-nav a[href^="#"]')]
+  .map(link => ({link,target:document.querySelector(link.getAttribute('href'))}));
+const hero = document.querySelector('.op-hero');
+const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+let navigationFrame = 0;
+let heroProgress = 0;
+let motionTime = performance.now();
+function updateCurrentSection() {
+  navigationFrame = 0;
+  const boundary = document.querySelector('.op-header').getBoundingClientRect().bottom + 25;
+  let active;
+  for (const entry of sectionLinks) if (entry.target.getBoundingClientRect().top <= boundary) active = entry;
+  if (document.querySelector('.op-closing').getBoundingClientRect().top <= boundary) active = undefined;
+  for (const entry of sectionLinks) {
+    if (entry === active) entry.link.setAttribute('aria-current','location');
+    else entry.link.removeAttribute('aria-current');
+  }
+  const rectangle = hero.getBoundingClientRect();
+  const target = reducedMotion.matches ? 0 : Math.min(1,Math.max(0,-rectangle.top/(rectangle.height*0.85)));
+  const now = performance.now();
+  const elapsed = Math.min(32,now-motionTime);
+  motionTime = now;
+  heroProgress = reducedMotion.matches ? 0 : heroProgress + (target-heroProgress)*(1-Math.exp(-elapsed/85));
+  if (Math.abs(target-heroProgress) < 0.001) heroProgress = target;
+  hero.style.setProperty('--op-globe-sink',`${(heroProgress*160).toFixed(2)}px`);
+  hero.style.setProperty('--op-glow-turn',`${(heroProgress*16).toFixed(2)}deg`);
+  hero.style.setProperty('--op-glow-scale',(1+heroProgress/7).toFixed(4));
+  if (heroProgress !== target) navigationFrame = requestAnimationFrame(updateCurrentSection);
+}
+const scheduleNavigationUpdate = () => {navigationFrame ||= requestAnimationFrame(updateCurrentSection);};
+window.addEventListener('scroll',scheduleNavigationUpdate,{passive:true});
+window.addEventListener('resize',scheduleNavigationUpdate,{passive:true});
+reducedMotion.addEventListener('change',scheduleNavigationUpdate);
+document.fonts.ready.then(scheduleNavigationUpdate);
+scheduleNavigationUpdate();
+
+// One original-kit arrival, followed by the requested gentle heartbeat loop.
 const globe = document.querySelector('.op-globe-canvas[data-city]');
 if (globe) {
   import('./opportunitiesGlobe.js').then(({mountOpportunityGlobe}) => mountOpportunityGlobe(globe));

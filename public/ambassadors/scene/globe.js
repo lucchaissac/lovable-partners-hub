@@ -4,6 +4,7 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { GUI } from './vendor/lil-gui.esm.js';
+import {communityArrivalMotion, communityArrivalDuration} from './community-intro.mjs';
 
 // ---------------------------------------------------------------------------
 // Globe "world tour" : le monde de dev/world intégré dans le poster Figma,
@@ -345,6 +346,7 @@ const DOTS_UNI = {
   uArrivalEnabled: { value: 0 },
   uArrivalCenter: { value: new THREE.Vector3(0, 0, 1) },
   uArrivalRadius: { value: -0.2 },
+  uArrivalFloor: { value: 0.18 },
 };
 const DOTS_BASE = { o: 0.35 };  // opacité de référence (le mode ville la booste)
 
@@ -375,6 +377,7 @@ const dotsVertexShader = /* glsl */ `
   uniform float uArrivalEnabled;
   uniform vec3 uArrivalCenter;
   uniform float uArrivalRadius;
+  uniform float uArrivalFloor;
   uniform vec3 uCityPos[${NSEG}];
   uniform float uHeartVis[${NSEG}];
   uniform float uOnlyCity;
@@ -400,7 +403,7 @@ const dotsVertexShader = /* glsl */ `
       float distance = acos(clamp(dot(pn, normalize(uArrivalCenter)), -1.0, 1.0));
       float revealed = 1.0 - smoothstep(uArrivalRadius - 0.12, uArrivalRadius + 0.02, distance);
       float wave = 1.0 - smoothstep(0.02, 0.12, abs(distance - uArrivalRadius));
-      vArrival = 0.18 + 0.82 * revealed + 0.65 * wave;
+      vArrival = uArrivalFloor + (1.0 - uArrivalFloor) * revealed + 0.65 * wave;
     }
     float vis = 1.0;
     float boost = aBoost;
@@ -551,6 +554,7 @@ async function buildContinents() {
       uArrivalEnabled: DOTS_UNI.uArrivalEnabled,
       uArrivalCenter: DOTS_UNI.uArrivalCenter,
       uArrivalRadius: DOTS_UNI.uArrivalRadius,
+      uArrivalFloor: DOTS_UNI.uArrivalFloor,
       uCityPos:  DOTS_CITY.uCityPos,
       uHeartVis: DOTS_CITY.uHeartVis,
       uOnlyCity: DOTS_CITY.uOnlyCity,
@@ -628,7 +632,7 @@ function buildCities() {
     const base = 0.026;
     mesh.scale.setScalar(base);
     mesh.visible = false;
-    mesh.userData = { base, bounceT: -1, visited: false };
+    mesh.userData = { base, bounceT: -1, visited: false, restPosition:mesh.position.clone(), restQuaternion:mesh.quaternion.clone() };
     mesh.renderOrder = 10;
     poiSprites.push(mesh);
     poiByKey[key] = mesh;
@@ -669,6 +673,8 @@ function placeCustomPoi() {
     new THREE.Vector3(0, 1, 0)
   );
   m.quaternion.setFromRotationMatrix(mm);
+  m.userData.restPosition = m.position.clone();
+  m.userData.restQuaternion = m.quaternion.clone();
 }
 
 // ---------------------------------------------------------------------------
@@ -2383,7 +2389,7 @@ const CITY_THETA = TOUR.map(([, la, lo]) => {
             break;
           case 'city':
             if (LIVE_GLOBE && Number.isInteger(m.requestId)) builderCityRequest = m.requestId;
-            if (LIVE_GLOBE) builderIntro = m.intro === 'opposite' ? {elapsed:0,from:null,to:null,heart:0} : null;
+            if (LIVE_GLOBE) builderIntro = m.intro === 'opposite' ? {elapsed:0,from:null,to:null,heart:0,loop:m.heartbeat === true} : null;
             if (LIVE_GLOBE) builderHeartScale = Number.isFinite(m.heartScale) ? THREE.MathUtils.clamp(m.heartScale,2,10) : 7.5;
             if (typeof m.index === 'number') {
               setView(m.index, null);
@@ -2398,6 +2404,7 @@ const CITY_THETA = TOUR.map(([, la, lo]) => {
               DOTS_UNI.uArrivalEnabled.value = builderIntro ? 1 : 0;
               DOTS_UNI.uArrivalCenter.value.copy(latLonToVec3(cityLatDeg(), isCustom() ? CUSTOM.lon : TOUR[VIEW.city][2], 1));
               DOTS_UNI.uArrivalRadius.value = -0.2;
+              DOTS_UNI.uArrivalFloor.value = 0.18;
             }
             break;
           case 'export': {
@@ -2668,17 +2675,20 @@ function animate() {
       rootTilt = (cityLatDeg() * Math.PI) / 180 - (V2 ? 0.54 : 0.52);
     }
     builderIntro.elapsed += dt;
-    const turn = Math.min(1, Math.max(0, (builderIntro.elapsed - 0.25) / 2.6));
-    rotY = THREE.MathUtils.lerp(builderIntro.from, builderIntro.to, ease(turn));
-    const heartProgress = Math.min(1, Math.max(0, (builderIntro.elapsed - 2.85) / 0.7));
-    const heartBack = heartProgress - 1;
-    builderIntro.heart = 1 + 2.4 * heartBack ** 3 + 1.4 * heartBack ** 2;
-    const waveProgress = Math.min(1, Math.max(0, (builderIntro.elapsed - 3.15) / 1.9));
-    DOTS_UNI.uArrivalRadius.value = THREE.MathUtils.lerp(-0.2, Math.PI + 0.2, waveProgress);
-    const phase = builderIntro.elapsed < 2.85 ? 'rotating' : builderIntro.elapsed < 3.15 ? 'heart' : 'wave';
+    const motion = communityArrivalMotion(builderIntro.elapsed,builderIntro.loop);
+    builderIntro.motion = motion;
+    rotY = THREE.MathUtils.lerp(builderIntro.from,builderIntro.to,motion.turn);
+    builderIntro.heart = motion.heart;
+    DOTS_UNI.uArrivalRadius.value = motion.radius;
+    DOTS_UNI.uArrivalFloor.value = motion.floor;
+    const phase = motion.phase;
     if (phase !== builderIntro.phase) {
       builderIntro.phase = phase;
       parent.postMessage({type:'globe-intro-phase',phase}, location.origin);
+    }
+    if (motion.cycle >= 0 && motion.cycle !== builderIntro.cycle) {
+      builderIntro.cycle = motion.cycle;
+      parent.postMessage({type:'globe-heartbeat',cycle:motion.cycle},location.origin);
     }
     target = builderIntro.to;
   } else {
@@ -2796,7 +2806,20 @@ function animate() {
       const sel = s === poiByKey[isCustom() ? 'custom' : ORDER[VIEW.city]];
       const arrivalScale = builderIntro ? builderIntro.heart : 1;
       s.visible = sel && arrivalScale > 0;
-      if (sel) s.scale.setScalar(s.userData.base * builderHeartScale * arrivalScale);
+      if (sel) {
+        if (s.userData.restPosition) {
+          s.position.copy(s.userData.restPosition);
+          s.quaternion.copy(s.userData.restQuaternion);
+        }
+        if (builderIntro?.motion) {
+          const motion = builderIntro.motion;
+          s.translateX(motion.x);
+          s.translateY(motion.y);
+          s.translateZ(motion.lift);
+          s.rotateZ(motion.angle);
+        }
+        s.scale.setScalar(s.userData.base * builderHeartScale * arrivalScale);
+      }
       continue;
     }
     s.visible = s.userData.visited;
@@ -2845,7 +2868,7 @@ function animate() {
 
   if (LIVE_GLOBE) {
     if (builderFrameListener) builderFrameListener(renderer.domElement);
-    if (builderCityRequest !== null && VIEW.city !== null && (!builderIntro || builderIntro.elapsed >= 5.05) && Math.abs(target-rotY)<0.002 && Math.abs(tiltTarget-rootTilt)<0.002) {
+    if (builderCityRequest !== null && VIEW.city !== null && (!builderIntro || builderIntro.elapsed >= communityArrivalDuration) && Math.abs(target-rotY)<0.002 && Math.abs(tiltTarget-rootTilt)<0.002) {
       parent.postMessage({type:'globe-city-settled',requestId:builderCityRequest}, location.origin);
       builderCityRequest = null;
     }

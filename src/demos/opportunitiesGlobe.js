@@ -1,6 +1,6 @@
 import {cityLocation} from '../ambassadors/source/renderer.mjs';
 
-// Reuse the kit's same-origin frame bridge. No second scene or perpetual loop.
+// Reuse the original scene; animate only while this hero is visible.
 export function mountOpportunityGlobe(canvas) {
   const city = canvas.dataset.city;
   const coordinates = cityLocation(city);
@@ -17,7 +17,11 @@ export function mountOpportunityGlobe(canvas) {
   let visible = true;
   const send = message => frame.contentWindow?.postMessage(message, location.origin);
   const setActive = () => {
-    if (ready && !finished) send({type:'renderer-active',active:visible && !document.hidden});
+    if (ready && !finished) {
+      const active = visible && !document.hidden;
+      canvas.dataset.renderActive = String(active);
+      send({type:'renderer-active',active});
+    }
   };
   const observer = new IntersectionObserver(([entry]) => {visible=entry.isIntersecting;setActive();});
   const dispose = () => {
@@ -43,12 +47,15 @@ export function mountOpportunityGlobe(canvas) {
       ready = true;
       if (!reducedMotion) frame.contentWindow.setGlobeFrameListener(draw);
       canvas.dataset.renderState = reducedMotion ? 'preparing' : 'rotating';
-      send({type:'city',name:city,lat:coordinates[0],lon:coordinates[1],requestId:1,heartScale:6.4,...(!reducedMotion && {intro:'opposite'})});
+      send({type:'city',name:city,lat:coordinates[0],lon:coordinates[1],requestId:1,heartScale:6.4,...(!reducedMotion && {intro:'opposite',heartbeat:true})});
       setActive();
-    } else if (message.type === 'globe-intro-phase' && ['rotating','heart','wave'].includes(message.phase)) {
+    } else if (message.type === 'globe-intro-phase' && ['rotating','heart','wave','looping'].includes(message.phase)) {
       canvas.dataset.renderState = message.phase;
+    } else if (message.type === 'globe-heartbeat' && Number.isInteger(message.cycle)) {
+      canvas.dataset.pulse = String(message.cycle);
     } else if (message.type === 'globe-city-settled' && message.requestId === 1) {
-      send({type:'render-globe',pixels:2160,requestId:2});
+      if (reducedMotion) send({type:'render-globe',pixels:2160,requestId:2});
+      else canvas.dataset.renderState = 'looping';
     } else if (message.type === 'globe-render-done' && message.requestId === 2) {
       try {
         if (!(message.blob instanceof Blob)) throw Error('Missing globe capture');

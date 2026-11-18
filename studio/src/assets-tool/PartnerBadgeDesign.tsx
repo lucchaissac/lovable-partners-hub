@@ -1,3 +1,4 @@
+import { DesignPanelHeader } from '../studio/DesignPanelHeader';
 import { useEffect, useRef, useState } from 'react';
 import { Button, Icon, Input } from '@asset/ui';
 import { badgeFormats, badgeFormatName, type PartnerBadgeSettings } from './partnerBadgeSettings';
@@ -36,7 +37,7 @@ export function PartnerBadgeDesign({settings,src,locked,onChange,onClose}:{setti
   const expert=draft.format.startsWith('expert'),partner=['stacked','symbol'].some(layout=>draft.format.endsWith(layout));
   const textFields=(key:'role'|'detail',labels:[string,string])=>labels.map((label,index)=><label className="partner-badge-field" key={`${key}-${index}`}><span>{label}</span><Input inputSize="sm" aria-label={label} maxLength={24} value={draft[key][index]} onChange={event=>{const lines:[string,string]=[...draft[key]];lines[index]=event.target.value;void update({...draft,[key]:lines});}}/></label>);
   return <aside id="html-element-design" className="hcs-design-design-panel partner-badge-panel" aria-label="Partner badge design" onKeyDown={event=>{if(event.key==='Escape'){event.stopPropagation();onClose();}}}>
-    <header className="we-panel-header"><span className="hcs-design-design-title"><Icon name="badge-check" size={16}/><strong>Partner badge</strong></span><Button variant="ghost" size="sm" aria-label="Close badge design" leadingIcon={<Icon name="panel-right" size={16}/>} onClick={onClose}/></header>
+    <DesignPanelHeader title="Partner badge" locked={locked} closeLabel="Close badge design" onClose={onClose}/>
     <div className="hcs-design-design-body"><fieldset disabled={locked||uploading} className="partner-badge-fields" aria-label="Badge content" aria-busy={busy||uploading}>
       <div className="partner-badge-preview"><img src={src} alt="Badge preview"/></div>
       <label className="partner-badge-field"><span>Format</span><span className="partner-badge-select"><select aria-label="Badge format" value={draft.format} onChange={event=>chooseFormat(event.target.value as PartnerBadgeSettings['format'])}>{badgeFormats.map(format=><option key={format} value={format}>{badgeFormatName(format)}</option>)}</select><Icon name="chevron-down" size={14}/></span></label>

@@ -1,3 +1,4 @@
+import { DesignPanelHeader } from '../studio/DesignPanelHeader';
 import {useRef,useState,useEffect} from 'react';
 import {Button,Icon,Input} from '@asset/ui';
 import type {HtmlBlock} from '../studio/htmlEditorModel';
@@ -40,5 +41,5 @@ export function BrandLogoControls({block,onChange,locked=false}:{block:ImageBloc
  </fieldset>;
 }
 export function BrandLogoDesign({block,onChange,onClose,locked}:{block:ImageBlock;onChange:(block:ImageBlock)=>void;onClose:()=>void;locked:boolean}){
- return <aside id="html-element-design" className="hcs-design-design-panel partner-badge-panel" aria-label="Collaboration logo design"><header className="we-panel-header"><strong>Partner logo</strong><Button variant="ghost" size="sm" aria-label="Close logo design" leadingIcon={<Icon name="panel-right" size={16}/>} onClick={onClose}/></header><div className="hcs-design-design-body"><BrandLogoControls block={block} onChange={onChange} locked={locked}/></div></aside>;
+ return <aside id="html-element-design" className="hcs-design-design-panel partner-badge-panel" aria-label="Collaboration logo design"><DesignPanelHeader title="Partner logo" locked={locked} closeLabel="Close logo design" onClose={onClose}/><div className="hcs-design-design-body"><BrandLogoControls block={block} onChange={onChange} locked={locked}/></div></aside>;
 }

@@ -1,3 +1,4 @@
+import { DesignPanelHeader } from '../studio/DesignPanelHeader';
 import {useContext,useState} from 'react';
 import {Button,Icon,Input} from '@asset/ui';
 import {CommunityRenderErrors} from './CommunityRendering';
@@ -12,7 +13,7 @@ export function AmbassadorDesign({id,settings:draft,src,locked,pending,element,o
  const photoField=(index?:number)=><label className="ambassador-photo-field"><span>{(index===undefined?draft.photo:draft.speakers[index].photo)?'Replace portrait':'Upload portrait'}</span><input type="file" accept="image/png,image/jpeg,image/webp" aria-label={index===undefined?'Upload portrait':`Upload speaker ${index+1} portrait`} onChange={e=>void portrait(e.target.files?.[0],index)}/></label>;
  const print=!element&&['banner','poster'].includes(draft.format),event=!element&&['social','speakers'].includes(draft.format),person=!element&&['badge','spotlight'].includes(draft.format);
  return <aside id="html-element-design" className="hcs-design-design-panel partner-badge-panel ambassador-design" aria-label="Community asset design" onKeyDown={event=>{if(event.key==='Escape'){event.stopPropagation();onClose();}}}>
- <header className="we-panel-header"><span className="hcs-design-design-title"><Icon name="globe" size={16}/><strong>{element==='qr'?'Community QR':element?'Globe':'Community asset'}</strong></span><Button variant="ghost" size="sm" aria-label="Close asset design" leadingIcon={<Icon name="panel-right" size={16}/>} onClick={onClose}/></header>
+ <DesignPanelHeader title={element==='qr'?'Community QR':element?'Globe':'Community asset'} locked={locked} closeLabel="Close asset design" onClose={onClose}/>
  <div className="hcs-design-design-body"><fieldset className="partner-badge-fields" disabled={locked} aria-busy={busy}><div className="partner-badge-preview"><img src={src} alt="Community asset preview"/></div>
  {element==='qr'?field('url','Community link'):field('city','City')}
  {print&&<div className="partner-badge-section"><h3>Event signage</h3>{field('headline','Headline',true)}{field('intro','Message',true)}{field('cta','QR caption')}{field('url','Community link')}</div>}

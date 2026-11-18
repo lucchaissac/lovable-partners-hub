@@ -1,3 +1,4 @@
+import { DesignPanelHeader } from '../studio/DesignPanelHeader';
 import type {CSSProperties} from 'react';
 import {Button,Dropdown,Icon,Input,TriggerField} from '@asset/ui';
 import {curvePresets,communityGraphicPresets,communityGraphicDefaults} from '../../../shared/techArtwork.mjs';
@@ -28,5 +29,5 @@ export function TechArtworkControls({block,onChange,locked=false}:{block:ImageBl
  </fieldset>;
 }
 export function TechArtworkDesign({block,onChange,onClose,locked}:{block:ImageBlock;onChange:(block:ImageBlock)=>void;onClose:()=>void;locked:boolean}){
- return <aside id="html-element-design" className="hcs-design-design-panel" aria-label="Vector artwork design"><header className="we-panel-header"><strong>{techArtworkSettings(block).kind==='grid'?'Cover grid':'Construction'}</strong><Button variant="ghost" size="sm" aria-label="Close artwork design" leadingIcon={<Icon name="panel-right-close" size={16}/>} onClick={onClose}/></header><div className="hcs-design-design-body"><TechArtworkControls block={block} onChange={onChange} locked={locked}/></div></aside>;
+ return <aside id="html-element-design" className="hcs-design-design-panel" aria-label="Vector artwork design"><DesignPanelHeader title={techArtworkSettings(block).kind==='grid'?'Cover grid':'Construction'} locked={locked} closeLabel="Close artwork design" onClose={onClose}/><div className="hcs-design-design-body"><TechArtworkControls block={block} onChange={onChange} locked={locked}/></div></aside>;
 }

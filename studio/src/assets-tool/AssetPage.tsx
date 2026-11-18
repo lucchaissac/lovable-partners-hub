@@ -18,7 +18,7 @@ import { assetTheme } from './websiteTokens';
 import { readStudioConfig, studioApi } from '../studio/client';
 
 import { AssetCanvas } from './AssetCanvas';
-import {CommunityCanvas} from './CommunityCanvas';
+import {workspaceTemplateAsset} from './assetTemplates';
 import {assetPages,insertAssetPages,replaceAssetPage,linkAssetPages,moveAssetPage,MAX_ASSET_PAGES} from './assetSeries';
 import { AssetLibrary } from './AssetLibrary';
 import { badgeAsset, starterAsset } from './starter';
@@ -92,7 +92,7 @@ function AssetPageContent() {
   useEffect(() => listenForFileDragEnd(() => setDragging(false)), []);
   const [loading, setLoading] = useState(!!id || !!requestedBadge);
   useEffect(()=>{
-    if(studioWorkspace!=='partners'&&asset?.id&&!loading)window.parent.postMessage({type:studioWorkspace==='tech-blog'?'lovable-tech-asset':studioWorkspace==='lovable'?'lovable-brand-asset':'lovable-community-asset',id:asset.id},window.location.origin);
+    if(asset?.id&&!loading)window.parent.postMessage({type:studioWorkspace==='tech-blog'?'lovable-tech-asset':studioWorkspace==='lovable'?'lovable-brand-asset':studioWorkspace==='partners'?'lovable-partner-asset':'lovable-community-asset',id:asset.id},window.location.origin);
   },[asset?.id,loading]);
   // Reveal only after the document, font and artwork have reached their final first layout.
   useEffect(() => {
@@ -115,7 +115,7 @@ function AssetPageContent() {
 
 
   const put = useCallback((next: AssetDocument) => {
-    current.current = next; setAsset(next); if(studioWorkspace==='ambassadors')setRecent(items=>[next,...items.filter(item=>item.id!==next.id)]); setLoadError(''); try { localStorage.setItem(studioLastAssetKey, next.id); } catch {} setSaveState('Saving…');
+    current.current = next; setAsset(next); setRecent(items=>[next,...items.filter(item=>item.id!==next.id)]); setLoadError(''); try { localStorage.setItem(studioLastAssetKey, next.id); } catch {} setSaveState('Saving…');
     const ownerAtSave = owner;
     // Serial writes avoid a slower earlier write overwriting a later edit.
     saves.current = saves.current.catch(() => {}).then(() => saveAsset(ownerAtSave, next)).then(() => {
@@ -147,9 +147,9 @@ function AssetPageContent() {
   }, []);
   useEffect(() => {
     let cancelled = false;
-    const opening=studioWorkspace==='ambassadors'?(id?loadAssetCollection(owner,id):Promise.resolve([])):listAssets(owner);
+    const opening=id?loadAssetCollection(owner,id):Promise.resolve([]);
     void opening.then(async items => {
-      if (cancelled) return; setRecent(items);
+      if (cancelled) return; setRecent(()=>current.current?[current.current,...items.filter(item=>item.id!==current.current!.id)]:items);
       if (id && !current.current && !readingFile.current) {
         const found = items.find(item => item.id === id);
         if (!found) { if(studioWorkspace!=='partners'){navigate('/assets/new');return;}const next=starterAsset();current.current=next;setAsset(next); }
@@ -243,7 +243,7 @@ function AssetPageContent() {
             const next=await brandStarterAsset('app-studio');
             if(!mounted.current||run!==operation.current||active.signal.aborted||current.current?.id!==document.id)return;
             if(JSON.stringify(current.current.editor)!==JSON.stringify(document.editor))throw Error('The canvas changed. Retry to open the template.');
-            change({...next,id:document.id});setZoom(0);
+            change({...next,id:document.id,series:document.series,animation:document.animation});setZoom(0);
             reply='The original App Studio banner is ready. The sample event is Atlanta — December 2nd, 2026; edit that line directly on the canvas for your event.';
           }
         }
@@ -381,7 +381,7 @@ function AssetPageContent() {
   const switchBrandTemplate=async(templateId:string)=>{
     const previous=current.current;if(!previous||changingTemplate)return;
     setChangingTemplate(true);setError('');
-    try{const next=await brandStarterAsset(templateId);if(mounted.current&&current.current?.id===previous.id){change({...next,id:previous.id,messages:previous.messages});setVisual(undefined);setZoom(0);}}
+    try{const next=await brandStarterAsset(templateId);if(mounted.current&&current.current?.id===previous.id){change({...next,id:previous.id,series:previous.series,animation:previous.animation,messages:previous.messages});setVisual(undefined);setZoom(0);}}
     catch(reason){setError(reason instanceof Error?reason.message:'Could not open this template.');}
     finally{if(mounted.current)setChangingTemplate(false);}
   };
@@ -397,14 +397,14 @@ function AssetPageContent() {
     finally{if(mounted.current)setChangingTemplate(false);}
   };
   const pages=asset?assetPages(asset,recent):[];
-  const openCommunityPage=(pageId:string)=>{
+  const openAssetPage=(pageId:string)=>{
     if(busy||addingPage||changingTemplate||pageId===current.current?.id)return;
     const next=pages.find(page=>page.id===pageId);if(!next)return;
     if(current.current)pageHistory.current.set(current.current.id,{past:past.current,future:future.current});
     const history=pageHistory.current.get(pageId);past.current=history?.past??[];future.current=history?.future??[];
     put(next);setVisual(undefined);setReviewCandidate(undefined);setHistoryVersion(value=>value+1);
   };
-  const addCommunityPage=async(afterId:string,kind:string)=>{
+  const addAssetPage=async(afterId:string,kind:string)=>{
     if(busy||addingPage||changingTemplate||!current.current)return;
     setAddingPage(true);setError('');
     try{
@@ -419,7 +419,7 @@ function AssetPageContent() {
           for(const page of editor.pages)for(const section of page.sections)section.columns=section.columns.map(()=>[]);
           next={...next,editor,community:undefined,layouts:undefined};
         }
-      }else next=await ambassadorAsset(kind,communitySettings(source));
+      }else next=await workspaceTemplateAsset(studioWorkspace,kind,source);
       await saves.current;
       const latest=assetPages(current.current,await listAssets(owner));
       const updated=insertAssetPages(latest,afterId,[next]);await saveAssets(owner,updated);
@@ -430,7 +430,7 @@ function AssetPageContent() {
     }catch(reason){if(mounted.current)setError(reason instanceof Error?reason.message:'Could not add this asset.');}
     finally{if(mounted.current)setAddingPage(false);}
   };
-  const renameCommunityPage=(pageId:string,title:string)=>{
+  const renameAssetPage=(pageId:string,title:string)=>{
     if(!title.trim()||busy||addingPage)return;
     const page=pages.find(item=>item.id===pageId);if(!page)return;
     if(page.id===current.current?.id){change({...page,title});return;}
@@ -440,7 +440,7 @@ function AssetPageContent() {
     setRecent(items=>items.map(item=>item.id===pageId?next:item));
     saves.current=saves.current.then(()=>saveAsset(owner,next)).catch(reason=>setError(reason.message));
   };
-  const arrangeCommunityPages=async(action:'move'|'remove'|'undo',pageId?:string,targetId?:string,side:'before'|'after'='before')=>{
+  const arrangeAssetPages=async(action:'move'|'remove'|'undo',pageId?:string,targetId?:string,side:'before'|'after'='before')=>{
     if(busy||addingPage||changingTemplate||!current.current)return;
     setAddingPage(true);setError('');
     try{
@@ -493,7 +493,7 @@ function AssetPageContent() {
     {loading ? <div className="asset-empty"><p role="status">Opening your asset…</p></div> : !asset ? <div className="we-body asset-workspace"><WorkspaceChat singleAsset/><AssetHome reading={reading} onBrowse={() => upload.current?.click()}>
       {(recentLoading || recent.length > 0) && <AssetRecents loading={recentLoading}>{recent.map(item=><AssetLibraryCard key={item.id} asset={item} onOpen={()=>navigate(`/assets/${item.id}`)}/>)}</AssetRecents>}
     </AssetHome></div> : <>
-      <div className="we-body asset-workspace"><WorkspaceChat singleAsset preserveSourceTransparency={studioWorkspace!=='partners'} placeholder="Ask Lovable…"/>{studioWorkspace==='ambassadors'?<CommunityCanvas toolbar={canvasToolbar} asset={generationPreview??asset} pages={generationPreview?pages.map(page=>page.id===asset.id?generationPreview:page):pages} generating={busy} busy={busy||addingPage||changingTemplate} zoom={zoom} onZoom={setZoom} onChange={change} onOpen={openCommunityPage} onAdd={(afterId,kind)=>void addCommunityPage(afterId,kind)} onOverview={()=>setVisual(undefined)} onRename={renameCommunityPage} onMove={(pageId,targetId,side)=>void arrangeCommunityPages('move',pageId,targetId,side)} onRemove={pageId=>void arrangeCommunityPages('remove',pageId)} onUndoArrangement={pageArrangement?()=>void arrangeCommunityPages('undo'):undefined}/>:<AssetCanvas toolbar={canvasToolbar} asset={asset} onChange={change} preview={false} busy={busy} zoom={zoom} onZoom={setZoom} />}
+      <div className="we-body asset-workspace"><WorkspaceChat singleAsset preserveSourceTransparency={studioWorkspace!=='partners'} placeholder="Ask Lovable…"/><AssetCanvas toolbar={canvasToolbar} asset={generationPreview??asset} pages={generationPreview?pages.map(page=>page.id===asset.id?generationPreview:page):pages} generating={busy} busy={busy||addingPage||changingTemplate} zoom={zoom} onZoom={setZoom} onChange={change} onOpen={openAssetPage} onAdd={(afterId,kind)=>void addAssetPage(afterId,kind)} onOverview={()=>setVisual(undefined)} onRename={renameAssetPage} onMove={(pageId,targetId,side)=>void arrangeAssetPages('move',pageId,targetId,side)} onRemove={pageId=>void arrangeAssetPages('remove',pageId)} onUndoArrangement={pageArrangement?()=>void arrangeAssetPages('undo'):undefined}/>
         <AssetDesignPanel mobileOpen={designOpen} onClose={()=>setDesignOpen(false)} asset={asset} onChange={change} onImport={() => upload.current?.click()}/>
       </div>
       <div className="asset-export-host" aria-hidden="true"><Artwork ref={exportBoard} asset={reviewCandidate??asset} /></div>

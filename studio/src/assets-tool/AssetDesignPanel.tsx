@@ -7,6 +7,8 @@ import { WorkspaceInspector, useWorkspaceWidgetHost } from '../studio/WorkspaceW
 import { assetDimensions, assetColor, backgrounds, type AssetDocument } from './model';
 import { studioWorkspace } from './workspace';
 import {StudioShapeColor} from '../studio/PresentationElementDesign';
+import { CanvasAnimationDesign } from './CanvasAnimationDesign';
+import { DesignPanelHeader } from '../studio/DesignPanelHeader';
 
 const names: Record<string, string> = { ink: 'Dark', white: 'White', beige: 'Lovable beige', 'blue-soft': 'Soft blue', mint: 'Mint', 'yellow-soft': 'Warm white', 'pink-soft': 'Soft pink' };
 
@@ -21,9 +23,10 @@ export function AssetDesignPanel({ asset, onChange, onImport, mobileOpen, onClos
     <div className="lovable-design-content">
     <WorkspaceInspector />
     {!panelOpen && <div className="lovable-design-default">
-      <div className="lovable-panel-title"><span>Design</span><Tooltip label="Collapse design panel" side="bottom"><Button variant="ghost" aria-label="Collapse design panel" leadingIcon={<Icon name="panel-right-close" size={16}/>} onClick={()=>{setCollapsed(true);onClose();}}/></Tooltip></div>
+      <DesignPanelHeader title="Design" closeLabel="Collapse design panel" className="lovable-panel-title" onClose={()=>{setCollapsed(true);onClose();}}/>
       <div className="lovable-design-section"><h2>Canvas</h2><div className="lovable-dimensions"><div><span>Width</span><strong>{width}</strong></div><div><span>Height</span><strong>{height}</strong></div></div>
         {studioWorkspace!=='partners'?<div className="lovable-field"><span>Background</span><StudioShapeColor label="Canvas background" disabled={false} value={assetColor(asset.background)} onChange={(background:string)=>onChange({...asset,background})}/></div>:<label className="lovable-field">Background<div className="lovable-select"><select value={asset.background} onChange={event => onChange({ ...asset, background: event.target.value as AssetDocument['background'] })}>{backgrounds.filter(color => color !== 'beige').map(color => <option key={color} value={color}>{names[color]}</option>)}</select><Icon name="chevron-down" size={14}/></div></label>}
+        <CanvasAnimationDesign asset={asset} onChange={onChange}/>
       </div>
       {asset.community?.layout==='graphic'&&<div className="lovable-design-section"><label className="community-contrast-toggle"><input type="checkbox" checked={asset.community.autoContrast!==false} onChange={event=>{const next={...asset,community:{...asset.community!,autoContrast:event.target.checked}};onChange(event.target.checked?applyCommunityContrast(next):next);}}/>Auto contrast</label></div>}
       {partner&&<div className="lovable-design-section brand-logo-controls"><h2>Partner logo</h2><BrandLogoControls block={partner} onChange={block=>onChange(updateBrandPartner(asset,block))}/></div>}

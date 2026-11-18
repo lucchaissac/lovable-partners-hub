@@ -15,7 +15,7 @@ let lastAsset: string | null = null;
 try { lastAsset=localStorage.getItem(studioLastAssetKey); } catch {}
 const entryParams = new URLSearchParams(window.location.search);
 const requestedBadge = entryParams.get('badge');
-const requestedAsset = studioWorkspace!=='partners'&&/^[a-f0-9-]{36}$/i.test(entryParams.get('asset')??'')?entryParams.get('asset'):null;
+const requestedAsset = /^[a-f0-9-]{36}$/i.test(entryParams.get('asset')??'')?entryParams.get('asset'):null;
 const requestedStarter = studioWorkspace==='partners' && entryParams.get('starter')==='grow-your-business';
 const initialRoute = requestedAsset ? `/assets/${requestedAsset}` : requestedStarter ? '/assets/new' : requestedBadge ? `/assets/new?badge=${encodeURIComponent(requestedBadge)}` : studioWorkspace==='ambassadors'?`/assets/new?badge=${ambassadorDefaultFormat}`:lastAsset ? `/assets/${lastAsset}`:'/assets/new';
 createRoot(document.getElementById('root')!).render(<StrictMode><MemoryRouter initialEntries={[initialRoute]}><App/></MemoryRouter></StrictMode>);

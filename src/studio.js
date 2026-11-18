@@ -9,9 +9,16 @@ export function studio({ library = false, badge, asset, starter = false, workspa
 window.addEventListener('message', event => {
   const frame = document.querySelector('.partner-studio iframe');
   if (frame && event.origin === window.location.origin && event.source === frame.contentWindow && event.data?.type === 'lovable-studio-ready') { syncStudioTheme(); frame.dataset.ready = 'true'; }
-  // Keep a reviewed Community proposal open on refresh instead of recreating its starter.
-  if (frame && event.origin === window.location.origin && event.source === frame.contentWindow && ['lovable-community-asset','lovable-brand-asset','lovable-tech-asset'].includes(event.data?.type) && (event.data.type==='lovable-tech-asset'?/^#tech-blog\/create(?:\/|$)/:event.data.type==='lovable-community-asset'?/^#ambassadors\/create(?:\/|$)/:/^#brand\/create(?:\/|$)/).test(location.hash) && /^[a-f0-9-]{36}$/i.test(event.data.id)) {
-    history.replaceState(null, '', `#${event.data.type==='lovable-tech-asset'?'tech-blog':event.data.type==='lovable-brand-asset'?'brand':'ambassadors'}/create/${event.data.id}`);
+  // Keep each maker's active collection page open on refresh without remounting it.
+  const routes = {
+    'lovable-community-asset': { pattern: /^#ambassadors\/create(?:\/|$)/, prefix: '#ambassadors/create/' },
+    'lovable-brand-asset': { pattern: /^#brand\/create(?:\/|$)/, prefix: '#brand/create/' },
+    'lovable-tech-asset': { pattern: /^#tech-blog\/create(?:\/|$)/, prefix: '#tech-blog/create/' },
+    'lovable-partner-asset': { pattern: /^#create(?:\/|$)/, prefix: '#create/' },
+  };
+  const route = routes[event.data?.type];
+  if (frame && event.origin === window.location.origin && event.source === frame.contentWindow && route?.pattern.test(location.hash) && /^[a-f0-9-]{36}$/i.test(event.data.id)) {
+    history.replaceState(null, '', `${route.prefix}${event.data.id}`);
   }
 });
 

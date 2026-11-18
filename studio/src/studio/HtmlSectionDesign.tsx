@@ -1,3 +1,4 @@
+import { DesignPanelHeader } from './DesignPanelHeader';
 import {useEffect,useState} from 'react';
 import {Button,Dropdown,Icon,Tooltip,TriggerField} from '@asset/ui';
 import {StudioShapeColor,StudioShapeNumber,StudioPaddingControls,StudioCornerControls} from './PresentationElementDesign';
@@ -8,7 +9,7 @@ export function HtmlSectionDesign({section,onChange,onClose,onSpacingPreview,fix
  useEffect(()=>{onSpacingPreview?.(focus??hover);return()=>onSpacingPreview?.(null);},[focus,hover,onSpacingPreview]);
  const preview=(kind:SectionSpacingPreview)=>({onMouseEnter:()=>setHover(kind),onMouseLeave:()=>setHover(null),onFocus:()=>setFocus(kind),onBlur:(event:React.FocusEvent<HTMLDivElement>)=>{if(!event.currentTarget.contains(event.relatedTarget))setFocus(null);}});
 
- return <aside className="hcs-design-design-panel" aria-label="Section design"><header className="we-panel-header"><span className="hcs-design-design-title"><Icon name={fixedCanvas?"frame":"panels-top-left"} size={16}/><strong>{section.name}</strong>{section.locked&&<Icon name="lock" size={14}/>}</span><Tooltip label="Close section design"><Button variant="ghost" size="sm" aria-label="Close section design" leadingIcon={<Icon name="panel-right" size={16}/>} onClick={onClose}/></Tooltip></header><div className="hcs-design-design-body"><fieldset disabled={section.locked} className="hcs-design-design-fields">
+ return <aside className="hcs-design-design-panel" aria-label="Section design"><DesignPanelHeader title={section.name} locked={section.locked} closeLabel="Close section design" onClose={onClose}/><div className="hcs-design-design-body"><fieldset disabled={section.locked} className="hcs-design-design-fields">
  <div className="hcs-design-design-row"><span>Background</span><StudioShapeColor label="Section background" value={section.background} disabled={section.locked} onChange={(background:string)=>onChange({background})}/></div>
  <StudioCornerControls key={section.id} label="Section" value={section} max={160} disabled={section.locked} onChange={onChange}/>
  {!fixedCanvas&&<div className="hcs-design-design-row"><span>Shadow</span><Dropdown value={section.shadow??'none'} items={[{id:'none',label:'None'},{id:'subtle',label:'Subtle'},{id:'soft',label:'Soft'},{id:'strong',label:'Strong'}]} onChange={shadow=>onChange({shadow:shadow as HtmlSection['shadow']})} trigger={<TriggerField aria-label="Section shadow">{{none:'None',subtle:'Subtle',soft:'Soft',strong:'Strong'}[section.shadow??'none']}</TriggerField>}/></div>}

@@ -42,10 +42,18 @@ export const referenceSchema = z.object({
   src: z.string().max(17_000_000).regex(/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+=*$/),
   width: z.number().int().positive().max(20000), height: z.number().int().positive().max(20000),
 }).strict();
+// Canvas animation is opt-in metadata for now; still exports keep their current rendering.
+export const canvasAnimationSchema = z.object({
+  enabled: z.boolean().default(false),
+  transition: z.enum(['instant', 'smart-animate']).default('smart-animate'),
+  durationMs: z.number().int().min(1).max(10_000).default(600),
+}).strict();
+export const defaultCanvasAnimation = canvasAnimationSchema.parse({});
 export const assetSchema = compositionSchema.extend({
   version: z.literal(1), id: z.uuid(), format: z.enum(['landscape', 'square', 'portrait']),
   dimensions: z.object({ width: z.number().min(100).max(4000), height: z.number().min(100).max(4000) }).strict().optional(),
   editor: htmlEditorSchema.optional(),
+  animation: canvasAnimationSchema.optional(),
   series:z.array(z.object({id:z.uuid(),title:z.string().max(100)}).strict()).max(64).optional(),
   community:z.object({settings:ambassadorSchema,bindings:z.record(z.string(),z.string()),layout:z.literal('graphic').optional(),autoContrast:z.boolean().optional()}).strict().optional(),
   layouts: assetLayoutsSchema.optional(),

@@ -1,0 +1,48 @@
+/* One quiet, instant tooltip surface for the hub and embedded studio. */
+:root {
+  --hub-tooltip-background: var(--color-panel, #202020);
+  --hub-tooltip-text: var(--color-text, rgb(255 255 255 / 92%));
+  --hub-tooltip-border: var(--color-border, rgb(255 255 255 / 8%));
+}
+:root[data-theme='light'] {
+  --hub-tooltip-background: var(--color-panel, #fff);
+  --hub-tooltip-text: var(--color-text, rgb(0 0 0 / 90%));
+  --hub-tooltip-border: var(--color-border, rgb(0 0 0 / 10%));
+}
+.workspace-tooltip,
+.ui-tooltip,
+.ui-tooltip[data-multiline],
+.ui-avatar-tooltip,
+.ui-avatar-group-tooltip,
+.lib-ai-cta::after,
+[data-hub-tooltip]::after {
+  box-sizing: border-box;
+  padding: 6px 10px;
+  border: 1px solid var(--hub-tooltip-border);
+  border-radius: 8px;
+  background: var(--hub-tooltip-background);
+  color: var(--hub-tooltip-text);
+  font: 600 12px/18px 'Camera Plain', Arial, sans-serif;
+  letter-spacing: normal;
+  box-shadow: none;
+  pointer-events: none;
+  transition: none;
+  animation: none;
+}
+.ui-avatar-tooltip::after,
+.ui-avatar-group-tooltip::after { display: none; }
+[data-hub-tooltip] { position: relative; }
+[data-hub-tooltip]::after {
+  content: attr(data-hub-tooltip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 180px;
+  opacity: 0;
+  visibility: hidden;
+  z-index: 2000;
+}
+[data-hub-tooltip]:is(:hover, :focus-visible)::after { opacity: 1; visibility: visible; }
+.hub-header [data-hub-tooltip]::after { top: calc(100% + 12px); bottom: auto; right: 0; left: auto; transform: none; }

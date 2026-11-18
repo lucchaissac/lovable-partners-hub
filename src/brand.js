@@ -20,7 +20,7 @@ export function brandGallery(){
 
 function logoCard(logo,icon){
  const label=`${logo.family} · ${logo.tone === 'color'?'Color':logo.tone[0].toUpperCase()+logo.tone.slice(1)}`;
- return `<article class="lovable-logo-card"><div class="lovable-logo-preview ${['white','creme'].includes(logo.tone)?'on-dark':'on-white'} ${logo.family === 'Logomark'?'is-symbol':''}"><img src="${logo.src}" alt="${label}" loading="lazy"/></div><div class="format-caption"><h3>${label}</h3><a class="subtle-button" href="${logo.src}" download="lovable-${logo.id}.svg" aria-label="Download ${label} vector" title="Download .svg">${icon('download')}</a></div></article>`;
+ return `<article class="lovable-logo-card"><div class="lovable-logo-preview ${['white','creme'].includes(logo.tone)?'on-dark':'on-white'} ${logo.family === 'Logomark'?'is-symbol':''}"><img src="${logo.src}" alt="${label}" loading="lazy"/></div><div class="format-caption"><h3>${label}</h3><a class="subtle-button" href="${logo.src}" download="lovable-${logo.id}.svg" aria-label="Download ${label} vector" data-hub-tooltip="Download .svg">${icon('download')}</a></div></article>`;
 }
 
 export function brandGuidelines({icon}){

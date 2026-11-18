@@ -9,6 +9,7 @@ import './styles.css';
 import './studio/studio.css';
 import './app.css';
 import './lovable.css';
+import '../../shared/tooltip.css';
 function App(){const location=useLocation();useEffect(()=>{const themeChanged=(event:MessageEvent)=>{if(event.origin===window.location.origin&&event.source===window.parent&&event.data?.type==='lovable-studio-theme')setThemeInstantly(event.data.theme);};window.addEventListener('message',themeChanged);return()=>{window.removeEventListener('message',themeChanged);};},[]);return <Routes><Route path="/assets/new" element={<AssetPage key={location.pathname+location.search}/>}/><Route path="/assets/:id" element={<AssetPage key={location.pathname}/>}/><Route path="*" element={<Navigate to="/assets/new" replace/>}/></Routes>;}
 let lastAsset: string | null = null;
 try { lastAsset=localStorage.getItem(studioLastAssetKey); } catch {}

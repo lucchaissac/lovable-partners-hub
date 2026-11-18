@@ -28,7 +28,7 @@ export function TooltipBubble({ label, description, className, maxWidth = 180, c
       tooltip.toggleAttribute('data-multiline', lines.length > 1);
       const lineWidth = Math.max(...lines.map(rect => rect.width), 0);
       const style = getComputedStyle(tooltip);
-      const padding = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+      const padding = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight) + parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth);
       tooltip.style.width = `${Math.ceil(lineWidth + padding)}px`;
       if (clampToViewport && typeof anchorLeft === 'number') {
         // Keep the bubble attached to its trigger; only shift its actual width at the viewport edge.

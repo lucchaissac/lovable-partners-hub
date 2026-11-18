@@ -119,3 +119,5 @@
 - Light/dark changes are immediate in both the hub and embedded studio, with no color, background, border, SVG ink or filter interpolation. Suppress transitions only during the theme switch; retain ordinary interactions and running artwork animations.
 
 - Community image-only starter submissions rebuild the attached artwork as one complete editable replacement; do not mix designs with edits to old starter layers. Enforce one operation in the planner response schema, and fold meaningful corrections into template fields on retry. Keep selected/locked-layer checks. Asset stacks start 16 px below the toolbar instead of vertically centering with a large empty top area; the drag grip is 12 px with a usable touch target.
+
+- All hub and Make tooltips share the workspace-navigation surface: themed panel, subtle solid border, 8 px radius, Camera Plain 600 at 12 px, no arrow or shadow. Show and hide immediately, without delay or animation. Make has no outer horizontal padding and a 2 px bottom inset; preserve panel-internal spacing.

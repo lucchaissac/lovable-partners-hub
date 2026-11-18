@@ -35,7 +35,7 @@ export function exportSource(asset: AssetDocument) {
   download(new Blob([JSON.stringify(assetSchema.parse(asset), null, 2)], { type: 'application/json' }), `${filename(asset.title)}.asset.json`);
 }
 const fontCss=new Map<string,Promise<string>>();
-async function embeddedAssetFonts(asset:AssetDocument) {
+export async function embeddedAssetFonts(asset:AssetDocument) {
  return (await Promise.all(fontFacesForAsset(asset).map(face=>{
   let pending=fontCss.get(face.src);if(pending)return pending;
   pending=fetch(face.src).then(async response => {

@@ -47,6 +47,11 @@ export const canvasAnimationSchema = z.object({
   enabled: z.boolean().default(false),
   transition: z.enum(['instant', 'smart-animate']).default('smart-animate'),
   durationMs: z.number().int().min(1).max(10_000).default(600),
+  delayMs: z.number().int().min(0).max(10_000).default(0),
+  easing: z.enum(['ease-in-out', 'linear', 'ease-in', 'ease-out', 'spring', 'custom']).default('ease-in-out'),
+  curve: z.tuple([z.number().min(0).max(1), z.number().min(-1).max(2), z.number().min(0).max(1), z.number().min(-1).max(2)]).default([.4, 0, .2, 1]),
+  bounce: z.number().min(0).max(80).default(25),
+  velocity: z.number().min(-10).max(10).default(0),
 }).strict();
 export const defaultCanvasAnimation = canvasAnimationSchema.parse({});
 export const assetSchema = compositionSchema.extend({

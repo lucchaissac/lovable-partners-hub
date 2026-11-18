@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { AssetDocument } from './model';
-import { playbackPosition, playbackTimeline } from './assetPlayback';
+import { playbackPosition, playbackTimeline, playbackThumbnailProgress } from './assetPlayback';
 
 type Session = { revision: string; time: number; playing: boolean };
 export function useAssetPlayback(pages: AssetDocument[], activeId: string, enabled: boolean, onOpen: (id: string) => void) {
@@ -58,6 +58,7 @@ export function useAssetPlayback(pages: AssetDocument[], activeId: string, enabl
   const jump = (index: number) => { reset(); expectedId.current = pages[index].id; open.current(pages[index].id); };
   return {
     active, playing, time, total: timeline.total, position, reducedMotion, reset, jump,
+    thumbnailProgress: active ? playbackThumbnailProgress(timeline, time) : undefined,
     toggle: () => setSession({ revision, time: time >= timeline.total ? 0 : time, playing: !playing }),
     seek: (time: number) => setSession({ revision, time: Math.max(0, Math.min(timeline.total, time)), playing: false }),
   };

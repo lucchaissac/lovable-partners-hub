@@ -4,6 +4,7 @@
 .lovable-design[data-inspector-tab=layers] .workspace-widget-panelhost--external{display:none}
 .maker-layers-panel{display:flex;flex-direction:column;gap:4px;padding-block:8px;min-width:0}
 .maker-layer-row{position:relative;display:flex;align-items:center;gap:8px;height:32px;padding:0 8px;box-sizing:border-box;border-radius:var(--ui-radius-item);color:var(--ui-text-muted);cursor:default;outline-offset:-2px;transition:none;user-select:none}
+.maker-layer-row:focus,.maker-layer-row:focus-visible{outline:none}
 .maker-layer-row[draggable=true]{cursor:grab}
 .maker-layer-row:hover,.maker-layer-row[data-selected]{background:rgb(var(--studio-fg-rgb) / 4%);color:var(--ui-text)}
 .maker-layer-unit[data-group]{border-radius:var(--ui-radius-item);overflow:hidden}

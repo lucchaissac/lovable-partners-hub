@@ -2,7 +2,7 @@ import { memo, useLayoutEffect, useMemo, useRef } from 'react';
 import { Artwork } from './Artwork';
 import { assetColor, assetDimensions, type AssetDocument } from './model';
 import { nativeDocument, REFERENCE_IMAGE } from './nativeDocument';
-import { matchingPlaybackBlocks } from './assetPlayback';
+import { matchingPlaybackBlocks, playbackEasing } from './assetPlayback';
 
 const PreviewArtwork = memo(Artwork);
 const appearance = ['color', 'backgroundColor', 'borderTopLeftRadius', 'borderTopRightRadius', 'borderBottomLeftRadius', 'borderBottomRightRadius', 'borderTopWidth', 'borderRightWidth', 'borderBottomWidth', 'borderLeftWidth', 'borderTopColor', 'borderRightColor', 'borderBottomColor', 'borderLeftColor', 'boxShadow', 'fontSize', 'fontWeight', 'lineHeight', 'letterSpacing', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'] as const;
@@ -19,8 +19,8 @@ function blocks(asset: AssetDocument) {
 
 /** Animate read-only DOM snapshots. Native layers and saved documents stay intact;
  * paused Web Animations provide the same frames for playback and scrubbing. */
-export function AssetPlaybackPreview({ from, to, progress, smart, reducedMotion, scale, playing, time, onExit }: {
-  from: AssetDocument; to?: AssetDocument; progress: number; smart: boolean; reducedMotion: boolean; scale: number; playing: boolean; time: number; onExit: () => void;
+export function AssetPlaybackPreview({ from, to, progress, smart, reducedMotion, scale, playing, time, onExit, exporting = false }: {
+  from: AssetDocument; to?: AssetDocument; progress: number; smart: boolean; reducedMotion: boolean; scale: number; playing: boolean; time: number; onExit: () => void; exporting?: boolean;
 }) {
   const root = useRef<HTMLDivElement>(null), animations = useRef<Animation[]>([]);
   const source = useMemo(() => blocks(from), [from]), target = useMemo(() => to ? blocks(to) : [], [to]);
@@ -60,14 +60,15 @@ export function AssetPlaybackPreview({ from, to, progress, smart, reducedMotion,
     add(host, { width: `${startSize.width}px`, height: `${startSize.height}px` }, { width: `${endSize.width}px`, height: `${endSize.height}px` });
     add(host.parentElement!, { width: `${startSize.width * scale}px`, height: `${startSize.height * scale}px` }, { width: `${endSize.width * scale}px`, height: `${endSize.height * scale}px` });
     animations.current = jobs.map(({ element, start, end }) => {
-      const animation = element.animate([start, end], { duration: 1000, fill: 'both', easing: 'cubic-bezier(.4, 0, .2, 1)' });
+      const animation = element.animate([start, end], { duration: 1000, fill: 'both', easing: playbackEasing(from.animation) });
       animation.pause(); animation.currentTime = 0; return animation;
     });
     return () => { animations.current.forEach(animation => animation.cancel()); animations.current = []; };
-  }, [source, target, animate, scale]);
-  useLayoutEffect(() => { animations.current.forEach(animation => { animation.currentTime = progress * 1000; }); }, [progress, source, target, animate, scale]);
+  }, [source, target, animate, scale, from.animation]);
+  useLayoutEffect(() => { animations.current.forEach(animation => { animation.currentTime = progress * 1000; }); }, [progress, source, target, animate, scale, from.animation]);
   const mediaTime = useRef(time); mediaTime.current = time;
   useLayoutEffect(() => {
+    if (exporting) return;
     const videos = [...(root.current?.querySelectorAll('video') ?? [])];
     for (const video of videos) {
       video.muted = true;
@@ -75,14 +76,14 @@ export function AssetPlaybackPreview({ from, to, progress, smart, reducedMotion,
       else video.pause();
     }
     return () => videos.forEach(video => video.pause());
-  }, [playing, reducedMotion, source, target, animate]);
+  }, [playing, reducedMotion, source, target, animate, exporting]);
   useLayoutEffect(() => {
-    if (playing || reducedMotion) return;
+    if (playing || reducedMotion || exporting) return;
     const videos = [...(root.current?.querySelectorAll('video') ?? [])];
     const seek = (video: HTMLVideoElement) => { if (Number.isFinite(video.duration) && video.duration > 0) video.currentTime = mediaTime.current / 1000 % video.duration; };
     const listeners = videos.map(video => { const loaded = () => seek(video); video.addEventListener('loadedmetadata', loaded); seek(video); return () => video.removeEventListener('loadedmetadata', loaded); });
     return () => listeners.forEach(remove => remove());
-  }, [time, playing, reducedMotion, source, target, animate]);
+  }, [time, playing, reducedMotion, source, target, animate, exporting]);
   const { width, height } = assetDimensions(from);
   return <div className="community-page-stack asset-playback-stack">
     <div className="asset-scaled-board" style={{ width: width * scale, height: height * scale }}>

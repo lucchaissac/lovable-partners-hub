@@ -43,10 +43,11 @@ import '../routes/demos/editor/workspace-editor.css';
 import '../studio/workspace-widgets.css';
 import { Artwork } from './Artwork';
 import { assetSchema, assetDimensions, compositionSchema, formats, resizeAsset, referenceDocument, type AssetDocument, type AssetFormat, type Composition } from './model';
-import { exportPng, renderPng, exportSource, readReference, visionReference } from './media';
+import { download, exportPng, renderPng, exportSource, readReference, visionReference } from './media';
 import { listAssets, loadAssetCollection, saveAsset, saveAssets } from './storage';
 import './assets.css';
 import {AssetScreenMenu} from './AssetScreenMenu';
+import {canExportAnimation} from './assetPlayback';
 import {listenForFileDragEnd} from '../studio/fileDragLifecycle';
 
 const locationSearch = () => window.location.search;
@@ -89,6 +90,9 @@ function AssetPageContent() {
   const [generationStage,setGenerationStage]=useState('Designing your asset…');
   const [generationPreview,setGenerationPreview]=useState<AssetDocument>();
   const [saveState, setSaveState] = useState(''), [exporting, setExporting] = useState(false);
+  const [videoProgress, setVideoProgress] = useState<number>();
+  const videoExportAbort = useRef<AbortController | undefined>(undefined);
+  useEffect(() => () => videoExportAbort.current?.abort(), []);
   const [dragging, setDragging] = useState(false);
   useEffect(() => listenForFileDragEnd(() => setDragging(false)), []);
   const [loading, setLoading] = useState(!!id || !!requestedBadge);
@@ -364,6 +368,17 @@ function AssetPageContent() {
     catch (reason) { setError(studioWorkspace==='ambassadors'&&reason instanceof Error?reason.message:'Could not export the image. Please retry; you can also download the editable source.'); }
     finally { setExporting(false); }
   };
+  const exportAnimation = async () => {
+    if (!asset || !exportBoard.current || exporting || !canExportAnimation(pages)) return;
+    const abort = new AbortController(); videoExportAbort.current = abort;
+    setExporting(true); setVideoProgress(0); setError('');
+    try {
+      const { exportVideo } = await import('./videoExport');
+      const result = await exportVideo(structuredClone(pages), exportBoard.current.parentElement!, abort.signal, percent => { if (mounted.current) setVideoProgress(percent); });
+      if (!abort.signal.aborted) download(result.blob, result.name);
+    } catch (reason) { if (mounted.current && !abort.signal.aborted) setError(reason instanceof Error ? reason.message : 'Could not export the animation. Please retry.'); }
+    finally { videoExportAbort.current = undefined; if (mounted.current) { setExporting(false); setVideoProgress(undefined); } }
+  };
   const newAsset = async () => {
     stop(); lastRequest.current=undefined; setVisual(undefined); await saves.current;
     setLibraryOpen(false);
@@ -484,7 +499,7 @@ function AssetPageContent() {
       <span className="asset-tools-divider" aria-hidden="true"/>
       <Button className="lovable-mobile-design-toggle" variant="ghost" aria-label="Open design panel" leadingIcon={<Icon name="sliders-horizontal" size={16}/>} onClick={()=>setDesignOpen(value=>!value)}/>
       {studioWorkspace==='ambassadors'&&<Tooltip label="Coming soon" side="bottom"><span className="studio-insert-tool"><Button variant="ghost" className="community-add-template" disabled>Add to templates</Button></span></Tooltip>}
-      <Dropdown align="end" items={[{id:'png',label:`.png · ${assetDimensions(asset).width} × ${assetDimensions(asset).height}`,leadingIcon:<Icon name="image" size={16}/>},{id:'source',label:'Editable source',leadingIcon:<Icon name="file-text" size={16}/>}]} onChange={value=>{if(value==='png')void exportImage();else exportSource(asset);}} trigger={<Button variant="primary" disabled={busy||changingTemplate} loading={exporting}>Export</Button>}/>
+      {videoProgress !== undefined ? <Tooltip label="Cancel video export" side="bottom"><Button variant="primary" aria-label={`Cancel video export, ${videoProgress}%`} trailingIcon={<Icon name="x" size={14}/>} onClick={() => videoExportAbort.current?.abort()}>{videoProgress}%</Button></Tooltip> : <Dropdown align="end" items={[{id:'png',label:`.png · ${assetDimensions(asset).width} × ${assetDimensions(asset).height}`,leadingIcon:<Icon name="image" size={16}/>},...(canExportAnimation(pages)?[{id:'video',label:'Video · 30 fps',leadingIcon:<Icon name="video" size={16}/>}]:[]),{id:'source',label:'Editable source',leadingIcon:<Icon name="file-text" size={16}/>}]} onChange={value=>{if(value==='png')void exportImage();else if(value==='video')void exportAnimation();else exportSource(asset);}} trigger={<Button variant="primary" disabled={busy||changingTemplate||exporting} loading={exporting}>Export</Button>}/>}
     </div>
   </div>;
   return <CommunityRenderErrors.Provider value={communityErrors}><WorkspaceRuntimeContext.Provider value={runtime}><WorkspaceSelectionContext.Provider value={{visual,setVisual}}><div className="workspace-editor asset-app" data-asset data-workspace={studioWorkspace} data-view="editor" style={assetTheme as CSSProperties} data-history={historyVersion} onDragOverCapture={event => { if ((event.target as Element).closest('.we-chat')) setDragging(false); }} onDragOver={event => { if (!event.defaultPrevented && !(event.target as Element).closest('.we-chat') && event.dataTransfer.types.includes('Files') && !busy) { event.preventDefault(); setDragging(true); } }} onDragLeave={event => { if (!event.currentTarget.contains(event.relatedTarget as Node)) setDragging(false); }} onDrop={event => { setDragging(false); if(event.defaultPrevented || (event.target as Element).closest('.we-chat'))return; event.preventDefault(); void loadImage(event.dataTransfer.files[0]); }}>

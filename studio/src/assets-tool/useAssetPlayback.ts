@@ -54,12 +54,25 @@ export function useAssetPlayback(pages: AssetDocument[], activeId: string, enabl
     document.addEventListener('visibilitychange', visibility);
     return () => { cancelAnimationFrame(frame); document.removeEventListener('visibilitychange', visibility); };
   }, [playing, timeline.total]);
+  const toggle = () => setSession({ revision, time: time >= timeline.total ? 0 : time, playing: !playing });
+  const toggleRef=useRef(toggle);toggleRef.current=toggle;
+  useEffect(()=>{
+    if(!enabled)return;
+    const key=(event:KeyboardEvent)=>{
+      if(event.defaultPrevented||event.repeat||event.isComposing||event.code!=='Space'||event.ctrlKey||event.metaKey||event.altKey||event.shiftKey)return;
+      const target=event.target;
+      if(!(target instanceof Element)||target.closest('input,textarea,select,[contenteditable]:not([contenteditable=false]),[role=menu],[role=dialog],[role=slider],button:not(.community-page-tile),a'))return;
+      event.preventDefault();toggleRef.current();
+    };
+    window.addEventListener('keydown',key);
+    return()=>window.removeEventListener('keydown',key);
+  },[enabled]);
   const reset = () => setSession(undefined);
   const jump = (index: number) => { reset(); expectedId.current = pages[index].id; open.current(pages[index].id); };
   return {
     active, playing, time, total: timeline.total, position, reducedMotion, reset, jump,
     thumbnailProgress: active ? playbackThumbnailProgress(timeline, time) : undefined,
-    toggle: () => setSession({ revision, time: time >= timeline.total ? 0 : time, playing: !playing }),
+    toggle,
     seek: (time: number) => setSession({ revision, time: Math.max(0, Math.min(timeline.total, time)), playing: false }),
   };
 }

@@ -75,6 +75,16 @@ export function matchingPlaybackBlocks(from: HtmlBlock[], to: HtmlBlock[]) {
     const target = to.findIndex((item, i) => !used.has(i) && item.kind === block.kind && item.id === block.id);
     if (target >= 0) { matches.set(index, target); used.add(target); }
   });
+  // Clipboard/duplicate operations change document IDs but retain the source
+  // identity. Pair only unambiguous remaining siblings after exact-ID matches.
+  const motionIdentity=(block:HtmlBlock)=>`${block.kind}:${block.editor?.motionId??block.id}`;
+  from.forEach((block,index)=>{
+    if(matches.has(index))return;
+    const key=motionIdentity(block);
+    if(from.filter((item,i)=>!matches.has(i)&&motionIdentity(item)===key).length!==1)return;
+    const candidates=to.flatMap((item,i)=>!used.has(i)&&motionIdentity(item)===key?[i]:[]);
+    if(candidates.length===1){matches.set(index,candidates[0]);used.add(candidates[0]);}
+  });
   from.forEach((block, index) => {
     if (matches.has(index)) return;
     const key = identity(block);

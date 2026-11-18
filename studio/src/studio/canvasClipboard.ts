@@ -16,8 +16,9 @@ export function pasteCanvasBlocks(state:HtmlEditorState,pageId:string,blocks:Htm
   const existing=new Set(state.pages.flatMap(page=>page.sections.flatMap(section=>section.columns.flat().map(block=>block.id))));
   const offset=blocks.some(block=>existing.has(block.id))?24:0,groups=new Map<string,string>();
   const clones=structuredClone(blocks).map(block=>{
+    const motionId=block.editor?.motionId??block.id;
     block.id=freshId();
-    block.editor={...block.editor,position:'absolute',locked:false,x:(block.editor?.x??0)+offset,y:(block.editor?.y??0)+offset};
+    block.editor={...block.editor,motionId,position:'absolute',locked:false,x:(block.editor?.x??0)+offset,y:(block.editor?.y??0)+offset};
     if(block.editor.groupId){const group=block.editor.groupId;if(!groups.has(group))groups.set(group,freshId());block.editor.groupId=groups.get(group)!;}
     return block;
   });

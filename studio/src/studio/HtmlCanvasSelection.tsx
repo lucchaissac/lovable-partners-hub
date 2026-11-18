@@ -1,3 +1,7 @@
+import {IconDesignControls} from './IconDesignControls';
+import {scaleSelection,selectionResizeFactor,patchScaledSelection,type ScaleOrigin} from './selectionScale';
+import {SelectionScaleControls} from './SelectionScaleControls';
+import {canvasLayerAction} from '../assets-tool/canvasLayers';
 import {useMakerDesign} from '../assets-tool/MakerDesignContext';
 import {canvasClipboardType,canvasClipboardPrefix,copiedCanvasBlocks,pasteCanvasBlocks} from './canvasClipboard';
 import {blockAppearance,mixedAppearance,patchSelectionAppearance,selectionDesignKind} from './selectionAppearance';
@@ -43,13 +47,13 @@ type Save = (state: HtmlEditorState, copies?: Record<string, string>) => void;
 const menuSurface = '.we-chat,.we-review-asset,.hcs-ui,.ui-dropdown-content,.ui-popover-content,.ui-color-popover,[role="menu"],[role="dialog"],.workspace-widget-panelhost';
 const handles = [['nw',0,0,'top left corner'],['n',50,0,'top edge'],['ne',100,0,'top right corner'],['e',100,50,'right edge'],['se',100,100,'bottom right corner'],['s',50,100,'bottom edge'],['sw',0,100,'bottom left corner'],['w',0,50,'left edge']] as const;
 type DropTarget = { absolute?: boolean; x?: number; section: string; column: number; index: number; width: number; y?: number; line: Rect };
-type Gesture = { layout?: LayoutItem[]; drop?: DropTarget; cursor?: {x:number;y:number}; kind: string; pointer: number; x: number; y: number; bounds: Rect; blocks: { block: HtmlBlock; box: Rect; width: number; parentWidth: number }[]; initial: HtmlEditorState; frames: Record<string, ElementFrame>; moved: boolean;targets:Rect[];section?:{id:string;width:number;widthPx?:number;parentWidth:number} };
+type Gesture = { scaled?:boolean; layout?: LayoutItem[]; drop?: DropTarget; cursor?: {x:number;y:number}; kind: string; pointer: number; x: number; y: number; bounds: Rect; blocks: { block: HtmlBlock; box: Rect; width: number; parentWidth: number }[]; initial: HtmlEditorState; frames: Record<string, ElementFrame>; moved: boolean;targets:Rect[];section?:{id:string;width:number;widthPx?:number;parentWidth:number} };
 
 const clamp = (n:number,min:number,max:number) => Math.max(min,Math.min(max,n));
 
 export function htmlFrameStyle(block: HtmlBlock): CSSProperties {
-  const f=block.editor||{};const a=block.kind==='shape'?{}:f.appearance||{};const minimumWidth=htmlBlockMinWidth(block);
-  return {...elementBoxStyle(f.appearance,block.kind==='text'&&block.value.list==='bullet'),'--hcs-list-size':block.kind==='text'?`${block.value.size}px`:undefined,'--hcs-list-color':block.kind==='text'?block.value.color:undefined,'--hcs-list-line':a.lineHeight!==undefined?a.lineHeight/100:1.25,'--hcs-image-ratio':block.kind==='image'?block.value.aspectRatio:undefined,width:htmlElementWidth(f), maxWidth:f.position==='absolute'?undefined:'100%', minWidth:minimumWidth?(f.position==='absolute'?minimumWidth:`min(${minimumWidth}px, 100%)`):0, left:f.position==='absolute'?`${f.x||0}px`:`clamp(0px, ${f.x||0}px, max(0px, calc(100% - ${htmlElementWidth(f)||'100%'})))`, minHeight:f.height, top:f.position==='absolute'?`${f.y||0}px`:undefined, transform:`translateY(${f.position==='absolute'?0:f.y||0}px) rotate(${f.rotation||0}deg)`,transformOrigin:'center',mixBlendMode:f.appearance?.blendMode,opacity:a.opacity!==undefined?a.opacity/100:f.opacity,...cornerRadiusStyle(a,f.radius),background:block.kind!=='text'&&block.kind!=='image'?a.fill:undefined,border:a.borderWidth?`${a.borderWidth}px solid ${a.borderColor||'var(--ui-text)'}`:undefined,boxShadow:a.shadow==='soft'?'var(--ui-shadow-sm)':a.shadow==='strong'?'var(--ui-shadow-md)':undefined,'--hcs-text-size':a.fontSize!==undefined?`${a.fontSize}px`:undefined,'--hcs-font':a.fontFamily==='Arial'?'var(--ui-font)':a.fontFamily,'--hcs-text-spacing':a.letterSpacing!==undefined?`${a.letterSpacing}px`:undefined,'--hcs-text-line':a.lineHeight!==undefined?a.lineHeight/100:undefined,'--hcs-text-weight':a.fontWeight,'--hcs-text-transform':a.uppercase?'uppercase':'none','--hcs-image-fit':a.imageFit, '--hcs-image-height':block.kind==='image'&&f.height?`${elementContentHeight(f.height,f.appearance)}px`:undefined} as CSSProperties;
+  const f=block.editor||{};const a=block.kind==='shape'&&!block.icon?{}:f.appearance||{};const minimumWidth=htmlBlockMinWidth(block);
+  return {...elementBoxStyle(f.appearance,block.kind==='text'&&block.value.list==='bullet'),'--hcs-list-size':block.kind==='text'?`${block.value.size}px`:undefined,'--hcs-list-color':block.kind==='text'?block.value.color:undefined,'--hcs-list-line':a.lineHeight!==undefined?a.lineHeight/100:1.25,'--hcs-image-ratio':block.kind==='image'?block.value.aspectRatio:undefined,width:htmlElementWidth(f), maxWidth:f.position==='absolute'?undefined:'100%', minWidth:minimumWidth?(f.position==='absolute'?minimumWidth:`min(${minimumWidth}px, 100%)`):0, left:f.position==='absolute'?`${f.x||0}px`:`clamp(0px, ${f.x||0}px, max(0px, calc(100% - ${htmlElementWidth(f)||'100%'})))`, minHeight:f.height, top:f.position==='absolute'?`${f.y||0}px`:undefined, transform:`translateY(${f.position==='absolute'?0:f.y||0}px) rotate(${f.rotation||0}deg)`,transformOrigin:'center',mixBlendMode:f.appearance?.blendMode,opacity:a.opacity!==undefined?a.opacity/100:f.opacity,...cornerRadiusStyle(a,f.radius),background:block.kind==='shape'&&block.icon?a.background:block.kind!=='text'&&block.kind!=='image'?a.fill:undefined,border:a.borderWidth?`${a.borderWidth}px solid ${a.borderColor||'var(--ui-text)'}`:undefined,boxShadow:a.shadow==='soft'?'var(--ui-shadow-sm)':a.shadow==='strong'?'var(--ui-shadow-md)':undefined,'--hcs-text-size':a.fontSize!==undefined?`${a.fontSize}px`:undefined,'--hcs-font':a.fontFamily==='Arial'?'var(--ui-font)':a.fontFamily,'--hcs-text-spacing':a.letterSpacing!==undefined?`${a.letterSpacing}px`:undefined,'--hcs-text-line':a.lineHeight!==undefined?a.lineHeight/100:undefined,'--hcs-text-weight':a.fontWeight,'--hcs-text-transform':a.uppercase?'uppercase':'none','--hcs-image-fit':a.imageFit, '--hcs-image-height':block.kind==='image'&&f.height?`${elementContentHeight(f.height,f.appearance)}px`:undefined} as CSSProperties;
 }
 
 export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1, fixedCanvas = false, imageSources = {}, save, onSelect, onReplace, onEditButton, onAddSection }: {
@@ -80,6 +84,8 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
   const selectedSections=page.sections.filter(s=>sectionIds.includes(s.id)),sectionSelection=selectedSections.length>0,multipleSections=selectedSections.length>1;
   const selectedSection=selectedSections.length===1?selectedSections[0]:undefined;
   const members=blocks.filter(b=>ids.includes(b.id)), locked=selectedSections.some(s=>s.locked)||members.some(b=>b.editor?.locked), one=members.length===1?members[0]:undefined;
+  const selectedGroup=members.length>1&&!!members[0].editor?.groupId&&members.every(block=>block.editor?.groupId===members[0].editor?.groupId);
+  const scaleOrigin:ScaleOrigin=selectedGroup?members[0].editor?.scaleOrigin??[.5,.5]:[.5,.5];
   const multiDesign=members.length>1, multiKind=selectionDesignKind(members);
   const layeredSelection=!sectionSelection&&members.length>0&&(fixedCanvas||members.every(b=>b.editor?.position==='absolute'));
   const layerAvailability=layerOrderAvailability(rendered,ids);
@@ -214,6 +220,15 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
     });
   }
   function patch(values:ElementFrame){if(locked)return;const items=layoutItems(members);save(patchHtmlFrames(source.current,constrainLayoutFrames(items,Object.fromEntries(members.map(block=>{const frame=items.find(item=>item.id===block.id)?.frame||block.editor||{};return [block.id,{...frame,...values,...(values.x!==undefined?{x:(frame.x||0)+values.x-(block.editor?.x||0)}:{}),...(values.y!==undefined?{y:(frame.y||0)+values.y-(block.editor?.y||0)}:{})}];})))));}
+  function scaleGroup(value:number){
+    if(locked||!selectedGroup)return;
+    const items=layoutItems(members),bounds=selectionBounds(items.map(item=>item.box));if(!bounds)return;
+    const result=scaleSelection(items,members,bounds,value/(members[0].editor?.groupScale??1),scaleOrigin);
+    save(patchScaledSelection(source.current,result.frames));
+  }
+  function groupOrigin(origin:ScaleOrigin){
+    if(locked)return;save(patchHtmlFrames(source.current,Object.fromEntries(members.map(block=>[block.id,{...block.editor,scaleOrigin:origin}]))));
+  }
   function rotateBy(degrees:number){if(locked)return;const items=layoutItems(members),bounds=selectionBounds(items.map(item=>item.box));if(bounds)save(patchHtmlFrames(source.current,constrainLayoutFrames(items,rotateSelectionFrames(items,bounds,degrees))));}
   function setAbsolute(absolute: boolean){
     if(!one||locked)return;
@@ -305,7 +320,7 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
       if(target.absolute){next=structuredClone(next);const section=next.pages.flatMap(p=>p.sections).find(s=>s.id===target.section)!;const el=root.current?.querySelector<HTMLElement>(`#section-${CSS.escape(target.section)}`);if(el)section.minHeight=Math.max(section.minHeight||0,el.offsetHeight);}
       save(patchHtmlFrames(next,frames));
       requestAnimationFrame(()=>element(g.blocks[0].block.id)?.scrollIntoView({block:'nearest'}));
-    }else save(patchHtmlFrames(g.initial,g.frames));}}
+    }else save(g.scaled?patchScaledSelection(g.initial,g.frames):patchHtmlFrames(g.initial,g.frames));}}
   function startMarquee(event:ReactPointerEvent|PointerEvent,section?:HTMLElement|null){
     event.preventDefault();root.current?.focus({preventScroll:true});
     const capture=event.currentTarget as HTMLElement;
@@ -358,6 +373,7 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
     const g=gesture.current;if(!g)return;if(event.pointerId!==g.pointer)return;if(!(event.buttons&1)){finish();return;}
     const dx=(event.clientX/zoom)-g.x,dy=(event.clientY/zoom)-g.y;if(!g.moved&&Math.hypot(dx,dy)<3)return;g.moved=true;
     const {kind,bounds}=g;
+    g.scaled=false;
     let moveGuides:Guide[]=[];
     if(g.section){
       const next=structuredClone(g.initial),section=next.pages.flatMap(p=>p.sections).find(s=>s.id===g.section!.id)!;
@@ -374,12 +390,19 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
       g.frames=rotateSelectionFrames(g.blocks.map(({block,box})=>({id:block.id,frame:block.editor??{},box})),bounds,angle);
     }else if(kind==='line-start'||kind==='line-end'){
       const {block,width}=g.blocks[0];
-      g.frames={[block.id]:resizeCanvasLine(block.editor??{},width,{x:dx,y:dy},kind==='line-end'?'end':'start')};
+      g.scaled=event.shiftKey&&(event.ctrlKey||event.metaKey);
+      g.frames={[block.id]:resizeCanvasLine(block.editor??{},width,{x:dx,y:dy},kind==='line-end'?'end':'start',g.scaled)};
     }else if(kind==='move'){
       g.cursor={x:(event.clientX/zoom),y:(event.clientY/zoom)};g.drop=findDrop((event.clientX/zoom),(event.clientY/zoom),g);setDropTarget(g.drop||null);
       const raw=event.shiftKey?(Math.abs(dx)>Math.abs(dy)?{x:dx,y:0}:{x:0,y:dy}):{x:dx,y:dy};
       const snapped=event.altKey?{delta:raw,guides:[]}:snapHtmlMove(bounds,raw,g.targets);moveGuides=snapped.guides;
       g.frames=Object.fromEntries(g.blocks.map(({block})=>[block.id,{...block.editor,x:clamp((block.editor?.x||0)+snapped.delta.x,-4000,4000),y:clamp((block.editor?.y||0)+snapped.delta.y,-4000,4000)}]));
+    }
+    else if((g.blocks.length>1&&g.blocks.every(({block})=>block.editor?.groupId&&block.editor.groupId===g.blocks[0].block.editor?.groupId))||(event.shiftKey&&(event.ctrlKey||event.metaKey))){
+      const aroundOrigin=event.shiftKey&&(event.ctrlKey||event.metaKey);
+      const origin:ScaleOrigin=aroundOrigin?scaleOrigin:[kind.includes('w')?1:kind.includes('e')?0:.5,kind.includes('n')?1:kind.includes('s')?0:.5];
+      const result=scaleSelection(g.layout??[],g.blocks.map(item=>item.block),bounds,selectionResizeFactor(bounds,{x:dx,y:dy},kind,origin),origin,g.blocks.length>1);
+      g.frames=result.frames;g.scaled=true;
     }
     else{
       const xFactor=kind.includes('w')?-1:1,yFactor=kind.includes('n')?-1:1;
@@ -388,10 +411,10 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
       if(g.blocks.some(({block})=>block.kind==='image'&&(block.badge||block.ambassador||block.brandRole||((studioWorkspace==='tech-blog'||studioWorkspace==='ambassadors')&&isTechArtwork(block))))){if(kind==='n'||kind==='s')sx=sy;else sy=sx;}else if(event.shiftKey&&kind.length===2)sy=sx;
       g.frames=Object.fromEntries(g.blocks.map(({block,box,width,parentWidth})=>{const widthNext=resizedElementWidth(block.editor,width*sx,parentWidth);return [block.id,{...block.editor,...widthNext,...(sy!==1?{height:clamp(box.height*sy,12,3000)}:{}),x:clamp((block.editor?.x||0)+(kind.includes('w')?bounds.width*(1-sx):0)+(box.left-bounds.left)*(sx-1),-4000,4000),y:clamp((block.editor?.y||0)+(kind.includes('n')?bounds.height*(1-sy):0)+(box.top-bounds.top)*(sy-1),-4000,4000)}];}));
     }
-    g.frames=constrainLayoutFrames(g.layout||[],g.frames);
+    if(!g.scaled)g.frames=constrainLayoutFrames(g.layout||[],g.frames);
     const actual=selectionBounds((g.layout||[]).map(item=>frameRect(item,g.frames[item.id]||item.frame)));
     setGuides(g.drop||!actual?[]:clipHtmlGuides(moveGuides.filter(guide=>{const start=guide.axis==='x'?actual.left:actual.top,size=guide.axis==='x'?actual.width:actual.height;return [0,.5,1].some(part=>Math.abs(start+size*part-guide.value)<.75);}), (g.layout||[]).map(item=>item.limits)));
-    setDraft(patchHtmlFrames(g.initial,g.frames));
+    setDraft(g.scaled?patchScaledSelection(g.initial,g.frames):patchHtmlFrames(g.initial,g.frames));
   }
   useEffect(()=>{
     if(!enabled)return;
@@ -402,6 +425,7 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
       if(gesture.current||marqueeStart.current){if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='z'){e.preventDefault();finish(true);}return;}
       if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='a'){e.preventDefault();if(insertPanel.enabled&&sectionSelection){setSectionIds(page.sections.map(s=>s.id));return;}choose(page.sections.filter(s=>!s.locked).flatMap(s=>s.columns.flat()).filter(b=>!b.editor?.locked&&!b.editor?.hidden).map(b=>b.id));return;}
       if(locked)return;
+      if(!sectionSelection&&(e.metaKey||e.ctrlKey)&&!e.altKey&&e.key.toLowerCase()==='g'){e.preventDefault();if(!e.repeat){const next=canvasLayerAction(source.current,ids,e.shiftKey?'ungroup':'group',crypto.randomUUID());if(next!==source.current)save(next);}return;}
       if(layeredSelection&&(e.metaKey||e.ctrlKey)&&(e.code==='BracketLeft'||e.code==='BracketRight')){e.preventDefault();arrange(e.code==='BracketRight'?(e.shiftKey?'bring-to-front':'bring-forward'):(e.shiftKey?'send-to-back':'send-backward'));return;}
       if(e.key==='Delete'||e.key==='Backspace'){e.preventDefault();action('delete');}
       if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='d'){e.preventDefault();action('duplicate');}
@@ -470,6 +494,7 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
         {members.length>1&&geometry.boxes.map((b,i)=><div key={i} className="hcs-member" style={{left:b.left-visible.left,top:b.top-visible.top,width:b.width,height:b.height}}/>)}
         {multipleSections?geometry.boxes.map((box,index)=>selectedSections[index]&&<div key={selectedSections[index].id} className="hcs-selection hcs-section-selection" role="group" aria-label={`Selected section: ${selectedSections[index].name}`} data-section={selectedSections[index].id} style={{left:box.left+sectionInset-visible.left,top:box.top+sectionInset-visible.top,width:Math.max(0,box.width-sectionInset*2),height:Math.max(0,box.height-sectionInset*2)}}/>):<div className="hcs-selection" data-absolute={one?.editor?.position==='absolute'||undefined} role="group" aria-label={selectedSection?'Selected section':members.length>1?`${members.length} selected elements`:'Selected element'} style={{left:frame.left-visible.left,top:frame.top-visible.top,width:frame.width,height:frame.height}}>
           {!locked&&one?.editor?.position==='absolute'&&['top','right','bottom','left'].map(edge=><span key={edge} className="hcs-absolute-drag-edge hcs-ui" data-edge={edge} onPointerDown={event=>begin(event,'move')}/>)}
+          {selectedGroup&&<span className="hcs-scale-pivot" aria-hidden="true" style={{left:`${scaleOrigin[0]*100}%`,top:`${scaleOrigin[1]*100}%`}}/>}
           {!locked&&selectedLine&&(['start','end'] as const).map(end=>{const side=end==='end'?1:-1;return <button key={end} className="hcs-handle hcs-ui" data-corner data-line-end={end} style={{left:frame.width/2+side*Math.cos(lineAngle)*lineLength/2,top:frame.height/2+side*Math.sin(lineAngle)*lineLength/2,cursor:Math.abs(Math.cos(lineAngle))>.7?'ew-resize':'ns-resize'}} aria-label={`Resize line ${end}`} onPointerDown={e=>begin(e,`line-${end}`)}/>;})}
           {!locked&&!selectedLine&&!(fixedCanvas&&sectionSelection)&&handles.filter(([h])=>selectedSection?['e','w'].includes(h):h.length===2||(h==='n'||h==='s'?bounds.width:bounds.height)>=48).map(([h,x,y,label])=><button key={h} className="hcs-handle hcs-ui" data-handle={h} data-section-edge={selectedSection?true:undefined} data-corner={h.length===2||undefined} style={{left:`${x}%`,top:`${y}%`}} aria-label={`Resize selection from ${label}`} onPointerDown={e=>begin(e,h)}/>)}
         </div>}
@@ -485,7 +510,7 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
           {((one&&!hasWidgetDesign)||multiDesign||selectedSection)&&toolButton(selectedSection?'Edit section design':'Edit element design','paintbrush-vertical',()=>{setDesign(v=>!v);host.panelChanged('html-selection',!design);})}
           {one?.kind==='shape'&&one.icon&&<HtmlIconMenu value={one.icon} onAdd={name=>changeBlock({...one,icon:name})} trigger={<Button size="sm" variant="ghost" aria-label="Change icon" leadingIcon={<LucideGlyph name={one.icon} size={16}/>}/>}/>}
           {one?.kind==='shape'&&one.icon&&<Button size="sm" variant="ghost" aria-label="Filled icon" active={!!one.filled} onClick={()=>changeBlock({...one,filled:!one.filled})} leadingIcon={<Icon name="circle" size={16} fill={one.filled?'currentColor':'none'}/>}/>}
-          {members.some(b=>b.editor?.groupId)&&toolButton('Ungroup elements','layers',()=>{const next=structuredClone(source.current);for(const page of next.pages)for(const section of page.sections)for(const block of section.columns.flat())if(ids.includes(block.id)&&block.editor)delete block.editor.groupId;save(next);})}
+          {members.some(b=>b.editor?.groupId)&&toolButton('Ungroup elements','layers',()=>{const next=canvasLayerAction(source.current,ids,'ungroup');if(next!==source.current)save(next);})}
           {one?.kind==='media'&&one.format==='Video'&&toolButton('Play or pause video','play',()=>{const video=element(one.id)?.querySelector('video');if(video?.paused)void video.play().catch(()=>{});else video?.pause();})}
           {one?.kind==='image'&&!one.badge&&!one.ambassador&&!one.brandRole&&!isTechArtwork(one)&&toolButton('Replace image','image',()=>onReplace(one.id),locked)}
           {multipleSections&&<>{toolButton('Move selected sections up','arrow-up',()=>action('up'),locked||!page.sections.some((s,i)=>sectionIds.includes(s.id)&&i>0&&!sectionIds.includes(page.sections[i-1].id)))}{toolButton('Move selected sections down','arrow-down',()=>action('down'),locked||!page.sections.some((s,i)=>sectionIds.includes(s.id)&&i<page.sections.length-1&&!sectionIds.includes(page.sections[i+1].id)))}</>}
@@ -521,14 +546,15 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
       }} onClose={()=>{setDesign(false);host.closePanel();}}/>,host.panelHost)}
     {selectionDesignActive&&multiDesign&&host.panelHost&&host.activeId==='html-selection'&&createPortal(<div className="hcs-ui" style={{height:'100%',display:'contents'}}><PresentationElementDesign
       shape={{id:ids.join('-'),kind:multiKind,width:Math.min(...members.map(block=>block.editor?.widthPx??bounds?.width??100)),height:Math.min(...members.map(block=>block.editor?.height??bounds?.height??100)),appearance:blockAppearance(members[0])}}
-      label={`${members.length} ${multiKind==='text'?'texts':multiKind==='image'?'images':multiKind==='selection'?'elements':'shapes'}`} locked={locked} mixed={mixedAppearance(members)} multiple
-      positionControls={<SelectionPositionControls blocks={members} onChange={delta=>{if(!locked)save(translateCanvasSelection(source.current,ids,delta));}}/>}
+      label={selectedGroup?'Group':`${members.length} ${multiKind==='text'?'texts':multiKind==='image'?'images':multiKind==='selection'?'elements':'shapes'}`} locked={locked} mixed={mixedAppearance(members)} multiple
+      positionControls={<><SelectionPositionControls blocks={members} onChange={delta=>{if(!locked)save(translateCanvasSelection(source.current,ids,delta));}}/>{selectedGroup&&<SelectionScaleControls scale={members[0].editor?.groupScale??1} origin={scaleOrigin} onScale={scaleGroup} onOrigin={groupOrigin}/>}</>}
       onChange={(appearance:NonNullable<ElementFrame['appearance']>)=>save(patchSelectionAppearance(source.current,ids,appearance))} onClose={()=>{setDesign(false);host.closePanel();}}/></div>,host.panelHost)}
     {selectionDesignActive&&one&&!(one.kind==='image'&&(one.badge||one.ambassador||one.brandRole==='partner'||((studioWorkspace==='tech-blog'||studioWorkspace==='ambassadors')&&isTechArtwork(one))))&&host.panelHost&&host.activeId==='html-selection'&&createPortal(<div className="hcs-ui" style={{height:'100%',display:'contents'}}><PresentationElementDesign
       shape={{id:one.id,kind:one.kind==='text'?'text':one.kind==='image'?'image':one.kind==='shape'?one.shape:'rectangle',width:bounds?.width||100,height:bounds?.height||100,src:one.kind==='image'?one.value.src:undefined,appearance:{...(one.kind==='text'?{fill:one.value.color,fontFamily:'Camera Plain',fontSize:one.value.size,textAlign:one.value.align,fontWeight:one.value.runs.every(r=>r.bold)?700:400,italic:one.value.runs.length>0&&one.value.runs.every(r=>r.italic),underline:one.value.runs.length>0&&one.value.runs.every(r=>r.underline),lineHeight:one.value.style==='Heading 1'?102:one.value.style.startsWith('Heading')?112:150}:one.kind==='image'?{imageFit:'cover'}:{}),...one.editor?.appearance}}}
-      label={one.kind==='text'?(one.value.runs.map(r=>r.text).join('').slice(0,60)||'Text'):one.kind==='image'?'Image':one.kind==='contacts'?'Contact cards':one.kind==='tasks'?'Checklist':one.kind==='media'&&one.format==='Video'?'Video':one.kind==='shape'&&one.shape==='line'?'Line':'Element'} locked={locked}
+      label={one.kind==='text'?(one.value.runs.map(r=>r.text).join('').slice(0,60)||'Text'):one.kind==='image'?'Image':one.kind==='contacts'?'Contact cards':one.kind==='tasks'?'Checklist':one.kind==='media'&&one.format==='Video'?'Video':one.kind==='shape'&&one.icon?'Icon':one.kind==='shape'&&one.shape==='line'?'Line':'Element'} locked={locked}
       spacingAfter={one.editor?.spacingAfter??0} onSpacingAfter={(spacingAfter:number)=>changeBlock({...one,editor:{...one.editor,spacingAfter}})} onSpacingPreview={setSpacingPreview}
-      onFillImage={one.kind==='shape'?()=>onReplace(one.id,true):undefined}
+      positionControls={one.kind==='shape'&&one.icon?<IconDesignControls icon={one.icon} filled={!!one.filled} locked={!!locked} onIcon={icon=>changeBlock({...one,icon})} onFilled={filled=>changeBlock({...one,filled})}/>:undefined}
+      onFillImage={one.kind==='shape'&&!one.icon?()=>onReplace(one.id,true):undefined}
       absolutePosition={one.editor?.position==='absolute'} onAbsolutePosition={setAbsolute}
       resizeWithSection={one.editor?.widthPx===undefined}
       onResizeWithSection={one.kind==='image'?(follow:boolean)=>{const el=element(one.id);if(!el||locked)return;changeBlock({...one,editor:{...one.editor,...imageSectionSizing(follow,el.offsetWidth,el.parentElement!.clientWidth)}});}:undefined}

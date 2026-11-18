@@ -20,7 +20,7 @@ import { readStudioConfig, studioApi } from '../studio/client';
 
 import { AssetCanvas } from './AssetCanvas';
 import {workspaceTemplateAsset} from './assetTemplates';
-import {assetPages,insertAssetPages,replaceAssetPage,linkAssetPages,moveAssetPage,MAX_ASSET_PAGES} from './assetSeries';
+import {assetPages,animateAssetPages,insertAssetPages,replaceAssetPage,linkAssetPages,moveAssetPage,MAX_ASSET_PAGES} from './assetSeries';
 import { AssetLibrary } from './AssetLibrary';
 import { badgeAsset, starterAsset } from './starter';
 import { AssetDesignPanel } from './AssetDesignPanel';
@@ -42,7 +42,7 @@ import { htmlEditorSchema, type HtmlEditorState } from '../studio/htmlEditorMode
 import '../routes/demos/editor/workspace-editor.css';
 import '../studio/workspace-widgets.css';
 import { Artwork } from './Artwork';
-import { assetSchema, assetDimensions, compositionSchema, formats, resizeAsset, referenceDocument, type AssetDocument, type AssetFormat, type Composition } from './model';
+import { defaultCanvasAnimation, assetSchema, assetDimensions, compositionSchema, formats, resizeAsset, referenceDocument, type AssetDocument, type AssetFormat, type Composition } from './model';
 import { download, exportPng, renderPng, exportSource, readReference, visionReference } from './media';
 import { listAssets, loadAssetCollection, saveAsset, saveAssets } from './storage';
 import './assets.css';
@@ -427,6 +427,20 @@ function AssetPageContent() {
       await saves.current;
       const all=await listAssets(owner),collection=assetPages(current.current,all),source=collection.find(page=>page.id===afterId);
       if(!source)throw Error('The selected asset is no longer available.');
+      if(kind==='animate'){
+        const result=animateAssetPages(collection,afterId,defaultCanvasAnimation);
+        await saveAssets(owner,result.pages);
+        if(!mounted.current)return;
+        pageHistory.current.set(current.current.id,{past:past.current,future:future.current});
+        const history=pageHistory.current.get(source.id)??{past:[],future:[]};
+        pageHistory.current.set(source.id,{past:[...history.past.slice(-49),source],future:[]});
+        const activeHistory=pageHistory.current.get(result.activeId);
+        past.current=activeHistory?.past??[];future.current=activeHistory?.future??[];
+        setPageArrangement(undefined);setRecent([...result.pages,...all.filter(page=>!result.pages.some(item=>item.id===page.id))]);
+        put(result.pages.find(page=>page.id===result.activeId)!);
+        setVisual(undefined);setReviewCandidate(undefined);setHistoryVersion(value=>value+1);
+        return;
+      }
       let next:AssetDocument;
       if(kind==='blank'||kind==='duplicate'){
         next=structuredClone(source);next.id=crypto.randomUUID();next.updatedAt=Date.now();next.title=kind==='blank'?'Untitled asset':`${source.title.slice(0,93)} · Copy`;

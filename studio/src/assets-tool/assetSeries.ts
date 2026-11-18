@@ -36,3 +36,16 @@ export function replaceAssetPage(pages:AssetDocument[],id:string,proposals:Asset
  const next=[...pages.slice(0,at),replacement,...pages.slice(at+1)];
  return insertAssetPages(next,id,proposals.slice(1));
 }
+
+/** Animate toward the existing next page, creating an editable endpoint only at the end. */
+export function animateAssetPages(pages:AssetDocument[],id:string,defaults:NonNullable<AssetDocument['animation']>,freshId:()=>string=()=>crypto.randomUUID(),now=Date.now()){
+ const at=pages.findIndex(page=>page.id===id);
+ if(at<0)throw Error('The selected asset is no longer in this canvas.');
+ const created=at===pages.length-1;
+ if(created&&pages.length>=MAX_ASSET_PAGES)throw Error(`A canvas can contain up to ${MAX_ASSET_PAGES} assets.`);
+ const source={...pages[at],updatedAt:now,animation:{...defaults,...pages[at].animation,enabled:true,transition:'smart-animate' as const}};
+ const updated=pages.map(page=>page.id===id?source:page);
+ if(!created)return {pages:updated,activeId:id,created};
+ const copy={...structuredClone(source),id:freshId(),title:`${source.title.slice(0,93)} · Copy`};
+ return {pages:insertAssetPages(updated,id,[copy]),activeId:copy.id,created};
+}

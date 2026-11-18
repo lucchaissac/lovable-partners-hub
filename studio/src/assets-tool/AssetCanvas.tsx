@@ -26,9 +26,10 @@ function AddAsset({disabled,onAdd,compact=false}:{disabled:boolean;onAdd:(kind:s
 export function AssetCanvas({toolbar,asset,pages,busy,generating,zoom,onZoom,onChange,onOpen,onAdd,onOverview,onRename,onMove,onRemove,onUndoArrangement}:Props){
  const viewport=useRef<HTMLDivElement>(null),strip=useRef<HTMLElement>(null),[bounds,setBounds]=useState({width:800,height:600});
  const [dragged,setDragged]=useState<string>(),[dropTarget,setDropTarget]=useState<{id:string;side:'before'|'after'}>();
- const suppressOpen=useRef(0);
+ const suppressOpen=useRef(0),restoreThumbnailFocus=useRef(false);
  const zoomAnchor=useRef<{id:string;x:number;y:number;clientX:number;clientY:number}|undefined>(undefined),gestureZoomBase=useRef(1);
  const [grid,setGrid]=useState(false),[thumbnails,setThumbnails]=useState(true);
+ useLayoutEffect(()=>{if(restoreThumbnailFocus.current&&!busy){restoreThumbnailFocus.current=false;const host=grid?viewport.current:strip.current;host?.querySelector<HTMLElement>('[aria-current="page"]')?.focus({preventScroll:true});}},[pages.length,busy]);
  const showPlayback=!grid&&thumbnails&&pages.length>1&&pages.some(page=>page.animation?.enabled);
  const playback=useAssetPlayback(pages,asset.id,showPlayback&&!busy,onOpen);
  const size=assetDimensions(asset),fit=Math.min(1,Math.max(.1,(bounds.width-80)/size.width),Math.max(.1,(bounds.height-156)/size.height)),scale=zoom||fit;
@@ -68,6 +69,11 @@ export function AssetCanvas({toolbar,asset,pages,busy,generating,zoom,onZoom,onC
   if(busy||event.altKey||event.ctrlKey||event.metaKey||event.shiftKey)return;
   const host=event.currentTarget.closest<HTMLElement>('.community-page-grid,.community-page-strip');
   if(!host)return;
+  if(event.key==='Backspace'||event.key==='Delete'){
+   event.preventDefault();event.stopPropagation();
+   if(!event.repeat&&pages.length>1){restoreThumbnailFocus.current=true;playback.reset();onRemove(pages[i].id);}
+   return;
+  }
   const tiles=Array.from(host.querySelectorAll<HTMLButtonElement>('.community-page-tile'));
   const firstTop=tiles[0]?.getBoundingClientRect().top??0;
   const columns=grid?Math.max(1,tiles.filter(tile=>Math.abs(tile.getBoundingClientRect().top-firstTop)<2).length):1;
@@ -80,7 +86,7 @@ export function AssetCanvas({toolbar,asset,pages,busy,generating,zoom,onZoom,onC
   open(pages[target].id);
  };
  const overview=()=>{if(busy)return;playback.reset();setGrid(value=>!value);onOverview();};
- const add=(afterId:string,kind:string)=>{if(locked)return;playback.reset();setGrid(false);onAdd(afterId,kind);};
+ const add=(afterId:string,kind:string)=>{if(busy||(locked&&!(kind==='animate'&&pages.findIndex(page=>page.id===afterId)<pages.length-1)))return;playback.reset();setGrid(false);onAdd(afterId,kind);};
  const dragStart=(event:DragEvent,id:string)=>{if(busy){event.preventDefault();return;}event.dataTransfer.setData('text/plain',id);event.dataTransfer.effectAllowed='move';setDragged(id);};
  const dragOver=(event:DragEvent<HTMLElement>,id:string,vertical=false)=>{if(!dragged||dragged===id||busy)return;event.preventDefault();event.stopPropagation();event.dataTransfer.dropEffect='move';const box=event.currentTarget.getBoundingClientRect(),after=vertical?event.clientY>box.top+box.height/2:event.clientX>box.left+box.width/2;setDropTarget({id,side:after?'after':'before'});};
  const drop=(event:DragEvent,id:string)=>{if(!dragged)return;event.preventDefault();event.stopPropagation();suppressOpen.current=performance.now()+300;if(dropTarget?.id===id&&dragged!==id)onMove(dragged,id,dropTarget.side);setDragged(undefined);setDropTarget(undefined);};
@@ -90,8 +96,9 @@ export function AssetCanvas({toolbar,asset,pages,busy,generating,zoom,onZoom,onC
   {id:'duplicate',label:'Duplicate',disabled:locked,leadingIcon:<Icon name="copy" size={16}/>},
   {id:'up',label:'Move earlier',disabled:i===0,leadingIcon:<Icon name="arrow-up" size={16}/>},
   {id:'down',label:'Move later',disabled:i===pages.length-1,leadingIcon:<Icon name="arrow-down" size={16}/>},
+  {id:'animate',label:'Animate',disabled:busy||(locked&&i===pages.length-1),leadingIcon:<Icon name="play" size={16}/>},
   {kind:'separator'},{id:'remove',label:'Remove from canvas',disabled:pages.length<=1,leadingIcon:<Icon name="trash-2" size={16}/>},
- ]} onChange={action=>{if(action==='open')open(page.id);else if(action==='duplicate')add(page.id,'duplicate');else if(action==='up')onMove(page.id,pages[i-1].id,'before');else if(action==='down')onMove(page.id,pages[i+1].id,'after');else onRemove(page.id);}} trigger={<Button variant="ghost" size="sm" disabled={busy} className="community-page-menu" aria-label={`Asset ${i+1} actions`} leadingIcon={<Icon name="ellipsis" size={16}/>}/>}/>;
+ ]} onChange={action=>{if(action==='open')open(page.id);else if(action==='duplicate')add(page.id,'duplicate');else if(action==='up')onMove(page.id,pages[i-1].id,'before');else if(action==='down')onMove(page.id,pages[i+1].id,'after');else if(action==='animate')add(page.id,'animate');else if(action==='remove')onRemove(page.id);}} trigger={<Button variant="ghost" size="sm" disabled={busy} className="community-page-menu" aria-label={`Asset ${i+1} actions`} leadingIcon={<Icon name="ellipsis" size={16}/>}/>}/>;
  const tile=(page:AssetDocument,i:number)=><div key={page.id} className="community-page-slot" data-dragging={dragged===page.id||undefined} data-drop={dropTarget?.id===page.id?dropTarget.side:undefined} onDragOver={event=>dragOver(event,page.id)} onDrop={event=>drop(event,page.id)}>
   <button className="community-page-tile" draggable={!busy} onDragStart={event=>dragStart(event,page.id)} onDragEnd={endDrag} aria-label={`${grid?'Open':'Go to'} asset ${i+1}: ${page.title}`} aria-current={page.id===asset.id?'page':undefined} tabIndex={page.id===asset.id?0:-1} disabled={busy} onKeyDown={event=>navigateThumbnail(event,i)} onClick={()=>open(page.id)}><div className="community-page-preview"><AssetThumbnail asset={page}/>{playback.thumbnailProgress&&<div className="asset-thumbnail-progress" aria-hidden="true"><span style={{transform:`scaleX(${playback.thumbnailProgress[i]})`}}/></div>}</div><span>{i+1}<span>{page.title}</span></span></button>{actions(page,i)}
  </div>;

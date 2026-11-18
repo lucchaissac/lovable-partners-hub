@@ -4,7 +4,7 @@ import {readFile} from 'node:fs/promises';
 import ts from 'typescript';
 const source=await readFile(new URL('../studio/src/assets-tool/assetSeries.ts',import.meta.url),'utf8');
 const compiled=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText;
-const {assetPages,insertAssetPages,replaceAssetPage,MAX_ASSET_PAGES}=await import(`data:text/javascript;base64,${Buffer.from(compiled).toString('base64')}`);
+const {assetPages,insertAssetPages,replaceAssetPage,animateAssetPages,MAX_ASSET_PAGES}=await import(`data:text/javascript;base64,${Buffer.from(compiled).toString('base64')}`);
 const first={id:'one',title:'First',editor:{text:'Keep my manual change'}},second={id:'two',title:'Second'},third={id:'three',title:'Third'};
 test('A replacement keeps its URL and neighbors, discards old layers, and inserts alternatives directly after it',()=>{
  const replacement={id:'new',title:'New direction',editor:{text:'New headline'}};
@@ -58,4 +58,27 @@ test('Reordering moves a page in both directions and persists the same order on 
  assert.deepEqual(original.map(p=>p.id),['one','two','three']);
  assert.equal(moveAssetPage(original,'two','two','before'),original);
  assert.throws(()=>moveAssetPage(original,'missing','two','before'));
+});
+
+const animationDefaults={enabled:false,transition:'instant',durationMs:600,delayMs:0,easing:'ease-in-out'};
+test('Animate reuses the existing next asset without changing its artwork or timing',()=>{
+ const source={...first,animation:{...animationDefaults,durationMs:1200,delayMs:250,easing:'spring'}};
+ const next=animateAssetPages([source,second,third],'one',animationDefaults,()=>{throw Error('Must not duplicate');},123);
+ assert.equal(next.created,false);assert.equal(next.activeId,'one');assert.equal(next.pages.length,3);
+ assert.equal(next.pages[1],second);assert.equal(next.pages[2],third);
+ assert.deepEqual(next.pages[0].editor,first.editor);
+ assert.deepEqual(next.pages[0].animation,{...source.animation,enabled:true,transition:'smart-animate'});
+ assert.equal(source.animation.enabled,false);
+});
+test('Animate duplicates only the final endpoint, retaining layer identities and isolated editable content',()=>{
+ const next=animateAssetPages([first,second],'two',animationDefaults,()=> 'copy',123);
+ assert.equal(next.created,true);assert.equal(next.activeId,'copy');
+ assert.deepEqual(next.pages.map(p=>p.id),['one','two','copy']);
+ assert.equal(next.pages[2].animation.transition,'smart-animate');
+ assert.notEqual(next.pages[2].animation,next.pages[1].animation);
+ for(const page of next.pages)assert.deepEqual(assetPages(page,next.pages).map(p=>p.id),['one','two','copy']);
+ const full=Array.from({length:MAX_ASSET_PAGES},(_,i)=>({id:String(i),title:String(i)}));
+ assert.equal(animateAssetPages(full,'0',animationDefaults).pages.length,MAX_ASSET_PAGES);
+ assert.throws(()=>animateAssetPages(full,String(MAX_ASSET_PAGES-1),animationDefaults),/up to/);
+ assert.throws(()=>animateAssetPages(full,'missing',animationDefaults));
 });

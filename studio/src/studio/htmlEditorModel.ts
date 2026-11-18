@@ -38,7 +38,7 @@ export const elementAppearance = z.object({
 export const htmlIconNames = lucideIconNames;
 export type HtmlIconName = typeof htmlIconNames[number];
 const editorFrame = z.object({
- groupId:id.optional(),
+ motionId:id.optional(),groupId:id.optional(),groupScale:z.number().positive().optional(),scaleOrigin:z.tuple([z.number().min(0).max(1),z.number().min(0).max(1)]).optional(),
  position:z.enum(['flow','absolute']).optional(),spacingAfter:z.number().min(0).max(400).optional(),appearance:elementAppearance.optional(),
  locked:z.boolean().optional(),hidden:z.boolean().optional(),width:z.number().min(.1).max(500).optional(),widthPx:z.number().min(1).max(4000).optional(),height:z.number().min(1).max(4000).optional(),
  x:z.number().min(-4000).max(4000).optional(),y:z.number().min(-4000).max(4000).optional(),rotation:z.number().min(-360).max(360).optional(),

@@ -31,6 +31,7 @@ export function CanvasLayersPanel({asset,onChange}:{asset:AssetDocument;onChange
  const toggle=(id:string)=>setCollapsed(old=>{const next=new Set(old);if(next.has(id))next.delete(id);else next.add(id);return next;});
  const keyboard=(event:KeyboardEvent<HTMLDivElement>,layer:CanvasLayer)=>{
   if((event.target as Element).closest('button'))return;
+  if((event.metaKey||event.ctrlKey)&&!event.altKey&&event.key.toLowerCase()==='g'){event.preventDefault();event.stopPropagation();if(!event.repeat)apply(maker.selected,event.shiftKey?'ungroup':'group');return;}
   if(event.key==='ContextMenu'||event.shiftKey&&event.key==='F10'){event.preventDefault();const box=event.currentTarget.getBoundingClientRect();context(layer,box.left+24,box.bottom);return;}
   if((event.metaKey||event.ctrlKey)&&event.key.toLowerCase()==='a'){event.preventDefault();maker.select.current?.(editor.pages[0].sections.flatMap(section=>section.columns.flat().map(block=>block.id)));return;}
   if(event.altKey&&(event.key==='ArrowUp'||event.key==='ArrowDown')){

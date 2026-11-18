@@ -74,8 +74,8 @@ export function canvasLayerAction(state:HtmlEditorState,ids:string[],action:Canv
   const edited=column.map(block=>{
    if(!picked.has(block.id))return block;
    const editor={...block.editor};
-   if(action==='group')editor.groupId=groupId;
-   else if(action==='ungroup')delete editor.groupId;
+   if(action==='group'){editor.groupId=groupId;delete editor.groupScale;delete editor.scaleOrigin;}
+   else if(action==='ungroup'){delete editor.groupId;delete editor.groupScale;delete editor.scaleOrigin;}
    else if(action==='lock'||action==='unlock')editor.locked=action==='lock';
    else editor.hidden=action==='hide';
    if(JSON.stringify(editor)===JSON.stringify(block.editor??{}))return block;

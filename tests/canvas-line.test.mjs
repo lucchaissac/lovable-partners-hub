@@ -33,3 +33,20 @@ test('Perpendicular motion cannot inflate the line frame or move its endpoints',
  const next=resizeCanvasLine(frame,65,{x:300,y:0},'end');
  close(next.widthPx,65);close(next.x,100);close(next.y,200);assert.equal(next.height,2);
 });
+
+test('Origin resize keeps the line center fixed and moves both endpoints equally',()=>{
+ for(const rotation of [0,90,-37,155])for(const end of ['start','end']){
+  const frame={position:'absolute',x:30,y:80,widthPx:120,height:2,rotation},a=rotation*Math.PI/180,sign=end==='end'?1:-1;
+  const result=resizeCanvasLine(frame,120,{x:20*Math.cos(a)*sign,y:20*Math.sin(a)*sign},end,true);
+  close(result.widthPx,160);close(result.x+result.widthPx/2,90);close(result.y,80);
+  assert.equal(result.height,2);
+ }
+});
+
+test('Origin line resize stops at coordinate limits without drifting its pivot',()=>{
+ for(const x of [-4000,4000])for(const dx of [-200,200]){
+  const frame={x,y:0,widthPx:100,height:2};
+  const result=resizeCanvasLine(frame,100,{x:dx,y:0},'end',true);
+  assert.ok(result.x>=-4000&&result.x<=4000);close(result.x+result.widthPx/2,x+50);
+ }
+});

@@ -33,6 +33,7 @@ export function htmlSelectionAction(state: HtmlEditorState, ids: string[], actio
       if (!selected.has(b.id)) return [b];
       const id = freshId(); copies[b.id] = id;
       const clone={...structuredClone(b),id};
+      clone.editor={...clone.editor,motionId:b.editor?.motionId??b.id};
       if(clone.editor?.groupId){const group=clone.editor.groupId;if(!groups.has(group))groups.set(group,freshId());clone.editor.groupId=groups.get(group)!;}
       return [b, clone];
     });

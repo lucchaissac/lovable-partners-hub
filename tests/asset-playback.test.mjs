@@ -87,3 +87,30 @@ test('Saved legacy settings gain defaults and custom motion survives source roun
   assert.deepEqual(schema.parse(JSON.parse(JSON.stringify(custom))),custom);
   for(const invalid of [{curve:[-1,0,1,1]},{delayMs:-1},{bounce:200},{velocity:Infinity}])assert.equal(schema.safeParse({...legacy,...invalid}).success,false);
 });
+
+test('Copied objects keep motion identity across pages, edits and successive copies',async()=>{
+ const load=async path=>{const text=await readFile(new URL(path,import.meta.url),'utf8');return import(`data:text/javascript;base64,${Buffer.from(ts.transpileModule(text,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText).toString('base64')}`);};
+ const {copiedCanvasBlocks,pasteCanvasBlocks}=await load('../studio/src/studio/canvasClipboard.ts');
+ const {htmlSelectionAction}=await load('../studio/src/studio/htmlSelectionOperations.ts');
+ const source=[{id:'icon',kind:'shape',shape:'rectangle',icon:'heart',editor:{position:'absolute',x:10,y:20,widthPx:100,height:100,groupId:'group'}},{id:'text',kind:'text',value:{runs:[{text:'Before'}],size:32},editor:{x:150,y:20,widthPx:200,height:80,groupId:'group'}}];
+ const empty={pages:[{id:'page',sections:[{id:'section',columns:[[]]}]}]};let id=0;
+ const pasted=pasteCanvasBlocks(empty,'page',copiedCanvasBlocks(source),1200,675,()=>`copy-${++id}`).state.pages[0].sections[0].columns[0];
+ assert.notEqual(pasted[0].id,'icon');assert.equal(pasted[0].editor.motionId,'icon');
+ assert.notEqual(pasted[0].editor.groupId,'group');assert.equal(pasted[0].editor.groupId,pasted[1].editor.groupId);
+ pasted[0].icon='star';pasted[0].editor.x=800;pasted[1].value.runs[0].text='After';
+ assert.deepEqual([...matchingPlaybackBlocks(source,pasted)],[[0,0],[1,1]]);
+ const third=pasteCanvasBlocks(empty,'page',JSON.parse(JSON.stringify(pasted)),1200,675,()=>`copy-${++id}`).state.pages[0].sections[0].columns[0];
+ assert.deepEqual([...matchingPlaybackBlocks(source,third)],[[0,0],[1,1]]);
+ assert.deepEqual([...matchingPlaybackBlocks(pasted,third)],[[0,0],[1,1]]);
+ const state={pages:[{id:'page',sections:[{id:'section',columns:[source]}]}]};
+ const duplicate=htmlSelectionAction(state,['icon'],'duplicate',()=>`duplicate-${++id}`).state.pages[0].sections[0].columns[0].find(block=>block.id.startsWith('duplicate-'));
+ assert.equal(duplicate.editor.motionId,'icon');
+ assert.deepEqual([...matchingPlaybackBlocks([source[0]],[duplicate])],[[0,0]]);
+ assert.equal(source[0].editor.motionId,undefined);assert.equal(source[1].value.runs[0].text,'Before');
+});
+test('Exact identity wins over copied ancestry and ambiguous siblings never animate to arbitrary targets',()=>{
+ const a={id:'a',kind:'shape',shape:'rectangle'},copy={...a,id:'copy',editor:{motionId:'a'}};
+ assert.deepEqual([...matchingPlaybackBlocks([a],[copy,a])],[[0,1]]);
+ assert.equal(matchingPlaybackBlocks([a],[copy,{...copy,id:'copy2'}]).size,0);
+ assert.equal(matchingPlaybackBlocks([copy,{...copy,id:'copy2'}],[a]).size,0);
+});

@@ -101,12 +101,13 @@ export function referenceDocument(reference: AssetReference, format: AssetFormat
     format, dimensions: { width, height }, reference, background: 'blue-soft', grid: true, updatedAt: Date.now(),
     nodes: [makeNode('image', { x: (width - w) / 2, y: (height - h) / 2, w, h })] };
 }
-export function resizeAsset(doc: AssetDocument, format: AssetFormat): AssetDocument {
+export function resizeAsset(doc: AssetDocument, format: AssetFormat, preserveComposition = false): AssetDocument {
   if(doc.editor){const editor=structuredClone(doc.editor);if(repairEditorScale(editor,assetDimensions(doc)))doc={...doc,editor};}
   const contentKey=layoutContentKey(doc.editor);
-  const refreshLayout=doc.layouts?.[format]!==undefined&&(doc.layouts[format]?.reflowVersion!==2||doc.layouts[format]?.contentKey!==contentKey);
+  preserveComposition ||= Object.values(doc.layouts??{}).some(layout=>layout?.preserveComposition);
+  const refreshLayout=doc.layouts?.[format]!==undefined&&(doc.layouts[format]?.reflowVersion!==2||!preserveComposition&&doc.layouts[format]?.contentKey!==contentKey);
   if(format===doc.format&&!refreshLayout)return doc;
-  const currentLayout={reflowVersion:doc.layouts?.[doc.format]?doc.layouts[doc.format]?.reflowVersion:2 as const,contentKey,dimensions:assetDimensions(doc),nodes:doc.nodes.map(({id,x,y,w,h,fontSize,radius})=>({id,x,y,w,h,fontSize,radius})),blocks:captureBlocks(doc.editor)};
+  const currentLayout={reflowVersion:doc.layouts?.[doc.format]?doc.layouts[doc.format]?.reflowVersion:2 as const,preserveComposition,contentKey,dimensions:assetDimensions(doc),nodes:doc.nodes.map(({id,x,y,w,h,fontSize,radius})=>({id,x,y,w,h,fontSize,radius})),blocks:captureBlocks(doc.editor)};
   const layouts={...doc.layouts,[doc.format]:currentLayout},saved=layouts[format];
   const to=saved?.dimensions??formats[format];
   const editor=doc.editor?structuredClone(doc.editor):undefined;
@@ -119,7 +120,7 @@ export function resizeAsset(doc: AssetDocument, format: AssetFormat): AssetDocum
   }
   const fit=fitBoxes(doc.nodes,to),savedNodes=new Map(saved?.nodes.map(n=>[n.id,n])??[]);
   const nodes=doc.nodes.map((node,i)=>({...node,...fit.boxes[i],w:Math.max(8,fit.boxes[i].w),h:Math.max(node.kind==='rule'?.5:8,fit.boxes[i].h),fontSize:Math.max(12,Math.min(160,node.fontSize*fit.scale)),radius:Math.min(100,node.radius*fit.scale),...savedNodes.get(node.id)}));
-  if(editor)layouts[format]={reflowVersion:2,contentKey,dimensions:{width:to.width,height:to.height},nodes:nodes.map(({id,x,y,w,h,fontSize,radius})=>({id,x,y,w,h,fontSize,radius})),blocks:captureBlocks(editor)};
+  if(editor)layouts[format]={reflowVersion:2,preserveComposition,contentKey,dimensions:{width:to.width,height:to.height},nodes:nodes.map(({id,x,y,w,h,fontSize,radius})=>({id,x,y,w,h,fontSize,radius})),blocks:captureBlocks(editor)};
   return {...doc,editor,format,dimensions:{width:to.width,height:to.height},layouts,nodes};
 }
 export function constrainNode(node: AssetNode, format: AssetFormat, dimensions = formats[format] as { width: number; height: number }): AssetNode {

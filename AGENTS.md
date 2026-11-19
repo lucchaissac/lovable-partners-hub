@@ -1,5 +1,7 @@
 # Partner hub
 
+- The Holiday playbook exercise is local-only; its source and latest approved layout are recorded in `examples/holiday-playbook/provenance.json`. Keep the five landscape assets first and append their five independent square copies. Luc's manually refined square 6 defines the square headline: Camera Plain Bold 160 px, 88% leading, with the existing line breaks and anchor. Keep landscape typography intact. Use the full original Lovable Community vector on all ten; this signature correction must preserve every other manual edit. The English linked prompt and response are an explicitly requested local demo conversation, with no model call or publication.
+
 - Durable Community art direction lives in `server/communityEditorialMemory.mjs`, imported into the local agent prompt on every request. Read it with `examples/ai-for-impact/editorial/provenance.json` and `examples/malaga-community/refinement/provenance.json` when continuing these campaigns. Generalize its design principles; exact copy, cities, fictional names, variant counts and coordinates belong to their campaigns. Update this memory when Luc validates a new correction; keep later manual refinements authoritative. When the same or a closely matching asset returns, reuse the prepared library visual and latest approved composition faithfully; change only requested content instead of reinventing it.
 
 - Use Camera Plain from the bundled local font and Lucide for interface icons. Body and interface text must be Semibold (600) minimum; badge lettering stays Bold (700).

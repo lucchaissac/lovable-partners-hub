@@ -54,7 +54,7 @@ export const htmlBlockSchema=z.discriminatedUnion('kind',[
  z.object({id,editor:editorFrame,kind:z.literal('pdf'),name:z.string().max(200),src:safeURL}).strict(),
  z.object({id,editor:editorFrame,kind:z.literal('cta'),color:z.string().max(80).optional(),leadingIcon:z.enum(['play','arrow-right','sparkles','check','video','calendar','book-open','users','message-square','file-text','circle','circle-check','chart-line']).optional(),label:z.string().min(1).max(100),href:z.string().max(2000).refine(value=>/^(?:#[a-zA-Z0-9-]+|\/(?!\/)[^\s<>]*|https?:\/\/[^\s<>]+)$/.test(value))}).strict(),
  z.object({id,editor:editorFrame,kind:z.literal('inventory'),content:htmlInventorySchema.optional()}).strict(),
- z.object({id,editor:editorFrame,kind:z.literal('media'),format:z.enum(['Link','File','Video','Embed','iFrame']),name:z.string().max(200),src:mediaURL,poster:safeURL.optional()}).strict(),
+ z.object({id,editor:editorFrame,kind:z.literal('media'),format:z.enum(['Link','File','Video','Embed','iFrame']),name:z.string().max(200),src:mediaURL,poster:safeURL.optional(),autoplay:z.boolean().optional(),mediaWindow:z.object({x:z.number().min(-1000).max(1000),y:z.number().min(-1000).max(1000),width:z.number().positive().max(1000),height:z.number().positive().max(2000),maskSrc:safeURL.optional(),maskEnabled:z.boolean().optional()}).strict().optional()}).strict(),
  z.object({id,editor:editorFrame,kind:z.literal('toggle'),title:z.string().max(200),body:z.string().max(16000)}).strict(),
  z.object({id,editor:editorFrame,kind:z.literal('code'),code:z.string().max(16000)}).strict(),
  z.object({id,editor:editorFrame,kind:z.enum(['contacts','tasks','divider','synced'])}).strict(),

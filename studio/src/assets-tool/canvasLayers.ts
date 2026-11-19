@@ -25,7 +25,7 @@ export function canvasLayerName(block:HtmlBlock){
  if(block.kind==='text')return block.value.runs.map(run=>run.text).join('').trim().slice(0,70)||'Text';
  if(block.kind==='image')return block.value.alt?.trim()||'Image';
  if(block.kind==='shape')return block.icon?'Icon':block.shape==='line'?'Line':block.shape==='rectangle'?'Rectangle':block.shape==='circle'?'Circle':'Triangle';
- if(block.kind==='media')return block.format;
+ if(block.kind==='media')return block.name?.trim()||block.format;
  return block.kind==='divider'?'Divider':'Element';
 }
 /** Tree order is the reverse of paint order. Crossing another group moves the

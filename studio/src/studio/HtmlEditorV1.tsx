@@ -1,3 +1,4 @@
+import {HtmlCanvasVideo} from './HtmlCanvasVideo';
 import {useMakerDesign} from '../assets-tool/MakerDesignContext';
 import {renderedTechSource} from '../assets-tool/techArtwork';
 import { readHtmlVideo } from './readHtmlVideo';
@@ -442,7 +443,7 @@ export function HtmlEditorV1({initialDesign, canvasOnly=false, zoom=1, imageSour
 HtmlEditorV1.workspaceWidget = true;
 
 function HtmlMedia({block,canvasOnly=false,editable=false}:{block:Extract<HtmlBlock,{kind:'media'}>;canvasOnly?:boolean;editable?:boolean}) {
- if(canvasOnly&&!editable&&block.format==='Video'&&block.poster)return <img className="hev-media-frame" src={block.poster} alt={block.name} style={{height:block.editor?.height,objectFit:block.editor?.appearance?.imageFit??'cover'}}/>;
+ if(canvasOnly&&block.format==='Video'&&(/\.(mp4|webm|ogg|mov)(?:\?|$)/i.test(block.src)||block.src.startsWith('data:video/')))return <HtmlCanvasVideo block={block} editable={editable}/>;
  let src=block.src;
  try { const url=new URL(src);if(url.hostname==='youtu.be')src=`https://www.youtube-nocookie.com/embed/${url.pathname.slice(1)}`;else if(url.hostname.endsWith('youtube.com')&&url.searchParams.get('v'))src=`https://www.youtube-nocookie.com/embed/${url.searchParams.get('v')}`;else if(url.hostname==='vimeo.com')src=`https://player.vimeo.com/video/${url.pathname.slice(1)}`; } catch { /* Relative assets use the original URL. */ }
  if(block.format==='Video'&&(/\.(mp4|webm|ogg|mov)(?:\?|$)/i.test(src)||src.startsWith('data:video/')))return <video className="hev-media-frame" aria-label={block.name} style={canvasOnly?{height:block.editor?.height,objectFit:block.editor?.appearance?.imageFit??'cover'}:undefined} src={src} poster={block.poster} controls={!canvasOnly} autoPlay={canvasOnly&&editable} muted={canvasOnly} loop={canvasOnly} playsInline preload={editable?'auto':'metadata'}/>;

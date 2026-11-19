@@ -170,7 +170,19 @@ function AssetPageContent() {
     if (!requestedBadge) return;
     let cancelled = false;
     setLoading(true);
-    void (studioWorkspace==='tech-blog'?techStarterAsset():studioWorkspace==='ambassadors'?ambassadorAsset(requestedBadge):studioWorkspace==='lovable'?brandStarterAsset(requestedBadge):badgeAsset(requestedBadge)).then(next => { if (!cancelled) put(next); })
+    const opening=async()=>{
+      if(import.meta.env.DEV&&studioWorkspace==='lovable'&&requestedBadge==='holiday'){
+        const {holidayAssets}=await import('./holidayAsset');
+        const pages=await holidayAssets();
+        if(cancelled)return;
+        await saveAssets(owner,pages,{shouldCommit:()=>!cancelled});
+        if(cancelled)return;
+        setRecent(pages);put(pages[0]);return;
+      }
+      const next=await (studioWorkspace==='tech-blog'?techStarterAsset():studioWorkspace==='ambassadors'?ambassadorAsset(requestedBadge):studioWorkspace==='lovable'?brandStarterAsset(requestedBadge):badgeAsset(requestedBadge));
+      if(!cancelled)put(next);
+    };
+    void opening()
       .catch(reason => { if (!cancelled) setError(reason.message); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
@@ -242,6 +254,20 @@ function AssetPageContent() {
     const run=++operation.current,document=current.current;
     setBusy(true);setGenerationStage('Refining your asset…');
     try {
+      if(import.meta.env.DEV&&studioWorkspace==='lovable'&&request.prompt.includes('Q5hVpPc6dKxLT5xoi7eYPN')&&/community logo/i.test(request.prompt)&&!request.sources.length){
+        const {isHolidayAsset,communityHolidayIdentity,holidayDemoReply}=await import('./holidayAsset');
+        if(isHolidayAsset(document)){
+          const key=animationCanvasKey(document),stillCurrent=()=>mounted.current&&run===operation.current&&!active.signal.aborted&&animationCanvasKey(current.current)===key;
+          await saves.current;
+          const collection=assetPages(document,await loadAssetCollection(owner,document.id));
+          const reply={id:crypto.randomUUID(),createdAt:new Date().toISOString(),text:holidayDemoReply,user:false,channel:'workspace' as const,workspaceChatId:request.chatId};
+          const updated=communityHolidayIdentity(collection).map(page=>isHolidayAsset(page)?{...page,messages:[...assetMessages(document),reply],workspaceChats:document.workspaceChats,workspaceActiveChatId:document.workspaceActiveChatId}:page);
+          await saveAssets(owner,updated,{signal:active.signal,shouldCommit:stillCurrent});
+          setPageArrangement({ids:collection.map(page=>page.id),restore:collection,activeId:document.id,anchor:animationCanvasKey(updated.find(page=>page.id===document.id))});
+          future.current=[];setRecent(updated);put(updated.find(page=>page.id===document.id)!);setHistoryVersion(value=>value+1);
+          lastRequest.current=undefined;setVisual(undefined);return;
+        }
+      }
       if(animationIntent){
         if(request.sources.length)throw Error('Insert the attached artwork on the canvas before asking to animate it.');
         const key=animationCanvasKey(document);
@@ -565,7 +591,7 @@ function AssetPageContent() {
       <AssetLibrary open={libraryOpen} onOpenChange={setLibraryOpen}/>
       <HtmlPresentationTools primitivesOnly/>
       {studioWorkspace==='lovable'&&<Dropdown align="end" value={isAppStudioAsset(asset)?'app-studio':'collaboration'} items={[{id:'collaboration',label:'Partnership'},{id:'app-studio',label:'App Studio'}]} onChange={value=>void switchBrandTemplate(value)} trigger={<Button variant="ghost" disabled={busy||changingTemplate} aria-label="Lovable template" trailingIcon={<Icon name="chevron-down" size={14}/>}>Template</Button>}/>}
-      {studioWorkspace==='ambassadors'?<Dropdown align="end" value={templateFormat?.id} items={[...ambassadorFormats,graphicEventFormat].map(format=>({id:format.id,label:format.name,leadingIcon:<Icon name={format.width===format.height?'square':'rectangle-horizontal'} size={16} style={format.width<format.height?{transform:'rotate(90deg)'}:undefined}/>}))} onChange={value=>void switchCommunityTemplate(value)} trigger={<Button variant="ghost" disabled={busy||changingTemplate||exporting} className="asset-format-trigger" aria-label={`Community template: ${templateFormat?.name??'Custom'}`} trailingIcon={<Icon name="chevron-down" size={14}/>}>{templateFormat?.name??'Template'}</Button>}/>:<Dropdown align="end" value={asset.format} items={Object.entries(formats).map(([id,item])=>({id,label:item.label,leadingIcon:<Icon name={id==='square'?'square':'rectangle-horizontal'} size={16} style={id==='portrait'?{transform:'rotate(90deg)'}:undefined}/>}))} onChange={value=>{change(resizeAsset({...asset,editor:nativeDocument(asset)},value as AssetFormat));setZoom(0);}} trigger={<Button variant="ghost" disabled={busy} className="asset-format-trigger" aria-label={`Canvas format: ${formats[asset.format].label}`} leadingIcon={<Icon name={asset.format==='square'?'square':'rectangle-horizontal'} size={16} style={asset.format==='portrait'?{transform:'rotate(90deg)'}:undefined}/>} trailingIcon={<Icon name="chevron-down" size={14}/>}/>}/>}
+      {studioWorkspace==='ambassadors'?<Dropdown align="end" value={templateFormat?.id} items={[...ambassadorFormats,graphicEventFormat].map(format=>({id:format.id,label:format.name,leadingIcon:<Icon name={format.width===format.height?'square':'rectangle-horizontal'} size={16} style={format.width<format.height?{transform:'rotate(90deg)'}:undefined}/>}))} onChange={value=>void switchCommunityTemplate(value)} trigger={<Button variant="ghost" disabled={busy||changingTemplate||exporting} className="asset-format-trigger" aria-label={`Community template: ${templateFormat?.name??'Custom'}`} trailingIcon={<Icon name="chevron-down" size={14}/>}>{templateFormat?.name??'Template'}</Button>}/>:<Dropdown align="end" value={asset.format} items={Object.entries(formats).map(([id,item])=>({id,label:item.label,leadingIcon:<Icon name={id==='square'?'square':'rectangle-horizontal'} size={16} style={id==='portrait'?{transform:'rotate(90deg)'}:undefined}/>}))} onChange={value=>{change(resizeAsset({...asset,editor:nativeDocument(asset)},value as AssetFormat,import.meta.env.DEV&&asset.editor?.pages.some(page=>page.sections.some(section=>section.columns.flat().some(block=>block.id==='holiday-motif')))));setZoom(0);}} trigger={<Button variant="ghost" disabled={busy} className="asset-format-trigger" aria-label={`Canvas format: ${formats[asset.format].label}`} leadingIcon={<Icon name={asset.format==='square'?'square':'rectangle-horizontal'} size={16} style={asset.format==='portrait'?{transform:'rotate(90deg)'}:undefined}/>} trailingIcon={<Icon name="chevron-down" size={14}/>}/>}/>}
       <span className="asset-tools-divider" aria-hidden="true"/>
       <Button className="lovable-mobile-design-toggle" variant="ghost" aria-label="Open design panel" leadingIcon={<Icon name="sliders-horizontal" size={16}/>} onClick={()=>setDesignOpen(value=>!value)}/>
       {studioWorkspace==='ambassadors'&&<Tooltip label="Coming soon" side="bottom"><span className="studio-insert-tool"><Button variant="ghost" className="community-add-template" disabled>Add to templates</Button></span></Tooltip>}

@@ -1,0 +1,48 @@
+{
+  "title": "Holiday playbook · Local Community demo",
+  "date": "2026-11-18",
+  "localOnly": true,
+  "figma": "https://www.figma.com/design/Q5hVpPc6dKxLT5xoi7eYPN/Untitled?node-id=1-2",
+  "playbook": "https://community-holiday-playbook.lovable.app/",
+  "builderReference": "https://community-asset-builder.lovable.app/",
+  "freshLocalRoute": "http://127.0.0.1:5173/brand#brand/create/holiday",
+  "approvedCollection": "http://127.0.0.1:5173/brand#brand/create/9d6e37ec-dde3-4f0b-a2e0-c798b9516dc5",
+  "order": "Five original landscapes followed by five independent square copies. Preserve the existing IDs and manual refinements.",
+  "dimensions": {
+    "landscape": [1092, 615],
+    "square": [1080, 1080]
+  },
+  "concepts": ["Build a gift", "Build for holidays", "Build your resolution", "Build your best year"],
+  "identityCorrection": {
+    "instruction": "Luc approved all layouts and requested only the full Lovable Community signature instead of Lovable. Keep the local collection in its existing maker for the demo.",
+    "source": "../../public/ambassadors/assets/lovable-community.svg",
+    "anchor": [51, 53],
+    "scale": "Match the previous 43.6833 px symbol height using the original Community heart height, 35.6303. Retain the whole vector and its authored ink."
+  },
+  "squareTypography": {
+    "reference": "Luc's manually refined asset 6, Screenshot 2026-11-18 at 18.04.18.png",
+    "family": "Camera Plain",
+    "weight": 700,
+    "fontSize": 160,
+    "lineHeightPercent": 88,
+    "letterSpacing": -5.1948,
+    "frame": {"x":45,"y":240,"width":990,"height":314},
+    "instruction": "Apply the same title size and leading to the other four squares, keeping their wording and explicit line breaks. Landscapes keep 129.87 px / 100.8 px leading."
+  },
+  "media": {
+    "originalImage": "gradient-source.png",
+    "optimizedPoster": "../../public/holiday/gradient.webp",
+    "video": "../../public/gallery/motion-8-960.mp4",
+    "mask": "../../public/holiday/motif-mask.svg",
+    "treatment": "Two independent native video layers. Preserve the original Figma vector mask and its proportional source crop; no flattened poster. Editing starts on the authored still; Play animates both videos."
+  },
+  "demoConversation": "A local English user/assistant exchange, explicitly requested by Luc, includes clickable Figma and playbook links. The deterministic demo action updates identity only; it does not call a model.",
+  "verification": [
+    "Production build passes; no push or deployment.",
+    "34 focused tests pass, including format round trips after text edits, native video crops and editable-source schema round trips.",
+    "Browser confirms ten intact full Community vectors, five 1092×615 canvases and five 1080×1080 canvases.",
+    "All square headlines render at 160 px with 140.8 px leading; all landscape headlines retain 129.87 px with 100.8 px leading.",
+    "The two native video layers decode and play, including the masked layer. The mask switch preserves source geometry.",
+    "No completed PNG or video file export was verified."
+  ]
+}

@@ -2,8 +2,8 @@ import {z} from 'zod';
 import type {HtmlBlock,HtmlEditorState} from '../studio/htmlEditorModel.js';
 
 const dimensions=z.object({width:z.number().positive().max(4000),height:z.number().positive().max(4000)}).strict();
-const geometry=z.object({id:z.string().max(80),x:z.number(),y:z.number(),w:z.number().positive(),h:z.number().positive(),fontSize:z.number().optional(),textSize:z.number().optional(),radius:z.number().optional()}).strict();
-export const assetLayoutSchema=z.object({reflowVersion:z.literal(2).optional(),contentKey:z.string().max(24).optional(),dimensions,nodes:z.array(geometry).max(40),blocks:z.array(geometry).max(240)}).strict();
+const geometry=z.object({id:z.string().max(80),x:z.number(),y:z.number(),w:z.number().positive(),h:z.number().positive(),fontSize:z.number().optional(),textSize:z.number().optional(),lineHeight:z.number().optional(),radius:z.number().optional()}).strict();
+export const assetLayoutSchema=z.object({reflowVersion:z.literal(2).optional(),preserveComposition:z.boolean().optional(),contentKey:z.string().max(24).optional(),dimensions,nodes:z.array(geometry).max(40),blocks:z.array(geometry).max(240)}).strict();
 export const assetLayoutsSchema=z.object({landscape:assetLayoutSchema.optional(),square:assetLayoutSchema.optional(),portrait:assetLayoutSchema.optional()}).strict();
 type Box={x:number;y:number;w:number;h:number};
 type Dimensions={width:number;height:number};
@@ -24,7 +24,7 @@ const union=(boxes:Box[]):Box=>{
   return {x,y,w:Math.max(...boxes.map(b=>b.x+b.w))-x,h:Math.max(...boxes.map(b=>b.y+b.h))-y};
 };
 const contains=(a:Box,b:Box)=>b.x>=a.x-1&&b.y>=a.y-1&&b.x+b.w<=a.x+a.w+1&&b.y+b.h<=a.y+a.h+1;
-export const captureBlocks=(editor?:HtmlEditorState):Geometry[]=>editor?.pages.flatMap(p=>p.sections.flatMap(s=>s.columns.flat().map(b=>({id:b.id,...blockBox(b),fontSize:b.editor?.appearance?.fontSize,radius:b.editor?.appearance?.radius,...(b.kind==='text'?{textSize:b.value.size}:{})}))))??[];
+export const captureBlocks=(editor?:HtmlEditorState):Geometry[]=>editor?.pages.flatMap(p=>p.sections.flatMap(s=>s.columns.flat().map(b=>({id:b.id,...blockBox(b),fontSize:b.editor?.appearance?.fontSize,lineHeight:b.editor?.appearance?.lineHeight,radius:b.editor?.appearance?.radius,...(b.kind==='text'?{textSize:b.value.size}:{})}))))??[];
 function apply(block:HtmlBlock,box:Box,scale=1) {
   const f=block.editor??={},a=f.appearance;
   Object.assign(f,{x:box.x,y:box.y,widthPx:Math.max(1,box.w),height:Math.max(12,box.h)});
@@ -38,7 +38,7 @@ export function restoreBlocks(editor:HtmlEditorState,items:Geometry[]) {
     const g=saved.get(block.id);if(!g)continue;
     apply(block,g);
     const a=block.editor!.appearance;
-    if(a){if(g.fontSize===undefined)delete a.fontSize;else a.fontSize=g.fontSize;if(g.radius===undefined)delete a.radius;else a.radius=g.radius;}
+    if(a){if(g.fontSize===undefined)delete a.fontSize;else a.fontSize=g.fontSize;if(g.lineHeight!==undefined)a.lineHeight=g.lineHeight;if(g.radius===undefined)delete a.radius;else a.radius=g.radius;}
     if(block.kind==='text'&&g.textSize!==undefined)block.value.size=g.textSize;
   }
 }

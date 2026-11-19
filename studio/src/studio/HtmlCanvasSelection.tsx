@@ -1,3 +1,4 @@
+import {MediaWindowDesign} from './MediaWindowDesign';
 import {IconDesignControls} from './IconDesignControls';
 import {ElementTransformContext,ElementBlendPreviewContext} from './ElementTransformControls';
 import {elementEffectsStyle,previewElementBlend} from './elementEffects';
@@ -586,7 +587,7 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
       shape={{id:one.id,kind:one.kind==='text'?'text':one.kind==='image'?'image':one.kind==='shape'?one.shape:'rectangle',width:bounds?.width||100,height:bounds?.height||100,src:one.kind==='image'?one.value.src:undefined,appearance:{...(one.kind==='text'?{fill:one.value.color,fontFamily:'Camera Plain',fontSize:one.value.size,textAlign:one.value.align,fontWeight:one.value.runs.every(r=>r.bold)?700:400,italic:one.value.runs.length>0&&one.value.runs.every(r=>r.italic),underline:one.value.runs.length>0&&one.value.runs.every(r=>r.underline),lineHeight:one.value.style==='Heading 1'?102:one.value.style.startsWith('Heading')?112:150}:one.kind==='image'?{imageFit:'cover'}:{}),...one.editor?.appearance}}}
       label={one.kind==='text'?(one.value.runs.map(r=>r.text).join('').slice(0,60)||'Text'):one.kind==='image'?'Image':one.kind==='contacts'?'Contact cards':one.kind==='tasks'?'Checklist':one.kind==='media'&&one.format==='Video'?'Video':one.kind==='shape'&&one.icon?'Icon':one.kind==='shape'&&one.shape==='line'?'Line':'Element'} locked={locked}
       spacingAfter={one.editor?.spacingAfter??0} onSpacingAfter={(spacingAfter:number)=>changeBlock({...one,editor:{...one.editor,spacingAfter}})} onSpacingPreview={setSpacingPreview}
-      positionControls={one.kind==='shape'&&one.icon?<IconDesignControls icon={one.icon} filled={!!one.filled} locked={!!locked} onIcon={icon=>changeBlock({...one,icon})} onFilled={filled=>changeBlock({...one,filled})}/>:undefined}
+      positionControls={one.kind==='media'&&one.format==='Video'?<MediaWindowDesign block={one} onChange={changeBlock}/>:one.kind==='shape'&&one.icon?<IconDesignControls icon={one.icon} filled={!!one.filled} locked={!!locked} onIcon={icon=>changeBlock({...one,icon})} onFilled={filled=>changeBlock({...one,filled})}/>:undefined}
       onFillImage={one.kind==='shape'&&!one.icon?()=>onReplace(one.id,true):undefined}
       absolutePosition={one.editor?.position==='absolute'} onAbsolutePosition={setAbsolute}
       resizeWithSection={one.editor?.widthPx===undefined}

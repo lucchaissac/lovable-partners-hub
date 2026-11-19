@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import ts from 'typescript';
-async function moduleAt(name){const source=await readFile(new URL(`../studio/src/assets-tool/${name}.ts`,import.meta.url),'utf8');return import(`data:text/javascript;base64,${Buffer.from(ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText).toString('base64')}`);}
+async function moduleAt(name){const source=(await readFile(new URL(`../studio/src/assets-tool/${name}.ts`,import.meta.url),'utf8')).replace('../../../shared/brandTemplates.mjs',new URL('../shared/brandTemplates.mjs',import.meta.url).href);return import(`data:text/javascript;base64,${Buffer.from(ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText).toString('base64')}`);}
 const {canvasLayers,visibleCanvasLayers,canvasLayerRange,reorderCanvasLayers,canvasLayerAction}=await moduleAt('canvasLayers');
 const {nativeBrandDivider,partnershipDivider}=await moduleAt('brandDivider');
 const block=(id,groupId)=>({id,kind:'image',value:{src:`/${id}.png`,alt:id},editor:{position:'absolute',x:50,y:100,widthPx:200,height:100,...(groupId?{groupId}:{})}});

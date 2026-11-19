@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import ts from 'typescript';
 import { z } from 'zod';
 const source = await readFile(new URL('../studio/src/assets-tool/assetPlayback.ts', import.meta.url), 'utf8');
-const { playbackTimeline, playbackPosition, playbackThumbnailProgress, matchingPlaybackBlocks, playbackEasing, playbackEasedProgress, springProgress, canExportAnimation } = await import(`data:text/javascript;base64,${Buffer.from(ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText).toString('base64')}`);
+const { advancePlaybackTime, playbackEndHoldMs, playbackTimeline, playbackPosition, playbackThumbnailProgress, matchingPlaybackBlocks, playbackEasing, playbackEasedProgress, springProgress, canExportAnimation } = await import(`data:text/javascript;base64,${Buffer.from(ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText).toString('base64')}`);
 const page = (enabled = true, transition = 'smart-animate', durationMs = 1200) => ({ animation: { enabled, transition, durationMs } });
 test('Procedural animation uses the same easing as the DOM, including spring overshoot',()=>{
  assert.equal(playbackEasedProgress(.37,{easing:'linear'}),.37);
@@ -121,4 +121,15 @@ test('Exact identity wins over copied ancestry and ambiguous siblings never anim
  assert.deepEqual([...matchingPlaybackBlocks([a],[copy,a])],[[0,1]]);
  assert.equal(matchingPlaybackBlocks([a],[copy,{...copy,id:'copy2'}]).size,0);
  assert.equal(matchingPlaybackBlocks([copy,{...copy,id:'copy2'}],[a]).size,0);
+});
+
+test('Loop playback holds the final pose, wraps without drift and stops when switched off',()=>{
+ assert.equal(playbackEndHoldMs,600);
+ assert.deepEqual(advancePlaybackTime(900,200,1000,true),{time:1100,playing:true});
+ assert.equal(playbackPosition(playbackTimeline([page(true,'smart-animate',1000),page()]),1100).index,1);
+ assert.deepEqual(advancePlaybackTime(1590,20,1000,true),{time:10,playing:true});
+ assert.deepEqual(advancePlaybackTime(10,4800,1000,true),{time:10,playing:true});
+ assert.deepEqual(advancePlaybackTime(900,200,1000,false),{time:1000,playing:false});
+ assert.deepEqual(advancePlaybackTime(1100,16,1000,false),{time:1000,playing:false});
+ assert.deepEqual(advancePlaybackTime(0,16,0,true),{time:0,playing:false});
 });

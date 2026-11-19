@@ -14,14 +14,19 @@ export async function saveAsset(owner: string, document: AssetDocument) {
   return saveAssets(owner,[document]);
 }
 /** Membership and documents commit together, so reopening any sibling sees the same pages. */
-export async function saveAssets(owner:string,documents:AssetDocument[]){
+export async function saveAssets(owner:string,documents:AssetDocument[],options?:{signal?:AbortSignal;shouldCommit?:()=>boolean}){
   const parsed=documents.map(document=>assetSchema.parse(document));
   const db = await openDatabase();
+  options?.signal?.throwIfAborted();
+  if(options?.shouldCommit&&!options.shouldCommit())throw Error('The canvas changed before saving. Retry to keep your latest edits.');
   return new Promise<void>((resolve, reject) => {
     const tx = db.transaction('assets', 'readwrite');
+    const cancel=()=>{try{tx.abort();}catch{}};
+    const cleanup=()=>options?.signal?.removeEventListener('abort',cancel);
+    options?.signal?.addEventListener('abort',cancel,{once:true});
     for(const document of parsed)tx.objectStore('assets').put({ key: `${owner}:${document.id}`, owner, document } satisfies StoredAsset);
-    tx.oncomplete = () => resolve();
-    tx.onabort = tx.onerror = () => reject(new Error('Could not save on this device. Download the editable source to keep your work.'));
+    tx.oncomplete = () => {cleanup();resolve();};
+    tx.onabort = tx.onerror = () => {cleanup();reject(options?.signal?.aborted?options.signal.reason:new Error('Could not save on this device. Download the editable source to keep your work.'));};
   });
 }
 export async function listAssets(owner: string): Promise<AssetDocument[]> {

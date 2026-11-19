@@ -1,4 +1,4 @@
-import { createLucideIcon, AlignStartHorizontal, AlignCenterHorizontal, AlignEndHorizontal, Blocks, MousePointer2, Mic, Folders, GalleryThumbnails, Lock, LockOpen, PencilRuler, RotateCw, SquarePlus } from 'lucide-react';
+import { createLucideIcon, Repeat, AlignStartHorizontal, AlignCenterHorizontal, AlignEndHorizontal, Blocks, MousePointer2, Mic, Folders, GalleryThumbnails, Lock, LockOpen, PencilRuler, RotateCw, SquarePlus } from 'lucide-react';
 import { Frame, Scan, ListFilter, Move, PenTool, Laptop, Tablet, Smartphone, Target, Lightbulb, Radius, Blend, MessageCircle, MessageCirclePlus, Circle, RectangleHorizontal, Shapes, Slash, Smile, AtSign, Maximize2, AppWindow, Archive, ArrowDown, ArrowLeft, ArrowRight, ArrowUp, ArrowUpRight, Asterisk, BadgeCheck, BadgeDollarSign, Bell, BellDot, Bold, BookOpen, Bookmark, Bot, Briefcase, BuildingComplex, Cable, Calendar, ChartColumn, ChartLine, ChartNoAxesGantt, ChartPie, Check, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, CircleAlert, CircleCheck, CircleQuestionMark, CircleUser, Clipboard, ClipboardCheck, ClipboardList, ClipboardPaste, Clock, Code, CodeXml, Columns3, Command, Component, Contact, Copy, CornerDownLeft, Database, Diamond, Download, Drama, Ellipsis, EllipsisVertical, ExternalLink, Eye, EyeOff, File, FilePlus, FileSpreadsheet, FileText, Files, Flame, FlaskConical, Folder, FolderOpen, FolderPlus, Funnel, Globe, GraduationCap, GripVertical, Handshake, House, Image, Info, Italic, Layers, LayoutDashboard, LayoutGrid, LayoutTemplate, Library, LifeBuoy, Link, List, ListChecks, ListCollapse, ListOrdered, ListTodo, ListTree, LoaderCircle, LogIn, LogOut, Mail, Map, Megaphone, Menu, MessageSquare, Minus, Monitor, MousePointerClick, PaintbrushVertical, PanelLeft, PanelLeftClose, PanelLeftOpen, PanelRight, PanelRightClose, PanelRightOpen, PanelsTopLeft, Paperclip, Pencil, Pin, Play, Pause, Plus, Presentation, Quote, ReceiptText, Redo2, RotateCcwClock, Route, Rows3, Save, Scissors, Search, Settings, Share2, Shield, ShieldCheck, SkipBack, SkipForward, SlidersHorizontal, Snowflake, Sparkles, Square, SquareCode, SquarePen, Star, Store, SwatchBook, Table, TextAlignCenter, TextAlignEnd, TextAlignStart, Timer, ThumbsUp, ThumbsDown, ToggleLeft, Trash, Triangle, TriangleAlert, Type, Underline, Undo2, Upload, User, Users, Video, WandSparkles, X, Zap, type LucideProps } from 'lucide-react';
 // Official Lucide folder-user (ISC); not yet included in our installed version.
 // https://github.com/lucide-icons/lucide/blob/main/icons/folder-user.svg
@@ -173,6 +173,7 @@ const glyphs = {
   'pin': Pin,
   'play': Play,
   'pause': Pause,
+  'repeat': Repeat,
   'plus': Plus,
   'presentation': Presentation,
   'quote': Quote,

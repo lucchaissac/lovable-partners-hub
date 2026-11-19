@@ -5,6 +5,7 @@ import {studioWorkspace} from './workspace';
 import {Artwork} from './Artwork';
 import {AssetPlaybackPreview} from './AssetPlaybackPreview';
 import {useAssetPlayback} from './useAssetPlayback';
+import {useMakerDesign} from './MakerDesignContext';
 import {assetDimensions,type AssetDocument} from './model';
 import {selectAsset,singleAssetSelection,type AssetSelection} from './assetSelection';
 import {MAX_ASSET_PAGES} from './assetSeries';
@@ -45,6 +46,15 @@ export function AssetCanvas({toolbar,asset,pages,busy,generating,zoom,onZoom,onC
  useLayoutEffect(()=>{if(restoreThumbnailFocus.current&&!busy){restoreThumbnailFocus.current=false;const host=grid?viewport.current:strip.current;host?.querySelector<HTMLElement>('[aria-current="page"]')?.focus({preventScroll:true});}},[pages.length,busy,selection.focus]);
  const showPlayback=!grid&&thumbnails&&pages.length>1&&pages.some(page=>page.animation?.enabled);
  const playback=useAssetPlayback(pages,asset.id,showPlayback&&!busy,onOpen);
+ const maker=useMakerDesign(),selectionRequest=maker?.selectionRequest;
+ useLayoutEffect(()=>{
+  if(!selectionRequest||busy)return;
+  if(playback.active)playback.reset();
+  if(grid)setGrid(false);
+  if(selectionRequest.assetId!==asset.id&&pages.some(page=>page.id===selectionRequest.assetId)){
+   expectedActive.current=selectionRequest.assetId;onOpen(selectionRequest.assetId);
+  }
+ },[selectionRequest,asset.id,playback.active,grid,busy]);
  const size=assetDimensions(asset),fit=Math.min(1,Math.max(.1,(bounds.width-80)/size.width),Math.max(.1,(bounds.height-156)/size.height)),scale=zoom||fit;
  const pageInset=16;
  const index=Math.max(0,pages.findIndex(page=>page.id===asset.id)),locked=busy||pages.length>=MAX_ASSET_PAGES;
@@ -171,6 +181,7 @@ export function AssetCanvas({toolbar,asset,pages,busy,generating,zoom,onZoom,onC
      <Tooltip label={playback.playing?'Pause animation':'Play animation'} side="top"><Button size="sm" variant="ghost" aria-label={playback.playing?'Pause animation':'Play animation'} disabled={busy} leadingIcon={<Icon name={playback.playing?'pause':'play'} size={12} fill="currentColor" strokeWidth={0}/>} onClick={playback.toggle}/></Tooltip>
      <Tooltip label="Go to end" side="top"><Button size="sm" variant="ghost" aria-label="Go to end" disabled={busy} leadingIcon={<Icon name="skip-forward" size={12} fill="currentColor" strokeWidth={1.5}/>} onClick={()=>playback.jump(pages.length-1)}/></Tooltip>
      <input type="range" className="asset-zoom-range asset-playback-progress" aria-label="Animation progress" aria-valuetext={`${(playback.time/1000).toFixed(1)} / ${(playback.total/1000).toFixed(1)} s`} min={0} max={playback.total} step={1} value={Math.round(playback.time)} disabled={busy} onChange={event=>playback.seek(Number(event.target.value))} style={{background:`linear-gradient(to right, var(--ui-text-muted) ${playback.time/playback.total*100}%, var(--ui-border) ${playback.time/playback.total*100}%)`}}/>
+     <Tooltip label={playback.loop?'Turn loop off':'Turn loop on'} side="top"><Button size="sm" variant="ghost" aria-label="Loop playback" aria-pressed={playback.loop} disabled={busy} leadingIcon={<Icon name="repeat" size={14}/>} onClick={playback.toggleLoop}/></Tooltip>
     </div>}</div>
     <span className="asset-arrangement-slot">{onUndoArrangement&&<Tooltip label="Undo page change" side="top"><Button size="sm" variant="ghost" aria-label="Undo page change" disabled={busy} leadingIcon={<Icon name="undo-2" size={16}/>} onClick={onUndoArrangement}/></Tooltip>}</span>
    </div>

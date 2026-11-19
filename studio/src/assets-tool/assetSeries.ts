@@ -53,6 +53,17 @@ export function replaceAssetPage(pages:AssetDocument[],id:string,proposals:Asset
  return insertAssetPages(next,id,proposals.slice(1));
 }
 
+/** Restore membership, and optionally the original first pose, without reverting siblings' edits. */
+export function restoreAssetArrangement(collection:AssetDocument[],saved:AssetDocument[],ids:string[],original?:AssetDocument){
+ const documents=new Map([...saved,...collection].map(page=>[page.id,page]));
+ if(original){
+  const latest=documents.get(original.id);
+  documents.set(original.id,{...original,messages:latest?.messages,workspaceChats:latest?.workspaceChats,workspaceActiveChatId:latest?.workspaceActiveChatId,updatedAt:Date.now()});
+ }
+ const pages=linkAssetPages(ids.flatMap(id=>documents.has(id)?[documents.get(id)!]:[]));
+ return {pages,detached:collection.filter(page=>!pages.some(item=>item.id===page.id)).map(page=>({...page,series:undefined}))};
+}
+
 /** Animate toward the existing next page, creating an editable endpoint only at the end. */
 export function animateAssetPages(pages:AssetDocument[],id:string,defaults:NonNullable<AssetDocument['animation']>,freshId:()=>string=()=>crypto.randomUUID(),now=Date.now()){
  const at=pages.findIndex(page=>page.id===id);

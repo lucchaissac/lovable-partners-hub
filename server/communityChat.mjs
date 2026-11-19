@@ -10,7 +10,7 @@ import {generateOpenAICommunityPlan,openAICommunityStatus} from './communityOpen
 import {CommunityDesignRuleError} from '../shared/communityDesignRules.mjs';
 
 const bundled='/Applications/ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex';
-async function executable(env=process.env){if(env.COMMUNITY_CODEX_BIN)return env.COMMUNITY_CODEX_BIN;try{await access(bundled);return bundled;}catch{return 'codex';}}
+export async function executable(env=process.env){if(env.COMMUNITY_CODEX_BIN)return env.COMMUNITY_CODEX_BIN;try{await access(bundled);return bundled;}catch{return 'codex';}}
 const loopback=host=>['127.0.0.1','localhost','[::1]'].includes(host);
 export function localRequestAllowed(req){
  try{const target=new URL(`http://${req.headers.host}`),origin=req.headers.origin;

@@ -3,7 +3,7 @@ import { flushSync } from 'react-dom';
 import { toCanvas } from 'html-to-image';
 import { BufferTarget, CanvasSource, Mp4OutputFormat, Output, Quality, WebMOutputFormat, canEncodeVideo } from 'mediabunny';
 import { AssetPlaybackPreview } from './AssetPlaybackPreview';
-import { canExportAnimation, playbackPosition, playbackTimeline } from './assetPlayback';
+import { canExportAnimation, playbackPosition, playbackTimeline, playbackEndHoldMs } from './assetPlayback';
 import { assetDimensions, type AssetDocument } from './model';
 import { embeddedAssetFonts, filename } from './media';
 
@@ -72,7 +72,7 @@ export async function exportVideo(pages: AssetDocument[], parent: HTMLElement, s
   output.addVideoTrack(source, { frameRate });
   const host = document.createElement('div'); parent.append(host);
   const root = createRoot(host);
-  const timeline = playbackTimeline(pages), duration = timeline.total + 600, frames = Math.ceil(duration / 1000 * frameRate);
+  const timeline = playbackTimeline(pages), duration = timeline.total + playbackEndHoldMs, frames = Math.ceil(duration / 1000 * frameRate);
   let lastFrame = '', lastIndex = -1, lastPercent = -1, finished = false;
   try {
     await document.fonts.ready;

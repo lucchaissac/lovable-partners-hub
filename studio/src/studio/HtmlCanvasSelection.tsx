@@ -113,7 +113,8 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
       setDesign(true);host.panelChanged('html-selection',true);
     };
     makerDesign.select.current=select;
-    return()=>{if(makerDesign.select.current===select)makerDesign.select.current=undefined;};
+    makerDesign.nudge.current=nudge;
+    return()=>{if(makerDesign.select.current===select)makerDesign.select.current=undefined;if(makerDesign.nudge.current===nudge)makerDesign.nudge.current=undefined;};
   },[enabled,blocks,makerDesign?.select,host.panelChanged]);
   useEffect(()=>{if(enabled)makerDesign?.setSelected(ids);},[enabled,ids.join('|')]);
   useEffect(()=>{if(enabled&&makerDesign)return()=>makerDesign.setSelected([]);},[enabled]);
@@ -122,6 +123,14 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
   useEffect(()=>{if(!enabled||!communityTemplateId)return;choose([communityTemplateId]);setDesign(true);host.panelChanged('html-selection',true);},[communityTemplateId,enabled]);
   useEffect(()=>{if(!enabled)return;const available=new Set(blocks.map(b=>b.id));setIds(old=>old.some(id=>!available.has(id))?old.filter(id=>available.has(id)):old);},[state,enabled]);
   useEffect(()=>{if(!enabled)return;const available=new Set(page.sections.map(s=>s.id));setSectionIds(old=>old.some(id=>!available.has(id))?old.filter(id=>available.has(id)):old);},[state,enabled]);
+  // A Layers request survives the playback preview being replaced by this editor.
+  // Consume it after this canvas's initial selection reset, never in its parent.
+  useEffect(()=>{
+    const request=makerDesign?.selectionRequest;
+    if(!enabled||!request||root.current?.closest('.community-canvas-page')?.getAttribute('data-page-id')!==request.assetId)return;
+    makerDesign.select.current?.(request.ids);
+    makerDesign.setSelectionRequest(current=>current===request?undefined:current);
+  },[enabled,makerDesign?.selectionRequest]);
   function chooseSection(id:string,range=false,toggle=false){
     const order=page.sections.map(s=>s.id),anchor=order.indexOf(sectionAnchor.current),target=order.indexOf(id);
     const next=range&&anchor>=0?order.slice(Math.min(anchor,target),Math.max(anchor,target)+1):toggle?(sectionIds.includes(id)?sectionIds.filter(value=>value!==id):[...sectionIds,id]):[id];
@@ -222,6 +231,14 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
     });
   }
   function patch(values:ElementFrame){if(locked)return;const items=layoutItems(members);save(patchHtmlFrames(source.current,constrainLayoutFrames(items,Object.fromEntries(members.map(block=>{const frame=items.find(item=>item.id===block.id)?.frame||block.editor||{};return [block.id,{...frame,...values,...(values.x!==undefined?{x:(frame.x||0)+values.x-(block.editor?.x||0)}:{}),...(values.y!==undefined?{y:(frame.y||0)+values.y-(block.editor?.y||0)}:{})}];})))));}
+  function nudge(x:number,y:number){
+    if(locked||sectionSelection||!members.length)return;
+    if(members.every(block=>block.editor?.position==='absolute')){
+      const next=translateCanvasSelection(source.current,ids,{x,y});if(next!==source.current)save(next);return;
+    }
+    const items=layoutItems(members);
+    save(patchHtmlFrames(source.current,constrainLayoutFrames(items,Object.fromEntries(items.map(item=>[item.id,{...item.frame,x:(item.frame.x??0)+x,y:(item.frame.y??0)+y}])))));
+  }
   function scaleGroup(value:number){
     if(locked||!selectedGroup)return;
     const items=layoutItems(members),bounds=selectionBounds(items.map(item=>item.box));if(!bounds)return;
@@ -432,7 +449,7 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
       if(e.key==='Delete'||e.key==='Backspace'){e.preventDefault();action('delete');}
       if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='d'){e.preventDefault();action('duplicate');}
       if((e.key==='Enter'||e.key==='F2')&&one){e.preventDefault();editBlock(one);}
-      if(!sectionSelection&&['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)&&!e.metaKey&&!e.ctrlKey){e.preventDefault();const n=e.shiftKey?10:1,items=layoutItems(members);save(patchHtmlFrames(source.current,constrainLayoutFrames(items,Object.fromEntries(items.map(b=>[b.id,{...b.frame,x:(b.frame.x||0)+(e.key==='ArrowRight'?n:e.key==='ArrowLeft'?-n:0),y:(b.frame.y||0)+(e.key==='ArrowDown'?n:e.key==='ArrowUp'?-n:0)}])))));}
+      if(!sectionSelection&&['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)&&!e.metaKey&&!e.ctrlKey){e.preventDefault();const amount=e.shiftKey?10:1;nudge(e.key==='ArrowRight'?amount:e.key==='ArrowLeft'?-amount:0,e.key==='ArrowDown'?amount:e.key==='ArrowUp'?-amount:0);}
     };
     document.addEventListener('pointerdown',outside);document.addEventListener('keydown',key);return()=>{document.removeEventListener('pointerdown',outside);document.removeEventListener('keydown',key);};
   },[enabled,ids,members,locked,one,sectionIds.join(','),selectedSection]);

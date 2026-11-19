@@ -1,6 +1,14 @@
 import type { AssetDocument } from './model';
 import type { HtmlBlock } from '../studio/htmlEditorModel';
 
+export const playbackEndHoldMs=600;
+/** The preview loop rests on the same final frame as a single exported video. */
+export function advancePlaybackTime(time:number,elapsed:number,total:number,loop:boolean){
+  if(total<=0)return {time:0,playing:false};
+  const next=time+Math.max(0,elapsed);
+  return loop?{time:next%(total+playbackEndHoldMs),playing:true}:{time:Math.min(total,next),playing:next<total};
+}
+
 // Instant/static pages hold briefly before cutting. Smart transitions use the
 // outgoing canvas's saved duration; the last canvas is the resting endpoint.
 export function playbackTimeline(pages: AssetDocument[]) {

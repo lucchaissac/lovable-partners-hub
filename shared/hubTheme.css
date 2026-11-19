@@ -17,7 +17,7 @@
   --segment-inset: 4px;
   --header-height: 72px;
   --header-inset-block: 16px;
-  --header-inset-inline: 24px;
+  --header-inset-inline: var(--header-inset-block);
   --icon-size: 20px;
   --radius-pill: 999px;
   --color-dim: rgb(255 255 255 / 38%);

@@ -138,6 +138,11 @@ html, body, #root { background: var(--studio-background); color: var(--ui-text);
 .lovable-canvas-tools .asset-tools-divider { margin-inline: 6px; }
 .lovable-canvas-tools .ui-btn { border-radius: 999px; }
 .lovable-canvas-tools .ui-btn[data-variant='primary'] { height: 32px; padding-inline: 14px; }
+.lovable-canvas-tools .asset-export-control[data-variant='primary'] { position:relative; padding-inline:14px; }
+.asset-export-progress > span { color:transparent; }
+.asset-export-progress-value { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; gap:4px; color:var(--studio-primary-label); font-variant-numeric:tabular-nums; }
+.asset-export-control[data-loading] > .ui-btn-spinner { position:absolute; }
+.asset-export-control[data-loading] > span:not(.ui-btn-spinner) { visibility:hidden; }
 .lovable-design-default .lovable-panel-title { height: 56px; }
 .lovable-library-header { display: flex; align-items: center; justify-content: space-between; min-height: 32px; gap: 8px; flex: none; font-size: 13px; }
 .lovable-library-menu > .ui-input { flex: none; margin-block: 4px 12px; }

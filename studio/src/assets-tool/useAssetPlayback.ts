@@ -1,19 +1,20 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { AssetDocument } from './model';
-import { playbackPosition, playbackTimeline, playbackThumbnailProgress } from './assetPlayback';
+import { advancePlaybackTime, playbackPosition, playbackTimeline, playbackThumbnailProgress } from './assetPlayback';
 
 type Session = { revision: string; time: number; playing: boolean };
 export function useAssetPlayback(pages: AssetDocument[], activeId: string, enabled: boolean, onOpen: (id: string) => void) {
   const revision = pages.map(page => `${page.id}:${page.updatedAt}:${JSON.stringify(page.animation)}`).join('|');
   const timeline = useMemo(() => playbackTimeline(pages), [revision]);
   const [session, setSession] = useState<Session>();
+  const [loop,setLoop]=useState(true);
   const [reducedMotion, setReducedMotion] = useState(() => matchMedia('(prefers-reduced-motion: reduce)').matches);
   const open = useRef(onOpen); open.current = onOpen;
   const expectedId = useRef(activeId);
   const active = enabled && session?.revision === revision;
   const playing = active && !!session?.playing;
   const selected = Math.max(0, pages.findIndex(page => page.id === activeId));
-  const time = active ? session.time : timeline.segments[selected]?.start ?? timeline.total;
+  const time = active ? Math.min(timeline.total,session.time) : timeline.segments[selected]?.start ?? timeline.total;
   const position = playbackPosition(timeline, time);
   useEffect(() => {
     const media = matchMedia('(prefers-reduced-motion: reduce)');
@@ -44,8 +45,7 @@ export function useAssetPlayback(pages: AssetDocument[], activeId: string, enabl
       const elapsed = now - previous; previous = now;
       setSession(current => {
         if (!current?.playing) return current;
-        const next = Math.min(timeline.total, current.time + elapsed);
-        return { ...current, time: next, playing: next < timeline.total };
+        return { ...current, ...advancePlaybackTime(current.time,elapsed,timeline.total,loop) };
       });
       frame = requestAnimationFrame(tick);
     };
@@ -53,7 +53,7 @@ export function useAssetPlayback(pages: AssetDocument[], activeId: string, enabl
     frame = requestAnimationFrame(tick);
     document.addEventListener('visibilitychange', visibility);
     return () => { cancelAnimationFrame(frame); document.removeEventListener('visibilitychange', visibility); };
-  }, [playing, timeline.total]);
+  }, [playing, timeline.total,loop]);
   const toggle = () => setSession({ revision, time: time >= timeline.total ? 0 : time, playing: !playing });
   const toggleRef=useRef(toggle);toggleRef.current=toggle;
   useEffect(()=>{
@@ -72,7 +72,7 @@ export function useAssetPlayback(pages: AssetDocument[], activeId: string, enabl
   const reset = () => setSession(undefined);
   const jump = (index: number) => { reset(); expectedId.current = pages[index].id; open.current(pages[index].id); };
   return {
-    active, playing, time, total: timeline.total, position, reducedMotion, reset, jump,
+    active, playing, time, total: timeline.total, position, reducedMotion, reset, jump,loop,toggleLoop:()=>setLoop(value=>!value),
     thumbnailProgress: active ? playbackThumbnailProgress(timeline, time) : undefined,
     toggle,
     seek: (time: number) => setSession({ revision, time: Math.max(0, Math.min(timeline.total, time)), playing: false }),

@@ -17,8 +17,9 @@ export function CanvasLayersPanel({asset,onChange}:{asset:AssetDocument;onChange
  const selectionAnchor=useRef<{asset:string;row:string}|undefined>(undefined);
  const visibleRows=editor.pages[0].sections.flatMap(section=>section.columns.flatMap(column=>visibleCanvasLayers(column,collapsed)));
  const selected=new Set(maker.selected);
+ const select=(ids:string[])=>maker.setSelectionRequest({assetId:asset.id,ids});
  const apply=(ids:string[],action:CanvasLayerAction)=>{const next=canvasLayerAction(editor,ids,action,action==='group'?crypto.randomUUID():undefined);if(next!==editor)onChange({...asset,editor:next});setMenu(undefined);};
- const context=(layer:CanvasLayer,x:number,y:number)=>{const ids=layer.blocks.map(block=>block.id),alreadySelected=ids.every(id=>selected.has(id)),effective=alreadySelected?maker.selected:ids;if(!alreadySelected)selectionAnchor.current={asset:asset.id,row:layer.id};maker.select.current?.(effective);setMenu({ids:effective,x,y});};
+ const context=(layer:CanvasLayer,x:number,y:number)=>{const ids=layer.blocks.map(block=>block.id),alreadySelected=ids.every(id=>selected.has(id)),effective=alreadySelected?maker.selected:ids;if(!alreadySelected)selectionAnchor.current={asset:asset.id,row:layer.id};select(effective);setMenu({ids:effective,x,y});};
  const choose=(layer:CanvasLayer,{range=false,additive=false}:{range?:boolean;additive?:boolean}={})=>{
   const ids=layer.blocks.map(block=>block.id);
   const remembered=selectionAnchor.current?.asset===asset.id?selectionAnchor.current.row:undefined;
@@ -26,18 +27,22 @@ export function CanvasLayersPanel({asset,onChange}:{asset:AssetDocument;onChange
   selectionAnchor.current={asset:asset.id,row:range?start:layer.id};
   const interval=range?canvasLayerRange(visibleRows,start,layer.id):ids;
   const next=range?(additive?[...new Set([...maker.selected,...interval])]:interval):additive?(ids.every(id=>selected.has(id))?maker.selected.filter(id=>!ids.includes(id)):[...new Set([...maker.selected,...ids])]):ids;
-  maker.select.current?.(next);
+  select(next);
  };
  const toggle=(id:string)=>setCollapsed(old=>{const next=new Set(old);if(next.has(id))next.delete(id);else next.add(id);return next;});
  const keyboard=(event:KeyboardEvent<HTMLDivElement>,layer:CanvasLayer)=>{
   if((event.target as Element).closest('button'))return;
   if((event.metaKey||event.ctrlKey)&&!event.altKey&&event.key.toLowerCase()==='g'){event.preventDefault();event.stopPropagation();if(!event.repeat)apply(maker.selected,event.shiftKey?'ungroup':'group');return;}
   if(event.key==='ContextMenu'||event.shiftKey&&event.key==='F10'){event.preventDefault();const box=event.currentTarget.getBoundingClientRect();context(layer,box.left+24,box.bottom);return;}
-  if((event.metaKey||event.ctrlKey)&&event.key.toLowerCase()==='a'){event.preventDefault();maker.select.current?.(editor.pages[0].sections.flatMap(section=>section.columns.flat().map(block=>block.id)));return;}
+  if((event.metaKey||event.ctrlKey)&&event.key.toLowerCase()==='a'){event.preventDefault();select(editor.pages[0].sections.flatMap(section=>section.columns.flat().map(block=>block.id)));return;}
+  if(!event.metaKey&&!event.ctrlKey&&!event.altKey&&['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key)){
+   event.preventDefault();event.stopPropagation();const amount=event.shiftKey?10:1;
+   maker.nudge.current?.(event.key==='ArrowLeft'?-amount:event.key==='ArrowRight'?amount:0,event.key==='ArrowUp'?-amount:event.key==='ArrowDown'?amount:0);return;
+  }
   if(event.altKey&&(event.key==='ArrowUp'||event.key==='ArrowDown')){
    event.preventDefault();const next=htmlLayerOrder(editor,layer.blocks.map(block=>block.id),event.key==='ArrowUp'?'bring-forward':'send-backward');if(next!==editor)onChange({...asset,editor:next});return;
   }
-  if(layer.group&&(event.key==='ArrowLeft'||event.key==='ArrowRight')){event.preventDefault();setCollapsed(old=>{const next=new Set(old);if(event.key==='ArrowLeft')next.add(layer.id);else next.delete(layer.id);return next;});return;}
+  if(layer.group&&event.altKey&&(event.key==='ArrowLeft'||event.key==='ArrowRight')){event.preventDefault();setCollapsed(old=>{const next=new Set(old);if(event.key==='ArrowLeft')next.add(layer.id);else next.delete(layer.id);return next;});return;}
   if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();return;}
   if(event.key===' '||event.key==='Enter'){event.preventDefault();choose(layer,{range:event.shiftKey,additive:event.metaKey||event.ctrlKey});return;}
   const rows=Array.from(event.currentTarget.closest('[role=tree]')!.querySelectorAll<HTMLElement>('[role=treeitem]'));

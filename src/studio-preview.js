@@ -14,7 +14,7 @@ export function studioInvitation({workspace='partners',artwork=''}={}) {
     <a class="studio-preview" style="--artwork-ratio:${width/height}" href="${tech?'#tech-blog/create':community?'#ambassadors/create':'#create'}/${template}" data-view="create" data-create-template="${template}" aria-label="Open Make your own to create ${tech?'a Tech blog':community?'a community':'a partner'} asset">
       <div class="studio-mini-chat" aria-hidden="true">
         <div class="studio-mini-panel-title">${glyph(PanelLeftClose)}<span>Chat</span></div>
-        <div class="studio-mini-composer"><span>Ask Lovable…</span><div>${glyph(Plus)}<span class="studio-mini-send">${glyph(ArrowUp)}</span></div></div>
+        <div class="studio-mini-composer"><span>Work with Studio...</span><div>${glyph(Plus)}<span class="studio-mini-send">${glyph(ArrowUp)}</span></div></div>
       </div>
       <div class="studio-mini-workspace" aria-hidden="true">
         <div class="studio-mini-toolbar"><span class="studio-mini-title">${tech?'Inside Chats · Tech blog':community?`${format.name} · Paris`:'Grow your business'}</span><div class="studio-mini-tools">${[Library, Type, Shapes, Smile, Image, Video].map(glyph).join('')}<span class="studio-mini-export">Export</span></div></div>

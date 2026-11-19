@@ -20,5 +20,5 @@
     {"source":"/community","destination":"/community/index.html"},
     {"source":"/tech-blog","destination":"/tech-blog/index.html"}
   ],
-  "functions": {"api/community-chat.mjs":{"maxDuration":300,"includeFiles":"public/{fonts/CameraPlain-Bold.ttf,ambassadors/assets/CameraPlain-Regular.ttf,ambassadors/previews/*.webp,ambassadors/library/*}"}}
+  "functions": {"api/community-chat.mjs":{"maxDuration":300,"includeFiles":"public/{fonts/CameraPlain-Bold.ttf,ambassadors/assets/CameraPlain-Regular.ttf,ambassadors/previews/*.webp,ambassadors/library/*}"},"api/studio-animation.mjs":{"maxDuration":300}}
 }

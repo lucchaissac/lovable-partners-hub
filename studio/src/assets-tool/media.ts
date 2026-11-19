@@ -57,17 +57,18 @@ export async function embeddedAssetFonts(asset:AssetDocument) {
   fontCss.set(face.src,pending);return pending;
  }))).join('\n');
 }
-export async function renderPng(element: HTMLElement, asset: AssetDocument) {
+export type PngExportScale = 1 | 2;
+export async function renderPng(element: HTMLElement, asset: AssetDocument, scale:PngExportScale=1) {
   await document.fonts.ready;
   await Promise.all(Array.from(element.querySelectorAll('img')).map(image => image.decode()));
   const { width, height } = assetDimensions(asset);
   // Embed only the local brand fonts; unrelated third-party stylesheets may not expose cssRules.
   const fontEmbedCSS = await embeddedAssetFonts(asset);
-  const data = await toPng(element, { width, height, pixelRatio: 1, fontEmbedCSS,
+  const data = await toPng(element, { width, height, pixelRatio: scale, fontEmbedCSS,
     style: { transform: 'none', margin: '0' }, filter: node => !(node instanceof Element && node.hasAttribute('data-editor-only')) });
   return data;
 }
-export async function renderExportPng(element:HTMLElement, asset:AssetDocument) {
+export async function renderExportPng(element:HTMLElement, asset:AssetDocument, scale:PngExportScale=1) {
   const {width,height}=assetDimensions(asset);
   const community=asset.editor?.pages.flatMap(page=>page.sections.flatMap(section=>section.columns.flat())).filter(block=>block.kind==='image'&&block.ambassador)??[];
   let board=element,clone:HTMLElement|undefined;
@@ -77,13 +78,13 @@ export async function renderExportPng(element:HTMLElement, asset:AssetDocument) 
       clone=element.cloneNode(true) as HTMLElement;clone.removeAttribute('id');element.parentElement!.append(clone);board=clone;
       for(const image of clone.querySelectorAll<HTMLImageElement>('img'))if(image.getAttribute('src')===communityGradientPreview)image.src=communityGradientMaster;
       const {renderAmbassador}=await import('./ambassadorAsset');
-      for(const block of community){if(block.kind!=='image'||!block.ambassador)continue;const image=await renderAmbassador(block.ambassador,{pixels:Math.min(4000,Math.max(width,height,1600)),element:block.ambassadorElement});for(const target of clone.querySelectorAll<HTMLImageElement>('img'))if(target.getAttribute('src')===block.value.src)target.src=image.src;}
+      for(const block of community){if(block.kind!=='image'||!block.ambassador)continue;const image=await renderAmbassador(block.ambassador,{pixels:Math.min(4000,Math.max(width*scale,height*scale,1600)),element:block.ambassadorElement});for(const target of clone.querySelectorAll<HTMLImageElement>('img'))if(target.getAttribute('src')===block.value.src)target.src=image.src;}
     }
-    return await renderPng(board,asset);
+    return await renderPng(board,asset,scale);
   }finally{clone?.remove();}
 }
-export async function exportPng(element:HTMLElement, asset:AssetDocument) {
+export async function exportPng(element:HTMLElement, asset:AssetDocument, scale:PngExportScale=1) {
   const {width,height}=assetDimensions(asset);
-  const data=await renderExportPng(element,asset);
-  download(await (await fetch(data)).blob(), `${filename(asset.title)}-${width}x${height}.png`);
+  const data=await renderExportPng(element,asset,scale);
+  download(await (await fetch(data)).blob(), `${filename(asset.title)}-${width*scale}x${height*scale}.png`);
 }

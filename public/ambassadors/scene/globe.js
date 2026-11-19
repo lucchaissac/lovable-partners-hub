@@ -19,6 +19,8 @@ const COLORS = { cream: '#F7F4ED' };
 
 const PARAMS = new URLSearchParams(location.search);
 const LIVE_GLOBE = PARAMS.has('live-globe');
+// Opt-in on one editable globe; the original Community masters stay unchanged.
+const NEWSLETTER = LIVE_GLOBE && PARAMS.has('newsletter');
 const SPOTLIGHT = PARAMS.has('spotlight');
 const SPOTLIGHT_INFO = { name: 'Name', city: 'City', ambassadorType: '' };
 const RECORD = PARAMS.has('record');
@@ -572,12 +574,23 @@ buildContinents();
 // ---------------------------------------------------------------------------
 // Villes : cœurs Lovable posés sur la sphère
 // ---------------------------------------------------------------------------
-function makePoiTexture() {
-  const s = 256;
+function makePoiTexture(mail = false) {
+  const s = NEWSLETTER ? 512 : 256;
   const cv = document.createElement('canvas');
   cv.width = cv.height = s;
   const ctx = cv.getContext('2d');
 
+  if (mail) {
+    // Original Lucide Mail paths, lucide v1.73.0 (ISC license).
+    ctx.scale(s / 24, s / 24);
+    ctx.strokeStyle = COLORS.cream;
+    ctx.lineWidth = 2;
+    ctx.lineCap = ctx.lineJoin = 'round';
+    ctx.beginPath();
+    ctx.roundRect(2, 4, 20, 16, 2);
+    ctx.stroke();
+    ctx.stroke(new Path2D('m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7'));
+  } else {
   const logo = new Path2D(
     'M2.95075 0C4.5804 0 5.90149 1.32458 5.90149 2.95853V4.08295H6.88351C8.51316 4.08295 9.83425 5.40753 9.83425 7.04147C9.83425 8.67542 8.51316 10 6.88351 10H0V2.95853C0 1.32458 1.32109 0 2.95075 0Z'
   );
@@ -588,6 +601,7 @@ function makePoiTexture() {
   ctx.fillStyle = COLORS.cream;
   ctx.fill(logo);
   ctx.restore();
+  }
 
   const src = ctx.getImageData(0, 0, s, s).data;
   const buf = new Uint8Array(s * s * 4);
@@ -610,6 +624,7 @@ function makePoiTexture() {
 
 const poiSprites = [];
 const poiByKey = {};
+const newsletterHearts = [];
 
 function buildCities() {
   const tex = makePoiTexture();
@@ -641,7 +656,7 @@ function buildCities() {
 
   // cœur réutilisable pour la ville CUSTOM (repositionné au géocodage)
   const cmat = new THREE.MeshBasicMaterial({
-    map: tex,
+    map: NEWSLETTER ? makePoiTexture(true) : tex,
     transparent: true,
     depthWrite: false,
     side: THREE.DoubleSide,
@@ -654,6 +669,25 @@ function buildCities() {
   poiSprites.push(cmesh);
   poiByKey.custom = cmesh;
   world.add(cmesh);
+
+  if (NEWSLETTER) {
+    // Distributed city markers, with clear space around the selected Mail below.
+    // Reykjavik, Dublin, Paris, Lisbon, Rome, Athens, Casablanca, Dakar, Lagos, Cairo, Nairobi, Cape Town,
+    // Dubai, Delhi, Tokyo, New York, Miami, Mexico City, São Paulo, Santiago.
+    const cities = [[64.15,-21.94],[53.35,-6.26],[48.86,2.35],[38.72,-9.14],[41.90,12.50],[37.98,23.73],[33.57,-7.59],[14.69,-17.44],[6.52,3.38],[30.04,31.24],[-1.29,36.82],[-33.92,18.42],[25.20,55.27],[28.61,77.21],[35.68,139.69],[40.71,-74.01],[25.76,-80.19],[19.43,-99.13],[-23.55,-46.63],[-33.45,-70.67],[55.79,49.12],[56.84,60.60],[41.72,44.83],[35.69,51.39],[41.30,69.24],[51.17,71.45]];
+    const heartGeometry = new THREE.PlaneGeometry(1, 1);
+    const heartMaterial = new THREE.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false,side:THREE.FrontSide});
+    for (const [lat, lon] of cities) {
+      const heart = new THREE.Mesh(heartGeometry, heartMaterial);
+      const point = latLonToVec3(lat, lon, 1.008);
+      heart.position.copy(point);
+      heart.lookAt(point.clone().multiplyScalar(2));
+      heart.scale.setScalar(0.052);
+      heart.renderOrder = 10;
+      newsletterHearts.push(heart);
+      world.add(heart);
+    }
+  }
 }
 
 buildCities();
@@ -2546,6 +2580,7 @@ function animate() {
     // grand avatar : la ville revient vers le centre (léger décalage)
     // A : la ville passe à GAUCHE du centre, dans le creux du dégradé
     if (!V2) th += BADGE.layout === 'a' ? -0.4 : SIGLIKE() ? 0.25 : 0.55;
+    if (NEWSLETTER) th -= 0.4;
     // export vidéo : le monde tourne, un tour complet par durée de capture
     if (cityCapture && cityCapture.t0 !== null && BADGE.layout !== 'a') {
       th += ((rawNow - cityCapture.t0) / CITY_VIDEO.dur) * Math.PI * 2;
@@ -2797,6 +2832,14 @@ function animate() {
   for (const m of animatedMaterials) m.uniforms.uTime.value = t;
   grainPass.uniforms.uTime.value = RECORD ? 0 : t;
 
+  if (NEWSLETTER && VIEW.city !== null) {
+    const selected = poiByKey[isCustom() ? 'custom' : ORDER[VIEW.city]];
+    for (const heart of newsletterHearts) {
+      // Keep the full envelope and its surrounding area free of small hearts.
+      heart.visible = heart.position.angleTo(selected.position) > 0.2;
+    }
+  }
+
   // cœurs : invisibles tant que la ville n'est pas visitée ; à l'arrivée
   // de la comète ils apparaissent en x4 puis redescendent en petit
   for (const s of poiSprites) {
@@ -2902,7 +2945,8 @@ function animate() {
   // Allocate full-resolution targets only for this requested export frame.
   if (hdRequest) {
     const request = hdRequest; hdRequest = null;
-    withRenderResolution(request.pixels, () => renderer.domElement.toBlob(request.resolve, 'image/png'));
+    // Preserve alpha while keeping the high-resolution editable source compact.
+    withRenderResolution(request.pixels, () => renderer.domElement.toBlob(request.resolve, NEWSLETTER ? 'image/webp' : 'image/png', 0.9));
   }
 
   if (RECORD && EXPORT.ready && exportCtx) {

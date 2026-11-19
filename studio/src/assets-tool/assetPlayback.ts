@@ -78,6 +78,25 @@ export function canExportAnimation(pages: AssetDocument[]) {
   return pages.length > 1 && pages.slice(0, -1).some(page => page.animation?.enabled);
 }
 
+/** A single animated post is independent of the collection's page transitions. */
+export function canExportVideoAsset(asset: AssetDocument) {
+  return !!asset.editor?.pages.some(page => page.sections.some(section => section.columns.flat().some(block =>
+    block.kind === 'media' && block.format === 'Video' && !block.editor?.hidden &&
+    (/\.(mp4|webm|ogg|mov)(?:\?|$)/i.test(block.src) || block.src.startsWith('data:video/')))));
+}
+
+/** Finish on a complete cycle of every source. Never append the slideshow hold.
+ * Millisecond precision tolerates container metadata rounding; cap excessive LCMs. */
+export function videoLoopDuration(durations: number[]) {
+  if (!durations.length || durations.some(value => !Number.isFinite(value) || value <= 0)) throw new Error('A video layer has no readable duration.');
+  const gcd = (a: number, b: number): number => b ? gcd(b, a % b) : a;
+  const periods = durations.map(value => Math.max(1, Math.round(value * 1000)));
+  let duration = periods[0];
+  for (const period of periods.slice(1)) duration = duration / gcd(duration, period) * period;
+  if (duration > 60_000) throw new Error('These video lengths do not share a loop under one minute. Use matching loop lengths.');
+  return duration;
+}
+
 /** Per-thumbnail progress follows the same clock, including backward scrubbing.
  * The last page has no outgoing transition and fills when playback reaches it. */
 export function playbackThumbnailProgress(timeline: ReturnType<typeof playbackTimeline>, time: number) {

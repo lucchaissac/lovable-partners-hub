@@ -1,0 +1,113 @@
+{
+  "title": "Community Newsletter",
+  "date": "2026-11-19",
+  "localOnly": true,
+  "sourceCopy": [
+    "Community Newsletter",
+    "Subscribe now"
+  ],
+  "sourceScreenshot": "/var/folders/v9/pbb0646x2q55zkpypbl7d1k00000gn/T/codex-clipboard-242586d9-7c05-42c9-a601-16b52a6966e6.png",
+  "composition": "Luc’s November 19 manual 1200 × 630 composition, preserved exactly: dark background, full original Community lockup, native title and footer, enlarged globe and rotated gradient. Only the globe markers are personalized.",
+  "geometry": "Community Newsletter.asset.json is the authoritative latest manual layout, not the Event master.",
+  "collection": "http://127.0.0.1:5173/brand#brand/create/edb89eb3-38d8-45f9-a2bf-f4827919fc83",
+  "collectionPosition": 11,
+  "globe": {
+    "city": "Stockholm",
+    "style": "newsletter",
+    "mail": "Original Lucide Mail outline on the selected city, with an extra -0.4 rad horizontal turn",
+    "secondaryMarkers": "26 smaller original Lovable heart city markers; nearby points within 0.2 rad of the selected point are excluded. Far-side markers are occluded by the original sphere.",
+    "resolution": [
+      4320,
+      4320
+    ],
+    "storage": "Alpha WebP at 0.9 quality; the editable source preserves the full-resolution pixels. Original Community globe modes are unchanged."
+  },
+  "manualFrames": [
+    {
+      "id": "community-logo-84482e4e-6381-4c8b-a7d7-fcb5a3db9510",
+      "label": "Lovable Community",
+      "editor": {
+        "position": "absolute",
+        "appearance": {
+          "imageFit": "contain"
+        },
+        "widthPx": 361.8,
+        "height": 35.55882003025346,
+        "x": 48,
+        "y": 48
+      }
+    },
+    {
+      "id": "community-title-d176f4b5-af92-4a94-8db2-549f7afb460f",
+      "label": "Community\nNewsletter",
+      "editor": {
+        "position": "absolute",
+        "appearance": {
+          "fontFamily": "Camera Plain",
+          "fontSize": 126,
+          "fontWeight": 700,
+          "letterSpacing": -1.92,
+          "lineHeight": 91.66666666666666
+        },
+        "widthPx": 915,
+        "height": 249,
+        "x": 46,
+        "y": 154
+      }
+    },
+    {
+      "id": "community-globe-76d57999-5b80-486a-9460-76e7e55d9654",
+      "label": "Globe",
+      "editor": {
+        "position": "absolute",
+        "appearance": {
+          "imageFit": "contain"
+        },
+        "widthPx": 1585,
+        "height": 1585,
+        "x": 320,
+        "y": -175
+      }
+    },
+    {
+      "id": "community-glow-484268ec-eb82-4791-a58e-c7d41e617458",
+      "label": "Gradient",
+      "editor": {
+        "position": "absolute",
+        "appearance": {
+          "imageFit": "contain"
+        },
+        "widthPx": 2600,
+        "height": 2621.01,
+        "x": -680.005,
+        "y": -357.348,
+        "rotation": -16.311216925703434
+      }
+    },
+    {
+      "id": "community-eventFooter-cd7403bc-4cad-4617-9d66-f56546c8edb7",
+      "label": "Subscribe now",
+      "editor": {
+        "position": "absolute",
+        "appearance": {
+          "opacity": 100,
+          "fontFamily": "Camera Plain",
+          "fontSize": 64,
+          "fontWeight": 700,
+          "letterSpacing": 0,
+          "lineHeight": 133.33333333333331
+        },
+        "widthPx": 1050,
+        "height": 32,
+        "x": 48,
+        "y": 509
+      }
+    }
+  ],
+  "verification": [
+    "All five IDs, editor frames and appearance settings match the pre-change manual source exactly.",
+    "Every non-globe layer is byte-for-byte identical as parsed JSON.",
+    "Browser displays a 4320 × 4320 alpha WebP globe and exports a 1200 × 630 PNG.",
+    "The final source and PNG replace only folder 11 in the completed Holiday ZIP."
+  ]
+}

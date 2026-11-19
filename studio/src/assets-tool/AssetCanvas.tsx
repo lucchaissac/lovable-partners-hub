@@ -23,6 +23,7 @@ function AddAsset({disabled,onAdd,compact=false}:{disabled:boolean;onAdd:(kind:s
  return <Dropdown placement="top" align="center" items={[
   {id:'blank',label:'Blank asset',leadingIcon:<Icon name="plus" size={16}/>},
   {id:'duplicate',label:'Duplicate asset',leadingIcon:<Icon name="copy" size={16}/>},
+  {id:'source',label:'Import editable source',leadingIcon:<Icon name="file-up" size={16}/>},
   {kind:'separator'},...workspaceAssetTemplates(studioWorkspace).map(format=>({id:format.id,label:format.name,leadingIcon:<Icon name={format.width===format.height?'square':'rectangle-horizontal'} size={16}/>})),
  ]} onChange={onAdd} trigger={<Button variant="ghost" disabled={disabled} className={compact?'community-page-add-tile':'community-page-add'} aria-label="Add asset" leadingIcon={<Icon name="plus" size={16}/>} trailingIcon={!compact?<Icon name="chevron-down" size={14}/>:undefined}>{!compact&&'Add asset'}</Button>}/>;
 }

@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import ts from 'typescript';
 import { z } from 'zod';
 const source = await readFile(new URL('../studio/src/assets-tool/assetPlayback.ts', import.meta.url), 'utf8');
-const { advancePlaybackTime, playbackEndHoldMs, playbackTimeline, playbackPosition, playbackThumbnailProgress, matchingPlaybackBlocks, playbackEasing, playbackEasedProgress, springProgress, canExportAnimation } = await import(`data:text/javascript;base64,${Buffer.from(ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText).toString('base64')}`);
+const { advancePlaybackTime, playbackEndHoldMs, playbackTimeline, playbackPosition, playbackThumbnailProgress, matchingPlaybackBlocks, playbackEasing, playbackEasedProgress, springProgress, canExportAnimation, canExportVideoAsset, videoLoopDuration } = await import(`data:text/javascript;base64,${Buffer.from(ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText).toString('base64')}`);
 const page = (enabled = true, transition = 'smart-animate', durationMs = 1200) => ({ animation: { enabled, transition, durationMs } });
 test('Procedural animation uses the same easing as the DOM, including spring overshoot',()=>{
  assert.equal(playbackEasedProgress(.37,{easing:'linear'}),.37);
@@ -132,4 +132,24 @@ test('Loop playback holds the final pose, wraps without drift and stops when swi
  assert.deepEqual(advancePlaybackTime(900,200,1000,false),{time:1000,playing:false});
  assert.deepEqual(advancePlaybackTime(1100,16,1000,false),{time:1000,playing:false});
  assert.deepEqual(advancePlaybackTime(0,16,0,true),{time:0,playing:false});
+});
+
+
+test('A single visible native video can export independently from its collection', () => {
+  const video = {id:'motion',kind:'media',format:'Video',src:'/loop.mp4',editor:{}};
+  const asset = block => ({editor:{pages:[{sections:[{columns:[[block]]}]}]}});
+  assert.equal(canExportVideoAsset(asset(video)),true);
+  assert.equal(canExportVideoAsset(asset({...video,editor:{hidden:true}})),false);
+  assert.equal(canExportVideoAsset(asset({...video,src:'https://www.youtube.com/watch?v=example'})),false);
+  assert.equal(canExportVideoAsset(asset({...video,kind:'image',value:{src:'/poster.png'}})),false);
+  assert.equal(canExportVideoAsset({}),false);
+});
+test('Video posts complete all source cycles without a slideshow hold or duplicated endpoint', () => {
+  assert.equal(videoLoopDuration([8,8]),8000);
+  assert.equal(videoLoopDuration([4,6]),12000);
+  assert.equal(videoLoopDuration([8.00001,8]),8000);
+  for(const invalid of [[],[NaN],[0],[-1],[Infinity],[61],[7.99,8]]) assert.throws(()=>videoLoopDuration(invalid));
+  const duration=videoLoopDuration([8,8]), frames=duration/1000*30;
+  assert.equal(frames,240);
+  assert.equal((frames-1)/frames*duration,7966.666666666667);
 });

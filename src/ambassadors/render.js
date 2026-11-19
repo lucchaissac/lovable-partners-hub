@@ -13,7 +13,7 @@ function loadRenderer(){return renderer??=Promise.all([loadFonts(),read('/ambass
 function loadLayoutRenderer(){return layoutRenderer??=loadFonts().then(([bold,regular])=>createRenderer({bold,regular,heartOverlay:'',qrcode})).catch(error=>{layoutRenderer=undefined;throw error;});}
 // The scene is the original kit renderer. Only its capture bridge is new.
 class Scene {
- constructor(spotlight){this.spotlight=spotlight;this.listeners=new Set();this.revision=0;this.lastCity='';this.queue=Promise.resolve();}
+ constructor(spotlight,newsletter=false){this.spotlight=spotlight;this.newsletter=newsletter;this.listeners=new Set();this.revision=0;this.lastCity='';this.queue=Promise.resolve();}
  send(data){this.frame.contentWindow.postMessage(data,location.origin);}
  wait(type,test=()=>true){return new Promise((resolve,reject)=>{const listener=data=>{if(data.type!==type||!test(data))return;clearTimeout(timer);this.listeners.delete(listener);resolve(data);};const timer=setTimeout(()=>{this.listeners.delete(listener);reject(Error('The community globe could not render. Please retry with WebGL enabled.'));},25000);this.listeners.add(listener);});}
  async mount(){
@@ -23,7 +23,7 @@ class Scene {
   this.message=event=>{if(event.origin===location.origin&&event.source===this.frame.contentWindow)for(const listener of this.listeners)listener(event.data||{});};
   window.addEventListener('message',this.message);
   this.ready=this.wait('ready').catch(error=>{this.dispose();throw error;});
-  this.frame.src=`/ambassadors/scene/asset.html?embed&hd&${this.spotlight?'spotlight':'live-globe'}`;
+  this.frame.src=`/ambassadors/scene/asset.html?embed&hd&${this.spotlight?'spotlight':'live-globe'}${this.newsletter?'&newsletter':''}`;
   document.body.append(this.frame);return this.ready;
  }
  dispose(){this.frame?.remove();window.removeEventListener('message',this.message);this.ready=undefined;this.lastCity='';}
@@ -43,14 +43,16 @@ class Scene {
   }finally{this.send({type:'renderer-active',active:false});}
  }
 }
-const globe=new Scene(false),spotlight=new Scene(true),globes=new Map();let jobs=Promise.resolve();
-function globeImage(state,pixels){const key=`${state.city.trim().toLowerCase()}:${pixels}`;if(!globes.has(key)){const result=globe.capture(state,pixels).catch(error=>{globes.delete(key);throw error;});globes.set(key,result);if(globes.size>8)globes.delete(globes.keys().next().value);}return globes.get(key);}
+const globe=new Scene(false),newsletterGlobe=new Scene(false,true),spotlight=new Scene(true),globes=new Map();let jobs=Promise.resolve();
+function globeImage(state,pixels){const newsletter=state.globeStyle==='newsletter',key=`${newsletter?'newsletter':'default'}:${state.city.trim().toLowerCase()}:${pixels}`;if(!globes.has(key)){const result=(newsletter?newsletterGlobe:globe).capture(state,pixels).catch(error=>{globes.delete(key);throw error;});globes.set(key,result);if(globes.size>8)globes.delete(globes.keys().next().value);}return globes.get(key);}
 /** @param {object} settings @param {{pixels?:number,element?:'globe'|'spotlight-globe'|'qr',signal?:AbortSignal}} [options] */
 export function renderAmbassador(settings,{pixels=1600,element=undefined,signal=undefined}={}){
  const run=async()=>{
   signal?.throwIfAborted();
   const state={...structuredClone(DEFAULTS),...settings,badgeMode:'single'};
-  const globePixels=pixels<=1600?1080:pixels<=2160?2160:4320;
+  // This close-cropped editorial globe needs enough pixels for its enlarged
+  // layer on Retina displays, including the small city hearts and Mail outline.
+  const globePixels=state.globeStyle==='newsletter'?4320:pixels<=1600?1080:pixels<=2160?2160:4320;
   if(element==='qr'){
    if(!safeUrl(state.url))throw Error('Add a valid https:// or http:// link.');
    const svg=makeOriginalQR(qrcode)(state.url),image=new Image();image.src=`data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;await image.decode();

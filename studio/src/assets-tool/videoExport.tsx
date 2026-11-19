@@ -3,7 +3,7 @@ import { flushSync } from 'react-dom';
 import { toCanvas } from 'html-to-image';
 import { BufferTarget, CanvasSource, Mp4OutputFormat, Output, Quality, WebMOutputFormat, canEncodeVideo } from 'mediabunny';
 import { AssetPlaybackPreview } from './AssetPlaybackPreview';
-import { canExportAnimation, playbackPosition, playbackTimeline, playbackEndHoldMs } from './assetPlayback';
+import { canExportAnimation, canExportVideoAsset, videoLoopDuration, playbackPosition, playbackTimeline, playbackEndHoldMs } from './assetPlayback';
 import { assetDimensions, type AssetDocument } from './model';
 import { embeddedAssetFonts, filename } from './media';
 
@@ -55,8 +55,9 @@ function snapshotVideos(board: HTMLElement) {
 /** Offline frame encoding: timing never depends on drawing speed. Only one
  * raster frame is held at a time; fonts/resources and static holds are reused.
  * The same composited DOM as preview retains CSS blend modes and native type. */
-export async function exportVideo(pages: AssetDocument[], parent: HTMLElement, signal: AbortSignal, onProgress: (percent: number) => void) {
-  if (!canExportAnimation(pages)) throw new Error('Enable animation on an asset with a following asset first.');
+export async function exportVideo(pages: AssetDocument[], parent: HTMLElement, signal: AbortSignal, onProgress: (percent: number) => void, mode: 'sequence' | 'asset' = 'sequence') {
+  const single = mode === 'asset';
+  if (single ? pages.length !== 1 || !canExportVideoAsset(pages[0]) : !canExportAnimation(pages)) throw new Error(single ? 'Add a video layer to this asset first.' : 'Enable animation on an asset with a following asset first.');
   const { width, height } = videoDimensions(pages[0]), frameRate = 30;
   const quality = new Quality({ bitrate: Math.max(2_000_000, Math.round(width * height * frameRate * .16)) });
   const config = { width, height, quality, frameRate };
@@ -72,15 +73,25 @@ export async function exportVideo(pages: AssetDocument[], parent: HTMLElement, s
   output.addVideoTrack(source, { frameRate });
   const host = document.createElement('div'); parent.append(host);
   const root = createRoot(host);
-  const timeline = playbackTimeline(pages), duration = timeline.total + playbackEndHoldMs, frames = Math.ceil(duration / 1000 * frameRate);
+  const timeline = playbackTimeline(pages);
   let lastFrame = '', lastIndex = -1, lastPercent = -1, finished = false;
   try {
     await document.fonts.ready;
     const fontEmbedCSS = [...new Set(await Promise.all(pages.map(embeddedAssetFonts)))].join('\n');
+    let duration = timeline.total + playbackEndHoldMs;
+    if (single) {
+      flushSync(() => root.render(<AssetPlaybackPreview from={pages[0]} progress={0} smart={false} reducedMotion={false} scale={1} playing={false} time={0} onExit={() => {}} exporting/>));
+      await seekVideos(host, 0, signal);
+      duration = videoLoopDuration([...host.querySelectorAll('video')].map(video => video.duration));
+    }
+    const frames = Math.max(1, single ? Math.round(duration / 1000 * frameRate) : Math.ceil(duration / 1000 * frameRate));
     await output.start();
     for (let frame = 0; frame < frames; frame++) {
       signal.throwIfAborted();
-      const time = Math.min(timeline.total, frame / frameRate * 1000), position = playbackPosition(timeline, time);
+      // Sample one open interval [0, duration): the next frame is the first frame
+      // of the next cycle, not a duplicated endpoint or a frozen final image.
+      const time = single ? frame / frames * duration : Math.min(timeline.total, frame / frameRate * 1000);
+      const position = single ? { index: 0, progress: 0, smart: false } : playbackPosition(timeline, time);
       const from = pages[position.index], to = pages[position.index + 1];
       flushSync(() => root.render(<AssetPlaybackPreview from={from} to={to} {...position} reducedMotion={false} scale={1} playing={false} time={time} onExit={() => {}} exporting/>));
       const board = host.querySelector<HTMLElement>('.asset-playback-preview')!;
@@ -109,12 +120,15 @@ export async function exportVideo(pages: AssetDocument[], parent: HTMLElement, s
         } finally { restoreVideos(); }
         context.fillStyle = getComputedStyle(board.querySelector('[data-playback-background]')!).backgroundColor;
         context.fillRect(0, 0, width, height);
-        context.drawImage(frameCanvas, (width - frameCanvas.width) / 2, (height - frameCanvas.height) / 2);
+        // H.264 needs even dimensions. Keep odd-sized artwork on whole pixels;
+        // a half-pixel centering offset would soften every native text edge.
+        context.drawImage(frameCanvas, Math.floor((width - frameCanvas.width) / 2), Math.floor((height - frameCanvas.height) / 2));
         frameCanvas.width = 0; frameCanvas.height = 0;
         lastFrame = key;
       }
       signal.throwIfAborted();
-      await source.add(frame / frameRate, Math.min(1 / frameRate, duration / 1000 - frame / frameRate));
+      const frameDuration = single ? duration / 1000 / frames : 1 / frameRate;
+      await source.add(frame * frameDuration, Math.min(frameDuration, duration / 1000 - frame * frameDuration));
       const percent = Math.min(99, Math.round((frame + 1) / frames * 100));
       if (percent !== lastPercent) { onProgress(percent); lastPercent = percent; }
       // Give input/cancel handlers a turn even while reusing static frames.

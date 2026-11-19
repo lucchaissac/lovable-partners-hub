@@ -17,6 +17,7 @@ export function AmbassadorDesign({id,settings:draft,src,locked,pending,element,o
  <DesignPanelHeader title={element==='qr'?'Community QR':element?'Globe':'Community asset'} locked={locked} closeLabel="Close asset design" onClose={onClose}/>
  <div className="hcs-design-design-body"><fieldset className="partner-badge-fields" disabled={locked} aria-busy={busy}><div className="partner-badge-preview"><img src={src} alt="Community asset preview"/></div>
  {element==='qr'?field('url','Community link'):field('city','City')}
+ {element==='globe'&&<label className="partner-badge-field"><span>Markers</span><span className="partner-badge-select"><select aria-label="Globe markers" value={draft.globeStyle||'default'} onChange={e=>update({...draft,globeStyle:e.target.value as 'default'|'newsletter'})}><option value="default">Heart</option><option value="newsletter">Mail &amp; community hearts</option></select><Icon name="chevron-down" size={14}/></span></label>}
  {print&&<div className="partner-badge-section"><h3>Event signage</h3>{field('headline','Headline',true)}{field('intro','Message',true)}{field('cta','QR caption')}{field('url','Community link')}</div>}
  {event&&<div className="partner-badge-section"><h3>Event</h3>{field('title','Event title',true)}{field('date','Date')}{field('venue','Venue')}{draft.format==='social'&&field('eventFooter','Caption')}</div>}
  {person&&<div className="partner-badge-section"><h3>Person</h3>{field('name','Name')}{field('role','Role')}{draft.format==='spotlight'&&photoField()}</div>}

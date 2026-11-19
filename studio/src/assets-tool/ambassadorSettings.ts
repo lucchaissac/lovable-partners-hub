@@ -2,6 +2,7 @@ import {z} from 'zod';
 const photo=z.string().max(1_600_000).refine(value=>value===''||/^data:image\/(?:png|jpeg|webp);base64,[a-zA-Z0-9+/]+=*$/.test(value));
 export const ambassadorSchema=z.object({
  format:z.enum(['banner','poster','social','speakers','spotlight','badge']),
+ globeStyle:z.enum(['default','newsletter']).optional(),
  city:z.string().max(45),url:z.string().max(300),headline:z.string().max(120),intro:z.string().max(100),cta:z.string().max(70),
  title:z.string().max(90),date:z.string().max(48),venue:z.string().max(65),eventFooter:z.string().max(90),
  name:z.string().max(48),role:z.string().max(55),photo,count:z.number().int().min(1).max(3),

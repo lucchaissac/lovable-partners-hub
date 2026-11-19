@@ -62,7 +62,7 @@ export async function renderPng(element: HTMLElement, asset: AssetDocument) {
     style: { transform: 'none', margin: '0' }, filter: node => !(node instanceof Element && node.hasAttribute('data-editor-only')) });
   return data;
 }
-export async function exportPng(element:HTMLElement, asset:AssetDocument) {
+export async function renderExportPng(element:HTMLElement, asset:AssetDocument) {
   const {width,height}=assetDimensions(asset);
   const community=asset.editor?.pages.flatMap(page=>page.sections.flatMap(section=>section.columns.flat())).filter(block=>block.kind==='image'&&block.ambassador)??[];
   let board=element,clone:HTMLElement|undefined;
@@ -74,7 +74,11 @@ export async function exportPng(element:HTMLElement, asset:AssetDocument) {
       const {renderAmbassador}=await import('./ambassadorAsset');
       for(const block of community){if(block.kind!=='image'||!block.ambassador)continue;const image=await renderAmbassador(block.ambassador,{pixels:Math.min(4000,Math.max(width,height,1600)),element:block.ambassadorElement});for(const target of clone.querySelectorAll<HTMLImageElement>('img'))if(target.getAttribute('src')===block.value.src)target.src=image.src;}
     }
-    const data=await renderPng(board,asset);
-    download(await (await fetch(data)).blob(), `${filename(asset.title)}-${width}x${height}.png`);
+    return await renderPng(board,asset);
   }finally{clone?.remove();}
+}
+export async function exportPng(element:HTMLElement, asset:AssetDocument) {
+  const {width,height}=assetDimensions(asset);
+  const data=await renderExportPng(element,asset);
+  download(await (await fetch(data)).blob(), `${filename(asset.title)}-${width}x${height}.png`);
 }

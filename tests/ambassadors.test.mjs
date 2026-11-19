@@ -102,11 +102,28 @@ test('Prepared Paris artwork skips scene startup without replacing a personalize
  assert.equal(preparedCommunityGlobe({...defaultAmbassador(),city:'  PARIS '}),src);
  assert.equal(preparedCommunityGlobe({...defaultAmbassador(),city:'Montréal'}),null);
  assert.equal(preparedCommunityGlobe(defaultAmbassador('spotlight')),null);
+ assert.equal(preparedCommunityGlobe({...defaultAmbassador(),globeStyle:'newsletter'}),null);
  for(const path of [src,communityGradientPreview]){
   const bytes=readFileSync(new URL(`../public${path}`,import.meta.url));
   assert.equal(bytes.subarray(8,12).toString(),'WEBP');
  }
  assert.equal(communityGradientMaster,'/ambassadors/assets/heart-overlay.png');
+});
+
+test('Newsletter globe edits survive source serialization and preserve manual layer geometry',()=>{
+ const document=communityFixture(),original=communityTemplate(document);
+ original.editor={x:320,y:-175,widthPx:1585,height:1585,rotation:-3,appearance:{imageFit:'contain'}};
+ const settings=ambassadorSchema.parse(JSON.parse(JSON.stringify({...original.ambassador,city:'Stockholm',globeStyle:'newsletter'})));
+ const edited=editCommunityBlock(original,settings);
+ document.editor.pages[0].sections[0].columns[0][0]=edited;
+ const completed=applyCommunityRender(document,document.id,edited.id,edited.ambassadorRender.revision,'newsletter-render');
+ const result=communityTemplate(completed);
+ assert.equal(result.ambassador.city,'Stockholm');
+ assert.equal(result.ambassador.globeStyle,'newsletter');
+ assert.deepEqual(result.editor,original.editor);
+ assert.equal(result.id,original.id);
+ assert.equal(defaultAmbassador().globeStyle,undefined);
+ assert.equal(ambassadorSchema.safeParse({...settings,globeStyle:'invalid'}).success,false);
 });
 
 const {syncCommunityDocument}=await import('../studio/src/assets-tool/communityDocument.ts');

@@ -13,7 +13,7 @@ import {CommunityTypographyContext} from '../studio/PresentationElementDesign';
 import {localChatStatus,localChatRequest,requestLocalDesign,materializeLocalPlan,communityPlanReplies,communityCanvasImages} from './localCommunityChat';
 import {ambassadorAsset,migrateCommunityAsset} from './ambassadorAsset';
 import {ambassadorDefaultFormat,ambassadorFormats} from '../../../src/ambassadors/catalog.js';
-import {communityTemplate,communitySettings,syncCommunityDocument} from './communityDocument';
+import {communityBlocks,communityTemplate,communitySettings,syncCommunityDocument} from './communityDocument';
 import {CommunityRenderErrors,useCommunityRendering} from './CommunityRendering';
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -52,7 +52,7 @@ import { download, exportPng, renderPng, exportSource, readReference, visionRefe
 import { listAssets, loadAssetCollection, saveAsset, saveAssets } from './storage';
 import './assets.css';
 import {AssetScreenMenu} from './AssetScreenMenu';
-import {canExportAnimation} from './assetPlayback';
+import {canExportAnimation,canExportVideoAsset} from './assetPlayback';
 import {listenForFileDragEnd} from '../studio/fileDragLifecycle';
 
 const locationSearch = () => window.location.search;
@@ -121,6 +121,7 @@ function AssetPageContent() {
   const numberScrub=useRef<string|undefined>(undefined);
   const past = useRef<AssetDocument[]>([]), future = useRef<AssetDocument[]>([]);
   const upload = useRef<HTMLInputElement>(null), exportBoard = useRef<HTMLDivElement>(null);
+  const sourceUpload = useRef<HTMLInputElement>(null), sourceAfter = useRef<string | undefined>(undefined);
   const readingFile = useRef(false);
   const controller = useRef<AbortController | undefined>(undefined), mounted = useRef(true), operation = useRef(0), saves = useRef(Promise.resolve());
 
@@ -133,7 +134,8 @@ function AssetPageContent() {
       if (mounted.current && current.current === next) setSaveState('Saved on this device');
     }).catch(reason => { if (mounted.current) {setSaveState(reason.message);setError(reason.message);} });
   }, [owner]);
-  const communityErrors=useCommunityRendering(asset,current,put,studioWorkspace==='ambassadors');
+  // Imported Community layers retain their renderer in a mixed collection.
+  const communityErrors=useCommunityRendering(asset,current,put,communityBlocks(asset).length>0);
   useEffect(() => { if (!id && current.current) put(current.current); }, []);
   const change = useCallback((next: AssetDocument) => {
     if (current.current && JSON.stringify(current.current) === JSON.stringify(next)) return;
@@ -428,7 +430,7 @@ function AssetPageContent() {
     window.addEventListener('paste', paste);
     return () => window.removeEventListener('paste', paste);
   }, [active, busy, reading, loadImage]);
-  const importSource = async (file:File) => {
+  const importSource = async (file:File, afterId?:string) => {
     setError('');
     try {
       if (file.size > 100_000_000) throw new Error('This source file is too large.');
@@ -441,6 +443,17 @@ function AssetPageContent() {
       }
       const opened=studioWorkspace==='ambassadors'?await migrateCommunityAsset(parsed.data):parsed.data;
       const next = { ...opened, series:undefined, id: crypto.randomUUID(), updatedAt: Date.now() };
+      if(afterId&&current.current){
+        await saves.current;
+        const previous=current.current,collection=assetPages(previous,await loadAssetCollection(owner,previous.id));
+        const updated=insertAssetPages(collection,afterId,[next]);await saveAssets(owner,updated);
+        if(!mounted.current)return;
+        pageHistory.current.set(previous.id,{past:past.current,future:future.current});past.current=[];future.current=[];
+        setPageArrangement({ids:collection.map(page=>page.id),activeId:previous.id,anchor:next.id});
+        setRecent(items=>[...updated,...items.filter(page=>!updated.some(item=>item.id===page.id))]);
+        put(updated.find(page=>page.id===next.id)!);setVisual(undefined);setReviewCandidate(undefined);setHistoryVersion(value=>value+1);
+        return;
+      }
       await saveAsset(owner, next);
       if(studioWorkspace==='ambassadors'){try{localStorage.setItem(studioLastAssetKey,next.id);}catch{}}
       navigate(`/assets/${next.id}`);
@@ -453,15 +466,26 @@ function AssetPageContent() {
     catch (reason) { setError(studioWorkspace==='ambassadors'&&reason instanceof Error?reason.message:'Could not export the image. Please retry; you can also download the editable source.'); }
     finally { setExporting(false); }
   };
-  const exportAnimation = async () => {
-    if (!asset || !exportBoard.current || exporting || !canExportAnimation(pages)) return;
+  const exportAnimation = async (mode: 'sequence' | 'asset' = 'sequence') => {
+    if (!asset || !exportBoard.current || exporting || (mode === 'asset' ? !canExportVideoAsset(asset) : !canExportAnimation(pages))) return;
     const abort = new AbortController(); videoExportAbort.current = abort;
     setExporting(true); setVideoProgress(0); setError('');
     try {
       const { exportVideo } = await import('./videoExport');
-      const result = await exportVideo(structuredClone(pages), exportBoard.current.parentElement!, abort.signal, percent => { if (mounted.current) setVideoProgress(percent); });
+      const result = await exportVideo(structuredClone(mode === 'asset' ? [asset] : pages), exportBoard.current.parentElement!, abort.signal, percent => { if (mounted.current) setVideoProgress(percent); }, mode);
       if (!abort.signal.aborted) download(result.blob, result.name);
     } catch (reason) { if (mounted.current && !abort.signal.aborted) setError(reason instanceof Error ? reason.message : 'Could not export the animation. Please retry.'); }
+    finally { videoExportAbort.current = undefined; if (mounted.current) { setExporting(false); setVideoProgress(undefined); } }
+  };
+  const exportAll = async () => {
+    if (!asset || !exportBoard.current || exporting) return;
+    const abort = new AbortController(); videoExportAbort.current = abort;
+    setExporting(true); setVideoProgress(0); setError('');
+    try {
+      const { exportAssetArchive } = await import('./bulkExport');
+      const result = await exportAssetArchive(structuredClone(pages), exportBoard.current.parentElement!, abort.signal, percent => { if (mounted.current) setVideoProgress(percent); });
+      if (!abort.signal.aborted) download(result.blob, result.name);
+    } catch (reason) { if (mounted.current && !abort.signal.aborted) setError(reason instanceof Error ? reason.message : 'Could not export the collection. Please retry.'); }
     finally { videoExportAbort.current = undefined; if (mounted.current) { setExporting(false); setVideoProgress(undefined); } }
   };
   const newAsset = async () => {
@@ -507,6 +531,7 @@ function AssetPageContent() {
   };
   const addAssetPage=async(afterId:string,kind:string)=>{
     if(busy||addingPage||changingTemplate||!current.current)return;
+    if(kind==='source'){sourceAfter.current=afterId;sourceUpload.current?.click();return;}
     setAddingPage(true);setError('');
     try{
       await saves.current;
@@ -615,11 +640,12 @@ function AssetPageContent() {
       <span className="asset-tools-divider" aria-hidden="true"/>
       <Button className="lovable-mobile-design-toggle" variant="ghost" aria-label="Open design panel" leadingIcon={<Icon name="sliders-horizontal" size={16}/>} onClick={()=>setDesignOpen(value=>!value)}/>
       {studioWorkspace==='ambassadors'&&<Tooltip label="Coming soon" side="bottom"><span className="studio-insert-tool"><Button variant="ghost" className="community-add-template" disabled>Add to templates</Button></span></Tooltip>}
-      {videoProgress !== undefined ? <Tooltip label="Cancel video export" side="bottom"><Button className="asset-export-control asset-export-progress" variant="primary" aria-label={`Cancel video export, ${videoProgress}%`} onClick={() => videoExportAbort.current?.abort()}>Export<span className="asset-export-progress-value" aria-hidden="true">{videoProgress}%<Icon name="x" size={12}/></span></Button></Tooltip> : <Dropdown align="end" items={[{id:'png',label:`.png · ${assetDimensions(asset).width} × ${assetDimensions(asset).height}`,leadingIcon:<Icon name="image" size={16}/>},...(canExportAnimation(pages)?[{id:'video',label:'Video · 30 fps',leadingIcon:<Icon name="video" size={16}/>}]:[]),{id:'source',label:'Editable source',leadingIcon:<Icon name="file-text" size={16}/>}]} onChange={value=>{if(value==='png')void exportImage();else if(value==='video')void exportAnimation();else exportSource(asset);}} trigger={<Button className="asset-export-control" variant="primary" disabled={busy||changingTemplate||exporting} loading={exporting}>Export</Button>}/>}
+      {videoProgress !== undefined ? <Tooltip label="Cancel export" side="bottom"><Button className="asset-export-control asset-export-progress" variant="primary" aria-label={`Cancel export, ${videoProgress}%`} onClick={() => videoExportAbort.current?.abort()}>Export<span className="asset-export-progress-value" aria-hidden="true">{videoProgress}%<Icon name="x" size={12}/></span></Button></Tooltip> : <Dropdown align="end" items={[{id:'png',label:`.png · ${assetDimensions(asset).width} × ${assetDimensions(asset).height}`,leadingIcon:<Icon name="image" size={16}/>},...(canExportVideoAsset(asset)?[{id:'video-asset',label:'Video · Current asset',leadingIcon:<Icon name="video" size={16}/>}]:[]),...(canExportAnimation(pages)?[{id:'video',label:'Video · All assets',leadingIcon:<Icon name="video" size={16}/>}]:[]),{id:'source',label:'Editable source',leadingIcon:<Icon name="file-text" size={16}/>},...(pages.length>1?[{id:'all',label:'All assets · ZIP',leadingIcon:<Icon name="archive" size={16}/>}]:[])]} onChange={value=>{if(value==='png')void exportImage();else if(value==='video-asset')void exportAnimation('asset');else if(value==='video')void exportAnimation();else if(value==='all')void exportAll();else exportSource(asset);}} trigger={<Button className="asset-export-control" variant="primary" disabled={busy||changingTemplate||exporting} loading={exporting}>Export</Button>}/>}
     </div>
   </div>;
   return <CommunityRenderErrors.Provider value={communityErrors}><WorkspaceRuntimeContext.Provider value={runtime}><WorkspaceSelectionContext.Provider value={{visual,setVisual}}><div className="workspace-editor asset-app" data-asset data-workspace={studioWorkspace} data-view="editor" style={assetTheme as CSSProperties} data-history={historyVersion} onDragOverCapture={event => { if ((event.target as Element).closest('.we-chat')) setDragging(false); }} onDragOver={event => { if (!event.defaultPrevented && !(event.target as Element).closest('.we-chat') && event.dataTransfer.types.includes('Files') && !busy) { event.preventDefault(); setDragging(true); } }} onDragLeave={event => { if (!event.currentTarget.contains(event.relatedTarget as Node)) setDragging(false); }} onDrop={event => { setDragging(false); if(event.defaultPrevented || (event.target as Element).closest('.we-chat'))return; event.preventDefault(); void loadImage(event.dataTransfer.files[0]); }}>
     <input ref={upload} type="file" hidden accept="image/png,image/jpeg,image/webp,video/mp4,video/webm,video/ogg,video/quicktime,.asset.json,.json" aria-label="Upload image, video or editable source" onChange={event => { void loadImage(event.target.files?.[0]); event.target.value = ''; }} />
+    <input ref={sourceUpload} type="file" hidden accept=".asset.json,.json" aria-label="Import editable source into collection" onChange={event=>{const file=event.target.files?.[0],after=sourceAfter.current;event.target.value='';sourceAfter.current=undefined;if(file&&after)void importSource(file,after);}}/>
 
 
     {loading ? <div className="asset-empty"><p role="status">Opening your asset…</p></div> : !asset ? <div className="we-body asset-workspace"><WorkspaceChat singleAsset/><AssetHome reading={reading} onBrowse={() => upload.current?.click()}>

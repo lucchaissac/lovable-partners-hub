@@ -7,16 +7,30 @@
   "builderReference": "https://community-asset-builder.lovable.app/",
   "freshLocalRoute": "http://127.0.0.1:5173/brand#brand/create/holiday",
   "approvedCollection": "http://127.0.0.1:5173/brand#brand/create/9d6e37ec-dde3-4f0b-a2e0-c798b9516dc5",
-  "order": "Five original landscapes followed by five independent square copies. Preserve the existing IDs and manual refinements.",
+  "order": "Five original landscapes, five independent square copies, then the Community Newsletter as asset 11; existing IDs and manual refinements preserved.",
   "dimensions": {
-    "landscape": [1092, 615],
-    "square": [1080, 1080]
+    "landscape": [
+      1092,
+      615
+    ],
+    "square": [
+      1080,
+      1080
+    ]
   },
-  "concepts": ["Build a gift", "Build for holidays", "Build your resolution", "Build your best year"],
+  "concepts": [
+    "Build a gift",
+    "Build for holidays",
+    "Build your resolution",
+    "Build your best year"
+  ],
   "identityCorrection": {
     "instruction": "Luc approved all layouts and requested only the full Lovable Community signature instead of Lovable. Keep the local collection in its existing maker for the demo.",
     "source": "../../public/ambassadors/assets/lovable-community.svg",
-    "anchor": [51, 53],
+    "anchor": [
+      51,
+      53
+    ],
     "scale": "Match the previous 43.6833 px symbol height using the original Community heart height, 35.6303. Retain the whole vector and its authored ink."
   },
   "squareTypography": {
@@ -26,7 +40,12 @@
     "fontSize": 160,
     "lineHeightPercent": 88,
     "letterSpacing": -5.1948,
-    "frame": {"x":45,"y":240,"width":990,"height":314},
+    "frame": {
+      "x": 45,
+      "y": 240,
+      "width": 990,
+      "height": 314
+    },
     "instruction": "Apply the same title size and leading to the other four squares, keeping their wording and explicit line breaks. Landscapes keep 129.87 px / 100.8 px leading."
   },
   "media": {
@@ -38,11 +57,14 @@
   },
   "demoConversation": "A local English user/assistant exchange, explicitly requested by Luc, includes clickable Figma and playbook links. The deterministic demo action updates identity only; it does not call a model.",
   "verification": [
-    "Production build passes; no push or deployment.",
     "34 focused tests pass, including format round trips after text edits, native video crops and editable-source schema round trips.",
     "Browser confirms ten intact full Community vectors, five 1092×615 canvases and five 1080×1080 canvases.",
     "All square headlines render at 160 px with 140.8 px leading; all landscape headlines retain 129.87 px with 100.8 px leading.",
     "The two native video layers decode and play, including the masked layer. The mask switch preserves source geometry.",
-    "No completed PNG or video file export was verified."
+    "November 19: production build and 41 focused tests pass. Campaign drafts remain local.",
+    "Real browser ZIP export verified: 11 PNG previews, 11 editable sources, 10 MP4 videos and Contents.json; ZIP CRC passes.",
+    "Each Holiday MP4 has 240 frames at 30 fps, exactly 8 seconds, no terminal hold and no repeated-frame run; its wrap difference is within normal intra-video motion.",
+    "Landscape PNGs preserve 1092×615; H.264 uses 1092×616 with one bottom padding pixel. Squares remain 1080×1080.",
+    "Final Newsletter PNG/source updated after Luc’s manual refinements; ten Holiday videos untouched."
   ]
 }

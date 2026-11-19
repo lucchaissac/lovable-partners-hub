@@ -1,7 +1,10 @@
 import {MakerDesignProvider} from './MakerDesignContext';
 import {graphicEventFormat,applyCommunityContrast} from './communityGraphic';
 import {techStarterAsset} from './techAsset';
-import {brandStarterAsset,isAppStudioAsset} from './brandAsset';
+import {brandStarterAsset,isAppStudioAsset,updateBrandPartner} from './brandAsset';
+import {partnerLogoRequest} from '../../../shared/partnerLogo.mjs';
+import {partnerLogoTarget,fittedBrandLogo} from './brandLogo';
+import {prepareChatPartnerLogo} from './partnerLogoChat';
 import {animationChatStatus,animationRequest,planCanvasAnimation} from './studioAnimation';
 import {animationCanvasKey,routesToAnimation,isAnimationFollowUp,requestedAnimationSteps} from '../../../shared/studioAnimation.mjs';
 import {requestsAppStudioTemplate} from '../../../shared/brandTemplates.mjs';
@@ -240,7 +243,8 @@ function AssetPageContent() {
   };
   const refine = async (request:AssetRequest) => {
     if(!current.current || controller.current)return;
-    const animationIntent=routesToAnimation(request.prompt,current.current.messages??[]),animationFollowUp=isAnimationFollowUp(request.prompt,current.current.messages??[]);
+    const logoRequest=studioWorkspace==='lovable'?partnerLogoRequest(request.prompt,request.sources):null;
+    const animationIntent=!logoRequest&&routesToAnimation(request.prompt,current.current.messages??[]),animationFollowUp=isAnimationFollowUp(request.prompt,current.current.messages??[]);
     if((studioWorkspace==='ambassadors'||animationIntent)&&!localChat.enabled){setError(localChat.reason||'The chat service is unavailable. Please retry later.');return;}
     setError('');
     request={...request,chatId:request.chatId??workspaceChats(current.current,assetMessages(current.current)).active.id};
@@ -300,8 +304,19 @@ function AssetPageContent() {
         lastRequest.current=undefined;setVisual(undefined);return;
       }
       if(studioWorkspace==='lovable'){
-        let reply='Ask me to make a banner for App Studio to open its original template. You can edit the event details directly on the canvas.';
-        if(request.sources.length){
+        let reply='I can replace the Partnership logo from a website or attached image, open the App Studio banner, or animate this canvas. This request was not applied.';
+        if(logoRequest){
+          if(logoRequest.kind==='ambiguous')throw Error('Send one partner website or one logo image at a time.');
+          if(logoRequest.kind==='missing')throw Error('Attach the partner logo or include its website address, for example “Replace the partner logo with ramp.com”.');
+          const target=partnerLogoTarget(document,request.visual?.context);
+          setGenerationStage('Preparing the partner logo…');
+          const logo=await prepareChatPartnerLogo(logoRequest,active.signal);
+          if(!mounted.current||run!==operation.current||active.signal.aborted||current.current?.id!==document.id)return;
+          const latest=partnerLogoTarget(current.current,`HTML_SELECTION ${JSON.stringify({blockIds:[target.id]})}`);
+          if(JSON.stringify(latest)!==JSON.stringify(target))throw Error('The partner logo changed while loading. Retry to keep your latest edits.');
+          change(updateBrandPartner(current.current,fittedBrandLogo(latest,logo.src,logo.name,logo.width,logo.height)));
+          reply=`Replaced the partner logo with ${logo.name.replace(/ logo$/i,'')}, fitted in white. The rest of your layout is unchanged.`;
+        }else if(request.sources.length){
           reply='Attachments are not applied by this template shortcut. Use the canvas image tool to insert your artwork.';
         }else if(requestsAppStudioTemplate(request.prompt)){
           if(isAppStudioAsset(document))reply='This canvas already uses App Studio. Your current layout and edits are kept.';

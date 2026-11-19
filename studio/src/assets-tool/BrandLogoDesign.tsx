@@ -5,14 +5,9 @@ import type {HtmlBlock} from '../studio/htmlEditorModel';
 import {importPartnerLogo} from './partnerBadge';
 import {ImageAppearanceControls} from './ImageAppearanceControls';
 import './partner-badge.css';
+import {fittedBrandLogo} from './brandLogo';
 
 type ImageBlock=Extract<HtmlBlock,{kind:'image'}>;
-/** A replacement changes only the source and fits its visible bounds to the existing frame. */
-export function fittedBrandLogo(block:ImageBlock,src:string,name:string,width:number,height:number):ImageBlock{
- const frame=block.editor??{},w=frame.widthPx??306,h=frame.height??136;
- const scale=Math.min(w/width,h/height),nextW=width*scale,nextH=height*scale;
- return {...block,value:{...block.value,src,alt:name,crop:undefined,playIcon:undefined},editor:{...frame,x:(frame.x??0)+(w-nextW)/2,y:(frame.y??0)+(h-nextH)/2,widthPx:nextW,height:nextH,appearance:{imageFit:'contain',...frame.appearance}}};
-}
 export function BrandLogoControls({block,onChange,locked=false}:{block:ImageBlock;onChange:(block:ImageBlock)=>void;locked?:boolean}){
  const input=useRef<HTMLInputElement>(null),[busy,setBusy]=useState(false),[error,setError]=useState('');
  const latest=useRef(block);latest.current=block;

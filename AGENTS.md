@@ -176,3 +176,5 @@
 - Native canvas text supports Cmd/Ctrl+B, I and U on selected characters or selected text layers, with undo and saved inline formatting. Preserve approved legacy block weights until edited. New empty canvas text shows only “Type something…” as an editor placeholder; omit slash-command copy and menus in the canvas, and never include placeholders in exports.
 
 - The local shaders experiment is retired. Keep its controls, renderer, dependency and demo entry removed; discard retired effect settings when reopening old drafts while retaining native text, media and geometry. Keep the approved text shortcuts and simple editor-only placeholder.
+
+- Lovable Partnership chat replaces the partner logo from a supplied website address or attached image without a model call. Retrieve the actual website signature, trim its background and fit its white silhouette inside the existing partner frame. Preserve the document URL, unrelated layers, manual styling, undo and saved drafts. Respect selected and locked layers; report missing or unreadable logos explicitly instead of replying with the App Studio shortcut. Keep App Studio and animation requests separate.

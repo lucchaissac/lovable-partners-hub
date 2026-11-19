@@ -1,12 +1,15 @@
+import {textAnimationModes} from './textAnimation.mjs';
+import {blendModes} from './blendModes.mjs';
 import {z} from 'zod';
 import {curveDefaults,gridDefaults} from './techArtwork.mjs';
 
 const id=z.string().min(1).max(100).regex(/^[a-zA-Z0-9_-]+$/);
-const ranges={x:[-4000,4000],y:[-4000,4000],width:[1,4000],height:[1,4000],rotation:[-360,360],rotationX:[-360,360],rotationY:[-360,360],depth:[-2000,2000],perspective:[100,5000],opacity:[0,1],fontSize:[6,600],cornerRadius:[0,1500],lineWidth:[1,24],'tech.scale':[25,300],'tech.offsetX':[-100,100],'tech.offsetY':[-100,100],'tech.count':[3,64],'tech.spread':[25,160],'tech.rotation':[-180,180],'tech.stroke':[.1,4],'tech.opacity':[0,100],'tech.spacing':[10,84]};
+const ranges={x:[-4000,4000],y:[-4000,4000],width:[1,4000],height:[1,4000],rotation:[-360,360],rotationX:[-360,360],rotationY:[-360,360],depth:[-2000,2000],perspective:[100,5000],opacity:[0,1],blur:[0,100],fontSize:[6,600],cornerRadius:[0,1500],lineWidth:[1,24],'tech.scale':[25,300],'tech.offsetX':[-100,100],'tech.offsetY':[-100,100],'tech.count':[3,64],'tech.spread':[25,160],'tech.rotation':[-180,180],'tech.stroke':[.1,4],'tech.opacity':[0,100],'tech.spacing':[10,84]};
 const change=z.union([
  ...Object.entries(ranges).map(([property,[min,max]])=>z.object({id,property:z.literal(property),value:property==='tech.count'?z.number().int().min(min).max(max):z.number().min(min).max(max)}).strict()),
  ...['fill','color','tech.color'].map(property=>z.object({id,property:z.literal(property),value:z.string().regex(property==='tech.color'?/^#[0-9a-f]{6}$/i:/^#[0-9a-f]{6}(?:[0-9a-f]{2})?$/i)}).strict()),
- z.object({id,property:z.literal('blendMode'),value:z.enum(['normal','plus-lighter'])}).strict(),
+ z.object({id,property:z.literal('textAnimation'),value:z.enum(textAnimationModes)}).strict(),
+ z.object({id,property:z.literal('blendMode'),value:z.enum(blendModes)}).strict(),
 ]);
 const timing=z.object({durationMs:z.number().int().min(1).max(10000),delayMs:z.number().int().min(0).max(10000),easing:z.enum(['ease-in-out','linear','ease-in','ease-out','spring','custom']),curve:z.tuple([z.number().min(0).max(1),z.number().min(-1).max(2),z.number().min(0).max(1),z.number().min(-1).max(2)]),bounce:z.number().min(0).max(80),velocity:z.number().min(-10).max(10)}).strict();
 export const studioAnimationPlanSchema=z.object({summary:z.string().min(1).max(1200),initialChanges:z.array(change).max(400),steps:z.array(z.object({title:z.string().min(1).max(100),changes:z.array(change).min(1).max(400),transition:timing}).strict()).max(63)}).strict();
@@ -61,7 +64,8 @@ export function validateStudioAnimationPlan(value,request){
    const range=ranges[patch.property];
    if(range&&(typeof patch.value!=='number'||!Number.isFinite(patch.value)||patch.value<range[0]||patch.value>range[1]))throw Error(`Invalid animation value for ${patch.property}.`);
    if(['fill','color','tech.color'].includes(patch.property)&&!/^#[0-9a-f]{6}(?:[0-9a-f]{2})?$/i.test(String(patch.value)))throw Error('Use a hex color for animation.');
-   if(patch.property==='blendMode'&&!['normal','plus-lighter'].includes(patch.value))throw Error('Unknown blend mode.');
+   if(patch.property==='blendMode'&&!blendModes.includes(patch.value))throw Error('Unknown blend mode.');
+   if(patch.property==='textAnimation'&&block.kind!=='text')throw Error('Only text supports text animation.');
    if(patch.property==='fontSize'&&block.kind!=='text')throw Error('Only text has a font size.');
    if(patch.property.startsWith('tech.')&&!block.techArtwork)throw Error('This layer is not a native Tech construction.');
    if(patch.property.startsWith('tech.')&&block.techArtwork&&((block.techArtwork.kind==='grid'&&!['tech.spacing','tech.stroke','tech.opacity','tech.color'].includes(patch.property))||(block.techArtwork.kind==='curves'&&patch.property==='tech.spacing')))throw Error('That parameter does not belong to this construction.');
@@ -114,7 +118,7 @@ function applyPose(editor,changes,request){
  for(const {id,property,value} of changes){
   const block=blocks.get(id),frame=block.editor??={};
   if(property.startsWith('tech.')){block.techArtwork={...(block.techArtwork??request.blocks.find(item=>item.id===id).techArtwork),[property.slice(5)]:value};continue;}
-  if(['fill','color','blendMode','fontSize','cornerRadius','lineWidth'].includes(property)){
+  if(['fill','color','blendMode','blur','textAnimation','fontSize','cornerRadius','lineWidth'].includes(property)){
    const appearance=frame.appearance??={};
    if(property==='fontSize'){appearance.fontSize=value;block.value.size=value;}
    else if(['color','fill'].includes(property)&&block.kind==='text')block.value.color=value;

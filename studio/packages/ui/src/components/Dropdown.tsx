@@ -405,6 +405,8 @@ type Common = {
   listHeight?: number | 'auto';
   heading?: ReactNode;
   emptyText?: string;
+  /** Temporary visual preview on pointer hover or keyboard focus; never commits a value. */
+  onPreview?: (value: string | undefined) => void;
 };
 
 type Single = Common & {
@@ -473,6 +475,8 @@ export function Dropdown(props: DropdownProps) {
   } = props;
 
   const [query, setQuery] = useState('');
+  const preview = useRef(props.onPreview); preview.current = props.onPreview;
+  useEffect(() => () => preview.current?.(undefined), []);
 
   const filtered = useMemo(() => {
     if (!query.trim()) return pruneOrphanSections(items);
@@ -492,6 +496,7 @@ export function Dropdown(props: DropdownProps) {
   };
 
   const choose = (id: string) => {
+    props.onPreview?.(undefined);
     if (props.multiple) {
       const cur = props.value ?? [];
       const next = cur.includes(id) ? cur.filter((v) => v !== id) : [...cur, id];
@@ -518,12 +523,19 @@ export function Dropdown(props: DropdownProps) {
                 return <DropdownMenuLabel key={`h-${i}`}>{it.label}</DropdownMenuLabel>;
               }
               const selected = isSelected(it.id);
+              const previewEvents = props.onPreview ? {
+                onMouseEnter: () => !it.disabled && props.onPreview?.(it.id),
+                onMouseLeave: () => props.onPreview?.(undefined),
+                onFocus: () => !it.disabled && props.onPreview?.(it.id),
+                onBlur: () => props.onPreview?.(undefined),
+              } : {};
               if (props.multiple) {
                 return (
                   <DropdownMenuCheckboxItem
                     key={it.id}
                     checked={selected}
                     disabled={it.disabled}
+                    {...previewEvents}
                     onClick={() => choose(it.id)}
                   >
                     {it.avatar && <DropdownMenuItemAvatar>{it.avatar}</DropdownMenuItemAvatar>}
@@ -541,6 +553,7 @@ export function Dropdown(props: DropdownProps) {
                 <DropdownMenuItem
                   key={it.id}
                   disabled={it.disabled}
+                  {...previewEvents}
                   onClick={() => choose(it.id)}
                 >
                   {it.avatar && <DropdownMenuItemAvatar>{it.avatar}</DropdownMenuItemAvatar>}
@@ -563,7 +576,7 @@ export function Dropdown(props: DropdownProps) {
   const scrolling = filtered.filter(it => !((!it.kind || it.kind === 'item') && it.sticky));
 
   return (
-    <DropdownMenu onOpenChange={(o) => !o && setQuery('')}>
+    <DropdownMenu onOpenChange={(o) => { if (!o) { setQuery(''); props.onPreview?.(undefined); } }}>
       <DropdownMenuTrigger>{trigger}</DropdownMenuTrigger>
       <DropdownMenuContent side={placement} align={align} width={width} fit={fit} fitViewport={fitViewport}>
         {searchable && (

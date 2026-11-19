@@ -1,3 +1,4 @@
+import {flushSync} from 'react-dom';
 import {memo,useEffect,useLayoutEffect,useRef,useState,type ReactNode,type DragEvent,type KeyboardEvent} from 'react';
 import {Button,Dropdown,Icon,Tooltip} from '@asset/ui';
 import {workspaceAssetTemplates} from './assetTemplates';
@@ -47,6 +48,19 @@ export function AssetCanvas({toolbar,asset,pages,busy,generating,zoom,onZoom,onC
  const showPlayback=!grid&&thumbnails&&pages.length>1&&pages.some(page=>page.animation?.enabled);
  const playback=useAssetPlayback(pages,asset.id,showPlayback&&!busy,onOpen);
  const maker=useMakerDesign(),selectionRequest=maker?.selectionRequest;
+ useLayoutEffect(()=>{
+  if(!maker)return;
+  const beginInsert=()=>{
+   if(busy)return false;
+   if(playback.active||grid)flushSync(()=>{
+    if(playback.active){const page=pages[playback.position.index];if(page&&page.id!==asset.id){expectedActive.current=page.id;onOpen(page.id);}playback.reset();}
+    setGrid(false);
+   });
+   return true;
+  };
+  maker.beginInsert.current=beginInsert;
+  return()=>{if(maker.beginInsert.current===beginInsert)maker.beginInsert.current=undefined;};
+ },[busy,playback.active,playback.position.index,grid,asset.id,pages,onOpen,maker?.beginInsert]);
  useLayoutEffect(()=>{
   if(!selectionRequest||busy)return;
   if(playback.active)playback.reset();

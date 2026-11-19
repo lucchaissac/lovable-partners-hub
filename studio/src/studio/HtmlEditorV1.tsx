@@ -169,7 +169,7 @@ export function HtmlEditorV1({initialDesign, canvasOnly=false, zoom=1, imageSour
     const type = contentTypes.find(item => item.label === label);
     if (type) addBlock(section, column, index, type.id);
   };
-  useEffect(() => {
+  useLayoutEffect(() => {
     if(!editable)return;
     const handler = (label:string | HtmlBlock) => {
       const blockId = selected?.closest('.hev-block')?.id.replace('block-', '');

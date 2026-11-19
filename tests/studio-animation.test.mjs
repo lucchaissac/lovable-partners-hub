@@ -6,6 +6,7 @@ import {appStudioTemplate} from '../shared/brandTemplates.mjs';
 import {curveDefaults,gridDefaults,interpolateTechArtwork} from '../shared/techArtwork.mjs';
 import {requestsCanvasAnimation,routesToAnimation,isAnimationFollowUp,requestedAnimationSteps,studioAnimationRequest,compileStudioAnimation,compileStudioAnimationRevision,validateStudioAnimationPlan,validateStudioAnimationRevision,animationCanvasKey} from '../shared/studioAnimation.mjs';
 import {generateStudioAnimation,studioAnimationBody,studioAnimationPlugin} from '../server/studioAnimation.mjs';
+import {blendModes} from '../shared/blendModes.mjs';
 
 // Load the actual native schemas and playback/compiler modules, without a browser.
 const vite=await createServer({configFile:false,server:{middlewareMode:true,hmr:false,ws:false},optimizeDeps:{noDiscovery:true,include:[]},appType:'custom',logLevel:'silent'});
@@ -14,6 +15,7 @@ const {assetSchema,makeNode}=await vite.ssrLoadModule('/studio/src/assets-tool/m
 const {animationRequest,planCanvasAnimation}=await vite.ssrLoadModule('/studio/src/assets-tool/studioAnimation.ts');
 const {linkAssetPages,replaceAssetPage,restoreAssetArrangement,currentAnimationSequence}=await vite.ssrLoadModule('/studio/src/assets-tool/assetSeries.ts');
 const {matchingPlaybackBlocks,playbackTimeline,playbackPosition,canExportAnimation}=await vite.ssrLoadModule('/studio/src/assets-tool/assetPlayback.ts');
+const {elementEffectsStyle}=await vite.ssrLoadModule('/studio/src/studio/elementEffects.ts');
 const blocks=asset=>asset.editor.pages[0].sections[0].columns[0];
 const layer=(asset,id)=>blocks(asset).find(block=>block.id===id);
 const timing={durationMs:600,delayMs:150,easing:'ease-out',curve:[0,0,.2,1],bounce:25,velocity:0};
@@ -111,6 +113,29 @@ test('App Studio entrance keeps the source ID and every unrelated native object 
  const timeline=playbackTimeline(poses);assert.equal(timeline.total,750);assert.equal(playbackPosition(timeline,100).progress,0);assert.equal(playbackPosition(timeline,750).index,1);
  assert.equal(JSON.stringify(JSON.parse(JSON.stringify(poses)).map(pose=>assetSchema.parse(pose))),JSON.stringify(poses.map(pose=>assetSchema.parse(pose))));
 });
+test('every blend mode and blur survive native motion, saved source and shared rendering',()=>{
+ for(const mode of blendModes){
+  const base=canvas(),plan={summary:'Blend and blur',initialChanges:[patch('logo','blendMode',mode),patch('logo','blur',24)],steps:[{title:'Focus',changes:[patch('logo','blur',0)],transition:timing}]};
+  const poses=compileStudioAnimation(base,plan,request(base));
+  const saved=JSON.parse(JSON.stringify(poses)).map(pose=>assetSchema.parse(pose));
+  assert.equal(layer(saved[0],'logo').editor.appearance.blendMode,mode);
+  assert.equal(elementEffectsStyle(layer(saved[0],'logo').editor.appearance).mixBlendMode,mode);
+  assert.equal(elementEffectsStyle(layer(saved[0],'logo').editor.appearance).filter,'blur(24px)');
+  assert.equal(elementEffectsStyle(layer(saved[1],'logo').editor.appearance).filter,undefined);
+  assert.deepEqual(layer(saved[1],details),layer(base,details));
+ }
+ for(const blur of [-1,101,NaN])assert.throws(()=>validateStudioAnimationPlan({...entrance(canvas()),initialChanges:[patch('logo','blur',blur)]},request(canvas())));
+});
+test('text reveal modes remain native and are restricted to text layers',()=>{
+ const base=canvas();
+ for(const mode of ['words','characters','typing']){
+  const plan={summary:'Reveal the details',initialChanges:[patch(details,'textAnimation',mode)],steps:[{title:'Read',changes:[patch(details,'y',600)],transition:timing}]};
+  const poses=compileStudioAnimation(base,plan,request(base)).map(pose=>assetSchema.parse(JSON.parse(JSON.stringify(pose))));
+  assert.equal(layer(poses[1],details).editor.appearance.textAnimation,mode);
+  assert.deepEqual(layer(poses[1],details).value,layer(base,details).value);
+  assert.throws(()=>validateStudioAnimationPlan({...plan,initialChanges:[patch('logo','textAnimation',mode)]},request(base)),/Only text/);
+ }
+});
 test('multiple poses accumulate property changes and preserve groups, crops and the original outgoing transition',()=>{
  const base=canvas();layer(base,'logo').editor.groupId='identity';layer(base,'wordmark').editor.groupId='identity';
  layer(base,'logo').value.crop={x:0,y:0,width:100,height:50,sourceWidth:100,sourceHeight:50};
@@ -132,7 +157,7 @@ test('Tech constructions animate native parameters with the existing interpolati
 });
 test('selected scope, section locks, unknown layers, unsupported operations and unsafe values reject the whole plan',()=>{
  const base=canvas(),plan=entrance(base),req=request(base,{selectedIds:[details]});
- const invalid=[patch('logo','x',10),patch('missing','x',10),patch(details,'opacity',2),patch(details,'x',NaN),patch(details,'perspective',0),patch(details,'color','url(https://bad)'),patch(details,'blendMode','screen'),patch(details,'text','replace content'),patch(details,'tech.scale',150)];
+ const invalid=[patch('logo','x',10),patch('missing','x',10),patch(details,'opacity',2),patch(details,'x',NaN),patch(details,'perspective',0),patch(details,'color','url(https://bad)'),patch(details,'blendMode','invalid-mode'),patch(details,'text','replace content'),patch(details,'tech.scale',150)];
  for(const change of invalid)assert.throws(()=>validateStudioAnimationPlan({...plan,steps:[{...plan.steps[0],changes:[change]}]},req));
  assert.throws(()=>validateStudioAnimationPlan({...plan,steps:[{...plan.steps[0],changes:[patch(details,'x',1),patch(details,'x',2)]}]},req),/only once/);
  layer(base,details).editor.locked=true;assert.throws(()=>compileStudioAnimation(base,plan,request(base)),/Unlock/);

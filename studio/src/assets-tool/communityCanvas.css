@@ -72,7 +72,7 @@
 .asset-animation-coordinates input{min-width:0}
 .asset-playback-preview{position:relative;overflow:hidden;cursor:pointer;isolation:isolate}
 .asset-playback-preview>[data-playback-from],.asset-playback-preview>[data-playback-to]{position:absolute;inset:0;pointer-events:none}
-.asset-playback-preview .asset-artwork{background-color:transparent!important}
+.asset-playback-preview .asset-artwork{background-color:transparent!important;isolation:auto}
 @container lovable-preview (max-width:680px){.community-pages-footer .community-page-controls{flex-wrap:wrap}.community-pages-footer .asset-playback-progress{display:block;width:64px}}
 
 /* Reserve the optional tools so page navigation never moves when they toggle. */

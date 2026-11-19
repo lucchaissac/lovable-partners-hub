@@ -8,7 +8,7 @@ export function modifiedScaleOrigin(keys:{shiftKey:boolean;altKey:boolean;ctrlKe
  if(keys.ctrlKey||keys.metaKey)return origin;
 }
 type ScaleItem={id:string;frame:ElementFrame;box:Rect;width:number;height:number;parentWidth:number;minWidth?:number};
-const dimensions={padding:[0,160],paddingTop:[0,160],paddingRight:[0,160],paddingBottom:[0,160],paddingLeft:[0,160],radius:[0,1500],radiusTopLeft:[0,1500],radiusTopRight:[0,1500],radiusBottomLeft:[0,1500],radiusBottomRight:[0,1500],borderWidth:[0,24],lineWidth:[1,24],fontSize:[1,1000],letterSpacing:[-20,100]} as const;
+const dimensions={blur:[0,100],padding:[0,160],paddingTop:[0,160],paddingRight:[0,160],paddingBottom:[0,160],paddingLeft:[0,160],radius:[0,1500],radiusTopLeft:[0,1500],radiusTopRight:[0,1500],radiusBottomLeft:[0,1500],radiusBottomRight:[0,1500],borderWidth:[0,24],lineWidth:[1,24],fontSize:[1,1000],letterSpacing:[-20,100]} as const;
 
 /** One factor for geometry and ink. Clamp the factor for the whole selection,
  * never individual children, so limits cannot distort the group or its pivot. */

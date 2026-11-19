@@ -3,11 +3,16 @@ import {Button,Dropdown,Icon,TriggerField} from '@asset/ui';
 import {StudioShapeNumber} from './PresentationElementDesign';
 import type {ElementFrame} from './htmlSelectionOperations';
 import type {ElementAppearance} from './htmlElementAppearance';
+import {blendModeItems} from '../../../shared/blendModes.mjs';
 
 export const ElementTransformContext=createContext<{frame:ElementFrame;locked:boolean;onChange:(patch:Partial<ElementFrame>)=>void}|null>(null);
+export const ElementBlendPreviewContext=createContext<((mode:ElementAppearance['blendMode'])=>void)|undefined>(undefined);
 export function ElementBlendControl({value={},onChange,mixed=false,disabled=false}:{value?:ElementAppearance;onChange:(patch:ElementAppearance)=>void;mixed?:boolean;disabled?:boolean}){
- const items=[{id:'normal',label:'Normal'},{id:'plus-lighter',label:'Plus lighter'}];
- return <div className="hcs-design-design-row"><span>Blend mode</span><Dropdown value={mixed?undefined:value.blendMode??'normal'} items={items} onChange={blendMode=>onChange({blendMode:blendMode as ElementAppearance['blendMode']})} trigger={<TriggerField disabled={disabled} aria-label="Blend mode">{mixed?'Mixed':items.find(item=>item.id===value.blendMode)?.label??'Normal'}</TriggerField>}/></div>;
+ const preview=useContext(ElementBlendPreviewContext);
+ return <div className="hcs-design-design-row"><span>Blend mode</span><Dropdown value={mixed?undefined:value.blendMode??'normal'} items={blendModeItems} fitViewport onPreview={disabled?undefined:mode=>preview?.(mode as ElementAppearance['blendMode'])} onChange={blendMode=>{if(!disabled)onChange({blendMode:blendMode as ElementAppearance['blendMode']});}} trigger={<TriggerField disabled={disabled} aria-label="Blend mode">{mixed?'Mixed':blendModeItems.find(item=>item.id===value.blendMode)?.label??'Normal'}</TriggerField>}/></div>;
+}
+export function ElementBlurControl({value={},onChange,mixed=false,disabled=false}:{value?:ElementAppearance;onChange:(patch:ElementAppearance)=>void;mixed?:boolean;disabled?:boolean}){
+ return <fieldset disabled={disabled} className="hcs-design-design-fields"><div className="hcs-design-design-row"><span>Blur</span><StudioShapeNumber label="Element blur" value={value.blur??0} mixed={mixed} min={0} max={100} suffix="px" onChange={(blur:number)=>onChange({blur})}/></div></fieldset>;
 }
 export function ElementTransformSection(){
  const context=useContext(ElementTransformContext);if(!context)return null;
@@ -21,5 +26,6 @@ export function ElementTransformSection(){
 }
 export function NativeElementEffects(){
  const context=useContext(ElementTransformContext);if(!context)return null;
- return <div className="hcs-design-design-fields hcs-design-design-section"><ElementBlendControl value={context.frame.appearance} disabled={context.locked} onChange={appearance=>context.onChange({appearance:{...context.frame.appearance,...appearance}})}/><ElementTransformSection/></div>;
+ const onChange=(appearance:ElementAppearance)=>context.onChange({appearance:{...context.frame.appearance,...appearance}});
+ return <div className="hcs-design-design-fields hcs-design-design-section"><ElementBlendControl value={context.frame.appearance} disabled={context.locked} onChange={onChange}/><ElementBlurControl value={context.frame.appearance} disabled={context.locked} onChange={onChange}/><ElementTransformSection/></div>;
 }

@@ -1,5 +1,5 @@
 import { createPortal } from 'react-dom';
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { Button, ColorPicker, Dropdown, Icon, Input, Tooltip, TriggerField } from '@asset/ui';
 import './editor-widget-blocks.css';
 
@@ -47,7 +47,7 @@ export function EditorTextBlock({ value, onChange, editable = true, toolbarHost 
   const [marks, setMarks] = useState({ bold: false, italic: false, underline: false });
   const [customColors, setCustomColors] = useState<string[]>([]);
   // Keep native selection/undo intact during typing; synchronize external updates only.
-  useEffect(() => {
+  useLayoutEffect(() => {
     const serialized = JSON.stringify(value.runs);
     if (!root.current || lastWritten.current === serialized) return;
     root.current.replaceChildren(...value.runs.map(run => {

@@ -1,3 +1,4 @@
+import {useMakerDesign} from './MakerDesignContext';
 import {techElements,createTechElement} from './techAsset';
 import {brandElements,createBrandElement} from './brandAsset';
 import {studioWorkspace} from './workspace';
@@ -13,7 +14,7 @@ import { loadLibrary, type LibraryAsset } from './badgeLibrary';
 export function AssetLibrary({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const trigger = useRef<HTMLDivElement>(null);
   const close = () => { onOpenChange(false); requestAnimationFrame(() => trigger.current?.querySelector('button')?.focus({ preventScroll: true })); };
-  const insert = useHtmlEditorInsert();
+  const insert = useHtmlEditorInsert(),maker=useMakerDesign();
   const [assets, setAssets] = useState<LibraryAsset[]>([]);
   const [query, setQuery] = useState('');
   const [error, setError] = useState('');
@@ -25,6 +26,7 @@ export function AssetLibrary({ open, onOpenChange }: { open: boolean; onOpenChan
   }, []);
 
   const add = async (asset: LibraryAsset) => {
+    if(maker?.beginInsert.current?.()===false)return;
     setAdding(asset.id); setError('');
     try {
       const badge = studioWorkspace==='tech-blog'?await createTechElement(asset.id):studioWorkspace==='ambassadors'?await createCommunityElement(asset.id):studioWorkspace==='lovable'?await createBrandElement(asset.id):await createPartnerBadge(defaultPartnerBadge(asset.id as PartnerBadgeSettings['format']));

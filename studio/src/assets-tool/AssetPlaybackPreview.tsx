@@ -5,13 +5,14 @@ import { nativeDocument, REFERENCE_IMAGE } from './nativeDocument';
 import { matchingPlaybackBlocks, playbackEasing,playbackEasedProgress } from './assetPlayback';
 import {isTechArtwork,techArtworkSettings,techArtworkSvg} from './techArtwork';
 import {interpolateTechArtwork} from '../../../shared/techArtwork.mjs';
+import {animateNativeText} from './textAnimationPreview';
 
 const PreviewArtwork = memo(Artwork);
-const appearance = ['color', 'backgroundColor', 'borderTopLeftRadius', 'borderTopRightRadius', 'borderBottomLeftRadius', 'borderBottomRightRadius', 'borderTopWidth', 'borderRightWidth', 'borderBottomWidth', 'borderLeftWidth', 'borderTopColor', 'borderRightColor', 'borderBottomColor', 'borderLeftColor', 'boxShadow', 'fontSize', 'fontWeight', 'lineHeight', 'letterSpacing', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'] as const;
+const appearance = ['color', 'backgroundColor', 'borderTopLeftRadius', 'borderTopRightRadius', 'borderBottomLeftRadius', 'borderBottomRightRadius', 'borderTopWidth', 'borderRightWidth', 'borderBottomWidth', 'borderLeftWidth', 'borderTopColor', 'borderRightColor', 'borderBottomColor', 'borderLeftColor', 'boxShadow', 'fontSize', 'fontWeight', 'lineHeight', 'letterSpacing', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft', 'filter'] as const;
 const geometry = ['left', 'top', 'width', 'height', 'minHeight', 'transform'] as const;
 function snapshot(element: Element, frame = false): Keyframe {
   const style = getComputedStyle(element), result: Keyframe = {};
-  for (const property of frame ? [...appearance, ...geometry] : [...appearance, 'width', 'height', 'transform', 'opacity', 'fill', 'stroke', 'strokeWidth', 'objectPosition'] as const) result[property] = style[property];
+  for (const property of frame ? [...appearance, ...geometry, 'mixBlendMode'] as const : [...appearance, 'width', 'height', 'transform', 'opacity', 'fill', 'stroke', 'strokeWidth', 'objectPosition'] as const) result[property] = style[property];
   return result;
 }
 function blocks(asset: AssetDocument) {
@@ -25,6 +26,7 @@ export function AssetPlaybackPreview({ from, to, progress, smart, reducedMotion,
   from: AssetDocument; to?: AssetDocument; progress: number; smart: boolean; reducedMotion: boolean; scale: number; playing: boolean; time: number; onExit: () => void; exporting?: boolean;
 }) {
   const root = useRef<HTMLDivElement>(null), animations = useRef<Animation[]>([]);
+  const textAnimations=useRef<NonNullable<ReturnType<typeof animateNativeText>>[]>([]);
   const constructions=useRef<{svg:SVGElement;image:HTMLImageElement;from:ReturnType<typeof techArtworkSettings>;to:ReturnType<typeof techArtworkSettings>}[]>([]);
   const source = useMemo(() => blocks(from), [from]), target = useMemo(() => to ? blocks(to) : [], [to]);
   const animate = smart && !reducedMotion && !!to;
@@ -68,6 +70,13 @@ export function AssetPlaybackPreview({ from, to, progress, smart, reducedMotion,
       }
     });
     second.forEach((element, i) => { if (!matched.has(i)) add(element, { opacity: 0 }, { opacity: getComputedStyle(element).opacity }); });
+    for(const [elements,blocks] of [[first,source],[second,target]] as const)elements.forEach((element,index)=>{
+      const block=blocks[index];
+      const counterpart=elements===first?target[matches.get(index)??-1]:source[[...matches].find(([,targetIndex])=>targetIndex===index)?.[0]??-1];
+      const ownMode=block?.editor?.appearance?.textAnimation,mode=ownMode&&ownMode!=='none'?ownMode:counterpart?.editor?.appearance?.textAnimation;
+      if(block?.kind!=='text'||!mode||mode==='none')return;
+      const animation=animateNativeText(element,mode);if(animation)textAnimations.current.push(animation);
+    });
     const background = host.querySelector<HTMLElement>('[data-playback-background]')!;
     const destination = host.querySelector<HTMLElement>('[data-playback-background-to]')!;
     add(background, { backgroundColor: getComputedStyle(background).backgroundColor }, { backgroundColor: getComputedStyle(destination).backgroundColor });
@@ -78,10 +87,11 @@ export function AssetPlaybackPreview({ from, to, progress, smart, reducedMotion,
       const animation = element.animate([start, end], { duration: 1000, fill: 'both', easing: playbackEasing(from.animation) });
       animation.pause(); animation.currentTime = 0; return animation;
     });
-    return () => { animations.current.forEach(animation => animation.cancel()); animations.current = [];constructions.current.forEach(({svg,image})=>svg.replaceWith(image));constructions.current=[]; };
+    return () => { animations.current.forEach(animation => animation.cancel()); animations.current = [];textAnimations.current.forEach(animation=>animation.restore());textAnimations.current=[];constructions.current.forEach(({svg,image})=>svg.replaceWith(image));constructions.current=[]; };
   }, [source, target, animate, scale, from.animation]);
   useLayoutEffect(() => {
     animations.current.forEach(animation => { animation.currentTime = progress * 1000; });
+    textAnimations.current.forEach(animation=>animation.sample(progress));
     const eased=playbackEasedProgress(progress,from.animation);
     constructions.current.forEach(({svg,from,to},index)=>{
       const settings=interpolateTechArtwork(from,to,eased);if(!settings)return;

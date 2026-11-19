@@ -240,3 +240,5 @@
 .hcs-scale-origin .ui-btn[aria-pressed=true]{background:var(--ui-bg-muted)}
 .hcs-scale-origin .ui-btn[aria-pressed=true] .hcs-origin-dot{background:var(--ui-text)}
 .hcs-scale-pivot{position:absolute;width:8px;height:8px;border:1px solid var(--ui-text);border-radius:50%;background:var(--ui-bg);translate:-50% -50%;scale:calc(1 / var(--asset-editor-scale,1));pointer-events:none}
+
+.hev-block[data-blend-preview]{mix-blend-mode:var(--hcs-preview-blend-mode)!important}

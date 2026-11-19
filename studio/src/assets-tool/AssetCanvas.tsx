@@ -1,4 +1,3 @@
-import {canExportAnimation} from './assetPlayback';
 import {flushSync} from 'react-dom';
 import {memo,useEffect,useLayoutEffect,useRef,useState,type ReactNode,type DragEvent,type KeyboardEvent} from 'react';
 import {Button,Dropdown,Icon,Tooltip} from '@asset/ui';
@@ -46,7 +45,7 @@ export function AssetCanvas({toolbar,asset,pages,busy,generating,zoom,onZoom,onC
  const zoomAnchor=useRef<{id:string;x:number;y:number;clientX:number;clientY:number}|undefined>(undefined),gestureZoomBase=useRef(1);
  const [grid,setGrid]=useState(false),[thumbnails,setThumbnails]=useState(true);
  useLayoutEffect(()=>{if(restoreThumbnailFocus.current&&!busy){restoreThumbnailFocus.current=false;const host=grid?viewport.current:strip.current;host?.querySelector<HTMLElement>('[aria-current="page"]')?.focus({preventScroll:true});}},[pages.length,busy,selection.focus]);
- const showPlayback=!grid&&thumbnails&&canExportAnimation(pages);
+ const showPlayback=!grid&&thumbnails&&pages.length>1&&pages.some(page=>page.animation?.enabled);
  const playback=useAssetPlayback(pages,asset.id,showPlayback&&!busy,onOpen);
  const maker=useMakerDesign(),selectionRequest=maker?.selectionRequest;
  useLayoutEffect(()=>{

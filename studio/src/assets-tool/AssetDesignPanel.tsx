@@ -1,4 +1,3 @@
-import {EffectControl} from '../shaders/EffectControl';
 import {useMakerDesign} from './MakerDesignContext';
 import {CanvasLayersPanel} from './CanvasLayersPanel';
 import {applyCommunityContrast} from './communityGraphic';
@@ -27,7 +26,6 @@ export function AssetDesignPanel({ asset, onChange, onImport, mobileOpen, onClos
       <DesignPanelHeader title="Design" closeLabel="Collapse design panel" className="lovable-panel-title" onClose={()=>{setCollapsed(true);onClose();}}/>
       {maker.tab==='layers'?<CanvasLayersPanel asset={asset} onChange={onChange}/>:<><div className="lovable-design-section"><div className="lovable-dimensions"><div><span>Width</span><strong>{width}</strong></div><div><span>Height</span><strong>{height}</strong></div></div>
         {studioWorkspace!=='partners'?<div className="lovable-field"><span>Background</span><StudioShapeColor label="Canvas background" disabled={false} value={assetColor(asset.background)} onChange={(background:string)=>onChange({...asset,background})}/></div>:<label className="lovable-field">Background<div className="lovable-select"><select value={asset.background} onChange={event => onChange({ ...asset, background: event.target.value as AssetDocument['background'] })}>{backgrounds.filter(color => color !== 'beige').map(color => <option key={color} value={color}>{names[color]}</option>)}</select><Icon name="chevron-down" size={14}/></div></label>}
-        <EffectControl value={asset.shader} onChange={shader=>onChange({...asset,shader})}/>
         <CanvasAnimationDesign asset={asset} onChange={onChange}/>
       </div>
       {asset.community?.layout==='graphic'&&<div className="lovable-design-section"><label className="community-contrast-toggle"><input type="checkbox" checked={asset.community.autoContrast!==false} onChange={event=>{const next={...asset,community:{...asset.community!,autoContrast:event.target.checked}};onChange(event.target.checked?applyCommunityContrast(next):next);}}/>Auto contrast</label></div>}

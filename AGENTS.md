@@ -174,3 +174,5 @@
 - Text-only Advanced controls include Animate text with Word by word, Character by character and Natural typing. Reveal native rich text over the slide Smart animate interval without changing copy, line breaks, Unicode graphemes or layout. Natural typing uses repeatable uneven keystrokes and punctuation pauses. Scrubbing and video export sample the same timeline; ordinary editing, PNGs, final resting frames and reduced motion show complete text.
 
 - Native canvas text supports Cmd/Ctrl+B, I and U on selected characters or selected text layers, with undo and saved inline formatting. Preserve approved legacy block weights until edited. New empty canvas text shows only “Type something…” as an editor placeholder; omit slash-command copy and menus in the canvas, and never include placeholders in exports.
+
+- The local shaders experiment is retired. Keep its controls, renderer, dependency and demo entry removed; discard retired effect settings when reopening old drafts while retaining native text, media and geometry. Keep the approved text shortcuts and simple editor-only placeholder.

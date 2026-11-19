@@ -80,7 +80,6 @@ function AssetPageContent() {
   const chatState=workspaceChats({},assetMessages(asset));
   const [loadError,setLoadError]=useState('');
   const [error, setError] = useState(''), [busy, setBusy] = useState(false), [reading, setReading] = useState(false);
-  useEffect(()=>{if(!import.meta.env.DEV)return;const fail=(event:Event)=>setError((event as CustomEvent<string>).detail);window.addEventListener('studio-effect-error',fail);return()=>window.removeEventListener('studio-effect-error',fail);},[]);
 
   const [zoom,setZoom]=useState(0);
   const [changingTemplate,setChangingTemplate]=useState(false);
@@ -172,9 +171,9 @@ function AssetPageContent() {
     let cancelled = false;
     setLoading(true);
     const opening=async()=>{
-      if(import.meta.env.DEV&&studioWorkspace==='lovable'&&['holiday','shaders'].includes(requestedBadge??'')){
+      if(import.meta.env.DEV&&studioWorkspace==='lovable'&&requestedBadge==='holiday'){
         const {holidayAssets}=await import('./holidayAsset');
-        const pages=requestedBadge==='shaders'?await (await import('./shaderDemo')).shaderDemoAssets():await holidayAssets();
+        const pages=await holidayAssets();
         if(cancelled)return;
         await saveAssets(owner,pages,{shouldCommit:()=>!cancelled});
         if(cancelled)return;

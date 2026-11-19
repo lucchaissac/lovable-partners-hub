@@ -1,4 +1,4 @@
-import {shaderEffectSchema} from '../shaders/settings';
+import {withoutRetiredEffect} from './retiredEffects';
 import {lucideIconNames} from './generated/lucideNames.js';
 import { z } from 'zod';
 import {blendModes} from '../../../shared/blendModes.mjs';
@@ -31,15 +31,14 @@ const textValue = z.object({
 }).strict();
 const mediaURL = z.union([safeURL, z.string().max(34_000_000).regex(/^data:video\/(?:mp4|webm|ogg|quicktime);base64,[a-zA-Z0-9+/]+=*$/)]);
 const imageValue=z.object({crop:z.object({x:z.number().nonnegative(),y:z.number().nonnegative(),width:z.number().positive(),height:z.number().positive(),sourceWidth:z.number().positive(),sourceHeight:z.number().positive()}).strict().refine(c=>c.x+c.width<=c.sourceWidth+1&&c.y+c.height<=c.sourceHeight+1,'Crop must stay inside the source image.').optional(),playIcon:z.boolean().optional(),aspectRatio:z.number().min(.1).max(10).optional(),src:safeURL,alt:z.string().max(500),caption:z.string().max(500),alignment:z.enum(['left','center','right']),width:z.number().min(25).max(100),link:z.string().max(2000).optional()}).strict();
-export const elementAppearance = z.object({
- shader:shaderEffectSchema.optional(),
+export const elementAppearance = z.preprocess(withoutRetiredEffect,z.object({
  blendMode:z.enum(blendModes).optional(),blur:z.number().min(0).max(100).optional(),textAnimation:z.enum(textAnimationModes).optional(),
  padding:z.number().min(0).max(160).optional(),paddingTop:z.number().min(0).max(160).optional(),paddingRight:z.number().min(0).max(160).optional(),paddingBottom:z.number().min(0).max(160).optional(),paddingLeft:z.number().min(0).max(160).optional(),
  background:z.string().regex(/^(?:#[0-9a-fA-F]{3,8}|transparent|var\(--[a-z0-9-]+\))$/).optional(),backgroundImage:safeURL.optional(),backgroundFit:z.enum(['cover','contain']).optional(),imageVisible:z.boolean().optional(),
  fill:z.string().regex(/^(?:#[0-9a-fA-F]{3,8}|transparent|var\(--[a-z0-9-]+\))$/).optional(),radius:z.number().min(0).max(1500).optional(),radiusTopLeft:z.number().min(0).max(1500).optional(),radiusTopRight:z.number().min(0).max(1500).optional(),radiusBottomRight:z.number().min(0).max(1500).optional(),radiusBottomLeft:z.number().min(0).max(1500).optional(),borderWidth:z.number().min(0).max(24).optional(),borderColor:z.string().regex(/^(?:#[0-9a-fA-F]{3,8}|transparent|var\(--[a-z0-9-]+\))$/).optional(),shadow:z.enum(['none','soft','strong']).optional(),opacity:z.number().min(0).max(100).optional(),imageFit:z.enum(['cover','contain']).optional(),
  lineWidth:z.number().min(1).max(24).optional(),lineStyle:z.enum(['solid','dashed']).optional(),lineCap:z.enum(['butt','round','square']).optional(),
  fontFamily:z.enum(['Camera Plain','Arial','Impact','Georgia','Times New Roman','Verdana','Courier New','Bodoni Moda','Pixelify Sans','Anton']).optional(),fontSize:z.number().min(1).max(1000).optional(),fontWeight:z.number().min(100).max(900).optional(),italic:z.boolean().optional(),underline:z.boolean().optional(),uppercase:z.boolean().optional(),textAlign:z.enum(['left','center','right']).optional(),letterSpacing:z.number().min(-20).max(100).optional(),lineHeight:z.number().min(50).max(300).optional(),
-}).strict();
+}).strict());
 export const htmlIconNames = lucideIconNames;
 export type HtmlIconName = typeof htmlIconNames[number];
 const editorFrame = z.object({

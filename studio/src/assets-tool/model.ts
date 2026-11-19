@@ -1,4 +1,4 @@
-import {shaderEffectSchema} from '../shaders/settings';
+import {withoutRetiredEffect} from '../studio/retiredEffects';
 import { z } from 'zod';
 import {ambassadorSchema} from './ambassadorSettings';
 import { conversationSchema, documentSchema } from '../studio/schema.js';
@@ -55,12 +55,11 @@ export const canvasAnimationSchema = z.object({
   velocity: z.number().min(-10).max(10).default(0),
 }).strict();
 export const defaultCanvasAnimation = canvasAnimationSchema.parse({});
-export const assetSchema = compositionSchema.extend({
+export const assetSchema = z.preprocess(withoutRetiredEffect,compositionSchema.extend({
   version: z.literal(1), id: z.uuid(), format: z.enum(['landscape', 'square', 'portrait']),
   dimensions: z.object({ width: z.number().min(100).max(4000), height: z.number().min(100).max(4000) }).strict().optional(),
   editor: htmlEditorSchema.optional(),
   animation: canvasAnimationSchema.optional(),
-  shader: shaderEffectSchema.optional(),
   series:z.array(z.object({id:z.uuid(),title:z.string().max(100)}).strict()).max(64).optional(),
   community:z.object({settings:ambassadorSchema,bindings:z.record(z.string(),z.string()),layout:z.literal('graphic').optional(),autoContrast:z.boolean().optional()}).strict().optional(),
   layouts: assetLayoutsSchema.optional(),
@@ -71,7 +70,7 @@ export const assetSchema = compositionSchema.extend({
 }).strict().superRefine((doc, ctx) => {
   const errors = compositionErrors(doc, doc.format, assetDimensions(doc));
   for (const message of errors) ctx.addIssue({ code: 'custom', message });
-});
+}));
 export type AssetNode = z.infer<typeof nodeSchema>;
 export type Composition = z.infer<typeof compositionSchema>;
 export type AssetDocument = z.infer<typeof assetSchema>;

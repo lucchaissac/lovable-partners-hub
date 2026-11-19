@@ -1,4 +1,3 @@
-import {EffectControl} from '../shaders/EffectControl';
 import {createContext,useContext} from 'react';
 import {Button,Dropdown,Icon,TriggerField} from '@asset/ui';
 import {StudioShapeNumber} from './PresentationElementDesign';
@@ -28,5 +27,5 @@ export function ElementTransformSection(){
 export function NativeElementEffects(){
  const context=useContext(ElementTransformContext);if(!context)return null;
  const onChange=(appearance:ElementAppearance)=>context.onChange({appearance:{...context.frame.appearance,...appearance}});
- return <div className="hcs-design-design-fields hcs-design-design-section"><ElementBlendControl value={context.frame.appearance} disabled={context.locked} onChange={onChange}/><ElementBlurControl value={context.frame.appearance} disabled={context.locked} onChange={onChange}/><EffectControl value={context.frame.appearance?.shader} disabled={context.locked} onChange={shader=>onChange({shader})}/><ElementTransformSection/></div>;
+ return <div className="hcs-design-design-fields hcs-design-design-section"><ElementBlendControl value={context.frame.appearance} disabled={context.locked} onChange={onChange}/><ElementBlurControl value={context.frame.appearance} disabled={context.locked} onChange={onChange}/><ElementTransformSection/></div>;
 }

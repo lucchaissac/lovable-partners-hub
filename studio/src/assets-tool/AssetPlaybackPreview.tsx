@@ -1,4 +1,3 @@
-import {ShaderClockContext} from '../shaders/Surface';
 import { memo, useLayoutEffect, useMemo, useRef } from 'react';
 import { CanvasVideoPlaybackContext } from '../studio/HtmlCanvasVideo';
 import { Artwork } from './Artwork';
@@ -126,10 +125,10 @@ export function AssetPlaybackPreview({ from, to, progress, smart, reducedMotion,
       <div ref={root} className="asset-playback-preview asset-canvas-transform" style={{ width, height, transform: `scale(${scale})` }} aria-label="Animation preview" onClick={onExit}>
         <div data-playback-background style={{ position: 'absolute', inset: 0, backgroundColor: assetColor(from.background) }}/>
         {animate && <div data-playback-background-to style={{ visibility: 'hidden', position: 'absolute', backgroundColor: assetColor(to!.background) }}/>}
-        <ShaderClockContext.Provider value={{time:reducedMotion?0:time,exporting}}><CanvasVideoPlaybackContext.Provider value={true}>
+        <CanvasVideoPlaybackContext.Provider value={true}>
           <div data-playback-from><PreviewArtwork key={from.id} asset={from} scale={scale}/></div>
           {animate && <div data-playback-to><PreviewArtwork key={to!.id} asset={to!} scale={scale}/></div>}
-        </CanvasVideoPlaybackContext.Provider></ShaderClockContext.Provider>
+        </CanvasVideoPlaybackContext.Provider>
       </div>
     </div>
   </div>;

@@ -2,10 +2,6 @@ import type { AssetDocument } from './model';
 import type { HtmlBlock } from '../studio/htmlEditorModel';
 
 export const playbackEndHoldMs=600;
-export function assetHasAnimatedEffect(page:AssetDocument){
- const moves=(effect:AssetDocument['shader'])=>!!effect?.animated&&effect.speed>0&&effect.intensity>0;
- return import.meta.env?.DEV!==false&&(moves(page.shader)||!!page.editor?.pages.some(p=>p.sections.some(s=>s.columns.flat().some(b=>!b.editor?.hidden&&moves(b.editor?.appearance?.shader)))));
-}
 /** The preview loop rests on the same final frame as a single exported video. */
 export function advancePlaybackTime(time:number,elapsed:number,total:number,loop:boolean){
   if(total<=0)return {time:0,playing:false};
@@ -17,10 +13,10 @@ export function advancePlaybackTime(time:number,elapsed:number,total:number,loop
 // outgoing canvas's saved duration; the last canvas is the resting endpoint.
 export function playbackTimeline(pages: AssetDocument[]) {
   let total = 0;
-  const segments = pages.filter((page,index)=>index<pages.length-1||assetHasAnimatedEffect(page)).map((page, index) => {
-    const smart = index<pages.length-1&&page.animation?.enabled && page.animation.transition === 'smart-animate';
-    const motionDuration = smart ? page.animation!.durationMs : index===pages.length-1?0:600;
-    const delay = (page.animation?.enabled ? page.animation.delayMs ?? 0 : 0)+(assetHasAnimatedEffect(page)?4000:0);
+  const segments = pages.slice(0, -1).map((page, index) => {
+    const smart = page.animation?.enabled && page.animation.transition === 'smart-animate';
+    const motionDuration = smart ? page.animation!.durationMs : 600;
+    const delay = page.animation?.enabled ? page.animation.delayMs ?? 0 : 0;
     const duration = motionDuration + delay;
     const segment = { index, start: total, duration, delay, motionDuration, smart: !!smart };
     total += duration;
@@ -33,7 +29,7 @@ export function playbackPosition(timeline: ReturnType<typeof playbackTimeline>, 
   const clamped = Math.max(0, Math.min(timeline.total, time));
   const segment = timeline.segments.find(item => clamped < item.start + item.duration);
   if (!segment) return { index: Math.max(0, timeline.count - 1), progress: 0, smart: false };
-  return { index: segment.index, progress: Math.max(0, (clamped - segment.start - segment.delay) / Math.max(1,segment.motionDuration)), smart: segment.smart };
+  return { index: segment.index, progress: Math.max(0, (clamped - segment.start - segment.delay) / segment.motionDuration), smart: segment.smart };
 }
 
 /** A damped spring sampled in normalized time, with exact resting endpoints.
@@ -79,7 +75,7 @@ export function playbackEasedProgress(progress:number,animation?:AssetDocument['
 }
 
 export function canExportAnimation(pages: AssetDocument[]) {
-  return pages.some(assetHasAnimatedEffect)||(pages.length > 1 && pages.slice(0, -1).some(page => page.animation?.enabled));
+  return pages.length > 1 && pages.slice(0, -1).some(page => page.animation?.enabled);
 }
 
 /** Per-thumbnail progress follows the same clock, including backward scrubbing.

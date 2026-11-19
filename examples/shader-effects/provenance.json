@@ -35,5 +35,12 @@
     "Effect texture resolution capped at 1440px on the long edge in this prototype.",
     "Whole-canvas animated compositing targets native 2D layers; perspective/3D compositions need separate validation.",
     "PNG is a static sample at time zero."
-  ]
+  ],
+  "refinement": {
+    "request": "Replace faceted Chrome with the softer supplied blue/pink reference; repair native text shortcuts and use a simple placeholder without slash commands.",
+    "chrome": "Smooth rolled edge from silhouette distance; broad blue/lavender/pink environment normalized to the visible glyph bounds. Demo uses one large editable more specimen.",
+    "text": "Cmd/Ctrl+B, I, U target the native character selection or selected text layers; caret-only formatting updates the text block. Legacy weight precedence is retained until inline formatting is used.",
+    "placeholder": "Type something\u2026; editor-only, empty text only. Slash is ordinary typed content on the canvas.",
+    "verification": "Build passed, 26 targeted tests passed; browser verified block and character formatting, toggle back, native undo/redo, saved state, fresh text insertion and PNG without placeholder."
+  }
 }

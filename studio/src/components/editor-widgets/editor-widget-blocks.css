@@ -4,7 +4,7 @@
 .ewb-text-content { min-height: 132px; padding: var(--ui-space-4); white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.5; outline: none; }
 .ewb-text[data-editable] .ewb-text-content { border: 1px solid var(--ui-divider); }
 .ewb-text[data-editable] .ewb-text-content:hover, .ewb-text-content:focus { border-color: var(--ui-accent); }
-.ewb-text-content:empty::before { content: attr(data-placeholder); color: var(--ui-text-muted); pointer-events: none; }
+.ewb-text-content[data-show-placeholder][data-empty]::before { content: attr(data-placeholder); color: var(--ui-text-muted); pointer-events: none; }
 .ewb-text-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--ui-space-1); margin-top: var(--ui-space-2); padding: var(--ui-space-1); border: 1px solid var(--ui-divider); border-radius: var(--ui-radius-section); background: var(--ui-bg); width: fit-content; max-width: 100%; }
 .ewb-text-size { width: 56px; }
 .ewb-toolbar-divider { width: 1px; height: 20px; background: var(--ui-divider); margin-inline: var(--ui-space-1); }
@@ -160,3 +160,9 @@
 .ewb-contact-picker .ui-dialog-header-text { padding-top: 0; }
 .ewb-contact-picker .ui-dialog-close { position: absolute; right: var(--ui-space-6); top: var(--ui-space-5); }
 .ewb-contact-picker.ui-dialog[data-dividers] > .ui-dialog-footer { padding-bottom: var(--ui-space-6); }
+
+/* Empty text is an editor affordance, never artwork or exported copy. */
+.ewb-text-content:not([data-show-placeholder])::before {content:none!important;}
+.ewb-text-content[data-inline-formatting] span[style*="font-weight: normal"],.ewb-text-content[data-inline-formatting] span[style*="font-weight: 400"] {font-weight:600!important;}
+
+.ewb-text-content[data-formatting-bold] span[style*="font-weight: normal"],.ewb-text-content[data-formatting-bold] span[style*="font-weight: 400"],.ewb-text-content[data-formatting-bold] span[style*="font-weight: 600"] {font-weight:400!important;}

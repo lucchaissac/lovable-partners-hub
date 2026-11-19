@@ -21,7 +21,7 @@ export function patchSelectionAppearance(state:HtmlEditorState,ids:string[],appe
     block.editor={...block.editor,...(appearance.opacity!==undefined?{opacity:undefined}:{}),appearance:{...block.editor?.appearance,...appearance}};
     if(block.kind==='text')block.value={...block.value,
       ...(appearance.fill!==undefined?{color:appearance.fill}:{}),...(appearance.fontSize!==undefined?{size:appearance.fontSize}:{}),...(appearance.textAlign!==undefined?{align:appearance.textAlign}:{}),
-      runs:block.value.runs.map(run=>({...run,...(appearance.fontWeight!==undefined?{bold:appearance.fontWeight>=600}:{}),...(appearance.italic!==undefined?{italic:appearance.italic}:{}),...(appearance.underline!==undefined?{underline:appearance.underline}:{})}))};
+      runs:block.value.runs.map(run=>({...run,...(appearance.fontWeight!==undefined?{bold:undefined}:{}),...(appearance.italic!==undefined?{italic:appearance.italic}:{}),...(appearance.underline!==undefined?{underline:appearance.underline}:{})}))};
   }
   return next;
 }

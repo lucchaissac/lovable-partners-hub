@@ -36,7 +36,8 @@
 .hcs-toolbar { position: absolute; z-index: var(--ui-z-panel); display: flex; width: max-content; max-width:none; flex-wrap: nowrap; gap: var(--ui-space-1); padding: var(--ui-space-1); border-radius: var(--ui-segmented-radius); background: var(--ui-bg); box-shadow: var(--ui-shadow-surface); transform: translateX(-50%); pointer-events: auto; }
 .hcs-toolbar > *, .hcs-native-widget-toolbar > * { flex-shrink:0; }
 .hcs-toolbar .ui-btn[data-size] { border-radius: var(--ui-segmented-radius); transition: none; }
-.hev .hev-section .hev-block[style*="--hcs-text-weight"] .ewb-text-content span { font-weight:var(--hcs-text-weight)!important; }
+.hev .hev-section .hev-block[style*="--hcs-text-weight"] .ewb-text-content:not([data-inline-formatting]) span { font-weight:var(--hcs-text-weight)!important; }
+.hev .hev-section .hev-block[style*="--hcs-text-weight"] .ewb-text-content {font-weight:var(--hcs-text-weight)!important;}
 .workspace-widget-panelhost .hcs-design-design-panel { width:100%;max-width:none;height:100%;font-family:var(--ui-font); }
 .hev[data-selection-mode] .hcs-gap {position:relative;display:flex;align-items:center;justify-content:center;}
 .hev[data-selection-mode] .hcs-gap[data-gap=block] {height:var(--hev-block-gap,24px);min-height:0;margin:0;}

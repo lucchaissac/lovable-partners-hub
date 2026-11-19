@@ -13,6 +13,7 @@ async function snapshot(element:HTMLElement,fontEmbedCSS:string,whole=false){
   const originals=[...element.querySelectorAll('canvas')],copies=[...clone.querySelectorAll('canvas')];
   copies.forEach((canvas,i)=>{const original=originals[i];canvas.width=original.width;canvas.height=original.height;if(original.width&&original.height)canvas.getContext('2d')?.drawImage(original,0,0);});
   const width=element.offsetWidth,height=element.offsetHeight,size=canvasSize(width,height);
+  clone.querySelectorAll('[data-show-placeholder]').forEach(node=>node.removeAttribute('data-show-placeholder'));
   clone.removeAttribute('id');clone.removeAttribute('data-editing');clone.setAttribute('data-shader-capture','');clone.inert=true;
   Object.assign(clone.style,{position:'relative',left:'0px',top:'0',width:`${width}px`,height:`${height}px`,minHeight:'0',transform:'none',opacity:'1',filter:'none',mixBlendMode:'normal',outline:'none',pointerEvents:'none'});
   clone.style.setProperty('--shader-source-opacity','1');
@@ -25,7 +26,7 @@ async function snapshot(element:HTMLElement,fontEmbedCSS:string,whole=false){
     if(video.readyState>=2)canvas.getContext('2d')!.drawImage(video,0,0);
     const style=getComputedStyle(video);for(const property of style)canvas.style.setProperty(property,style.getPropertyValue(property));copy.replaceWith(canvas);
   });
-  const host=document.createElement('div');Object.assign(host.style,{position:'fixed',left:'-50000px',top:'0',width:`${width}px`,height:`${height}px`,pointerEvents:'none'});host.append(clone);element.parentElement!.append(host);
+  const host=document.createElement('div');host.setAttribute('aria-hidden','true');host.inert=true;Object.assign(host.style,{position:'fixed',left:'-50000px',top:'0',width:`${width}px`,height:`${height}px`,pointerEvents:'none'});host.append(clone);element.parentElement!.append(host);
   try{
     return await toCanvas(clone,{width,height,canvasWidth:size.width,canvasHeight:size.height,pixelRatio:1,fontEmbedCSS,style:{position:'relative',left:'0',top:'0',margin:'0',transform:'none'},
     filter:node=>!(node instanceof Element&&(node.hasAttribute('data-editor-only')||node.matches('.hcs-ui,.hev-block-tools')||node.matches('.studio-shader-surface')&&node.parentElement===clone))});}

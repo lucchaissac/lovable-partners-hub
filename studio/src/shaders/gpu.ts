@@ -4,7 +4,7 @@ import { defineShader, wgsl, Scalar } from 'shaders/std';
 import type { ShaderEffect } from './settings';
 
 // Authored locally from the MIT engine's public custom-component API. No library presets.
-function makeMaterial(normals:HTMLCanvasElement) {
+function makeMaterial(normals:HTMLCanvasElement,top:number,height:number) {
   let normalTexture:ReturnType<NonNullable<import('shaders/core').GpuShaderDefinition['fragment']>>;
   const definition=defineShader({
   name:'StudioMaterial',
@@ -26,17 +26,24 @@ function makeMaterial(normals:HTMLCanvasElement) {
     var color = sampleColor.rgb / max(alpha, 0.00001);
     if (mode < 0.5) {
       let encoded = vec3f(normalX,normalY,normalZ);
-      let n = normalize(encoded * 2.0 - 1.0);
-      let light = normalize(vec3f(sin(t * 0.65) * 0.65 - 0.3, -0.75, 0.9));
-      let reflection = dot(n, light);
-      let band = sin(uv.y * 5.5 + n.y * 3.8 + sin(t * 0.5) * 0.6);
-      let pink = vec3f(1.0,0.08,0.52);
-      let blue = vec3f(0.28,0.47,1.0);
-      var metal = mix(pink, blue, smoothstep(-0.65,0.75,band));
-      metal *= 0.8 + 0.25 * reflection;
-      let shine = pow(max(0.0,reflection), 16.0);
-      let rim = pow(1.0 - max(n.z,0.0),1.5);
-      metal = mix(metal, vec3f(0.91,0.87,1.0), clamp(shine * 0.9 + rim * 0.75,0.0,0.85));
+      let xy = encoded.xy * 2.0 - 1.0;
+      let n = normalize(vec3f(xy,sqrt(max(0.01,1.0-dot(xy,xy)))));
+      let depth = encoded.z;
+      // One broad reflected environment, with a soft rolled edge rather than
+      // alternating bands or a faceted metal bevel.
+      let drift = sin(t * 0.38) * 0.09;
+      let blue = vec3f(0.27,0.49,0.95);
+      let lavender = vec3f(0.63,0.64,1.0);
+      let pink = vec3f(1.0,0.19,0.65);
+      let vertical = clamp((uv.y - ${top.toFixed(6)}) / ${height.toFixed(6)} + drift + n.y * 0.18,0.0,1.0);
+      var metal = mix(blue,lavender,smoothstep(0.25,0.75,vertical));
+      metal = mix(metal,pink,smoothstep(0.50,1.05,vertical));
+      let upperShade = max(-n.y,0.0) * 0.24;
+      metal *= 1.0 - upperShade;
+      let rolledLight = exp(-pow((depth-0.27)/0.22,2.0));
+      metal = mix(metal,vec3f(0.71,0.80,1.0),rolledLight * 0.7);
+      let pinkRim = 1.0-smoothstep(0.025,0.13,depth);
+      metal = mix(metal,pink,pinkRim * 0.9);
       color = mix(color, metal, a);
     } else if (mode < 1.5) {
       let offset = vec2f(0.0025 * a / aspect,0.0);
@@ -67,7 +74,7 @@ export async function createEffectRenderer(source:HTMLCanvasElement,output:HTMLC
   const gpuCanvas=document.createElement('canvas');
   gpuCanvas.width=source.width;gpuCanvas.height=source.height;
   gpuCanvas.style.width=`${source.width}px`;gpuCanvas.style.height=`${source.height}px`;
-  const renderer=shaderRendererGPU(),normals=makeNormalMap(source),effectDefinition=makeMaterial(normals);
+  const renderer=shaderRendererGPU(),relief=makeNormalMap(source),normals=relief.canvas,effectDefinition=makeMaterial(normals,relief.top,relief.height);
   const sourceDefinition=defineShader({name:'StudioNativeSource',role:'media',species:'custom',props:{},gpu:{fragment(params){
     const texture=params.createMediaTexture({width:source.width,height:source.height,label:'Studio native artwork'});
     texture.write(source);

@@ -25,6 +25,7 @@ const id = z.string().regex(/^[a-zA-Z0-9-]{1,80}$/);
 const safeURL = z.string().max(2400000).refine(value => /^\/(?!\/)[^<>]*$/.test(value) || /^https?:\/\/[^\s<>]+$/.test(value) || /^data:(?:application\/pdf|image\/(?:png|jpeg|webp|gif));base64,[a-zA-Z0-9+/]+=*$/.test(value));
 const textValue = z.object({
  list:z.enum(['none','bullet']).optional(),
+ inlineFormatting:z.boolean().optional(),
  runs:z.array(z.object({text:z.string().max(8000),bold:z.boolean().optional(),italic:z.boolean().optional(),underline:z.boolean().optional()}).strict()).max(200),
  style:z.enum(['Heading 1','Heading 2','Heading 3','Text','Small text']),size:z.number().min(1).max(1000),align:z.enum(['left','center','right']),color:z.string().max(80),
 }).strict();

@@ -1,3 +1,4 @@
+import {textShortcut,toggleCanvasTextMark} from './textShortcuts';
 import {MediaWindowDesign} from './MediaWindowDesign';
 import {IconDesignControls} from './IconDesignControls';
 import {ElementTransformContext,ElementBlendPreviewContext} from './ElementTransformControls';
@@ -459,6 +460,10 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
       if(gesture.current||marqueeStart.current){if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='z'){e.preventDefault();finish(true);}return;}
       if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='a'){e.preventDefault();if(insertPanel.enabled&&sectionSelection){setSectionIds(page.sections.map(s=>s.id));return;}choose(page.sections.filter(s=>!s.locked).flatMap(s=>s.columns.flat()).filter(b=>!b.editor?.locked&&!b.editor?.hidden).map(b=>b.id));return;}
       if(locked)return;
+      if(!sectionSelection&&(e.metaKey||e.ctrlKey)&&!e.altKey&&!e.shiftKey){
+        const mark=textShortcut(e.key);
+        if(mark){const next=toggleCanvasTextMark(source.current,ids,mark);if(next!==source.current){e.preventDefault();e.stopPropagation();if(!e.repeat)save(next);}return;}
+      }
       if(!sectionSelection&&(e.metaKey||e.ctrlKey)&&!e.altKey&&e.key.toLowerCase()==='g'){e.preventDefault();if(!e.repeat){const next=canvasLayerAction(source.current,ids,e.shiftKey?'ungroup':'group',crypto.randomUUID());if(next!==source.current)save(next);}return;}
       if(layeredSelection&&(e.metaKey||e.ctrlKey)&&(e.code==='BracketLeft'||e.code==='BracketRight')){e.preventDefault();arrange(e.code==='BracketRight'?(e.shiftKey?'bring-to-front':'bring-forward'):(e.shiftKey?'send-to-back':'send-backward'));return;}
       if(e.key==='Delete'||e.key==='Backspace'){e.preventDefault();action('delete');}
@@ -594,7 +599,7 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
       onResizeWithSection={one.kind==='image'?(follow:boolean)=>{const el=element(one.id);if(!el||locked)return;changeBlock({...one,editor:{...one.editor,...imageSectionSizing(follow,el.offsetWidth,el.parentElement!.clientWidth)}});}:undefined}
       onChange={(appearance:NonNullable<ElementFrame['appearance']>)=>{
         const next={...one,editor:{...one.editor,appearance:{...one.editor?.appearance,...appearance}}};
-        if(next.kind==='text') next.value={...next.value,...(appearance.fill!==undefined?{color:appearance.fill}:{}),...(appearance.fontSize!==undefined?{size:appearance.fontSize}:{}),...(appearance.textAlign!==undefined?{align:appearance.textAlign}:{}),runs:next.value.runs.map(run=>({...run,...(appearance.fontWeight!==undefined?{bold:appearance.fontWeight>=600}:{}),...(appearance.italic!==undefined?{italic:appearance.italic}:{}),...(appearance.underline!==undefined?{underline:appearance.underline}:{})}))};
+        if(next.kind==='text'){save(patchSelectionAppearance(source.current,[one.id],appearance));return;}
         changeBlock(next);
       }} onReplace={()=>onReplace(one.id)} onClose={()=>{setDesign(false);host.closePanel();}} /> </div>,host.panelHost)}
   </ElementTransformContext.Provider></ElementBlendPreviewContext.Provider>;

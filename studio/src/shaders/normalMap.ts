@@ -20,10 +20,11 @@ export function makeNormalMap(source:HTMLCanvasElement){
  normal.width=width;normal.height=height;
  const relief=new Float32Array(width*height),hasSilhouette=pixels.data.some((a,i)=>i%4===3&&a<128),radius=Math.max(3,Math.min(width,height)*.065);
  const distance=hasSilhouette?silhouetteDistance(pixels.data,width,height):undefined;
- for(let i=0;i<relief.length;i++)relief[i]=distance?Math.sqrt(Math.max(0,1-Math.max(0,1-distance[i]/radius)**2)):(pixels.data[i*4]*.2126+pixels.data[i*4+1]*.7152+pixels.data[i*4+2]*.0722)/255*.3;
+ let top=height,bottom=0;for(let y=0;y<height;y++)for(let x=0;x<width;x++)if(pixels.data[(y*width+x)*4+3]>127){top=Math.min(top,y);bottom=Math.max(bottom,y+1);}
+ for(let i=0;i<relief.length;i++)relief[i]=distance?1-Math.exp(-distance[i]/radius*3.2):(pixels.data[i*4]*.2126+pixels.data[i*4+1]*.7152+pixels.data[i*4+2]*.0722)/255*.3;
  // Smooth the height field before deriving normals, preventing staircase reflections
  // around curved glyphs while retaining the original alpha silhouette exactly.
- const scratch=new Float32Array(relief.length),blurRadius=2;
+ const scratch=new Float32Array(relief.length),blurRadius=Math.max(2,Math.round(radius*.18));
  for(let pass=0;pass<2;pass++){
   for(let y=0;y<height;y++)for(let x=0;x<width;x++){let sum=0;for(let d=-blurRadius;d<=blurRadius;d++)sum+=relief[y*width+Math.max(0,Math.min(width-1,x+d))];scratch[y*width+x]=sum/(blurRadius*2+1);}
   for(let y=0;y<height;y++)for(let x=0;x<width;x++){let sum=0;for(let d=-blurRadius;d<=blurRadius;d++)sum+=scratch[Math.max(0,Math.min(height-1,y+d))*width+x];relief[y*width+x]=sum/(blurRadius*2+1);}
@@ -34,7 +35,8 @@ export function makeNormalMap(source:HTMLCanvasElement){
   const dx=((at(x+1,y-1)+2*at(x+1,y)+at(x+1,y+1))-(at(x-1,y-1)+2*at(x-1,y)+at(x-1,y+1)))*radius/8;
   const dy=((at(x-1,y+1)+2*at(x,y+1)+at(x+1,y+1))-(at(x-1,y-1)+2*at(x,y-1)+at(x+1,y-1)))*radius/8;
   const length=Math.hypot(dx,dy,1),i=(y*width+x)*4;
-  result.data[i]=(0.5-dx/length*.5)*255;result.data[i+1]=(0.5-dy/length*.5)*255;result.data[i+2]=(0.5+1/length*.5)*255;result.data[i+3]=255;
+  // Pack the XY normal and normalized distance-to-edge; alpha stays opaque.
+  result.data[i]=(0.5-dx/length*.5)*255;result.data[i+1]=(0.5-dy/length*.5)*255;result.data[i+2]=distance?Math.min(1,distance[y*width+x]/radius)*255:255;result.data[i+3]=255;
  }
- normal.getContext('2d')!.putImageData(result,0,0);return normal;
+ normal.getContext('2d')!.putImageData(result,0,0);return {canvas:normal,top:top<bottom?top/height:0,height:top<bottom?(bottom-top)/height:1};
 }

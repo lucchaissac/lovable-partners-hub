@@ -19,7 +19,7 @@ export async function shaderDemoAssets(){
     if(index===1)return [{id:'shader-image',kind:'image',value:{src:'/holiday/gradient.webp',alt:'Lovable gradient',caption:'',alignment:'center',width:100},editor}];
     return block.kind==='media'?[{...block,id:'shader-video',autoplay:true,mediaWindow:undefined,editor}]:[];
    }
-   if(block.kind==='text'&&block.id==='holiday-title')return [{...block,value:{...block.value,runs:[{text:['Make\nmore.','See things\ndifferently.','Keep\nmoving.'][index]}],size:index===0?200:145},editor:{...block.editor,x:45,y:index===0?160:195,widthPx:990,height:370,appearance:{...block.editor?.appearance,fontSize:index===0?200:145,lineHeight:88,shader:index===0?{...newShaderEffect('chrome'),intensity:100}:undefined}}}];
+   if(block.kind==='text'&&block.id==='holiday-title')return [{...block,value:{...block.value,runs:[{text:['more','See things\ndifferently.','Keep\nmoving.'][index]}],size:index===0?360:145},editor:{...block.editor,x:45,y:index===0?160:195,widthPx:990,height:370,appearance:{...block.editor?.appearance,fontSize:index===0?360:145,lineHeight:88,shader:index===0?{...newShaderEffect('chrome'),intensity:100}:undefined}}}];
    if(block.id==='holiday-cta')return [];
    return [block];
   });

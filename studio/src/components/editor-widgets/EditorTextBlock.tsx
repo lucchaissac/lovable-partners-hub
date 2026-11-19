@@ -6,6 +6,7 @@ import './editor-widget-blocks.css';
 export type TextRun = { text: string; bold?: boolean; italic?: boolean; underline?: boolean };
 export type EditorTextValue = {
   runs: TextRun[];
+  inlineFormatting?: boolean;
   style: 'Heading 1' | 'Heading 2' | 'Heading 3' | 'Text' | 'Small text';
   size: number;
   align: 'left' | 'center' | 'right';
@@ -27,7 +28,7 @@ export function textRunsFromElement(root: HTMLElement): TextRun[] {
     if (node !== root && ['DIV', 'P'].includes(node.tagName) && runs.length) runs.push({ text: '\n' });
     const weight = node.style.fontWeight;
     const next = { ...marks,
-      ...(['B', 'STRONG'].includes(node.tagName) || weight === 'bold' || Number(weight) >= 600 ? { bold: true } : weight ? { bold: false } : {}),
+      ...(['B', 'STRONG'].includes(node.tagName) || weight === 'bold' || Number(weight) >= 700 ? { bold: true } : weight ? { bold: false } : {}),
       ...(['I', 'EM'].includes(node.tagName) || node.style.fontStyle === 'italic' ? { italic: true } : node.style.fontStyle === 'normal' ? { italic: false } : {}),
       ...(node.tagName === 'U' || node.style.textDecoration.includes('underline') ? { underline: true } : node.style.textDecoration === 'none' ? { underline: false } : {}),
     };
@@ -38,8 +39,8 @@ export function textRunsFromElement(root: HTMLElement): TextRun[] {
 }
 
 /** Controlled content, selection-aware formatting, and Asset controls. No Studio dependency. */
-export function EditorTextBlock({ value, onChange, editable = true, toolbarHost }: {
-  value: EditorTextValue; onChange: (value: EditorTextValue) => void; editable?: boolean; toolbarHost?: HTMLElement | null;
+export function EditorTextBlock({ value, onChange, editable = true, toolbarHost, baseWeight, placeholder = 'Type something…', showPlaceholder = editable, onFormatBlock }: {
+  value: EditorTextValue; onChange: (value: EditorTextValue) => void; editable?: boolean; toolbarHost?: HTMLElement | null; baseWeight?: number; placeholder?: string; showPlaceholder?: boolean; onFormatBlock?: (mark: 'bold'|'italic'|'underline')=>void;
 }) {
   const root = useRef<HTMLDivElement>(null);
   const range = useRef<Range | null>(null);
@@ -52,29 +53,47 @@ export function EditorTextBlock({ value, onChange, editable = true, toolbarHost 
     if (!root.current || lastWritten.current === serialized) return;
     root.current.replaceChildren(...value.runs.map(run => {
       const span = document.createElement('span'); span.textContent = run.text;
-      if (run.bold !== undefined) span.style.fontWeight = run.bold ? '600' : '400';
+      if (run.bold !== undefined) span.style.fontWeight = run.bold ? '700' : '600';
       if (run.italic !== undefined) span.style.fontStyle = run.italic ? 'italic' : 'normal';
       if (run.underline !== undefined) span.style.textDecoration = run.underline ? 'underline' : 'none';
       return span;
     }));
     lastWritten.current = serialized;
   }, [value.runs]);
+  const boldAtSelection=()=>{
+    const selection=window.getSelection(),anchor=selection?.anchorNode;
+    const element=anchor instanceof HTMLElement?anchor:anchor?.parentElement;
+    return Number(element?getComputedStyle(element).fontWeight:baseWeight??600)>=700;
+  };
   useEffect(() => {
     const track = () => {
       const selection = window.getSelection();
       if (!selection?.rangeCount || !root.current?.contains(selection.anchorNode)) return;
       range.current = selection.getRangeAt(0).cloneRange();
-      setMarks({ bold: document.queryCommandState('bold'), italic: document.queryCommandState('italic'), underline: document.queryCommandState('underline') });
+      setMarks({ bold: boldAtSelection(), italic: document.queryCommandState('italic'), underline: document.queryCommandState('underline') });
     };
     document.addEventListener('selectionchange', track); return () => document.removeEventListener('selectionchange', track);
   }, []);
-  const commit = () => { if (!root.current) return; const runs = textRunsFromElement(root.current); lastWritten.current = JSON.stringify(runs); onChange({ ...value, runs }); };
+  const commit = () => { if (!root.current) return; const runs = textRunsFromElement(root.current); lastWritten.current = JSON.stringify(runs); onChange({ ...value, runs, ...(root.current.dataset.inlineFormatting?{inlineFormatting:true}:{}) }); };
   const format = (command: string) => {
+    if(onFormatBlock&&(!range.current||range.current.collapsed)){onFormatBlock(command as 'bold'|'italic'|'underline');return;}
     root.current?.focus();
     const selection = window.getSelection();
     if (range.current && root.current?.contains(range.current.commonAncestorContainer)) { selection?.removeAllRanges(); selection?.addRange(range.current); }
-    document.execCommand(command); commit();
-    setMarks({ bold: document.queryCommandState('bold'), italic: document.queryCommandState('italic'), underline: document.queryCommandState('underline') });
+    // Legacy block weights used to override every span. Materialize that visible
+    // weight once before allowing character-level marks to override the block.
+    if(baseWeight!==undefined&&!root.current?.dataset.inlineFormatting){
+      root.current?.querySelectorAll<HTMLElement>('span').forEach(span=>{span.style.fontWeight=getComputedStyle(span).fontWeight;});
+      root.current?.setAttribute('data-inline-formatting','true');
+    }
+    // Chromium considers 600 bold; temporarily expose it as the native normal
+    // weight while the command toggles, then restore the brand's 600 minimum.
+    const editor=root.current,weight=editor?.style.getPropertyValue('font-weight'),priority=editor?.style.getPropertyPriority('font-weight');
+    if(command==='bold'&&editor){editor.setAttribute('data-formatting-bold','true');if(Number(getComputedStyle(editor).fontWeight)<700)editor.style.setProperty('font-weight','400','important');}
+    try{document.execCommand(command);}finally{if(editor){editor.removeAttribute('data-formatting-bold');if(weight)editor.style.setProperty('font-weight',weight,priority);else editor.style.removeProperty('font-weight');}}
+
+    commit();
+    setMarks({ bold: boldAtSelection(), italic: document.queryCommandState('italic'), underline: document.queryCommandState('underline') });
   };
   const formatting = <div className="ewb-text-toolbar" role="toolbar" aria-label="Text formatting">
       <Dropdown value={value.style} listHeight="auto" onChange={style => onChange({ ...value, style: style as EditorTextValue['style'], size: styles[style as keyof typeof styles] })} items={Object.keys(styles).map(id => ({ id, label: id }))} trigger={<TriggerField size="sm" aria-label="Text style">{value.style}</TriggerField>} />
@@ -87,9 +106,16 @@ export function EditorTextBlock({ value, onChange, editable = true, toolbarHost 
     </div>;
   return <div className="ewb-text" data-editable={editable || undefined}>
     <div ref={root} className="ewb-text-content" contentEditable={editable} suppressContentEditableWarning role={editable ? 'textbox' : undefined} aria-label="Text block content" aria-multiline="true" tabIndex={editable ? 0 : undefined}
-      data-placeholder={'Write or type "/" for commands…'} onInput={commit}
+      data-placeholder={placeholder} data-show-placeholder={showPlaceholder||undefined} data-empty={!value.runs.some(run=>run.text.trim())||undefined} data-inline-formatting={value.inlineFormatting||undefined} onInput={commit}
+      onKeyDown={event=>{
+        if(event.nativeEvent.isComposing||event.altKey||event.shiftKey||!(event.metaKey||event.ctrlKey))return;
+        const command=({b:'bold',i:'italic',u:'underline'} as Record<string,string>)[event.key.toLowerCase()];
+        if(!command)return;event.preventDefault();event.stopPropagation();
+        const selection=window.getSelection();if(selection?.rangeCount&&root.current?.contains(selection.anchorNode))range.current=selection.getRangeAt(0).cloneRange();
+        format(command);
+      }}
       onPaste={event => { event.preventDefault(); document.execCommand('insertText', false, event.clipboardData.getData('text/plain')); commit(); }}
-      style={{ fontSize: value.size, fontWeight: value.style.startsWith('Heading') ? 600 : 400, textAlign: value.align, color: value.color } as CSSProperties} />
+      style={{ fontSize: value.size, fontWeight: baseWeight??(value.style.startsWith('Heading') ? 700 : 600), textAlign: value.align, color: value.color } as CSSProperties} />
     {editable && (toolbarHost ? createPortal(formatting, toolbarHost) : formatting)}
   </div>;
 }

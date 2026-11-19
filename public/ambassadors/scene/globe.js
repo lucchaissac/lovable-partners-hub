@@ -5,6 +5,7 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { GUI } from './vendor/lil-gui.esm.js';
 import {communityArrivalMotion, communityArrivalDuration} from './community-intro.mjs';
+import {newsletterMarkerMotion,newsletterMailScale} from './newsletter-motion.mjs';
 
 // ---------------------------------------------------------------------------
 // Globe "world tour" : le monde de dev/world intégré dans le poster Figma,
@@ -625,6 +626,8 @@ function makePoiTexture(mail = false) {
 const poiSprites = [];
 const poiByKey = {};
 const newsletterHearts = [];
+let newsletterMotion = null;
+let newsletterFrameRequest = null;
 
 function buildCities() {
   const tex = makePoiTexture();
@@ -677,8 +680,13 @@ function buildCities() {
     const cities = [[64.15,-21.94],[53.35,-6.26],[48.86,2.35],[38.72,-9.14],[41.90,12.50],[37.98,23.73],[33.57,-7.59],[14.69,-17.44],[6.52,3.38],[30.04,31.24],[-1.29,36.82],[-33.92,18.42],[25.20,55.27],[28.61,77.21],[35.68,139.69],[40.71,-74.01],[25.76,-80.19],[19.43,-99.13],[-23.55,-46.63],[-33.45,-70.67],[55.79,49.12],[56.84,60.60],[41.72,44.83],[35.69,51.39],[41.30,69.24],[51.17,71.45]];
     const heartGeometry = new THREE.PlaneGeometry(1, 1);
     const heartMaterial = new THREE.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false,side:THREE.FrontSide});
+    const mailMaterial = new THREE.MeshBasicMaterial({map:makePoiTexture(true),transparent:true,depthWrite:false,side:THREE.FrontSide,opacity:0});
     for (const [lat, lon] of cities) {
-      const heart = new THREE.Mesh(heartGeometry, heartMaterial);
+      const heart = new THREE.Mesh(heartGeometry, heartMaterial.clone());
+      const mail = new THREE.Mesh(heartGeometry, mailMaterial.clone());
+      mail.renderOrder = 11;
+      heart.add(mail);
+      heart.userData.mail = mail;
       const point = latLonToVec3(lat, lon, 1.008);
       heart.position.copy(point);
       heart.lookAt(point.clone().multiplyScalar(2));
@@ -2458,12 +2466,20 @@ const CITY_THETA = TOUR.map(([, la, lo]) => {
             break;
           case 'render-globe': {
             try {
+              newsletterMotion = null;
               const pixels = [1080, 2160, 4320].includes(m.pixels) ? m.pixels : 2160;
               const blob = await captureHdPng(pixels);
               parent.postMessage({ type: 'globe-render-done', blob, requestId: m.requestId }, location.origin);
             } catch (err) {
               parent.postMessage({ type: 'globe-render-done', blob: null, requestId: m.requestId }, location.origin);
             }
+            break;
+          }
+          case 'newsletter-motion-frame': {
+            if (!NEWSLETTER || !Number.isFinite(m.seconds) || !Number.isInteger(m.requestId)) break;
+            newsletterMotion={seconds:m.seconds};
+            newsletterFrameRequest={pixels:m.pixels===2160?2160:1080,requestId:m.requestId};
+            builderRendererActive=true;
             break;
           }
           case 'render': {
@@ -2548,6 +2564,7 @@ function animate() {
   // (drag et export restent vivants)
   if (PLAYBACK.paused) t = PLAYBACK.frozenT;
   else t -= PLAYBACK.offset;
+  if (newsletterMotion) t = 3;
   // stop motion : on n'avance que sur les pas de la grille, les frames
   // intermédiaires gardent l'image affichée
   if (!PLAYBACK.paused && STOPMO.fps > 0) {
@@ -2729,6 +2746,7 @@ function animate() {
   } else {
     rotY += (target - rotY) * (1 - Math.exp(-dt * (LIVE_GLOBE ? 2.8 : 5.5)));
   }
+  if (newsletterMotion) rotY=target;
   world.rotation.y = rotY + DRAG.rot;
 
   // mode ville : seule l'ORIENTATION du globe change (pas sa position) —
@@ -2740,6 +2758,7 @@ function animate() {
     ? (cityLatDeg() * Math.PI) / 180 - (V2 ? 0.54 : 0.52)
     : phaseTilt;
   rootTilt += (tiltTarget - rootTilt) * (1 - Math.exp(-dt * (LIVE_GLOBE ? 3 : 6)));
+  if (newsletterMotion) rootTilt=tiltTarget;
   root.rotation.x = rootTilt + DRAG.tilt;
 
   // drag : au relâchement les offsets retombent à zéro, le globe retrouve
@@ -2834,9 +2853,13 @@ function animate() {
 
   if (NEWSLETTER && VIEW.city !== null) {
     const selected = poiByKey[isCustom() ? 'custom' : ORDER[VIEW.city]];
-    for (const heart of newsletterHearts) {
+    for (const [index,heart] of newsletterHearts.entries()) {
       // Keep the full envelope and its surrounding area free of small hearts.
       heart.visible = heart.position.angleTo(selected.position) > 0.2;
+      const motion=newsletterMotion?newsletterMarkerMotion(newsletterMotion.seconds,index):{scale:1,opacity:1,mailMix:0};
+      heart.scale.setScalar(.052*motion.scale);
+      heart.material.opacity=motion.opacity*(1-motion.mailMix);
+      heart.userData.mail.material.opacity=motion.opacity*motion.mailMix;
     }
   }
 
@@ -2858,7 +2881,7 @@ function animate() {
           const motion = builderIntro.motion;
           s.rotateZ(motion.angle);
         }
-        s.scale.setScalar(s.userData.base * builderHeartScale * arrivalScale);
+        s.scale.setScalar(s.userData.base * builderHeartScale * arrivalScale * (newsletterMotion?newsletterMailScale(newsletterMotion.seconds):1));
       }
       continue;
     }
@@ -2905,6 +2928,14 @@ function animate() {
   }
 
   composer.render();
+
+  if (newsletterFrameRequest) {
+    const request=newsletterFrameRequest;newsletterFrameRequest=null;
+    builderRendererActive=false;
+    withRenderResolution(request.pixels,()=>createImageBitmap(renderer.domElement))
+      .then(bitmap=>parent.postMessage({type:'newsletter-frame-done',bitmap,requestId:request.requestId},location.origin,[bitmap]))
+      .catch(()=>parent.postMessage({type:'newsletter-frame-done',bitmap:null,requestId:request.requestId},location.origin));
+  }
 
   if (LIVE_GLOBE) {
     if (builderFrameListener) builderFrameListener(renderer.domElement);

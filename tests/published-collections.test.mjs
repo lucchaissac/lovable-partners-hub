@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {createServer} from 'vite';
 
-const server=await createServer({configFile:false,server:{middlewareMode:true,hmr:false},appType:'custom',logLevel:'silent'});
+const server=await createServer({configFile:false,cacheDir:'node_modules/.vite-test-published-collections',server:{middlewareMode:true,hmr:false},appType:'custom',logLevel:'silent'});
 after(()=>server.close());
 const {assetCollectionSchema,editableAssetCollection}=await server.ssrLoadModule('/studio/src/assets-tool/assetCollection.ts');
 const {parsePublishedCollection,loadPublishedCollection}=await server.ssrLoadModule('/studio/src/assets-tool/publishedCollections.ts');

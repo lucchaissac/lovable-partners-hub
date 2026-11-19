@@ -44,6 +44,26 @@ class Scene {
  }
 }
 const globe=new Scene(false),newsletterGlobe=new Scene(false,true),spotlight=new Scene(true),globes=new Map();let jobs=Promise.resolve();
+/** A disposable renderer owns a deterministic timeline and transfers one raw
+ * frame at a time. No video-size PNG strings or frame buffers accumulate.
+ * @param {object} settings @param {{pixels?:number,signal?:AbortSignal}} [options] */
+export async function createNewsletterMotionRenderer(settings,{pixels=2160,signal}={}){
+ const scene=new Scene(false,true);
+ try{signal?.throwIfAborted();await scene.capture({...DEFAULTS,...settings},1080,true);signal?.throwIfAborted();}
+ catch(error){scene.dispose();throw error;}
+ return {
+  async frame(seconds){
+   signal?.throwIfAborted();
+   const requestId=++scene.revision,pending=scene.wait('newsletter-frame-done',data=>data.requestId===requestId);
+   scene.send({type:'newsletter-motion-frame',seconds,pixels,requestId});
+   const result=await pending;
+   if(!(result.bitmap instanceof ImageBitmap))throw Error('Could not render the animated globe.');
+   if(signal?.aborted){result.bitmap.close();signal.throwIfAborted();}
+   return result.bitmap;
+  },
+  dispose(){scene.dispose();},
+ };
+}
 function globeImage(state,pixels){const newsletter=state.globeStyle==='newsletter',key=`${newsletter?'newsletter':'default'}:${state.city.trim().toLowerCase()}:${pixels}`;if(!globes.has(key)){const result=(newsletter?newsletterGlobe:globe).capture(state,pixels).catch(error=>{globes.delete(key);throw error;});globes.set(key,result);if(globes.size>8)globes.delete(globes.keys().next().value);}return globes.get(key);}
 /** @param {object} settings @param {{pixels?:number,element?:'globe'|'spotlight-globe'|'qr',signal?:AbortSignal}} [options] */
 export function renderAmbassador(settings,{pixels=1600,element=undefined,signal=undefined}={}){

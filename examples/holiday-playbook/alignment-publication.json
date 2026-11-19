@@ -1,0 +1,29 @@
+{
+  "url": "https://lovable-brands.vercel.app/holiday-playbook",
+  "slug": "holiday-playbook-aligned-20261119",
+  "assets": 12,
+  "activeId": "c1a8bf00-24e8-4452-91bc-0b72126f0b53",
+  "idMap": {
+    "85622d76-8b1a-430b-9abc-3ea8721a2bd6": "ef1cee31-8958-47ca-8f9a-96b26f813dd1",
+    "dd0b3a11-2868-4bb9-82bd-298c35251b11": "ad74a372-dec8-4a4c-8429-c3c82dd7e1d0",
+    "618c7a24-a9a2-41f9-8b37-4c3528dc161a": "8a0d6029-cfa5-4eee-8f01-bc6accc2c1cf",
+    "267a9f68-a593-4505-91cf-df2e6c046487": "35daacbb-da78-48b2-b165-44719e3f60b7",
+    "911686d0-7f71-4d42-93d8-3a559be088ac": "6f615dea-e593-4186-b0d0-10b4ea08e49b",
+    "9d6e37ec-dde3-4f0b-a2e0-c798b9516dc5": "15e0ee5c-6f36-4d89-882a-7c1e102222d3",
+    "01ba6698-63f6-44cb-96a9-4b354acfd66f": "2db25e77-6958-4c3c-a962-00577137cf9c",
+    "7afcedef-8f30-4607-96d5-e816d91f104e": "5681e9f4-c159-4feb-b7b8-8f13a8a3f276",
+    "c6395a26-ec1e-458e-8f31-4b00fafc6f2f": "510b1285-95c6-4a7c-b9cc-7a286206c624",
+    "0774207e-4f16-4839-8619-9326a476ca14": "74b06d35-f4df-44a9-ae89-62711c661c1d",
+    "edb89eb3-38d8-45f9-a2bf-f4827919fc83": "c6f50429-e49f-4575-8991-4db9dc00ff40",
+    "db36ff0c-058b-420c-bfff-999ae527d4eb": "c1a8bf00-24e8-4452-91bc-0b72126f0b53"
+  },
+  "mediaFiles": [
+    "/collections/media/a33e349e74a1a7646608cbda00c4fb1b68dbd8132aa33a3680287728a7e6954c.webp"
+  ],
+  "date": "2026-11-19",
+  "authorizedBy": "Luc requested only the masked hearts of production square assets 6–10 aligned at the same Y.",
+  "change": "Only holiday-motif.editor.y changes to 149 (square 6 reference) on squares 8, 9 and 10. Square 6 and 7 already use 149. Every other layer and setting remains identical.",
+  "localOnly": "Newsletter hearts → envelopes animation and video export remain development-only.",
+  "previousSnapshot": "holiday-playbook-20261119",
+  "behavior": "A new immutable snapshot preserves all previously saved browser edits. The same short hosted link opens the corrected collection."
+}

@@ -3,7 +3,7 @@ import { flushSync } from 'react-dom';
 import { toCanvas } from 'html-to-image';
 import { BufferTarget, CanvasSource, Mp4OutputFormat, Output, Quality, WebMOutputFormat, canEncodeVideo } from 'mediabunny';
 import { AssetPlaybackPreview } from './AssetPlaybackPreview';
-import { canExportAnimation, canExportVideoAsset, videoLoopDuration, playbackPosition, playbackTimeline, playbackEndHoldMs } from './assetPlayback';
+import { canExportAnimation, canExportVideoAsset, newsletterAnimationGlobe, videoLoopDuration, playbackPosition, playbackTimeline, playbackEndHoldMs } from './assetPlayback';
 import { assetDimensions, type AssetDocument } from './model';
 import { embeddedAssetFonts, filename } from './media';
 
@@ -57,6 +57,10 @@ function snapshotVideos(board: HTMLElement) {
  * The same composited DOM as preview retains CSS blend modes and native type. */
 export async function exportVideo(pages: AssetDocument[], parent: HTMLElement, signal: AbortSignal, onProgress: (percent: number) => void, mode: 'sequence' | 'asset' = 'sequence') {
   const single = mode === 'asset';
+  if(import.meta.env.DEV&&single&&pages.length===1&&newsletterAnimationGlobe(pages[0])){
+    const {exportNewsletterVideo}=await import('./newsletterVideoExport');
+    return exportNewsletterVideo(pages[0],parent,signal,onProgress);
+  }
   if (single ? pages.length !== 1 || !canExportVideoAsset(pages[0]) : !canExportAnimation(pages)) throw new Error(single ? 'Add a video layer to this asset first.' : 'Enable animation on an asset with a following asset first.');
   const { width, height } = videoDimensions(pages[0]), frameRate = 30;
   const quality = new Quality({ bitrate: Math.max(2_000_000, Math.round(width * height * frameRate * .16)) });

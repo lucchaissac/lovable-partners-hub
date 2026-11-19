@@ -11,7 +11,7 @@ export default defineConfig(({mode})=>{
  return {
   // These variables stay in Node; Vite only exposes VITE_-prefixed values to the page.
   plugins: [communityChatPlugin({env:loadEnv(mode,process.cwd(),['COMMUNITY_','OPENAI_','BLOB_'])}),studioAnimationPlugin({env:loadEnv(mode,process.cwd(),['COMMUNITY_','OPENAI_','BLOB_'])}),partnerLogoPlugin(),sharePagesPlugin(),demoPagesPlugin(demoEnabled)],
-  optimizeDeps: { include: ['react', 'react-dom/client', 'react-router-dom'] },
+  optimizeDeps: { include: ['react', 'react-dom', 'react-dom/client', 'react-router-dom', 'mediabunny', 'html-to-image', 'fflate'] },
   resolve: {
     dedupe: ['react', 'react-dom'],
     alias: [

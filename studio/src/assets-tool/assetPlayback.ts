@@ -80,9 +80,13 @@ export function canExportAnimation(pages: AssetDocument[]) {
 
 /** A single animated post is independent of the collection's page transitions. */
 export function canExportVideoAsset(asset: AssetDocument) {
+  if(import.meta.env?.DEV&&newsletterAnimationGlobe(asset))return true;
   return !!asset.editor?.pages.some(page => page.sections.some(section => section.columns.flat().some(block =>
     block.kind === 'media' && block.format === 'Video' && !block.editor?.hidden &&
     (/\.(mp4|webm|ogg|mov)(?:\?|$)/i.test(block.src) || block.src.startsWith('data:video/')))));
+}
+export function newsletterAnimationGlobe(asset:AssetDocument){
+  return asset.editor?.pages.flatMap(page=>page.sections.flatMap(section=>section.columns.flat())).find(block=>block.kind==='image'&&block.ambassadorElement==='globe'&&block.ambassador?.globeStyle==='newsletter'&&!block.editor?.hidden);
 }
 
 /** Finish on a complete cycle of every source. Never append the slideshow hold.

@@ -6,7 +6,9 @@ import {partnerLogoRequest} from '../shared/partnerLogo.mjs';
 import {websiteLogoCandidates,resolvePartnerLogo,selfContainedLogoSvg,isPublicLogoAddress,logoURL,readLogoURL,partnerLogoHandler} from '../server/partnerLogo.mjs';
 
 const vite=await createServer({configFile:false,server:{middlewareMode:true,hmr:false},logLevel:'silent'});
-const {partnerLogoTarget,fittedBrandLogo}=await vite.ssrLoadModule('/studio/src/assets-tool/brandLogo.ts');
+const {partnerLogoTarget,fittedBrandLogo,layoutPartnershipLogo}=await vite.ssrLoadModule('/studio/src/assets-tool/brandLogo.ts');
+const {partnershipDivider}=await vite.ssrLoadModule('/studio/src/assets-tool/brandDivider.ts');
+const {logoInkBand}=await vite.ssrLoadModule('/studio/src/assets-tool/logoPixels.ts');
 const {updateBrandPartner}=await vite.ssrLoadModule('/studio/src/assets-tool/brandAsset.ts');
 const {assetSchema,referenceDocument}=await vite.ssrLoadModule('/studio/src/assets-tool/model.ts');
 await vite.close();
@@ -31,6 +33,28 @@ test('Attachments, missing input and multiple targets are explicit; animation an
  assert.equal(partnerLogoRequest('Use this logo',[image,image]).kind,'ambiguous');
  for(const prompt of ['Animate the logo','Update the logo animation','Make the logo fade in','Use the original App Studio banner with its logo','Create an App Studio banner with its logo','Do not replace the logo','Ne change pas le logo','Make it epic'])assert.equal(partnerLogoRequest(prompt),null,prompt);
 });
+test('Follow-ups reuse the current logo task across multiple turns, legacy replies and saved chats',()=>{
+ const messages=[{user:true,text:'Update the logo with ramp.com'},{user:false,text:'Replaced the partner logo with ramp.com, fitted in white.'}];
+ for(const prompt of ['with elevenlabs.io','avec elevenlabs.io','elevenlabs.io','and now https://elevenlabs.io','non, plutôt elevenlabs.io'])assert.equal(partnerLogoRequest(prompt,[],messages).url,'https://elevenlabs.io/');
+ messages.push({user:true,text:'with elevenlabs.io'},{user:false,text:'This request was not applied.'});
+ assert.equal(partnerLogoRequest('with elevenlabs.io',[],messages).kind,'website');
+ messages.push({user:false,text:'Replaced.',partnerLogoEdit:{targetId:'selected-partner'}});
+ const roundTrip=assetSchema.parse({...fixture(),messages}).messages;
+ assert.equal(partnerLogoRequest('now with ramp.com',[],roundTrip).targetId,'selected-partner');
+ const image={kind:'image',name:'Next.png',image:'data:image/png;base64,AAAA'};
+ assert.equal(partnerLogoRequest('and this one',[image],roundTrip).source,image);
+ assert.equal(partnerLogoRequest('use this',[{kind:'link',url:'https://elevenlabs.io',name:'ElevenLabs',text:'Source'}],roundTrip).url,'https://elevenlabs.io/');
+});
+test('Logo context never leaks across chats or hijacks a new task, template or animation',()=>{
+ const history=[{user:true,text:'Replace the logo with ramp.com',workspaceChatId:'first'}];
+ assert.equal(partnerLogoRequest('with elevenlabs.io',[],history,'second'),null);
+ assert.equal(partnerLogoRequest('with elevenlabs.io'),null);
+ for(const text of ['Make a QR code for elevenlabs.io','Animate the logo','Create an App Studio banner','Change the headline to hello']){
+  assert.equal(partnerLogoRequest('with elevenlabs.io',[],[...history,{user:true,text,workspaceChatId:'first'}],'first'),null,text);
+ }
+ assert.equal(partnerLogoRequest('Make a QR code for elevenlabs.io',[],history,'first'),null);
+ assert.equal(partnerLogoRequest('Do not change it with elevenlabs.io',[],history,'first'),null);
+});
 test('Replacement retains the center, frame limit, styling, layer ID and all other objects through source serialization',()=>{
  const asset=fixture(),target=partnerLogoTarget(asset),original=structuredClone(asset);
  const replacement=fittedBrandLogo(target,'data:image/png;base64,BBBB','Ramp logo',710,200);
@@ -53,6 +77,43 @@ test('Locked, absent, unrelated or ambiguous logo selections cannot be overwritt
  const two=fixture(),blocks=two.editor.pages[0].sections[0].columns[0];blocks.push({...blocks[1],id:'second'});
  assert.throws(()=>partnerLogoTarget(two),/Select the partner/);
  assert.equal(partnerLogoTarget(two,'HTML_SELECTION {"blockIds":["second"]}').id,'second');
+ assert.equal(partnerLogoTarget(two,undefined,'second').id,'second');
+ assert.equal(partnerLogoTarget(two,'HTML_SELECTION {"blockIds":["partner"]}','second').id,'partner');
+});
+const partnership=()=>{
+ const asset=fixture(),columns=asset.editor.pages[0].sections[0].columns;
+ columns[0][0]={...columns[0][0],id:'brand-identity',editor:{x:190,y:307,widthPx:358,height:65.19,appearance:{imageFit:'contain'}}};
+ columns[0][1].editor.rotation=0;columns[0].push(partnershipDivider(),{id:'gradient',kind:'image',value:{...columns[0][0].value,alt:'Keep this gradient'},editor:{x:-600,y:-280,widthPx:2400,height:2400}});
+ return asset.editor;
+};
+const prepared=(name,width,height,top,inkHeight)=>({name,src:'data:image/png;base64,BBBB',width,height,ink:{top,height:inkHeight}});
+test('Long wordmarks match visible letter height and baseline, with equal gaps and intact native artwork',()=>{
+ const source=partnership(),original=structuredClone(source),ink={top:.3,height:.68};
+ const logo=prepared('ElevenLabs',117,15,.24,.75),next=layoutPartnershipLogo(source,'partner',logo,ink);
+ const blocks=next.pages[0].sections[0].columns[0],left=blocks[0].editor,right=blocks[1].editor,line=blocks[2].editor;
+ const near=(a,b)=>assert.ok(Math.abs(a-b)<.00001,`${a} != ${b}`);
+ near(left.height*ink.height,right.height*logo.ink.height);
+ near(left.y+left.height*(ink.top+ink.height),right.y+right.height*(logo.ink.top+logo.ink.height));
+ near(line.x+line.widthPx/2-line.height/2-left.x-left.widthPx,right.x-(line.x+line.widthPx/2+line.height/2));
+ near(right.widthPx/right.height,117/15);assert.ok(right.widthPx>306,'a long wordmark must grow beyond the old partner frame');
+ near((left.x+right.x+right.widthPx)/2,(190+686+306)/2);
+ assert.deepEqual(blocks[3],original.pages[0].sections[0].columns[0][3]);assert.deepEqual(blocks[1].editor.appearance,source.pages[0].sections[0].columns[0][1].editor.appearance);
+ assert.equal(blocks[2].shape,'line');assert.deepEqual(source,original);
+ assert.deepEqual(assetSchema.parse({...fixture(),editor:next}).editor,next);
+});
+test('Alternating partners does not progressively shrink the signature; locked identities stay protected',()=>{
+ const ink={top:.3,height:.68},ramp=prepared('Ramp',71,20,.22,.57),eleven=prepared('ElevenLabs',117,15,.24,.75);
+ const first=layoutPartnershipLogo(partnership(),'partner',ramp,ink);
+ const next=layoutPartnershipLogo(layoutPartnershipLogo(first,'partner',eleven,ink),'partner',ramp,ink);
+ const a=first.pages[0].sections[0].columns[0],b=next.pages[0].sections[0].columns[0];
+ for(const index of [0,1,2])for(const key of ['x','y','widthPx','height'])assert.ok(Math.abs(a[index].editor[key]-b[index].editor[key])<.00001);
+ const locked=partnership();locked.pages[0].sections[0].columns[0][0].editor.locked=true;
+ assert.throws(()=>layoutPartnershipLogo(locked,'partner',eleven,ink),/Unlock/);
+});
+test('Visible-ink measurement excludes a peripheral tall symbol from the lettering band',()=>{
+ const width=200,height=100,pixels=new Uint8ClampedArray(width*height*4);
+ for(let y=0;y<height;y++)for(let x=0;x<width;x++)if(x<30||y>=30&&y<70&&x>=50&&x<160)pixels[(y*width+x)*4+3]=255;
+ assert.deepEqual(logoInkBand(pixels,width,height),{top:.3,height:.4});
 });
 test('Logo discovery selects the home signature and ignores favicons, scripts and customer logos',()=>{
  const html=`<link rel="icon" href="/favicon.png"><script>const x='<img alt="Example logo" src="/fake.svg">'</script><a href="/">${svg}</a><img src="/customer-logo.svg" alt="Customer logo"><img alt="Unrelated logo" src="/other.svg">`;

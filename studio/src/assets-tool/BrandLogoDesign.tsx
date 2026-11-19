@@ -5,10 +5,10 @@ import type {HtmlBlock} from '../studio/htmlEditorModel';
 import {importPartnerLogo} from './partnerBadge';
 import {ImageAppearanceControls} from './ImageAppearanceControls';
 import './partner-badge.css';
-import {fittedBrandLogo} from './brandLogo';
+import {fittedBrandLogo,type PreparedBrandLogo} from './brandLogo';
 
 type ImageBlock=Extract<HtmlBlock,{kind:'image'}>;
-export function BrandLogoControls({block,onChange,locked=false}:{block:ImageBlock;onChange:(block:ImageBlock)=>void;locked?:boolean}){
+export function BrandLogoControls({block,onChange,onReplaceLogo,locked=false}:{block:ImageBlock;onChange:(block:ImageBlock)=>void;onReplaceLogo?:(logo:PreparedBrandLogo)=>Promise<void>;locked?:boolean}){
  const input=useRef<HTMLInputElement>(null),[busy,setBusy]=useState(false),[error,setError]=useState('');
  const latest=useRef(block);latest.current=block;
  const change=useRef(onChange);change.current=onChange;
@@ -17,7 +17,7 @@ export function BrandLogoControls({block,onChange,locked=false}:{block:ImageBloc
   if(!file||busy||locked)return;setBusy(true);setError('');
   try{
    const logo=await importPartnerLogo(file,{vectorResolution:1200}),img=new Image();img.src=logo.src;await img.decode();
-   if(active.current)change.current(fittedBrandLogo(latest.current,logo.src,file.name,img.naturalWidth,img.naturalHeight));
+   if(active.current){if(onReplaceLogo)await onReplaceLogo({...logo,name:file.name});else change.current(fittedBrandLogo(latest.current,logo.src,file.name,img.naturalWidth,img.naturalHeight));}
   }catch(reason){if(active.current)setError(reason instanceof Error?reason.message:'Could not read this logo.');}
   finally{if(active.current)setBusy(false);if(input.current)input.current.value='';}
  };
@@ -36,6 +36,6 @@ export function BrandLogoControls({block,onChange,locked=false}:{block:ImageBloc
   {error&&<p className="partner-badge-error" role="alert">{error}</p>}
  </fieldset>;
 }
-export function BrandLogoDesign({block,onChange,onClose,locked}:{block:ImageBlock;onChange:(block:ImageBlock)=>void;onClose:()=>void;locked:boolean}){
- return <aside id="html-element-design" className="hcs-design-design-panel partner-badge-panel" aria-label="Collaboration logo design"><DesignPanelHeader title="Partner logo" locked={locked} closeLabel="Close logo design" onClose={onClose}/><div className="hcs-design-design-body"><BrandLogoControls block={block} onChange={onChange} locked={locked}/></div></aside>;
+export function BrandLogoDesign({block,onChange,onReplaceLogo,onClose,locked}:{block:ImageBlock;onChange:(block:ImageBlock)=>void;onReplaceLogo?:(logo:PreparedBrandLogo)=>Promise<void>;onClose:()=>void;locked:boolean}){
+ return <aside id="html-element-design" className="hcs-design-design-panel partner-badge-panel" aria-label="Collaboration logo design"><DesignPanelHeader title="Partner logo" locked={locked} closeLabel="Close logo design" onClose={onClose}/><div className="hcs-design-design-body"><BrandLogoControls block={block} onChange={onChange} onReplaceLogo={onReplaceLogo} locked={locked}/></div></aside>;
 }

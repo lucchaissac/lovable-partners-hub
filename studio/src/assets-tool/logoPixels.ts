@@ -21,3 +21,16 @@ export function cleanLogoPixels(pixels: Uint8ClampedArray, width: number, height
   if(right<left||bottom<top) throw new Error('No logo was detected. Try a file with more contrast.');
   return {pixels:result,crop:{x:left,y:top,width:right-left+1,height:bottom-top+1},removed:!!background};
 }
+
+/** Estimate the dominant lettering band from visible ink, ignoring peripheral symbols
+ * and sparse ascenders/descenders. These are artwork measurements, not brand ratios. */
+export function logoInkBand(pixels:Uint8ClampedArray,width:number,height:number){
+ const rows=new Float64Array(height),start=Math.floor(width*.25),end=Math.ceil(width*.75);
+ let peak=0;
+ for(let y=0;y<height;y++){for(let x=start;x<end;x++)rows[y]+=pixels[(y*width+x)*4+3]/255;peak=Math.max(peak,rows[y]);}
+ if(!peak)return {top:0,height:1};
+ let top=0,bottom=height-1;
+ while(top<bottom&&rows[top]<peak*.22)top++;
+ while(bottom>top&&rows[bottom]<peak*.22)bottom--;
+ return {top:top/height,height:(bottom-top+1)/height};
+}

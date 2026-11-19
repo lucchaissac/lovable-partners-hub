@@ -1,9 +1,9 @@
 import {MakerDesignProvider} from './MakerDesignContext';
 import {graphicEventFormat,applyCommunityContrast} from './communityGraphic';
 import {techStarterAsset} from './techAsset';
-import {brandStarterAsset,isAppStudioAsset,updateBrandPartner} from './brandAsset';
+import {brandStarterAsset,isAppStudioAsset} from './brandAsset';
 import {partnerLogoRequest} from '../../../shared/partnerLogo.mjs';
-import {partnerLogoTarget,fittedBrandLogo} from './brandLogo';
+import {partnerLogoTarget,layoutPartnershipLogo,partnershipIdentityInk} from './brandLogo';
 import {prepareChatPartnerLogo} from './partnerLogoChat';
 import {animationChatStatus,animationRequest,planCanvasAnimation} from './studioAnimation';
 import {animationCanvasKey,routesToAnimation,isAnimationFollowUp,requestedAnimationSteps} from '../../../shared/studioAnimation.mjs';
@@ -243,11 +243,13 @@ function AssetPageContent() {
   };
   const refine = async (request:AssetRequest) => {
     if(!current.current || controller.current)return;
-    const logoRequest=studioWorkspace==='lovable'?partnerLogoRequest(request.prompt,request.sources):null;
+    request={...request,chatId:request.chatId??workspaceChats(current.current,assetMessages(current.current)).active.id};
+    const conversation=assetMessages(current.current).filter(message=>messageWorkspaceChat(message)===request.chatId);
+    if(request.recorded&&conversation.at(-1)?.user&&conversation.at(-1)?.text===request.prompt)conversation.pop();
+    const logoRequest=studioWorkspace==='lovable'?partnerLogoRequest(request.prompt,request.sources,conversation,request.chatId):null;
     const animationIntent=!logoRequest&&routesToAnimation(request.prompt,current.current.messages??[]),animationFollowUp=isAnimationFollowUp(request.prompt,current.current.messages??[]);
     if((studioWorkspace==='ambassadors'||animationIntent)&&!localChat.enabled){setError(localChat.reason||'The chat service is unavailable. Please retry later.');return;}
     setError('');
-    request={...request,chatId:request.chatId??workspaceChats(current.current,assetMessages(current.current)).active.id};
     if(!request.recorded) {
       const user=readStudioConfig()?.user;
       appendMessage({id:crypto.randomUUID(),createdAt:new Date().toISOString(),text:request.prompt,user:true,workspaceChatId:request.chatId,sources:sourceReferences(request.sources),...(user?{author:{id:user.id,name:user.name||'You'}}:{})});
@@ -304,18 +306,21 @@ function AssetPageContent() {
         lastRequest.current=undefined;setVisual(undefined);return;
       }
       if(studioWorkspace==='lovable'){
+        let partnerLogoEdit:StudioMessage['partnerLogoEdit'];
         let reply='I can replace the Partnership logo from a website or attached image, open the App Studio banner, or animate this canvas. This request was not applied.';
         if(logoRequest){
           if(logoRequest.kind==='ambiguous')throw Error('Send one partner website or one logo image at a time.');
           if(logoRequest.kind==='missing')throw Error('Attach the partner logo or include its website address, for example “Replace the partner logo with ramp.com”.');
-          const target=partnerLogoTarget(document,request.visual?.context);
+          const target=partnerLogoTarget(document,request.visual?.context,logoRequest.targetId);
           setGenerationStage('Preparing the partner logo…');
-          const logo=await prepareChatPartnerLogo(logoRequest,active.signal);
+          const [logo,ink]=await Promise.all([prepareChatPartnerLogo(logoRequest,active.signal),partnershipIdentityInk(document.editor!)]);
           if(!mounted.current||run!==operation.current||active.signal.aborted||current.current?.id!==document.id)return;
           const latest=partnerLogoTarget(current.current,`HTML_SELECTION ${JSON.stringify({blockIds:[target.id]})}`);
           if(JSON.stringify(latest)!==JSON.stringify(target))throw Error('The partner logo changed while loading. Retry to keep your latest edits.');
-          change(updateBrandPartner(current.current,fittedBrandLogo(latest,logo.src,logo.name,logo.width,logo.height)));
-          reply=`Replaced the partner logo with ${logo.name.replace(/ logo$/i,'')}, fitted in white. The rest of your layout is unchanged.`;
+          if(JSON.stringify(current.current.editor)!==JSON.stringify(document.editor))throw Error('The canvas changed while loading. Retry to keep your latest layout.');
+          change({...current.current,editor:layoutPartnershipLogo(current.current.editor!,latest.id,logo,ink,assetDimensions(current.current).width)});
+          partnerLogoEdit={targetId:target.id};
+          reply=`Replaced the partner logo with ${logo.name.replace(/ logo$/i,'')} in white, balanced the lettering and aligned the signature with equal divider gaps.`;
         }else if(request.sources.length){
           reply='Attachments are not applied by this template shortcut. Use the canvas image tool to insert your artwork.';
         }else if(requestsAppStudioTemplate(request.prompt)){
@@ -328,7 +333,7 @@ function AssetPageContent() {
             reply='The original App Studio banner is ready. The sample event is Atlanta — December 2nd, 2026; edit that line directly on the canvas for your event.';
           }
         }
-        appendMessage({id:crypto.randomUUID(),createdAt:new Date().toISOString(),text:reply,user:false,workspaceChatId:request.chatId});
+        appendMessage({id:crypto.randomUUID(),createdAt:new Date().toISOString(),text:reply,user:false,workspaceChatId:request.chatId,...(partnerLogoEdit?{partnerLogoEdit}:{})});
         lastRequest.current=undefined;setVisual(undefined);return;
       }
       if(!exportBoard.current)throw new Error('The asset is still opening. Please retry.');

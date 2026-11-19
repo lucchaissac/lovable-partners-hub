@@ -1,6 +1,6 @@
 import type { HtmlBlock } from '../studio/htmlEditorModel';
 import { badgeFormatName, type PartnerBadgeSettings } from './partnerBadgeSettings';
-import { cleanLogoPixels } from './logoPixels';
+import { cleanLogoPixels,logoInkBand } from './logoPixels';
 
 export async function renderPartnerBadge(settings: PartnerBadgeSettings) {
   const { prepareTypography } = await import('../../../src/badges.js');
@@ -38,6 +38,7 @@ export async function importPartnerLogo(file:File, options:{vectorResolution?:nu
     const cropped=document.createElement('canvas'),crop=cleaned.crop;cropped.width=crop.width;cropped.height=crop.height;
     cropped.getContext('2d')!.drawImage(canvas,crop.x,crop.y,crop.width,crop.height,0,0,crop.width,crop.height);
     const src=cropped.toDataURL('image/png');if(src.length>2_400_000)throw new Error('Choose a simpler or smaller logo.');
-    return {src,removed:cleaned.removed};
+    const pixels=cropped.getContext('2d')!.getImageData(0,0,crop.width,crop.height).data;
+    return {src,removed:cleaned.removed,width:crop.width,height:crop.height,ink:logoInkBand(pixels,crop.width,crop.height)};
   } finally {URL.revokeObjectURL(url);}
 }

@@ -12,5 +12,5 @@ export async function prepareChatPartnerLogo(request:{kind:string;url?:string;so
  const response=await fetch(src,{signal}),blob=await response.blob();
  const logo=await importPartnerLogo(new File([blob],name,{type:blob.type}),{vectorResolution:1200});
  const image=new Image();image.src=logo.src;await image.decode();signal.throwIfAborted();
- return {...logo,name,width:image.naturalWidth,height:image.naturalHeight};
+ return {...logo,name};
 }

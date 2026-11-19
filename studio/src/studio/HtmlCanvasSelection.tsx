@@ -18,6 +18,7 @@ import {htmlBlockSchema} from './htmlEditorModel';
 import {TechArtworkDesign} from '../assets-tool/TechArtworkDesign';
 import {isTechArtwork} from '../assets-tool/techArtwork';
 import {BrandLogoDesign} from '../assets-tool/BrandLogoDesign';
+import {layoutPartnershipLogo,partnershipIdentityInk} from '../assets-tool/brandLogo';
 import {studioWorkspace} from '../assets-tool/workspace';
 import {communityImageHit} from '../assets-tool/communityHitTest';
 import {editCommunityBlock,needsCommunityRender} from '../assets-tool/communityDocument';
@@ -575,7 +576,11 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
       changeBlock(editCommunityBlock({...current,ambassador:current.ambassador},ambassador));
     }} onClose={()=>{setDesign(false);host.closePanel();}}/>,host.panelHost)}
     {selectionDesignActive&&one?.kind==='image'&&(studioWorkspace==='tech-blog'||studioWorkspace==='ambassadors')&&isTechArtwork(one)&&host.panelHost&&host.activeId==='html-selection'&&createPortal(<TechArtworkDesign key={one.id} block={one} locked={locked} onChange={changeBlock} onClose={()=>{setDesign(false);host.closePanel();}}/>,host.panelHost)}
-    {selectionDesignActive&&one?.kind==='image'&&one.brandRole==='partner'&&host.panelHost&&host.activeId==='html-selection'&&createPortal(<BrandLogoDesign key={one.id} block={one} locked={locked} onChange={changeBlock} onClose={()=>{setDesign(false);host.closePanel();}}/>,host.panelHost)}
+    {selectionDesignActive&&one?.kind==='image'&&one.brandRole==='partner'&&host.panelHost&&host.activeId==='html-selection'&&createPortal(<BrandLogoDesign key={one.id} block={one} locked={locked} onChange={changeBlock} onReplaceLogo={async logo=>{
+      const before=source.current,ink=await partnershipIdentityInk(before);
+      if(source.current!==before)throw Error('The canvas changed while loading. Retry to keep your latest layout.');
+      save(layoutPartnershipLogo(before,one.id,logo,ink,root.current?.clientWidth||1200));
+    }} onClose={()=>{setDesign(false);host.closePanel();}}/>,host.panelHost)}
     {selectionDesignActive&&one?.kind==='image'&&one.badge&&host.panelHost&&host.activeId==='html-selection'&&createPortal(<PartnerBadgeDesign key={one.id} block={one} settings={one.badge} src={one.value.src} locked={locked} onAppearanceChange={changeBlock}
       onChange={(badge:PartnerBadgeSettings,image)=>{
         const current=source.current.pages.flatMap(page=>page.sections.flatMap(section=>section.columns.flat())).find(block=>block.id===one.id);

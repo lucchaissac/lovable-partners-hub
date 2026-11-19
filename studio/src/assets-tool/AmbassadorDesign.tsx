@@ -1,4 +1,5 @@
 import { DesignPanelHeader } from '../studio/DesignPanelHeader';
+import {NativeElementEffects} from '../studio/ElementTransformControls';
 import {useContext,useState} from 'react';
 import {Button,Icon,Input} from '@asset/ui';
 import {CommunityRenderErrors} from './CommunityRendering';
@@ -20,5 +21,5 @@ export function AmbassadorDesign({id,settings:draft,src,locked,pending,element,o
  {event&&<div className="partner-badge-section"><h3>Event</h3>{field('title','Event title',true)}{field('date','Date')}{field('venue','Venue')}{draft.format==='social'&&field('eventFooter','Caption')}</div>}
  {person&&<div className="partner-badge-section"><h3>Person</h3>{field('name','Name')}{field('role','Role')}{draft.format==='spotlight'&&photoField()}</div>}
  {!element&&draft.format==='speakers'&&<div className="partner-badge-section"><h3>Speakers</h3><label className="partner-badge-field"><span>People</span><span className="partner-badge-select"><select aria-label="Number of speakers" value={draft.count} onChange={e=>update({...draft,count:Number(e.target.value)})}>{[1,2,3].map(n=><option key={n}>{n}</option>)}</select><Icon name="chevron-down" size={14}/></span></label>{draft.speakers.slice(0,draft.count).map((speaker,index)=><div className="partner-badge-section" key={index}><h3>Speaker {index+1}</h3>{(['name','role'] as const).map(key=><label className="partner-badge-field" key={key}><span>{key==='name'?'Name':'Role'}</span><Input autoComplete="off" data-1p-ignore="true" inputSize="sm" aria-label={`Speaker ${index+1} ${key}`} value={speaker[key]} maxLength={key==='name'?48:55} onChange={e=>update({...draft,speakers:draft.speakers.map((s,i)=>i===index?{...s,[key]:e.target.value}:s)})}/></label>)}{photoField(index)}</div>)}</div>}
- </fieldset>{busy&&<p className="ambassador-render-status" role="status">Updating artwork…</p>}{error&&<p className="partner-badge-error" role="alert">{error} <Button variant="ghost" size="sm" onClick={()=>update(draft)}>Retry</Button></p>}</div></aside>;
+ <NativeElementEffects/></fieldset>{busy&&<p className="ambassador-render-status" role="status">Updating artwork…</p>}{error&&<p className="partner-badge-error" role="alert">{error} <Button variant="ghost" size="sm" onClick={()=>update(draft)}>Retry</Button></p>}</div></aside>;
 }

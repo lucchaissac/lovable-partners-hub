@@ -1,4 +1,5 @@
 import { DesignPanelHeader } from '../studio/DesignPanelHeader';
+import {NativeElementEffects} from '../studio/ElementTransformControls';
 import type {CSSProperties} from 'react';
 import {Button,Dropdown,Icon,Input,TriggerField} from '@asset/ui';
 import {curvePresets,communityGraphicPresets,communityGraphicDefaults} from '../../../shared/techArtwork.mjs';
@@ -26,6 +27,7 @@ export function TechArtworkControls({block,onChange,locked=false}:{block:ImageBl
   {range('opacity','Opacity',0,100,1,'%')}
   <label className="tech-artwork-field"><span>Ink</span><Dropdown value={value.color} items={[{id:'#ffffff',label:'White'},{id:'#1b1b1b',label:'Dark'}]} onChange={color=>update({color})} trigger={<TriggerField aria-label="Artwork ink" disabled={locked} trailingIcon={<Icon name="chevron-down" size={14}/>}>{value.color==='#1b1b1b'?'Dark':'White'}</TriggerField>}/></label>
   <div className="tech-artwork-actions"><Button size="sm" variant="ghost" disabled={!block.techArtwork} onClick={reset}>Reset</Button><Button size="sm" variant="ghost" leadingIcon={<Icon name="download" size={14}/>} onClick={()=>void exportSvg()}>Download .svg</Button></div>
+  <NativeElementEffects/>
  </fieldset>;
 }
 export function TechArtworkDesign({block,onChange,onClose,locked}:{block:ImageBlock;onChange:(block:ImageBlock)=>void;onClose:()=>void;locked:boolean}){

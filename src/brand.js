@@ -5,6 +5,8 @@ import {clearSpaceDiagrams,collaborationDiagrams} from './lovable/diagrams.js';
 import {logoPlayground,mountLogoPlayground} from './lovable/logoPlayground.js';
 import {qrGuide,mountQrGuide} from './lovable/qrGuide.js';
 import {agentGuideSection} from './agentGuide.js';
+import {appStudioSpecimen} from './lovable/appStudio.js';
+import {partnershipSpecimen} from './lovable/partnership.js';
 
 export const brandSections = [['overview','Overview'],['identity','Identity'],['clear-space','Clear space'],['collaborations','Co-branding'],['qr-code','QR code'],['gradients','Animated gradients'],['color','Color'],['typography','Typography'],['photography','Photography'],['incorrect-usage','Incorrect usage'],['for-your-agent','For your agent'],['downloads','Downloads']];
 import {brandGalleryAssets} from './lovable/galleryMedia.js';
@@ -15,7 +17,7 @@ const image = (asset,eager=false) => `<img src="${asset.src}" srcset="${asset.th
 const external = (href,label,icon) => `<a class="text-link" href="${source}${href}" target="_blank" rel="noopener noreferrer">${label} ${icon('arrow')}</a>`;
 
 export function brandGallery(){
- return `<section class="gallery lovable-gallery" aria-label="Lovable gallery"><div class="gallery-grid">${brandGalleryAssets.map((asset,i)=>`<figure class="gallery-item lovable-artwork" style="aspect-ratio:${asset.width}/${asset.height}" role="img" aria-label="${escape(asset.name)}">${asset.kind==='video'?`<img src="${asset.thumbnail}" width="${asset.width}" height="${asset.height}" alt="" loading="${i<3?'eager':'lazy'}" decoding="async"/><video class="gallery-media gallery-video" data-video-small="${asset.small}" data-video-large="${asset.src}" poster="${asset.thumbnail}" width="${asset.width}" height="${asset.height}" muted loop playsinline preload="none" disablepictureinpicture disableremoteplayback aria-hidden="true" tabindex="-1"></video>`:image(asset,i<3)}</figure>`).join('')}</div></section>`;
+ return `<section class="gallery lovable-gallery" aria-label="Lovable gallery"><div class="gallery-grid">${brandGalleryAssets.map((asset,i)=>`<figure class="gallery-item lovable-artwork" style="aspect-ratio:${asset.width}/${asset.height}" role="img" aria-label="${escape(asset.name)}"${asset.editHref?` data-gallery-edit="${escape(asset.editHref)}"`:''}>${asset.kind==='template'?(asset.id==='app-studio'?appStudioSpecimen():partnershipSpecimen()):asset.kind==='video'?`<img src="${asset.thumbnail}" width="${asset.width}" height="${asset.height}" alt="" loading="${i<3?'eager':'lazy'}" decoding="async"/><video class="gallery-media gallery-video" data-video-small="${asset.small}" data-video-large="${asset.src}" poster="${asset.thumbnail}" width="${asset.width}" height="${asset.height}" muted loop playsinline preload="none" disablepictureinpicture disableremoteplayback aria-hidden="true" tabindex="-1"></video>`:image(asset,i<3)}</figure>`).join('')}</div></section>`;
 }
 
 function logoCard(logo,icon){

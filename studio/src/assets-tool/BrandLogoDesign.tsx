@@ -38,7 +38,6 @@ export function BrandLogoControls({block,onChange,locked=false}:{block:ImageBloc
   <Button variant="neutral" leadingIcon={<Icon name="upload" size={16}/>} onClick={()=>input.current?.click()}>{busy?'Preparing logo…':'Replace partner logo'}</Button>
   <div className="brand-logo-position">{([['x','X'],['y','Y'],['widthPx','Width'],['height','Height']] as const).map(([key,label])=><label key={key} className="partner-badge-field"><span>{label}</span><Input inputSize="sm" type="number" step={1} aria-label={`Logo ${label.toLowerCase()}`} value={Math.round((block.editor?.[key]??0)*100)/100} onChange={event=>updateFrame(key,event.target.valueAsNumber)}/></label>)}</div>
   <ImageAppearanceControls block={block} onChange={onChange} locked={locked||busy} label="Logo"/>
-  <p>SVG, PNG or JPG. Trimmed, converted to white and fitted proportionally.</p>
   {error&&<p className="partner-badge-error" role="alert">{error}</p>}
  </fieldset>;
 }

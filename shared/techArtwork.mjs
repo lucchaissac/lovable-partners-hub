@@ -4,6 +4,17 @@ export const communityGraphicPresets=[{id:'diamonds',label:'Diamonds'},{id:'ring
 export const communityGraphicDefaults={kind:'curves',layout:'band',preset:'diamonds',count:8,spread:100,rotation:0,stroke:1.5,opacity:80,color:'#ffffff'};
 export const curveDefaults={kind:'curves',preset:'convergence',count:7,spread:100,rotation:0,stroke:1.12,opacity:30,color:'#ffffff'};
 export const gridDefaults={kind:'grid',style:'lines',spacing:28.08,stroke:.37,opacity:8,color:'#ffffff'};
+/** A construction keeps its identity while its numeric parameters evolve. */
+export function interpolateTechArtwork(from,to,progress){
+ if(from.kind!==to.kind||from.layout!==to.layout||from.preset!==to.preset||from.style!==to.style)return null;
+ const defaults=from.kind==='curves'?{...curveDefaults,scale:100,offsetX:0,offsetY:0}:gridDefaults;
+ const result={...from},a={...defaults,...from},b={...defaults,...to};
+ for(const key of Object.keys(a))if(typeof a[key]==='number'&&typeof b[key]==='number')result[key]=a[key]+(b[key]-a[key])*progress;
+ const color=t=>[1,3,5].map(i=>parseInt(t.slice(i,i+2),16));
+ const start=color(from.color),end=color(to.color);
+ result.color='#'+start.map((v,i)=>Math.max(0,Math.min(255,Math.round(v+(end[i]-v)*progress))).toString(16).padStart(2,'0')).join('');
+ return result;
+}
 const clamp=(n,a,b)=>Math.min(b,Math.max(a,Number(n)||0));
 const n=v=>Number(v.toFixed(3));
 function cropTransform(s,cx,cy,width,height){

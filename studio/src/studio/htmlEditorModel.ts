@@ -42,6 +42,7 @@ const editorFrame = z.object({
  position:z.enum(['flow','absolute']).optional(),spacingAfter:z.number().min(0).max(400).optional(),appearance:elementAppearance.optional(),
  locked:z.boolean().optional(),hidden:z.boolean().optional(),width:z.number().min(.1).max(500).optional(),widthPx:z.number().min(1).max(4000).optional(),height:z.number().min(1).max(4000).optional(),
  x:z.number().min(-4000).max(4000).optional(),y:z.number().min(-4000).max(4000).optional(),rotation:z.number().min(-360).max(360).optional(),
+ rotationX:z.number().min(-360).max(360).optional(),rotationY:z.number().min(-360).max(360).optional(),depth:z.number().min(-2000).max(2000).optional(),perspective:z.number().min(100).max(5000).optional(),
  radius:z.number().min(0).max(160).optional(),opacity:z.number().min(0).max(1).optional(),
 }).strict().optional();
 export const htmlBlockSchema=z.discriminatedUnion('kind',[

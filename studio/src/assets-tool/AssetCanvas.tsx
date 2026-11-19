@@ -159,10 +159,10 @@ export function AssetCanvas({toolbar,asset,pages,busy,generating,zoom,onZoom,onC
     </section>;
    })}</div>}
   </div>
-  {!grid&&thumbnails&&pages.length>1&&<nav ref={strip} className="community-page-strip" aria-label="Asset thumbnails">{pages.map(tile)}<AddAsset compact disabled={locked} onAdd={kind=>add(asset.id,kind)}/></nav>}
+  {!grid&&thumbnails&&<nav ref={strip} className="community-page-strip" aria-label="Asset thumbnails">{pages.map(tile)}<AddAsset compact disabled={locked} onAdd={kind=>add(asset.id,kind)}/></nav>}
   <div className="asset-canvas-footer community-pages-footer">
    <div className="community-page-controls"><Tooltip label={grid?'Back to canvas':'Grid view'} side="top"><Button size="sm" variant="ghost" aria-label={grid?'Back to canvas':'Grid view'} aria-pressed={grid} disabled={busy} leadingIcon={<Icon name="layout-grid" size={16} fill="currentColor" strokeWidth={0}/>} onClick={overview}/></Tooltip>
-    <Tooltip label="Asset thumbnails" side="top"><Button size="sm" variant="ghost" aria-label="Asset thumbnails" aria-expanded={thumbnails&&!grid&&pages.length>1} disabled={busy} leadingIcon={<Icon name="gallery-thumbnails" size={16}/>} onClick={()=>{playback.reset();setGrid(false);setThumbnails(value=>grid||!value);}}/></Tooltip>
+    <Tooltip label="Asset thumbnails" side="top"><Button size="sm" variant="ghost" aria-label="Asset thumbnails" aria-expanded={thumbnails&&!grid} disabled={busy} leadingIcon={<Icon name="gallery-thumbnails" size={16}/>} onClick={()=>{playback.reset();setGrid(false);setThumbnails(value=>grid||!value);}}/></Tooltip>
     <Button className="asset-page-counter" size="sm" variant="ghost" aria-label={`Asset ${index+1} of ${pages.length}. Open grid`} disabled={busy} onClick={overview}>{index+1} / {pages.length}</Button>
     <Button size="sm" variant="ghost" aria-label="Previous asset" disabled={busy||index===0} leadingIcon={<Icon name="chevron-left" size={14}/>} onClick={()=>open(pages[index-1].id)}/>
     <Button size="sm" variant="ghost" aria-label="Next asset" disabled={busy||index===pages.length-1} leadingIcon={<Icon name="chevron-right" size={14}/>} onClick={()=>open(pages[index+1].id)}/>

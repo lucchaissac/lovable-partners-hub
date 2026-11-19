@@ -4,8 +4,16 @@ import { readFile } from 'node:fs/promises';
 import ts from 'typescript';
 import { z } from 'zod';
 const source = await readFile(new URL('../studio/src/assets-tool/assetPlayback.ts', import.meta.url), 'utf8');
-const { playbackTimeline, playbackPosition, playbackThumbnailProgress, matchingPlaybackBlocks, playbackEasing, springProgress, canExportAnimation } = await import(`data:text/javascript;base64,${Buffer.from(ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText).toString('base64')}`);
+const { playbackTimeline, playbackPosition, playbackThumbnailProgress, matchingPlaybackBlocks, playbackEasing, playbackEasedProgress, springProgress, canExportAnimation } = await import(`data:text/javascript;base64,${Buffer.from(ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText).toString('base64')}`);
 const page = (enabled = true, transition = 'smart-animate', durationMs = 1200) => ({ animation: { enabled, transition, durationMs } });
+test('Procedural animation uses the same easing as the DOM, including spring overshoot',()=>{
+ assert.equal(playbackEasedProgress(.37,{easing:'linear'}),.37);
+ assert.ok(Math.abs(playbackEasedProgress(.5,{easing:'custom',curve:[0,0,1,1]})-.5)<1e-8);
+ const spring={easing:'spring',bounce:70,velocity:2,durationMs:800};
+ for(let i=0;i<=100;i++)assert.ok(Math.abs(playbackEasedProgress(i/100,spring)-Number(springProgress(i/100,70,2,800).toFixed(5)))<1e-8);
+ assert.ok(playbackEasedProgress(.5,{easing:'ease-out'})>.5);
+ assert.equal(playbackEasedProgress(1,{easing:'ease-in'}),1);
+});
 
 test('Playback uses outgoing settings, cuts Instant pages and reaches the final asset exactly', () => {
   const timeline = playbackTimeline([page(), page(true, 'instant', 9000), page(false), page()]);

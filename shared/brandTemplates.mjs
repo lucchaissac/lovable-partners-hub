@@ -1,3 +1,12 @@
+/** Approved Partnership geometry, shared by the gallery and editable canvas. */
+export const partnershipTemplate = {
+ id:'collaboration', name:'Partnership', width:1200, height:675, background:'#1b1b1b',
+ glow:{src:'/ambassadors/assets/heart-overlay.webp',x:-600,y:-280,width:2400,height:2400},
+ logo:{src:'/brand/assets/full-white-pure.svg',x:190,y:307,width:358,height:65.19},
+ divider:{x:616,y:307,width:2,height:65.19,color:'#ffffff'},
+ partner:{src:'/brand/assets/cerebras-logo-white.svg',x:686,y:272,width:306,height:136},
+};
+
 /** Original Figma geometry, shared by the guidelines specimen and editable canvas. */
 export const appStudioTemplate = {
  id:'app-studio', name:'App Studio', width:1920, height:1080, background:'#1b1b1b',

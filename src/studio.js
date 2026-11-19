@@ -8,6 +8,10 @@ export function studio({ library = false, badge, asset, starter = false, workspa
 // Reveal the frame only after its initial theme and React styles are ready.
 window.addEventListener('message', event => {
   const frame = document.querySelector('.partner-studio iframe');
+  if(frame&&event.origin===window.location.origin&&event.source===frame.contentWindow&&event.data?.type==='lovable-studio-expanded'&&typeof event.data.expanded==='boolean'){
+    frame.parentElement.toggleAttribute('data-expanded',event.data.expanded);
+    syncStudioExpanded();
+  }
   if (frame && event.origin === window.location.origin && event.source === frame.contentWindow && event.data?.type === 'lovable-studio-ready') { syncStudioTheme(); frame.dataset.ready = 'true'; }
   // Keep each maker's active collection page open on refresh without remounting it.
   const routes = {
@@ -21,6 +25,12 @@ window.addEventListener('message', event => {
     history.replaceState(null, '', `${route.prefix}${event.data.id}`);
   }
 });
+
+function syncStudioExpanded(){
+  const header=document.querySelector('.hub-header');
+  if(header)header.inert=!!document.querySelector('.partner-studio[data-expanded]');
+}
+new MutationObserver(syncStudioExpanded).observe(document.querySelector('#app'),{childList:true});
 
 function syncStudioTheme() {
   document.querySelector('.partner-studio iframe')?.contentWindow?.postMessage({ type: 'lovable-studio-theme', theme: document.documentElement.dataset.theme === 'light' ? 'light' : 'dark' }, window.location.origin);

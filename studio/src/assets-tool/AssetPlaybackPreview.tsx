@@ -2,7 +2,9 @@ import { memo, useLayoutEffect, useMemo, useRef } from 'react';
 import { Artwork } from './Artwork';
 import { assetColor, assetDimensions, type AssetDocument } from './model';
 import { nativeDocument, REFERENCE_IMAGE } from './nativeDocument';
-import { matchingPlaybackBlocks, playbackEasing } from './assetPlayback';
+import { matchingPlaybackBlocks, playbackEasing,playbackEasedProgress } from './assetPlayback';
+import {isTechArtwork,techArtworkSettings,techArtworkSvg} from './techArtwork';
+import {interpolateTechArtwork} from '../../../shared/techArtwork.mjs';
 
 const PreviewArtwork = memo(Artwork);
 const appearance = ['color', 'backgroundColor', 'borderTopLeftRadius', 'borderTopRightRadius', 'borderBottomLeftRadius', 'borderBottomRightRadius', 'borderTopWidth', 'borderRightWidth', 'borderBottomWidth', 'borderLeftWidth', 'borderTopColor', 'borderRightColor', 'borderBottomColor', 'borderLeftColor', 'boxShadow', 'fontSize', 'fontWeight', 'lineHeight', 'letterSpacing', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'] as const;
@@ -23,6 +25,7 @@ export function AssetPlaybackPreview({ from, to, progress, smart, reducedMotion,
   from: AssetDocument; to?: AssetDocument; progress: number; smart: boolean; reducedMotion: boolean; scale: number; playing: boolean; time: number; onExit: () => void; exporting?: boolean;
 }) {
   const root = useRef<HTMLDivElement>(null), animations = useRef<Animation[]>([]);
+  const constructions=useRef<{svg:SVGElement;image:HTMLImageElement;from:ReturnType<typeof techArtworkSettings>;to:ReturnType<typeof techArtworkSettings>}[]>([]);
   const source = useMemo(() => blocks(from), [from]), target = useMemo(() => to ? blocks(to) : [], [to]);
   const animate = smart && !reducedMotion && !!to;
   useLayoutEffect(() => {
@@ -40,7 +43,10 @@ export function AssetPlaybackPreview({ from, to, progress, smart, reducedMotion,
       const start = snapshot(element, true), end = snapshot(other, true), nextOpacity = getComputedStyle(other).opacity;
       const { id: _fromId, editor: _fromEditor, ...fromContent } = source[i];
       const { id: _toId, editor: _toEditor, ...toContent } = target[targetIndex!];
-      const same = JSON.stringify(fromContent) === JSON.stringify(toContent);
+      const firstBlock=source[i],secondBlock=target[targetIndex!];
+      const construction=firstBlock.kind==='image'&&secondBlock.kind==='image'&&isTechArtwork(firstBlock)&&isTechArtwork(secondBlock)?{from:techArtworkSettings(firstBlock),to:techArtworkSettings(secondBlock)}:undefined;
+      const interpolates=construction&&interpolateTechArtwork(construction.from,construction.to,0)!==null;
+      const same = !!interpolates||JSON.stringify(fromContent) === JSON.stringify(toContent);
       add(element, { ...start, opacity }, { ...end, opacity: same ? nextOpacity : 0 });
       add(other, { ...start, opacity: 0 }, { ...end, opacity: same ? 0 : nextOpacity });
       const children = [...element.querySelectorAll<HTMLElement>('*')], otherChildren = [...other.querySelectorAll<HTMLElement>('*')];
@@ -51,6 +57,15 @@ export function AssetPlaybackPreview({ from, to, progress, smart, reducedMotion,
         if (JSON.stringify(a) === JSON.stringify(b)) return;
         add(child, a, b); add(next, a, b);
       });
+      const image=element.querySelector('img');
+      if(interpolates&&image){
+        const svg=new DOMParser().parseFromString(techArtworkSvg(construction.from),'image/svg+xml').documentElement as unknown as SVGElement;
+        const style=getComputedStyle(image);
+        for(const property of style)svg.style.setProperty(property,style.getPropertyValue(property));
+        svg.setAttribute('preserveAspectRatio',style.objectFit==='cover'?'xMidYMid slice':'xMidYMid meet');
+        jobs.forEach(job=>{if(job.element===image)job.element=svg;});
+        image.replaceWith(svg);constructions.current.push({svg,image,...construction});
+      }
     });
     second.forEach((element, i) => { if (!matched.has(i)) add(element, { opacity: 0 }, { opacity: getComputedStyle(element).opacity }); });
     const background = host.querySelector<HTMLElement>('[data-playback-background]')!;
@@ -63,9 +78,18 @@ export function AssetPlaybackPreview({ from, to, progress, smart, reducedMotion,
       const animation = element.animate([start, end], { duration: 1000, fill: 'both', easing: playbackEasing(from.animation) });
       animation.pause(); animation.currentTime = 0; return animation;
     });
-    return () => { animations.current.forEach(animation => animation.cancel()); animations.current = []; };
+    return () => { animations.current.forEach(animation => animation.cancel()); animations.current = [];constructions.current.forEach(({svg,image})=>svg.replaceWith(image));constructions.current=[]; };
   }, [source, target, animate, scale, from.animation]);
-  useLayoutEffect(() => { animations.current.forEach(animation => { animation.currentTime = progress * 1000; }); }, [progress, source, target, animate, scale, from.animation]);
+  useLayoutEffect(() => {
+    animations.current.forEach(animation => { animation.currentTime = progress * 1000; });
+    const eased=playbackEasedProgress(progress,from.animation);
+    constructions.current.forEach(({svg,from,to},index)=>{
+      const settings=interpolateTechArtwork(from,to,eased);if(!settings)return;
+      // Generated from bounded numeric settings and validated colors, never imported markup.
+      const content=techArtworkSvg(settings).replace(/^<svg[^>]*>/,'').replace(/<\/svg>$/,'').replace(/id="([^"]+)"/g,`id="motion-${index}-$1"`).replace(/url\(#([^)]+)\)/g,`url(#motion-${index}-$1)`);
+      svg.innerHTML=content;
+    });
+  }, [progress, source, target, animate, scale, from.animation]);
   const mediaTime = useRef(time); mediaTime.current = time;
   useLayoutEffect(() => {
     if (exporting) return;

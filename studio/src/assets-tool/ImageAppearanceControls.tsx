@@ -1,4 +1,5 @@
 import { PresentationElementAppearanceFields } from '../studio/PresentationElementDesign';
+import {ElementTransformSection} from '../studio/ElementTransformControls';
 import type { ElementAppearance } from '../studio/htmlElementAppearance';
 import type { HtmlBlock } from '../studio/htmlEditorModel';
 
@@ -18,6 +19,6 @@ export function ImageAppearanceControls({ block, onChange, locked = false, label
       onChange={(appearance: ElementAppearance) => {
         if (!locked) onChange({ ...block, editor: { ...frame, appearance: { ...frame.appearance, ...appearance } } });
       }}
-    />
+    /><ElementTransformSection/>
   </fieldset>;
 }

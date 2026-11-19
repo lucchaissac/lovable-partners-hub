@@ -3,9 +3,10 @@ import { Button, Icon, Tooltip } from '@asset/ui';
 import './editor-chat-history.css';
 
 /** Shared by the workspace editor and the live workspace-building prototype. */
-export function EditorChatHeader({ historyOpen, title, busy, showNewChat = historyOpen, showHistory = true, onHistory, onNewChat, onCollapse }: {
+export function EditorChatHeader({ historyOpen, title, busy, showNewChat = historyOpen, showHistory = true, onHistory, onNewChat, onCollapse, trailing }: {
   historyOpen: boolean; title: ReactNode; busy: boolean; showNewChat?: boolean; showHistory?: boolean;
   onHistory: () => void; onNewChat: () => void; onCollapse: () => void;
+  trailing?:ReactNode;
 }) {
   return <div className="we-panel-header we-chat-header">
     <div className="we-chat-header-leading">
@@ -18,5 +19,6 @@ export function EditorChatHeader({ historyOpen, title, busy, showNewChat = histo
         leadingIcon={<Icon name="square-pen" size={16} />} onClick={onNewChat} /></Tooltip>}
       <Tooltip label="Collapse chat" side="bottom"><Button className="we-chat-toggle" variant="ghost" aria-label="Collapse chat" aria-expanded={true} aria-controls="we-chat-composer" onClick={onCollapse} leadingIcon={<Icon name="panel-left-close" size={16} />} /></Tooltip>
     </div>
+    {trailing}
   </div>;
 }

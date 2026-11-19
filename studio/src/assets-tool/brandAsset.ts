@@ -3,7 +3,7 @@ import {assetSchema, makeNode, type AssetDocument} from './model';
 import {nativeDocument} from './nativeDocument';
 import {rasterLibraryAsset, type LibraryAsset} from './badgeLibrary';
 import type {HtmlBlock} from '../studio/htmlEditorModel';
-import {appStudioTemplate} from '../../../shared/brandTemplates.mjs';
+import {appStudioTemplate,partnershipTemplate} from '../../../shared/brandTemplates.mjs';
 
 type ImageBlock=Extract<HtmlBlock,{kind:'image'}>;
 export const brandElements:LibraryAsset[]=[
@@ -22,14 +22,15 @@ const image=(id:string,src:string,alt:string,x:number,y:number,width:number,heig
 /** Authored at the reference's 1200 × 675 working size. Every component is editable. */
 export async function brandStarterAsset(template='collaboration'):Promise<AssetDocument>{
  if(template==='app-studio')return appStudioAsset();
+ const t=partnershipTemplate;
  const reference=await rasterLibraryAsset(brandElements[0]);
- const doc:AssetDocument={version:1,id:crypto.randomUUID(),title:'Partnership',format:'landscape',dimensions:{width:1200,height:675},reference,background:'ink',grid:false,updatedAt:Date.now(),nodes:[makeNode('image',{name:'Lovable logo',x:190,y:307,w:358,h:65.19})]};
+ const doc:AssetDocument={version:1,id:crypto.randomUUID(),title:t.name,format:'landscape',dimensions:{width:t.width,height:t.height},reference,background:'ink',grid:false,updatedAt:Date.now(),nodes:[makeNode('image',{name:'Lovable logo',x:t.logo.x,y:t.logo.y,w:t.logo.width,h:t.logo.height})]};
  const editor=nativeDocument(doc);
  editor.pages[0].sections[0].columns=[[ 
-  image('brand-glow','/ambassadors/assets/heart-overlay.webp','Lovable gradient',-600,-280,2400,2400),
-  image('brand-identity','/brand/assets/full-white-pure.svg','Lovable logo',190,307,358,65.19,'identity'),
+  image('brand-glow',t.glow.src,'Lovable gradient',t.glow.x,t.glow.y,t.glow.width,t.glow.height),
+  image('brand-identity',t.logo.src,'Lovable logo',t.logo.x,t.logo.y,t.logo.width,t.logo.height,'identity'),
   partnershipDivider(),
-  image('brand-partner','/brand/assets/cerebras-logo-white.svg','Cerebras logo',686,272,306,136,'partner'),
+  image('brand-partner',t.partner.src,'Cerebras logo',t.partner.x,t.partner.y,t.partner.width,t.partner.height,'partner'),
  ]];
  return assetSchema.parse({...doc,editor});
 }

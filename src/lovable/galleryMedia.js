@@ -1,4 +1,5 @@
 import assets from './assets.json';
+import {appStudioTemplate,partnershipTemplate} from '../../shared/brandTemplates.mjs';
 
 const artwork = id => assets.media.find(asset => asset.id === `artwork-${id}`);
 const motion = (id, name, width, height) => ({
@@ -18,4 +19,5 @@ export const brandGalleryAssets = [
  gradient(3), artwork(5), artwork(6), artwork(7), gradient(8),
  artwork(8), artwork(9), artwork(10), artwork(11), artwork(12),
  {id:'stockholm-billboard',name:'Lovable billboard in Stockholm',kind:'photo',width:1280,height:1920,src:'/brand/assets/stockholm-billboard-1280.webp',thumbnail:'/brand/assets/stockholm-billboard-640.webp'},
+ ...[partnershipTemplate,appStudioTemplate].map(({id,name,width,height})=>({id,name,width,height,kind:'template',editHref:`#brand/create/${id}`})),
 ];

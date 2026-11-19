@@ -1,3 +1,5 @@
+import {createElement,Plus} from 'lucide';
+
 // Move the exact composition between its thumbnail and a restrained centered preview.
 export function mountGalleryPreview(root, mountMedia, refreshMedia) {
   const cards = [...root.querySelectorAll('.gallery-item')];
@@ -83,6 +85,16 @@ export function mountGalleryPreview(root, mountMedia, refreshMedia) {
       else video.addEventListener('loadedmetadata', seek, { once: true });
     });
     stage.replaceChildren(copy);
+    if(card.dataset.galleryEdit){
+      const edit=document.createElement('a');
+      edit.className='gallery-preview-edit';
+      edit.href=card.dataset.galleryEdit;
+      edit.setAttribute('aria-label',`Use ${card.getAttribute('aria-label') || 'this design'}`);
+      edit.dataset.hubTooltip='Use this design';
+      edit.append(createElement(Plus,{width:16,height:16,'stroke-width':1.8,'aria-hidden':'true'}));
+      edit.addEventListener('click',()=>finishClose(false));
+      stage.append(edit);
+    }
     fit();
     dialog.setAttribute('aria-label', card.getAttribute('aria-label') || 'Gallery preview');
     overflow = document.documentElement.style.overflow;

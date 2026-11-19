@@ -1,4 +1,5 @@
 import type {HtmlBlock} from '../studio/htmlEditorModel';
+import {partnershipTemplate} from '../../../shared/brandTemplates.mjs';
 
 /** Upgrade only the Partnership separator, preserving its center, ink and stroke. */
 export function nativeBrandDivider(block:HtmlBlock):HtmlBlock {
@@ -12,5 +13,6 @@ export function nativeBrandDivider(block:HtmlBlock):HtmlBlock {
 }
 
 export function partnershipDivider():HtmlBlock {
- return nativeBrandDivider({id:'brand-divider',kind:'shape',shape:'rectangle',editor:{position:'absolute',x:616,y:307,widthPx:2,height:65.19,appearance:{fill:'#ffffff'}}});
+ const {x,y,width,height,color}=partnershipTemplate.divider;
+ return nativeBrandDivider({id:'brand-divider',kind:'shape',shape:'rectangle',editor:{position:'absolute',x,y,widthPx:width,height,appearance:{fill:color}}});
 }

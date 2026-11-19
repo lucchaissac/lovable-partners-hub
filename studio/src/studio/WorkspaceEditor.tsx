@@ -1,4 +1,5 @@
 import { WorkspaceAIEditButton } from './WorkspaceAIEditButton';
+import {MakerExpandButton} from '../assets-tool/MakerExpandButton';
 import { HtmlSelectionMode } from './HtmlSelectionMode';
 import { type ReviewTool } from '../routes/demos/editor/SharedReviewTools';
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
@@ -73,7 +74,7 @@ export function WorkspaceChat({ title = 'Lovable', placeholder = 'Ask Lovable to
     <div className="we-panel-header"><Tooltip label="Open chat" side="bottom"><Button className="we-chat-toggle" variant="ghost" aria-label="Open chat" leadingIcon={<Icon name="panel-left-open" size={16} />} onClick={() => setOpen(true)} /></Tooltip></div>
     {!singleAsset && <div className="we-chat-rail-actions"><Tooltip label="Chat history"><Button variant="ghost" aria-label="Chat history" leadingIcon={<Icon name="list" size={16} />} onClick={() => { setOpen(true); setHistoryOpen(true); }} /></Tooltip><Tooltip label="New chat"><Button variant="ghost" aria-label="New chat" disabled={state?.manageDisabled ?? true} leadingIcon={<Icon name="square-pen" size={16} />} onClick={() => { setOpen(true); newChat(); }} /></Tooltip></div>}
   </>}>
-    <EditorChatHeader historyOpen={!singleAsset&&historyOpen} busy={state?.manageDisabled ?? true} showNewChat={!singleAsset} showHistory={!singleAsset}
+    <EditorChatHeader historyOpen={!singleAsset&&historyOpen} busy={state?.manageDisabled ?? true} showNewChat={!singleAsset} showHistory={!singleAsset} trailing={singleAsset?<MakerExpandButton/>:undefined}
       title={singleAsset ? <span>Chat</span> : active ? <EditorChatTitle chat={active} busy={state?.manageDisabled ?? true}
         onEdit={(id, patch) => runtime?.chat({ type: 'edit', id, patch })} onDelete={id => runtime?.chat({ type: 'delete', id })} onRestore={chat => runtime?.chat({ type: 'restore', id: chat.id })} /> : <strong>{title}</strong>}
       onHistory={() => setHistoryOpen(value => !value)} onNewChat={newChat} onCollapse={() => setOpen(false)} />

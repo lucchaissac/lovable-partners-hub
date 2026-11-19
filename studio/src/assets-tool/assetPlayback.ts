@@ -50,6 +50,22 @@ export function playbackEasing(animation?: AssetDocument['animation']) {
   }
 }
 
+/** Numeric constructions follow exactly the easing used by the DOM animation. */
+export function playbackEasedProgress(progress:number,animation?:AssetDocument['animation']){
+ const t=Math.max(0,Math.min(1,progress));
+ if(t===0||t===1||animation?.easing==='linear')return t;
+ if(animation?.easing==='spring'){
+  const sample=t*100,left=Math.floor(sample),part=sample-left;
+  const value=(i:number)=>Number(springProgress(i/100,animation.bounce,animation.velocity,animation.durationMs).toFixed(5));
+  return value(left)+(value(left+1)-value(left))*part;
+ }
+ const curve=animation?.easing==='ease-in'?[.4,0,1,1]:animation?.easing==='ease-out'?[0,0,.2,1]:animation?.easing==='custom'?(animation.curve??[.4,0,.2,1]):[.4,0,.2,1];
+ const cubic=(p:number,a:number,b:number)=>3*(1-p)**2*p*a+3*(1-p)*p*p*b+p**3;
+ let low=0,high=1;
+ for(let i=0;i<30;i++){const mid=(low+high)/2;if(cubic(mid,curve[0],curve[2])<t)low=mid;else high=mid;}
+ return cubic((low+high)/2,curve[1],curve[3]);
+}
+
 export function canExportAnimation(pages: AssetDocument[]) {
   return pages.length > 1 && pages.slice(0, -1).some(page => page.animation?.enabled);
 }

@@ -1,3 +1,4 @@
+import {sampleShaderSurfaces} from '../shaders/Surface';
 import { toPng } from 'html-to-image';
 import { assetSchema, assetDimensions, type AssetDocument, type AssetReference } from './model';
 import {fontFacesForAsset} from '../../../shared/assetTypography.mjs';
@@ -54,6 +55,7 @@ export async function embeddedAssetFonts(asset:AssetDocument) {
 }
 export async function renderPng(element: HTMLElement, asset: AssetDocument) {
   await document.fonts.ready;
+  await sampleShaderSurfaces(element,0);
   await Promise.all(Array.from(element.querySelectorAll('img')).map(image => image.decode()));
   const { width, height } = assetDimensions(asset);
   // Embed only the local brand fonts; unrelated third-party stylesheets may not expose cssRules.
@@ -68,8 +70,10 @@ export async function exportPng(element:HTMLElement, asset:AssetDocument) {
   let board=element,clone:HTMLElement|undefined;
   try {
     if(community.length){
+      await sampleShaderSurfaces(element,0);
       // Gallery thumbnails make opening instant; downloads regenerate the source artwork at export size.
       clone=element.cloneNode(true) as HTMLElement;clone.removeAttribute('id');element.parentElement!.append(clone);board=clone;
+      const originals=[...element.querySelectorAll('canvas')];clone.querySelectorAll('canvas').forEach((copy,i)=>{copy.width=originals[i].width;copy.height=originals[i].height;if(copy.width&&copy.height)copy.getContext('2d')?.drawImage(originals[i],0,0);});
       for(const image of clone.querySelectorAll<HTMLImageElement>('img'))if(image.getAttribute('src')===communityGradientPreview)image.src=communityGradientMaster;
       const {renderAmbassador}=await import('./ambassadorAsset');
       for(const block of community){if(block.kind!=='image'||!block.ambassador)continue;const image=await renderAmbassador(block.ambassador,{pixels:Math.min(4000,Math.max(width,height,1600)),element:block.ambassadorElement});for(const target of clone.querySelectorAll<HTMLImageElement>('img'))if(target.getAttribute('src')===block.value.src)target.src=image.src;}

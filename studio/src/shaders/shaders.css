@@ -1,0 +1,10 @@
+.shader-swatch{display:grid;place-items:center;width:26px;height:22px;border-radius:4px;overflow:hidden;background:linear-gradient(145deg,#6c8aff,#ec74dc,#fc168a);color:#fff;font-size:19px;font-weight:700;line-height:1}
+.shader-swatch[data-effect=chrome]{color:#b6b5ff;text-shadow:0 1px #f50070,0 -1px #e3d9ff}
+.shader-swatch[data-effect=glass]{background:repeating-linear-gradient(90deg,#7595ff 0,#d0bcf8 4px,#ec72cf 8px);color:#fff9}
+.shader-swatch[data-effect=ripple]{background:repeating-radial-gradient(ellipse at 20% 80%,#8494ff 0,#e975db 6px,#8494ff 12px)}
+.studio-shader-surface{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;border-radius:inherit;z-index:1}
+.hev-block[data-shader-ready]:not([data-editing])>.hcs-block-content>*{opacity:var(--shader-source-opacity,0)!important}
+.hev-block[data-editing]>.studio-shader-surface{visibility:hidden}
+.asset-artwork[data-shader-ready]>.hev .hev-section{opacity:var(--shader-source-opacity,0)!important}
+.asset-artwork[data-shader-ready]:has(.hev-block[data-editing])>.hev .hev-section{opacity:1!important}
+.asset-artwork:has(.hev-block[data-editing])>.studio-shader-surface{visibility:hidden}

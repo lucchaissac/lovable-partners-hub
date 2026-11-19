@@ -1,3 +1,4 @@
+import {sampleShaderSurfaces,hasShaderSurfaces} from '../shaders/Surface';
 import { createRoot } from 'react-dom/client';
 import { flushSync } from 'react-dom';
 import { toCanvas } from 'html-to-image';
@@ -56,7 +57,7 @@ function snapshotVideos(board: HTMLElement) {
  * raster frame is held at a time; fonts/resources and static holds are reused.
  * The same composited DOM as preview retains CSS blend modes and native type. */
 export async function exportVideo(pages: AssetDocument[], parent: HTMLElement, signal: AbortSignal, onProgress: (percent: number) => void) {
-  if (!canExportAnimation(pages)) throw new Error('Enable animation on an asset with a following asset first.');
+  if (!canExportAnimation(pages)) throw new Error('Enable an animated effect or a transition first.');
   const { width, height } = videoDimensions(pages[0]), frameRate = 30;
   const quality = new Quality({ bitrate: Math.max(2_000_000, Math.round(width * height * frameRate * .16)) });
   const config = { width, height, quality, frameRate };
@@ -90,7 +91,9 @@ export async function exportVideo(pages: AssetDocument[], parent: HTMLElement, s
       }
       const videos = board.querySelector('video');
       if (videos) await seekVideos(board, time, signal);
-      const key = `${position.index}:${position.smart ? position.progress : 0}:${videos ? time : ''}`;
+      const shaders=hasShaderSurfaces(board);
+      if(shaders)await sampleShaderSurfaces(board,time);
+      const key = `${position.index}:${position.smart ? position.progress : 0}:${videos||shaders ? time : ''}`;
       if (key !== lastFrame) {
         // html-to-image deep-clones SVG without visiting its children. Bake
         // their sampled styles into this disposable export DOM so animated

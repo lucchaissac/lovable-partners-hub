@@ -1,4 +1,7 @@
-import { forwardRef, useId, useMemo, type CSSProperties } from 'react';
+import {ShaderSurface,ShaderArtworkContext} from '../shaders/Surface';
+import {embeddedAssetFonts} from './media';
+import {fontFacesForAsset} from '../../../shared/assetTypography.mjs';
+import { forwardRef, useId, useMemo, useCallback, type CSSProperties } from 'react';
 import { HtmlEditorV1 } from '../studio/HtmlEditorV1';
 import { HtmlEditorSharedContext } from '../studio/HtmlPageNavigation';
 import { HtmlSelectionMode } from '../studio/HtmlSelectionMode';
@@ -18,12 +21,17 @@ export const Artwork = forwardRef<HTMLDivElement, { asset: AssetDocument; onChan
     if(next)onChange?.({...asset,editor:next});
   };
   const dimensions=assetDimensions(asset);
+  const fontKey=JSON.stringify(fontFacesForAsset(asset));
+  const fonts=useCallback(()=>embeddedAssetFonts(asset),[fontKey]);
+  const shaderContext=useMemo(()=>({live:!!onChange,fonts}),[!!onChange,fonts]);
   const content=<HtmlEditorSharedContext.Provider value={!onChange}><HtmlSelectionMode.Provider value={true}>
     <WorkspaceEditingContext.Provider value={{manual,onEdit:onChange?edit:undefined,design:{layout:'full-width',contentTopSpacing:0,contentPaddingBottom:0}}}>
       <HtmlEditorV1 canvasOnly zoom={scale} imageSources={{[REFERENCE_IMAGE]:asset.reference.src}}/>
     </WorkspaceEditingContext.Provider>
   </HtmlSelectionMode.Provider></HtmlEditorSharedContext.Provider>;
   return <div ref={ref} className="asset-artwork" data-editable={!!onChange||undefined} data-grid={asset.grid||undefined} style={{width:dimensions.width,height:dimensions.height,backgroundColor:assetColor(asset.background),'--asset-editor-scale':scale} as CSSProperties}>
-    {onChange?content:<WorkspaceWidgetHost>{content}</WorkspaceWidgetHost>}
+    <ShaderArtworkContext.Provider value={shaderContext}>{onChange?content:<WorkspaceWidgetHost>{content}</WorkspaceWidgetHost>}
+    {import.meta.env.DEV&&asset.shader&&<ShaderSurface effect={asset.shader} blocks={manual.pages[0].sections.flatMap(section=>section.columns.flat()).filter(block=>!block.editor?.hidden)} whole revision={JSON.stringify({editor:asset.editor,background:asset.background,dimensions})}/>}
+    </ShaderArtworkContext.Provider>
   </div>;
 });

@@ -1,3 +1,4 @@
+import {ShaderSurface} from '../shaders/Surface';
 import {HtmlCanvasVideo} from './HtmlCanvasVideo';
 import {useMakerDesign} from '../assets-tool/MakerDesignContext';
 import {renderedTechSource} from '../assets-tool/techArtwork';
@@ -410,6 +411,7 @@ export function HtmlEditorV1({initialDesign, canvasOnly=false, zoom=1, imageSour
                 {block.kind === 'shape' && !block.icon && <PresentationShapeSurface className="hcs-shape" shape={{kind:block.shape,width:320,height:elementContentHeight(block.editor?.height??160,{...block.editor?.appearance,borderWidth:0}),appearance:block.editor?.appearance}} style={{width:'100%',height:elementContentHeight(block.editor?.height??160,{...block.editor?.appearance,borderWidth:0})}}/>}
                 {block.kind === 'divider' && <hr className="hev-divider" />}
                 </div></EditorWidgetToolbarContext.Provider>
+                {import.meta.env.DEV&&canvasOnly&&block.editor?.appearance?.shader&&<ShaderSurface effect={block.editor.appearance.shader} block={block} revision={JSON.stringify({...block,editor:{...block.editor,appearance:{...block.editor.appearance,shader:undefined}}})}/>}
                 {progress?.images.filter(image=>image.shapeId===block.id).map((image,index)=><HtmlImageProgress key={index} image={image} existing={block.kind==='image'}/>)}
               </div>
             </div>)}

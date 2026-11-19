@@ -1,0 +1,39 @@
+{
+  "date": "2026-11-18",
+  "scope": "Local development prototype only; not pushed or deployed.",
+  "entry": "/brand#brand/create/shaders",
+  "demo": "Three separate editable assets: Chrome text, Glass image, Ripple video. Existing holiday assets are not changed.",
+  "engine": {
+    "package": "shaders",
+    "version": "4.0.7",
+    "license": "MIT",
+    "source": "https://shaders.com/docs/guide",
+    "effects": "Locally authored WGSL using the public custom-component API; no proprietary presets."
+  },
+  "controls": "Existing Design inspector: Effect dropdown, intensity, animated switch, speed. Select a layer to affect it; deselect to affect the whole canvas.",
+  "persistence": "Native layer content and geometry retained; bounded effect settings survive save/reopen and editable-source serialization. Undo remains available.",
+  "playback": "Existing playback timeline. Four-second hold per asset with an animated effect; shared sampled clock in video export.",
+  "verification": {
+    "build": "npm run build passed",
+    "tests": "40 targeted tests passed; 6 shader tests rerun after final normal smoothing.",
+    "browser": "Chrome: edit native text, pause/resume effect, save/reopen, whole canvas effect, undo, playback, PNG and MP4 export.",
+    "video": {
+      "durationSeconds": 13.8,
+      "width": 1092,
+      "height": 616,
+      "fps": 30,
+      "framesReviewedAtSeconds": [
+        2,
+        5.5,
+        10
+      ]
+    },
+    "production": "Shader engine and effect UI are excluded by import.meta.env.DEV."
+  },
+  "limits": [
+    "WebGPU-capable browser required; original layer remains visible if unavailable.",
+    "Effect texture resolution capped at 1440px on the long edge in this prototype.",
+    "Whole-canvas animated compositing targets native 2D layers; perspective/3D compositions need separate validation.",
+    "PNG is a static sample at time zero."
+  ]
+}

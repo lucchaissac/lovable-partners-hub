@@ -74,25 +74,31 @@
                     "position": "absolute",
                     "appearance": {
                       "fontFamily": "Camera Plain",
-                      "fontSize": 126,
+                      "fontSize": 112,
                       "fontWeight": 700,
                       "letterSpacing": -1.92,
-                      "lineHeight": 91.66666666666666
+                      "lineHeight": 100
                     },
                     "widthPx": 915,
-                    "height": 249,
-                    "x": 46,
-                    "y": 154
+                    "height": 346.5,
+                    "x": 48,
+                    "y": 122
                   },
                   "kind": "text",
                   "value": {
                     "runs": [
                       {
-                        "text": "Community\nNewsletter"
+                        "text": "Community straight to "
+                      },
+                      {
+                        "text": "\n"
+                      },
+                      {
+                        "text": "your inbox"
                       }
                     ],
                     "style": "Text",
-                    "size": 126,
+                    "size": 112,
                     "align": "left",
                     "color": "#f7f4ed"
                   }
@@ -106,8 +112,8 @@
                     },
                     "widthPx": 1585,
                     "height": 1585,
-                    "x": 320,
-                    "y": -175
+                    "x": 265,
+                    "y": -195
                   },
                   "kind": "image",
                   "value": {
@@ -264,6 +270,10 @@
     {
       "id": "edb89eb3-38d8-45f9-a2bf-f4827919fc83",
       "title": "Community Newsletter"
+    },
+    {
+      "id": "db36ff0c-058b-420c-bfff-999ae527d4eb",
+      "title": "Community Newsletter · Copy"
     }
   ],
   "reference": {
@@ -272,5 +282,5 @@
     "width": 1536,
     "height": 806
   },
-  "updatedAt": 1795116476565
+  "updatedAt": 1795121456049
 }

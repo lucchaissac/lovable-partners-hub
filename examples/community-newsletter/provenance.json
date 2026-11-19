@@ -39,20 +39,20 @@
     },
     {
       "id": "community-title-d176f4b5-af92-4a94-8db2-549f7afb460f",
-      "label": "Community\nNewsletter",
+      "label": "Community straight to \nyour inbox",
       "editor": {
         "position": "absolute",
         "appearance": {
           "fontFamily": "Camera Plain",
-          "fontSize": 126,
+          "fontSize": 112,
           "fontWeight": 700,
           "letterSpacing": -1.92,
-          "lineHeight": 91.66666666666666
+          "lineHeight": 100
         },
         "widthPx": 915,
-        "height": 249,
-        "x": 46,
-        "y": 154
+        "height": 346.5,
+        "x": 48,
+        "y": 122
       }
     },
     {
@@ -65,8 +65,8 @@
         },
         "widthPx": 1585,
         "height": 1585,
-        "x": 320,
-        "y": -175
+        "x": 265,
+        "y": -195
       }
     },
     {
@@ -109,5 +109,12 @@
     "Every non-globe layer is byte-for-byte identical as parsed JSON.",
     "Browser displays a 4320 × 4320 alpha WebP globe and exports a 1200 × 630 PNG.",
     "The final source and PNG replace only folder 11 in the completed Holiday ZIP."
-  ]
+  ],
+  "latestManualRefinement": {
+    "date": "2026-11-19",
+    "originalCopy": "Community straight to \nyour inbox",
+    "additionalCopy": "Stay in the community\nloop",
+    "instruction": "Latest manually edited assets 11 and 12 are authoritative; retain their individual positions, frame sizes, leading and globe crop.",
+    "publication": "../holiday-playbook/publication.json"
+  }
 }

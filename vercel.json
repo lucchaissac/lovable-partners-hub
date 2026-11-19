@@ -4,21 +4,81 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "redirects": [
-    {"source":"/demo/1000-opportunities/","destination":"/1000-opportunities","permanent":true},
-    {"source":"/demo/1000-opportunities/:path*","destination":"/1000-opportunities","permanent":true},
-    {"source":"/1000-opportunities/","destination":"/1000-opportunities","permanent":true},
-    {"source":"/1000-opportunities/index.html","destination":"/1000-opportunities","permanent":true}
+    {
+      "source": "/demo/1000-opportunities/",
+      "destination": "/1000-opportunities",
+      "permanent": true
+    },
+    {
+      "source": "/demo/1000-opportunities/:path*",
+      "destination": "/1000-opportunities",
+      "permanent": true
+    },
+    {
+      "source": "/1000-opportunities/",
+      "destination": "/1000-opportunities",
+      "permanent": true
+    },
+    {
+      "source": "/1000-opportunities/index.html",
+      "destination": "/1000-opportunities",
+      "permanent": true
+    },
+    {
+      "source": "/holiday-playbook",
+      "destination": "/brand#brand/create/147e948b-a7c4-4a97-87c8-c515ef28a6ff",
+      "permanent": false
+    }
   ],
   "headers": [
-    {"source":"/1000-opportunities/:path*","headers":[{"key":"X-Robots-Tag","value":"noindex, nofollow"}]},
-    {"source":"/demo/1000-opportunities/:path*","headers":[{"key":"X-Robots-Tag","value":"noindex, nofollow"}]}
+    {
+      "source": "/1000-opportunities/:path*",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
+      "source": "/demo/1000-opportunities/:path*",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    }
   ],
   "rewrites": [
-    {"source":"/1000-opportunities","destination":"/demo/1000-opportunities/index.html"},
-    {"source":"/brand","destination":"/brand/index.html"},
-    {"source":"/partners","destination":"/partners/index.html"},
-    {"source":"/community","destination":"/community/index.html"},
-    {"source":"/tech-blog","destination":"/tech-blog/index.html"}
+    {
+      "source": "/1000-opportunities",
+      "destination": "/demo/1000-opportunities/index.html"
+    },
+    {
+      "source": "/brand",
+      "destination": "/brand/index.html"
+    },
+    {
+      "source": "/partners",
+      "destination": "/partners/index.html"
+    },
+    {
+      "source": "/community",
+      "destination": "/community/index.html"
+    },
+    {
+      "source": "/tech-blog",
+      "destination": "/tech-blog/index.html"
+    }
   ],
-  "functions": {"api/community-chat.mjs":{"maxDuration":300,"includeFiles":"public/{fonts/CameraPlain-Bold.ttf,ambassadors/assets/CameraPlain-Regular.ttf,ambassadors/previews/*.webp,ambassadors/library/*}"},"api/studio-animation.mjs":{"maxDuration":300}}
+  "functions": {
+    "api/community-chat.mjs": {
+      "maxDuration": 300,
+      "includeFiles": "public/{fonts/CameraPlain-Bold.ttf,ambassadors/assets/CameraPlain-Regular.ttf,ambassadors/previews/*.webp,ambassadors/library/*}"
+    },
+    "api/studio-animation.mjs": {
+      "maxDuration": 300
+    }
+  }
 }

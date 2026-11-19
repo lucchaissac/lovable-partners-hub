@@ -2,6 +2,7 @@ import { toPng } from 'html-to-image';
 import { assetSchema, assetDimensions, type AssetDocument, type AssetReference } from './model';
 import {fontFacesForAsset} from '../../../shared/assetTypography.mjs';
 import {communityGradientMaster,communityGradientPreview} from '../../../shared/communityPreparedArtwork.mjs';
+import {editableAssetCollection} from './assetCollection';
 
 export async function readReference(file: File): Promise<AssetReference> {
   if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) throw new Error('Choose a PNG, JPG or WebP image.');
@@ -33,6 +34,10 @@ export function download(blob: Blob, name: string) {
 export const filename = (title: string) => title.replace(/[^\p{L}\p{N} _-]/gu, '').trim().slice(0, 100) || 'Asset asset';
 export function exportSource(asset: AssetDocument) {
   download(new Blob([JSON.stringify(assetSchema.parse(asset), null, 2)], { type: 'application/json' }), `${filename(asset.title)}.asset.json`);
+}
+export function exportCollectionSource(pages:AssetDocument[],activeId:string){
+  const collection=editableAssetCollection(pages,activeId);
+  download(new Blob([JSON.stringify(collection,null,2)],{type:'application/json'}),`${filename(collection.title)}.collection.json`);
 }
 const fontCss=new Map<string,Promise<string>>();
 export async function embeddedAssetFonts(asset:AssetDocument) {

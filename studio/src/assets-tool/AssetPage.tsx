@@ -48,11 +48,12 @@ import '../routes/demos/editor/workspace-editor.css';
 import '../studio/workspace-widgets.css';
 import { Artwork } from './Artwork';
 import { defaultCanvasAnimation, assetSchema, assetDimensions, compositionSchema, formats, resizeAsset, referenceDocument, type AssetDocument, type AssetFormat, type Composition } from './model';
-import { download, exportPng, renderPng, exportSource, readReference, visionReference } from './media';
+import { download, exportPng, renderPng, exportSource, exportCollectionSource, readReference, visionReference } from './media';
 import { listAssets, loadAssetCollection, saveAsset, saveAssets } from './storage';
 import './assets.css';
 import {AssetScreenMenu} from './AssetScreenMenu';
 import {canExportAnimation,canExportVideoAsset} from './assetPlayback';
+import {assetCollectionSchema,editableAssetCollection} from './assetCollection';
 import {listenForFileDragEnd} from '../studio/fileDragLifecycle';
 
 const locationSearch = () => window.location.search;
@@ -160,8 +161,18 @@ function AssetPageContent() {
   }, []);
   useEffect(() => {
     let cancelled = false;
-    const opening=id?loadAssetCollection(owner,id):Promise.resolve([]);
-    void opening.then(async items => {
+    const abort=new AbortController();
+    const opening=async()=>{
+      if(!id)return [];
+      const saved=await loadAssetCollection(owner,id);
+      if(saved.length||cancelled)return saved;
+      const {loadPublishedCollection}=await import('./publishedCollections');
+      const shared=await loadPublishedCollection(id,studioWorkspace);
+      if(!shared.length||cancelled)return [];
+      await saveAssets(owner,shared,{signal:abort.signal,shouldCommit:()=>!cancelled});
+      return shared;
+    };
+    void opening().then(async items => {
       if (cancelled) return; setRecent(()=>current.current?[current.current,...items.filter(item=>item.id!==current.current!.id)]:items);
       if (id && !current.current && !readingFile.current) {
         const found = items.find(item => item.id === id);
@@ -169,7 +180,7 @@ function AssetPageContent() {
         else { const opened=studioWorkspace==='ambassadors'?await migrateCommunityAsset(found):found;if(cancelled)return;current.current=opened;setAsset(opened);setLoadError('');setSaveState('Saved on this device');if(opened!==found)put(opened); }
       }
     }).catch(reason => { if (!cancelled) setError(reason.message); }).finally(() => { if (!cancelled) { if (!requestedBadge) setLoading(false); setRecentLoading(false); } });
-    return () => { cancelled = true; };
+    return () => { cancelled = true; abort.abort(); };
   }, [id, owner, requestedBadge]);
   useEffect(() => {
     if (!requestedBadge) return;
@@ -434,19 +445,26 @@ function AssetPageContent() {
     setError('');
     try {
       if (file.size > 100_000_000) throw new Error('This source file is too large.');
-      const parsed = assetSchema.safeParse(JSON.parse(await file.text()));
-      if (!parsed.success) throw new Error('This is not a valid Asset asset source file.');
-      const image = new Image(); image.src = parsed.data.reference.src; await image.decode();
-      if (image.naturalWidth !== parsed.data.reference.width || image.naturalHeight !== parsed.data.reference.height) {
-        if(studioWorkspace==='ambassadors'&&communityTemplate(parsed.data))parsed.data.reference={...parsed.data.reference,width:image.naturalWidth,height:image.naturalHeight};
-        else throw new Error('The source image dimensions do not match the file.');
+      const input=JSON.parse(await file.text());
+      const single=input?.type==='lovable-asset-collection'?undefined:assetSchema.parse(input);
+      const collection=single?editableAssetCollection([single],single.id):assetCollectionSchema.parse(input);
+      const incoming:AssetDocument[]=[];
+      const imageSizes=new Map<string,{width:number;height:number}>();
+      for(const document of collection.assets){
+        let size=imageSizes.get(document.reference.src);
+        if(!size){const image=new Image();image.src=document.reference.src;await image.decode();size={width:image.naturalWidth,height:image.naturalHeight};imageSizes.set(document.reference.src,size);}
+        if(size.width!==document.reference.width||size.height!==document.reference.height){
+          if(studioWorkspace==='ambassadors'&&communityTemplate(document))document.reference={...document.reference,...size};
+          else throw new Error('The source image dimensions do not match the file.');
+        }
+        const opened=studioWorkspace==='ambassadors'?await migrateCommunityAsset(document):document;
+        incoming.push({...opened,series:undefined,id:crypto.randomUUID(),updatedAt:Date.now()});
       }
-      const opened=studioWorkspace==='ambassadors'?await migrateCommunityAsset(parsed.data):parsed.data;
-      const next = { ...opened, series:undefined, id: crypto.randomUUID(), updatedAt: Date.now() };
+      const next=incoming[collection.assets.findIndex(page=>page.id===collection.activeId)];
       if(afterId&&current.current){
         await saves.current;
         const previous=current.current,collection=assetPages(previous,await loadAssetCollection(owner,previous.id));
-        const updated=insertAssetPages(collection,afterId,[next]);await saveAssets(owner,updated);
+        const updated=insertAssetPages(collection,afterId,incoming);await saveAssets(owner,updated);
         if(!mounted.current)return;
         pageHistory.current.set(previous.id,{past:past.current,future:future.current});past.current=[];future.current=[];
         setPageArrangement({ids:collection.map(page=>page.id),activeId:previous.id,anchor:next.id});
@@ -454,7 +472,7 @@ function AssetPageContent() {
         put(updated.find(page=>page.id===next.id)!);setVisual(undefined);setReviewCandidate(undefined);setHistoryVersion(value=>value+1);
         return;
       }
-      await saveAsset(owner, next);
+      await saveAssets(owner,linkAssetPages(incoming));
       if(studioWorkspace==='ambassadors'){try{localStorage.setItem(studioLastAssetKey,next.id);}catch{}}
       navigate(`/assets/${next.id}`);
     } catch (reason) { setError(reason instanceof Error ? reason.message : 'Could not open this source file.'); }
@@ -640,7 +658,7 @@ function AssetPageContent() {
       <span className="asset-tools-divider" aria-hidden="true"/>
       <Button className="lovable-mobile-design-toggle" variant="ghost" aria-label="Open design panel" leadingIcon={<Icon name="sliders-horizontal" size={16}/>} onClick={()=>setDesignOpen(value=>!value)}/>
       {studioWorkspace==='ambassadors'&&<Tooltip label="Coming soon" side="bottom"><span className="studio-insert-tool"><Button variant="ghost" className="community-add-template" disabled>Add to templates</Button></span></Tooltip>}
-      {videoProgress !== undefined ? <Tooltip label="Cancel export" side="bottom"><Button className="asset-export-control asset-export-progress" variant="primary" aria-label={`Cancel export, ${videoProgress}%`} onClick={() => videoExportAbort.current?.abort()}>Export<span className="asset-export-progress-value" aria-hidden="true">{videoProgress}%<Icon name="x" size={12}/></span></Button></Tooltip> : <Dropdown align="end" items={[{id:'png',label:`.png · ${assetDimensions(asset).width} × ${assetDimensions(asset).height}`,leadingIcon:<Icon name="image" size={16}/>},...(canExportVideoAsset(asset)?[{id:'video-asset',label:'Video · Current asset',leadingIcon:<Icon name="video" size={16}/>}]:[]),...(canExportAnimation(pages)?[{id:'video',label:'Video · All assets',leadingIcon:<Icon name="video" size={16}/>}]:[]),{id:'source',label:'Editable source',leadingIcon:<Icon name="file-text" size={16}/>},...(pages.length>1?[{id:'all',label:'All assets · ZIP',leadingIcon:<Icon name="archive" size={16}/>}]:[])]} onChange={value=>{if(value==='png')void exportImage();else if(value==='video-asset')void exportAnimation('asset');else if(value==='video')void exportAnimation();else if(value==='all')void exportAll();else exportSource(asset);}} trigger={<Button className="asset-export-control" variant="primary" disabled={busy||changingTemplate||exporting} loading={exporting}>Export</Button>}/>}
+      {videoProgress !== undefined ? <Tooltip label="Cancel export" side="bottom"><Button className="asset-export-control asset-export-progress" variant="primary" aria-label={`Cancel export, ${videoProgress}%`} onClick={() => videoExportAbort.current?.abort()}>Export<span className="asset-export-progress-value" aria-hidden="true">{videoProgress}%<Icon name="x" size={12}/></span></Button></Tooltip> : <Dropdown align="end" items={[{id:'png',label:`.png · ${assetDimensions(asset).width} × ${assetDimensions(asset).height}`,leadingIcon:<Icon name="image" size={16}/>},...(canExportVideoAsset(asset)?[{id:'video-asset',label:'Video · Current asset',leadingIcon:<Icon name="video" size={16}/>}]:[]),...(canExportAnimation(pages)?[{id:'video',label:'Video · All assets',leadingIcon:<Icon name="video" size={16}/>}]:[]),{id:'source',label:'Editable source',leadingIcon:<Icon name="file-text" size={16}/>},...(pages.length>1?[{id:'collection-source',label:'All editable sources',leadingIcon:<Icon name="files" size={16}/>},{id:'all',label:'All assets · ZIP',leadingIcon:<Icon name="archive" size={16}/>}]:[])]} onChange={value=>{if(value==='png')void exportImage();else if(value==='video-asset')void exportAnimation('asset');else if(value==='video')void exportAnimation();else if(value==='all')void exportAll();else if(value==='collection-source')exportCollectionSource(pages,asset.id);else exportSource(asset);}} trigger={<Button className="asset-export-control" variant="primary" disabled={busy||changingTemplate||exporting} loading={exporting}>Export</Button>}/>}
     </div>
   </div>;
   return <CommunityRenderErrors.Provider value={communityErrors}><WorkspaceRuntimeContext.Provider value={runtime}><WorkspaceSelectionContext.Provider value={{visual,setVisual}}><div className="workspace-editor asset-app" data-asset data-workspace={studioWorkspace} data-view="editor" style={assetTheme as CSSProperties} data-history={historyVersion} onDragOverCapture={event => { if ((event.target as Element).closest('.we-chat')) setDragging(false); }} onDragOver={event => { if (!event.defaultPrevented && !(event.target as Element).closest('.we-chat') && event.dataTransfer.types.includes('Files') && !busy) { event.preventDefault(); setDragging(true); } }} onDragLeave={event => { if (!event.currentTarget.contains(event.relatedTarget as Node)) setDragging(false); }} onDrop={event => { setDragging(false); if(event.defaultPrevented || (event.target as Element).closest('.we-chat'))return; event.preventDefault(); void loadImage(event.dataTransfer.files[0]); }}>

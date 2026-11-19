@@ -1,0 +1,30 @@
+{
+  "url": "https://lovable-brands.vercel.app/holiday-playbook",
+  "slug": "holiday-playbook-20261119",
+  "assets": 12,
+  "activeId": "147e948b-a7c4-4a97-87c8-c515ef28a6ff",
+  "idMap": {
+    "85622d76-8b1a-430b-9abc-3ea8721a2bd6": "43b85387-bcdd-4c37-96c1-45edf0621a1b",
+    "dd0b3a11-2868-4bb9-82bd-298c35251b11": "c804322a-abbd-45f1-b982-122e9d01541f",
+    "618c7a24-a9a2-41f9-8b37-4c3528dc161a": "f7bccd1d-0afe-4575-9190-46b4e2a2c698",
+    "267a9f68-a593-4505-91cf-df2e6c046487": "0c74a389-1440-49ee-b6fe-75164290a1c0",
+    "911686d0-7f71-4d42-93d8-3a559be088ac": "da508a0a-78a0-4fcf-b461-3e5b7a1d70c1",
+    "9d6e37ec-dde3-4f0b-a2e0-c798b9516dc5": "2237695d-50cc-4409-aa30-b2c124581323",
+    "01ba6698-63f6-44cb-96a9-4b354acfd66f": "3e22cab4-955e-4473-838d-ff6895983af0",
+    "7afcedef-8f30-4607-96d5-e816d91f104e": "b64b3679-7cdd-48d4-85bc-6709b790d59f",
+    "c6395a26-ec1e-458e-8f31-4b00fafc6f2f": "a430ddc8-4b21-406f-a6d1-740dbd2751a8",
+    "0774207e-4f16-4839-8619-9326a476ca14": "a7efaa39-d346-4e81-8813-95df1686335d",
+    "edb89eb3-38d8-45f9-a2bf-f4827919fc83": "2bd70b67-2771-4e77-ae82-5c01f3a0cc2b",
+    "db36ff0c-058b-420c-bfff-999ae527d4eb": "147e948b-a7c4-4a97-87c8-c515ef28a6ff"
+  },
+  "mediaFiles": [
+    "/collections/media/a33e349e74a1a7646608cbda00c4fb1b68dbd8132aa33a3680287728a7e6954c.webp"
+  ],
+  "date": "2026-11-19",
+  "authorizedBy": "Luc explicitly requested a hosted link with exactly the current local assets, including his additions.",
+  "sourceURL": "http://127.0.0.1:5173/brand#brand/create/db36ff0c-058b-420c-bfff-999ae527d4eb",
+  "sourceExport": "Build for the holidays.collection.json",
+  "behavior": "Immutable published snapshot; editable copies persist per browser. Reopening keeps that browser’s edits. No collaborative sync or automatic republication.",
+  "verification": "All 12 artwork objects and original media bytes match the exported local collection; only top-level IDs, collection membership IDs and unpublished chat fields differ.",
+  "directURL": "https://lovable-brands.vercel.app/brand#brand/create/147e948b-a7c4-4a97-87c8-c515ef28a6ff"
+}

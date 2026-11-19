@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "collections": [
+    {
+      "workspace": "lovable",
+      "source": "/collections/holiday-playbook-20261119.json",
+      "assetIds": [
+        "43b85387-bcdd-4c37-96c1-45edf0621a1b",
+        "c804322a-abbd-45f1-b982-122e9d01541f",
+        "f7bccd1d-0afe-4575-9190-46b4e2a2c698",
+        "0c74a389-1440-49ee-b6fe-75164290a1c0",
+        "da508a0a-78a0-4fcf-b461-3e5b7a1d70c1",
+        "2237695d-50cc-4409-aa30-b2c124581323",
+        "3e22cab4-955e-4473-838d-ff6895983af0",
+        "b64b3679-7cdd-48d4-85bc-6709b790d59f",
+        "a430ddc8-4b21-406f-a6d1-740dbd2751a8",
+        "a7efaa39-d346-4e81-8813-95df1686335d",
+        "2bd70b67-2771-4e77-ae82-5c01f3a0cc2b",
+        "147e948b-a7c4-4a97-87c8-c515ef28a6ff"
+      ]
+    }
+  ]
+}

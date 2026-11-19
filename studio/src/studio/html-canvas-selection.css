@@ -1,7 +1,7 @@
 /* Opt-in HTML selection uses the presentation editor's controls and tokens. */
 .hev[data-selection-mode] { outline:none;position:relative; }
 .hev[data-selection-mode] .hev-block { outline-offset:0; border-radius:0; }
-.hev[data-selection-mode][data-editable] .hev-block:hover { outline-color:var(--ui-accent); }
+.hev[data-selection-mode][data-editable] .hev-block:is(:hover,[data-layer-hover]) { outline-color:var(--ui-accent); }
 .hev[data-selection-mode] .hev-block[data-locked] { cursor:default; }
 .hev[data-selection-mode] .hev-block[data-selected] { outline-color:transparent; }
 .hev[data-selection-mode] .hev-block-tools,.hev[data-selection-mode] .ewb-image-toolbar,.hev[data-selection-mode] .ewb-image-handle,.hev[data-selection-mode] .ewb-image-size { display:none!important; }

@@ -178,5 +178,8 @@
 .gallery-lightbox::backdrop { background:transparent; }
 .gallery-lightbox-stage { position:relative;flex:none;transform-origin:top left; }
 .gallery-lightbox-stage > .gallery-item { transform:scale(var(--preview-scale));transform-origin:top left;cursor:default; }
-.gallery-lightbox-stage > .gallery-preview-edit { position:absolute;top:-40px;right:0;display:grid;place-items:center;width:32px;height:32px;border-radius:8px;color:var(--color-muted);background:var(--color-panel);border:1px solid var(--color-border); }
+.gallery-preview-edit { position:absolute;top:-40px;right:0;display:grid;place-items:center;width:32px;height:32px;border-radius:8px;color:var(--color-muted);background:var(--color-panel);border:1px solid var(--color-border); }
 .gallery-preview-edit:is(:hover,:focus-visible) { color:var(--color-text); }
+
+.gallery-item[data-gallery-edit] { overflow:visible; }
+.gallery-item[data-gallery-edit] > svg { overflow:hidden; }

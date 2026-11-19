@@ -2,7 +2,7 @@ import {z} from 'zod';
 import {mkdtemp,readFile,writeFile,rm} from 'node:fs/promises';
 import {join} from 'node:path';
 import {tmpdir} from 'node:os';
-import {studioAnimationPlanSchema,studioAnimationRequestSchema,requestedAnimationSteps,validateStudioAnimationPlan} from '../shared/studioAnimation.mjs';
+import {studioAnimationPlanSchema,studioAnimationRevisionSchema,studioAnimationRequestSchema,requestedAnimationSteps,validateStudioAnimationPlan,validateStudioAnimationRevision} from '../shared/studioAnimation.mjs';
 import {studioAnimationInstructions} from './studioAnimationPrompt.mjs';
 import {communityOpenAIModel,createOpenAICaller} from './communityOpenAI.mjs';
 import {createBudget,blobBudgetStore} from './communityBudget.mjs';
@@ -11,16 +11,19 @@ import {communityChatStatus,localRequestAllowed,runProcess,executable} from './c
 export const animationRequestByteLimit=500000;
 const strictSchema=value=>Array.isArray(value)?value.map(strictSchema):value&&typeof value==='object'?Object.fromEntries(Object.entries(value).filter(([key])=>!['$schema','default'].includes(key)).map(([key,item])=>[key,strictSchema(item)])):value;
 export function studioAnimationBody(request,correction){
- const schema=strictSchema(z.toJSONSchema(studioAnimationPlanSchema));schema.properties.steps.maxItems=request.availablePageSlots;
+ const revising=request.sequence?.length>1;
+ const schema=strictSchema(z.toJSONSchema(revising?studioAnimationRevisionSchema:studioAnimationPlanSchema));
+ if(!revising)schema.properties.steps.maxItems=request.availablePageSlots;
  // Structured Outputs uses homogeneous arrays; tuple-specific coordinate bounds
  // are checked by the native schema after generation.
- schema.properties.steps.items.properties.transition.properties.curve={type:'array',items:{type:'number'},minItems:4,maxItems:4};
- return {model:communityOpenAIModel,store:false,service_tier:'default',reasoning:{effort:'none'},max_output_tokens:12000,instructions:studioAnimationInstructions,
+ const transition=revising?schema.properties.updates.items.properties.transition.anyOf.find(item=>item.type==='object'):schema.properties.steps.items.properties.transition;
+ transition.properties.curve={type:'array',items:{type:'number'},minItems:4,maxItems:4};
+ return {model:communityOpenAIModel,store:false,service_tier:'default',reasoning:{effort:'none'},max_output_tokens:12000,instructions:studioAnimationInstructions+(revising?'\nThis is a FOLLOW-UP: revise the supplied sequence in place. Return updates keyed by existing assetId, with absolute property changes and an outgoing transition or null to preserve it. Keep the number, IDs and order of assets unchanged. Do not generate additional poses. Preserve the final authored resting pose unless the user asks to change it. Interpret phrases such as make it epic, slower, more subtle, or plus dynamique as changes to this animation. You can adjust the starting pose, intermediate poses and outgoing timing together. Do not ask the user to repeat the animation request.':'') ,
   input:[{role:'user',content:[{type:'input_text',text:JSON.stringify({...request,requestedAddedAssets:requestedAnimationSteps(request.prompt)??null,...correction})}]}],text:{format:{type:'json_schema',name:'studio_animation',strict:true,schema}}};
 }
 export async function generateStudioAnimation(input,{env=process.env,signal,fetchImpl=fetch,budget,runCodex}={}){
  const request=studioAnimationRequestSchema.parse(input),count=requestedAnimationSteps(request.prompt);
- if(!request.availablePageSlots||count>request.availablePageSlots)throw Error('There is not enough room in this collection for the requested animation.');
+ if(request.sequence.length<2&&(!request.availablePageSlots||count>request.availablePageSlots))throw Error('There is not enough room in this collection for the requested animation.');
  const provider=env.COMMUNITY_CHAT_PROVIDER?.trim()||'codex';
  const deadline=AbortSignal.timeout(180000),combined=signal?AbortSignal.any([signal,deadline]):deadline;
  let execute,cleanup=async()=>{};
@@ -39,9 +42,9 @@ export async function generateStudioAnimation(input,{env=process.env,signal,fetc
   if(runCodex)execute=correction=>runCodex(studioAnimationBody(request,correction),combined);
   else{
    const dir=await mkdtemp(join(tmpdir(),'lovable-animation-'));cleanup=()=>rm(dir,{recursive:true,force:true});
-   try{await writeFile(join(dir,'schema.json'),JSON.stringify(z.toJSONSchema(studioAnimationPlanSchema)),{mode:0o600});}catch(error){await cleanup();throw error;}
+   try{await writeFile(join(dir,'schema.json'),JSON.stringify(studioAnimationBody(request).text.format.schema),{mode:0o600});}catch(error){await cleanup();throw error;}
    const args=['exec','--ignore-user-config','--ephemeral','--skip-git-repo-check','--sandbox','read-only','--color','never','--output-schema',join(dir,'schema.json'),'--output-last-message',join(dir,'result.json'),'-C',dir,
-    '-c','approval_policy="never"','-c','project_doc_max_bytes=0','-c','features.shell_tool=false','-c','features.apply_patch_freeform=false','-c','features.apps=false','-c','apps._default.enabled=false','-c','agents.enabled=false','-c','features.multi_agent_v2=false','-c','features.js_repl=false','-c','web_search="disabled"','-c','model_reasoning_effort="low"','-c',`developer_instructions=${JSON.stringify(studioAnimationInstructions)}`];
+    '-c','approval_policy="never"','-c','project_doc_max_bytes=0','-c','features.shell_tool=false','-c','features.apply_patch_freeform=false','-c','features.apps=false','-c','apps._default.enabled=false','-c','agents.enabled=false','-c','features.multi_agent_v2=false','-c','features.js_repl=false','-c','web_search="disabled"','-c','model_reasoning_effort="low"','-c',`developer_instructions=${JSON.stringify(studioAnimationBody(request).instructions)}`];
    if(env.COMMUNITY_CHAT_MODEL)args.push('--model',env.COMMUNITY_CHAT_MODEL);
    execute=async correction=>{
     const result=await runProcess(await executable(env),[...args,'-'],{cwd:dir,input:JSON.stringify({...request,requestedAddedAssets:count??null,...correction}),signal:combined,maxOutput:500000});
@@ -54,7 +57,7 @@ export async function generateStudioAnimation(input,{env=process.env,signal,fetc
   let correction;
   for(let attempt=0;attempt<2;attempt++){
    combined.throwIfAborted();let value;
-   try{value=await execute(correction);combined.throwIfAborted();return {plan:validateStudioAnimationPlan(value,request)};}
+   try{value=await execute(correction);combined.throwIfAborted();return {plan:(request.sequence.length>1?validateStudioAnimationRevision:validateStudioAnimationPlan)(value,request)};}
    catch(error){
     if(combined.aborted)throw Error(signal?.aborted?'Cancelled':'Animation planning took too long. Please retry.');
     if(attempt||(!value&&!(error instanceof SyntaxError)))throw error;

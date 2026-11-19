@@ -54,14 +54,23 @@ export function replaceAssetPage(pages:AssetDocument[],id:string,proposals:Asset
 }
 
 /** Restore membership, and optionally the original first pose, without reverting siblings' edits. */
-export function restoreAssetArrangement(collection:AssetDocument[],saved:AssetDocument[],ids:string[],original?:AssetDocument){
+export function restoreAssetArrangement(collection:AssetDocument[],saved:AssetDocument[],ids:string[],original?:AssetDocument|AssetDocument[]){
  const documents=new Map([...saved,...collection].map(page=>[page.id,page]));
- if(original){
-  const latest=documents.get(original.id);
-  documents.set(original.id,{...original,messages:latest?.messages,workspaceChats:latest?.workspaceChats,workspaceActiveChatId:latest?.workspaceActiveChatId,updatedAt:Date.now()});
+ for(const previous of original?(Array.isArray(original)?original:[original]):[]){
+  const latest=documents.get(previous.id);
+  documents.set(previous.id,{...previous,messages:latest?.messages,workspaceChats:latest?.workspaceChats,workspaceActiveChatId:latest?.workspaceActiveChatId,updatedAt:Date.now()});
  }
  const pages=linkAssetPages(ids.flatMap(id=>documents.has(id)?[documents.get(id)!]:[]));
  return {pages,detached:collection.filter(page=>!pages.some(item=>item.id===page.id)).map(page=>({...page,series:undefined}))};
+}
+
+/** Recover the connected native sequence, including assets made before sequence chat existed. */
+export function currentAnimationSequence(pages:AssetDocument[],activeId:string){
+ const at=pages.findIndex(page=>page.id===activeId);if(at<0)return [];
+ const identity=(page:AssetDocument)=>JSON.stringify([page.dimensions??page.format,page.editor?.pages.flatMap(p=>p.sections.flatMap(s=>s.columns.flat().map(b=>`${b.id}:${b.kind}`))).sort()]);
+ const connects=(index:number)=>index>=0&&index<pages.length-1&&pages[index].animation?.enabled&&identity(pages[index])===identity(pages[index+1]);
+ let start=at,end=at;while(connects(start-1))start--;while(connects(end))end++;
+ return end>start?pages.slice(start,end+1):[];
 }
 
 /** Animate toward the existing next page, creating an editable endpoint only at the end. */

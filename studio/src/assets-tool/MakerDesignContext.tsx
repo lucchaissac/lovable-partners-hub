@@ -2,14 +2,15 @@ import {createContext,useContext,useRef,useState,type Dispatch,type SetStateActi
 import {Button} from '@asset/ui';
 
 type LayerSelectionRequest={assetId:string;ids:string[]};
-type MakerDesign={tab:'canvas'|'layers';setTab:(tab:'canvas'|'layers')=>void;visible:boolean;setVisible:(visible:boolean)=>void;selected:string[];setSelected:(ids:string[])=>void;select:MutableRefObject<((ids:string[])=>void)|undefined>;nudge:MutableRefObject<((x:number,y:number)=>void)|undefined>;selectionRequest:LayerSelectionRequest|undefined;setSelectionRequest:Dispatch<SetStateAction<LayerSelectionRequest|undefined>>};
+type MakerDesign={hovered:LayerSelectionRequest|undefined;setHovered:Dispatch<SetStateAction<LayerSelectionRequest|undefined>>;tab:'canvas'|'layers';setTab:(tab:'canvas'|'layers')=>void;visible:boolean;setVisible:(visible:boolean)=>void;selected:string[];setSelected:(ids:string[])=>void;select:MutableRefObject<((ids:string[])=>void)|undefined>;nudge:MutableRefObject<((x:number,y:number)=>void)|undefined>;selectionRequest:LayerSelectionRequest|undefined;setSelectionRequest:Dispatch<SetStateAction<LayerSelectionRequest|undefined>>};
 const Context=createContext<MakerDesign|null>(null);
 export const useMakerDesign=()=>useContext(Context);
 export function MakerDesignProvider({children}:{children:ReactNode}) {
  const [tab,setTab]=useState<'canvas'|'layers'>('canvas'),[visible,setVisible]=useState(true),[selected,setSelected]=useState<string[]>([]);
+ const [hovered,setHovered]=useState<LayerSelectionRequest>();
  const select=useRef<((ids:string[])=>void)|undefined>(undefined);
  const nudge=useRef<((x:number,y:number)=>void)|undefined>(undefined),[selectionRequest,setSelectionRequest]=useState<LayerSelectionRequest>();
- return <Context.Provider value={{tab,setTab,visible,setVisible,selected,setSelected,select,nudge,selectionRequest,setSelectionRequest}}>{children}</Context.Provider>;
+ return <Context.Provider value={{hovered,setHovered,tab,setTab,visible,setVisible,selected,setSelected,select,nudge,selectionRequest,setSelectionRequest}}>{children}</Context.Provider>;
 }
 export function MakerDesignModes(){
  const maker=useMakerDesign();if(!maker)return null;

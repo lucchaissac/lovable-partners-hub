@@ -1,4 +1,4 @@
-import {useMemo,useRef,useState,type DragEvent,type KeyboardEvent} from 'react';
+import {useEffect,useMemo,useRef,useState,type DragEvent,type KeyboardEvent} from 'react';
 import {Button,Icon,Tooltip,DropdownMenu,DropdownMenuContent,DropdownMenuList,DropdownMenuItem,DropdownMenuItemIcon,DropdownMenuItemLabel} from '@asset/ui';
 import {nativeDocument} from './nativeDocument';
 import {useMakerDesign} from './MakerDesignContext';
@@ -17,6 +17,7 @@ export function CanvasLayersPanel({asset,onChange}:{asset:AssetDocument;onChange
  const selectionAnchor=useRef<{asset:string;row:string}|undefined>(undefined);
  const visibleRows=editor.pages[0].sections.flatMap(section=>section.columns.flatMap(column=>visibleCanvasLayers(column,collapsed)));
  const selected=new Set(maker.selected);
+ useEffect(()=>()=>maker.setHovered(undefined),[asset.id,maker.setHovered]);
  const select=(ids:string[])=>maker.setSelectionRequest({assetId:asset.id,ids});
  const apply=(ids:string[],action:CanvasLayerAction)=>{const next=canvasLayerAction(editor,ids,action,action==='group'?crypto.randomUUID():undefined);if(next!==editor)onChange({...asset,editor:next});setMenu(undefined);};
  const context=(layer:CanvasLayer,x:number,y:number)=>{const ids=layer.blocks.map(block=>block.id),alreadySelected=ids.every(id=>selected.has(id)),effective=alreadySelected?maker.selected:ids;if(!alreadySelected)selectionAnchor.current={asset:asset.id,row:layer.id};select(effective);setMenu({ids:effective,x,y});};
@@ -55,11 +56,12 @@ export function CanvasLayersPanel({asset,onChange}:{asset:AssetDocument;onChange
   const blocked=locked||layer.blocks.some(block=>block.editor?.locked),hidden=layer.blocks.some(block=>block.editor?.hidden),name=layer.group?'Group':canvasLayerName(layer.blocks[0]);
   return <div key={layer.id} className="maker-layer-unit" data-group={layer.group||undefined} data-selected={layer.group&&allSelected||undefined}>
    <div role="treeitem" tabIndex={0} className="maker-layer-row" data-layer-id={layer.id} data-selected={allSelected||undefined} data-hidden={hidden||undefined} data-partial={someSelected&&!allSelected||undefined} data-drop={drop?.id===layer.id?drop.side:undefined} aria-label={name} aria-selected={allSelected} aria-expanded={layer.group?!collapsed.has(layer.id):undefined} aria-level={depth+1} draggable={!blocked} style={{paddingLeft:8+depth*24}}
+    onMouseEnter={()=>maker.setHovered({assetId:asset.id,ids})} onMouseLeave={()=>maker.setHovered(undefined)}
     onClick={event=>choose(layer,{range:event.shiftKey,additive:event.metaKey||event.ctrlKey})} onDoubleClick={()=>maker.setTab('canvas')} onContextMenu={event=>{event.preventDefault();context(layer,event.clientX,event.clientY);}} onKeyDown={event=>keyboard(event,layer)}
     onDragStart={event=>{event.stopPropagation();event.dataTransfer.setData('application/x-maker-layers',JSON.stringify(ids));event.dataTransfer.effectAllowed='move';choose(layer);setDragging(ids);}}
     onDragEnd={()=>{setDragging(undefined);setDrop(undefined);}} onDragOver={event=>dragOver(event,layer.id)} onDrop={event=>{event.preventDefault();event.stopPropagation();if(dragging&&drop?.id===layer.id){const next=reorderCanvasLayers(editor,dragging,ids,drop.side);if(next!==editor)onChange({...asset,editor:next});}setDragging(undefined);setDrop(undefined);}}>
     {layer.group?<button className="maker-layer-expand" aria-label={`${collapsed.has(layer.id)?'Expand':'Collapse'} group`} onClick={event=>{event.stopPropagation();toggle(layer.id);}}><Icon name={collapsed.has(layer.id)?'chevron-right':'chevron-down'} size={12}/></button>:null}
-    {layer.group?<LucideGlyph name="group" size={16}/>:<Icon name={layerIcon(layer.blocks[0])} size={16}/>}<Tooltip label={name} onlyWhenTruncated><span className="maker-layer-name">{name}</span></Tooltip>
+    {layer.group?<LucideGlyph name="group" size={16}/>:<Icon name={layerIcon(layer.blocks[0])} size={16}/>}<Tooltip label={name} onlyWhenTruncated side="top" maxWidth={320}><span className="maker-layer-name">{name}</span></Tooltip>
     <div className="maker-layer-actions" onClick={event=>event.stopPropagation()} onDoubleClick={event=>event.stopPropagation()}>
      <Tooltip label={blocked?'Unlock layer':'Lock layer'} side="top"><Button className="maker-layer-action" data-persistent={blocked||undefined} variant="ghost" disabled={locked} aria-label={`${blocked?'Unlock':'Lock'} ${name}`} leadingIcon={<Icon name={blocked?'lock':'lock-open'} size={12}/>} onClick={()=>apply(ids,blocked?'unlock':'lock')}/></Tooltip>
      <Tooltip label={hidden?'Show layer':'Hide layer'} side="top"><Button className="maker-layer-action" data-persistent={hidden||undefined} variant="ghost" disabled={locked} aria-label={`${hidden?'Show':'Hide'} ${name}`} leadingIcon={<Icon name={hidden?'eye-off':'eye'} size={12}/>} onClick={()=>apply(ids,hidden?'show':'hide')}/></Tooltip>

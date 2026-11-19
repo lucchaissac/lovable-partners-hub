@@ -11,7 +11,7 @@ import {selectAsset,singleAssetSelection,type AssetSelection} from './assetSelec
 import {MAX_ASSET_PAGES} from './assetSeries';
 import './communityCanvas.css';
 
-type Props={toolbar:ReactNode;asset:AssetDocument;pages:AssetDocument[];busy:boolean;generating:boolean;zoom:number;onZoom:(zoom:number)=>void;onChange:(asset:AssetDocument)=>void;onOpen:(id:string)=>void;onAdd:(afterId:string,kind:string)=>void;onOverview:()=>void;onDuplicate:(ids:string[])=>Promise<string[]|undefined>;onRename:(id:string,title:string)=>void;onMove:(ids:string[],targetId:string,side:'before'|'after')=>void;onRemove:(ids:string[])=>void;onUndoArrangement?:()=>void};
+type Props={toolbar:ReactNode;asset:AssetDocument;pages:AssetDocument[];busy:boolean;generating:boolean;zoom:number;onZoom:(zoom:number)=>void;onChange:(asset:AssetDocument)=>void;onOpen:(id:string)=>void;onAdd:(afterId:string,kind:string)=>void;onOverview:()=>void;onDuplicate:(ids:string[])=>Promise<string[]|undefined>;onRename:(id:string,title:string)=>void;onMove:(ids:string[],targetId:string,side:'before'|'after')=>void;onRemove:(ids:string[])=>void};
 const AssetThumbnail=memo(function AssetThumbnail({asset}:{asset:AssetDocument}){
  const host=useRef<HTMLDivElement>(null),[bounds,setBounds]=useState({width:240,height:150});
  useLayoutEffect(()=>{if(!host.current)return;const observer=new ResizeObserver(([entry])=>setBounds({width:entry.contentRect.width,height:entry.contentRect.height}));observer.observe(host.current);return()=>observer.disconnect();},[]);
@@ -25,7 +25,7 @@ function AddAsset({disabled,onAdd,compact=false}:{disabled:boolean;onAdd:(kind:s
   {kind:'separator'},...workspaceAssetTemplates(studioWorkspace).map(format=>({id:format.id,label:format.name,leadingIcon:<Icon name={format.width===format.height?'square':'rectangle-horizontal'} size={16}/>})),
  ]} onChange={onAdd} trigger={<Button variant="ghost" disabled={disabled} className={compact?'community-page-add-tile':'community-page-add'} aria-label="Add asset" leadingIcon={<Icon name="plus" size={16}/>} trailingIcon={!compact?<Icon name="chevron-down" size={14}/>:undefined}>{!compact&&'Add asset'}</Button>}/>;
 }
-export function AssetCanvas({toolbar,asset,pages,busy,generating,zoom,onZoom,onChange,onOpen,onAdd,onOverview,onDuplicate,onRename,onMove,onRemove,onUndoArrangement}:Props){
+export function AssetCanvas({toolbar,asset,pages,busy,generating,zoom,onZoom,onChange,onOpen,onAdd,onOverview,onDuplicate,onRename,onMove,onRemove}:Props){
  const viewport=useRef<HTMLDivElement>(null),strip=useRef<HTMLElement>(null),[bounds,setBounds]=useState({width:800,height:600});
  const [dragged,setDragged]=useState<string[]>(),[dropTarget,setDropTarget]=useState<{id:string;side:'before'|'after'}>();
  const suppressOpen=useRef(0),restoreThumbnailFocus=useRef(false);
@@ -183,7 +183,7 @@ export function AssetCanvas({toolbar,asset,pages,busy,generating,zoom,onZoom,onC
      <input type="range" className="asset-zoom-range asset-playback-progress" aria-label="Animation progress" aria-valuetext={`${(playback.time/1000).toFixed(1)} / ${(playback.total/1000).toFixed(1)} s`} min={0} max={playback.total} step={1} value={Math.round(playback.time)} disabled={busy} onChange={event=>playback.seek(Number(event.target.value))} style={{background:`linear-gradient(to right, var(--ui-text-muted) ${playback.time/playback.total*100}%, var(--ui-border) ${playback.time/playback.total*100}%)`}}/>
      <Tooltip label={playback.loop?'Turn loop off':'Turn loop on'} side="top"><Button size="sm" variant="ghost" aria-label="Loop playback" aria-pressed={playback.loop} disabled={busy} leadingIcon={<Icon name="repeat" size={14}/>} onClick={playback.toggleLoop}/></Tooltip>
     </div>}</div>
-    <span className="asset-arrangement-slot">{onUndoArrangement&&<Tooltip label="Undo page change" side="top"><Button size="sm" variant="ghost" aria-label="Undo page change" disabled={busy} leadingIcon={<Icon name="undo-2" size={16}/>} onClick={onUndoArrangement}/></Tooltip>}</span>
+
    </div>
    <div className="asset-zoom"><input type="range" className="asset-zoom-range" min={10} max={300} step={1} disabled={grid} value={Math.round(scale*100)} aria-label="Zoom" aria-valuetext={`${Math.round(scale*100)}%`} onChange={event=>onZoom(Number(event.target.value)/100)}/>
     <Dropdown align="end" placement="top" listHeight="auto" value={zoom?String(Math.round(scale*100)):'fit'} items={[{id:'fit',label:'Fit'}, {kind:'separator'},...[200,125,100,75,50,25].map(value=>({id:String(value),label:`${value}%`}))]} onChange={value=>onZoom(value==='fit'?0:Number(value)/100)} trigger={<Button variant="ghost" size="sm" disabled={grid} aria-label={`Zoom: ${Math.round(scale*100)}%`}>{Math.round(scale*100)}%</Button>}/>

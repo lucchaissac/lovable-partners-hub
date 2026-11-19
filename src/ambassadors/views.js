@@ -20,7 +20,7 @@ export function ambassadorGallery(){return `<section class="gallery ambassador-g
   ${['photo','banner','kit','website','gathering','social','spotlight','speakers','badge','poster'].map(id=>{
     const photo=galleryPhotos[id],format=ambassadorFormats.find(f=>f.id===id),label=photo?.label||format.name,{width,height}=photo||format;
     const content=photo?`<img src="${photo.src}" ${photo.srcset?`srcset="${photo.srcset}"`:''} sizes="(max-width:680px) calc(100vw - 48px), (max-width:1000px) 88vw, min(58vw, 850px)" width="${photo.width}" height="${photo.height}" alt="${label}" ${id==='photo'?'fetchpriority="high"':'loading="lazy"'} decoding="async"/>`:preview(id);
-    return `<figure class="gallery-item ambassador-gallery-${id}" style="aspect-ratio:${width}/${height}" role="img" aria-label="${label}">${content}</figure>`;
+    return `<figure class="gallery-item ambassador-gallery-${id}"${format?` data-gallery-edit="#ambassadors/create/${format.id}"`:""} style="aspect-ratio:${width}/${height}" role="img" aria-label="${label}">${content}</figure>`;
   }).join('')}
 </div></section>`;}
 export function ambassadorGuidelines({icon}){return `<aside class="guideline-sidebar"><nav aria-label="Guideline navigation">${ambassadorSections.map(([id,label],i)=>`<a href="#ambassadors/guidelines/${id}" data-section="${id}" ${i===0?'aria-current="location"':''}>${label}</a>`).join('')}</nav></aside><div class="guideline-content ambassador-guidelines">

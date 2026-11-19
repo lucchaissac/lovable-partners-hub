@@ -3,13 +3,20 @@ import {curveDefaults,gridDefaults} from './techArtwork.mjs';
 
 const id=z.string().min(1).max(100).regex(/^[a-zA-Z0-9_-]+$/);
 const ranges={x:[-4000,4000],y:[-4000,4000],width:[1,4000],height:[1,4000],rotation:[-360,360],rotationX:[-360,360],rotationY:[-360,360],depth:[-2000,2000],perspective:[100,5000],opacity:[0,1],fontSize:[6,600],cornerRadius:[0,1500],lineWidth:[1,24],'tech.scale':[25,300],'tech.offsetX':[-100,100],'tech.offsetY':[-100,100],'tech.count':[3,64],'tech.spread':[25,160],'tech.rotation':[-180,180],'tech.stroke':[.1,4],'tech.opacity':[0,100],'tech.spacing':[10,84]};
-const property=z.enum([...Object.keys(ranges),'fill','color','blendMode','tech.color']);
-const change=z.object({id,property,value:z.union([z.number(),z.string().max(30)])}).strict();
+const change=z.union([
+ ...Object.entries(ranges).map(([property,[min,max]])=>z.object({id,property:z.literal(property),value:property==='tech.count'?z.number().int().min(min).max(max):z.number().min(min).max(max)}).strict()),
+ ...['fill','color','tech.color'].map(property=>z.object({id,property:z.literal(property),value:z.string().regex(property==='tech.color'?/^#[0-9a-f]{6}$/i:/^#[0-9a-f]{6}(?:[0-9a-f]{2})?$/i)}).strict()),
+ z.object({id,property:z.literal('blendMode'),value:z.enum(['normal','plus-lighter'])}).strict(),
+]);
 const timing=z.object({durationMs:z.number().int().min(1).max(10000),delayMs:z.number().int().min(0).max(10000),easing:z.enum(['ease-in-out','linear','ease-in','ease-out','spring','custom']),curve:z.tuple([z.number().min(0).max(1),z.number().min(-1).max(2),z.number().min(0).max(1),z.number().min(-1).max(2)]),bounce:z.number().min(0).max(80),velocity:z.number().min(-10).max(10)}).strict();
 export const studioAnimationPlanSchema=z.object({summary:z.string().min(1).max(1200),initialChanges:z.array(change).max(400),steps:z.array(z.object({title:z.string().min(1).max(100),changes:z.array(change).min(1).max(400),transition:timing}).strict()).max(63)}).strict();
+export const studioAnimationRevisionSchema=z.object({summary:z.string().min(1).max(1200),updates:z.array(z.object({assetId:z.uuid(),changes:z.array(change).max(400),transition:timing.nullable()}).strict()).max(64)}).strict();
+const snapshotBlock=z.object({id,kind:z.string().max(30),name:z.string().max(500),text:z.string().max(8000),locked:z.boolean(),groupId:z.string().max(100).nullable(),frame:z.record(z.string(),z.union([z.number(),z.string(),z.boolean()])),appearance:z.record(z.string(),z.union([z.number(),z.string(),z.boolean()])),techArtwork:z.record(z.string(),z.union([z.number(),z.string()])).nullable()}).strict();
+const snapshotBlocks=z.array(snapshotBlock).min(1).max(200);
 export const studioAnimationRequestSchema=z.object({
  prompt:z.string().trim().min(1).max(4000),workspace:z.enum(['lovable','partners','ambassadors','tech-blog']),assetId:z.uuid(),title:z.string().max(100),width:z.number().min(100).max(4000),height:z.number().min(100).max(4000),availablePageSlots:z.number().int().min(0).max(63),
- selectedIds:z.array(id).max(200),blocks:z.array(z.object({id,kind:z.string().max(30),name:z.string().max(500),text:z.string().max(8000),locked:z.boolean(),groupId:z.string().max(100).nullable(),frame:z.record(z.string(),z.union([z.number(),z.string(),z.boolean()])),appearance:z.record(z.string(),z.union([z.number(),z.string(),z.boolean()])),techArtwork:z.record(z.string(),z.union([z.number(),z.string()])).nullable()}).strict()).min(1).max(200),
+ selectedIds:z.array(id).max(200),blocks:snapshotBlocks,
+ sequence:z.array(z.object({assetId:z.uuid(),title:z.string().max(100),blocks:snapshotBlocks,animation:z.object({enabled:z.boolean(),transition:z.enum(['instant','smart-animate']),...timing.shape}).partial().nullable()}).strict()).max(64).default([]),
  conversation:z.array(z.object({user:z.boolean(),text:z.string().max(8000)}).strict()).max(16),
 }).strict();
 
@@ -17,6 +24,15 @@ export function requestsCanvasAnimation(prompt){
  const text=prompt.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
  return /\b(animat\w*|anim[ée]r?|animer|motion|keyframes?|smart[ -]*animate|transition\w*)\b|\b(fais|faire|fait) bouger\b|\bfade[ -]?(in|out)\b/.test(text)&&! /\b(don't|do not|ne pas|sans) anim/.test(text);
 }
+const newBrief=prompt=>/\b(?:do not|don't|ne pas|sans) anim|\b(?:new|another|different|nouveau|nouvelle) (?:design|canvas|asset|poster|banner|affiche)|\b(?:make|create|open|cree|ouvre).{0,35}app studio|\b(?:forget|oublie|stop|cancel|annule)\b/i.test(prompt.normalize('NFD').replace(/[\u0300-\u036f]/g,''));
+/** Follow the conversation until an explicit new task, even if a fallback reply intervened. */
+export function isAnimationFollowUp(prompt,conversation=/** @type {Array<{user:boolean,text:string}>} */([])){
+ if(newBrief(prompt))return false;
+ const users=conversation.filter(message=>message.user).slice(-16);
+ for(let i=users.length-1;i>=0;i--){if(newBrief(users[i].text))return false;if(requestsCanvasAnimation(users[i].text))return true;}
+ return false;
+}
+export function routesToAnimation(prompt,conversation=/** @type {Array<{user:boolean,text:string}>} */([])){return requestsCanvasAnimation(prompt)||isAnimationFollowUp(prompt,conversation);}
 export function requestedAnimationSteps(prompt){
  const added=prompt.match(/\b(?:add|append|ajoute[rz]?)\s+(\d+)\s+(?:assets?|slides?|canvases?|etapes?|étapes?)\b/i);
  if(added)return Number(added[1]);
@@ -57,11 +73,40 @@ export function validateStudioAnimationPlan(value,request){
 }
 const blocksOf=editor=>editor.pages.flatMap(page=>page.sections.flatMap(section=>section.columns.flat()));
 const scalarRecord=value=>Object.fromEntries(Object.entries(value??{}).filter(([key,v])=>key!=='backgroundImage'&&['string','number','boolean'].includes(typeof v)));
-export function studioAnimationRequest(asset,{prompt,workspace,selectedIds=/** @type {string[]} */([]),availablePageSlots}){
- const editor=asset.editor,lockedSections=new Set(editor.pages.flatMap(page=>page.sections.filter(section=>section.locked).flatMap(section=>section.columns.flat().map(block=>block.id))));
- return studioAnimationRequestSchema.parse({prompt,workspace,assetId:asset.id,title:asset.title,...asset.dimensions,availablePageSlots,selectedIds,
-  blocks:blocksOf(editor).map(block=>({id:block.id,kind:block.kind,name:block.value?.alt??block.name??block.icon??block.shape??block.kind,text:block.kind==='text'?block.value.runs.map(run=>run.text).join(''):'',locked:!!block.editor?.locked||lockedSections.has(block.id),groupId:block.editor?.groupId??null,frame:scalarRecord(block.editor),appearance:scalarRecord(block.editor?.appearance),techArtwork:block.techArtwork??(block.value?.src==='/tech-blog/cover-grid.svg'?gridDefaults:block.value?.src==='/tech-blog/cover-curves.svg'?curveDefaults:null)})),
+export function animationSnapshotBlocks(editor){
+ const lockedSections=new Set(editor.pages.flatMap(page=>page.sections.filter(section=>section.locked).flatMap(section=>section.columns.flat().map(block=>block.id))));
+ return blocksOf(editor).map(block=>{
+  const appearance=scalarRecord(block.editor?.appearance),frame=scalarRecord(block.editor);
+  // Give the planner one unambiguous whole-object opacity, matching the renderer.
+  frame.opacity=typeof appearance.opacity==='number'?appearance.opacity/100:frame.opacity??1;
+  delete appearance.opacity;
+  return {id:block.id,kind:block.kind,name:block.value?.alt??block.name??block.icon??block.shape??block.kind,text:block.kind==='text'?block.value.runs.map(run=>run.text).join(''):'',locked:!!block.editor?.locked||lockedSections.has(block.id),groupId:block.editor?.groupId??null,frame,appearance,techArtwork:block.techArtwork??(block.value?.src==='/tech-blog/cover-grid.svg'?gridDefaults:block.value?.src==='/tech-blog/cover-curves.svg'?curveDefaults:null)};
+ });
+}
+export function studioAnimationRequest(asset,{prompt,workspace,selectedIds=/** @type {string[]} */([]),availablePageSlots,sequence=/** @type {any[]} */([])}){
+ return studioAnimationRequestSchema.parse({prompt,workspace,assetId:asset.id,title:asset.title,...asset.dimensions,availablePageSlots,selectedIds,blocks:animationSnapshotBlocks(asset.editor),
+  sequence:sequence.map(page=>({assetId:page.id,title:page.title,blocks:animationSnapshotBlocks(page.editor),animation:page.animation??null})),
   conversation:(asset.messages??[]).slice(-16).map(message=>({user:message.user,text:message.text.slice(0,8000)})),
+ });
+}
+export function validateStudioAnimationRevision(value,request){
+ const plan=studioAnimationRevisionSchema.parse(value),seen=new Set();
+ for(const update of plan.updates){
+  const pose=request.sequence.find(page=>page.assetId===update.assetId);
+  if(!pose)throw Error('Revise only assets in the current animation.');
+  if(seen.has(update.assetId))throw Error('Each animation asset can be updated only once.');seen.add(update.assetId);
+  if(!update.changes.length&&!update.transition)throw Error('Each update needs a changed property or transition.');
+  if(update.transition&&pose===request.sequence.at(-1))throw Error('The last pose has no outgoing transition in this animation.');
+  if(update.changes.length)validateStudioAnimationPlan({summary:plan.summary,initialChanges:update.changes,steps:[{title:'Validate pose',changes:update.changes,transition:{durationMs:600,delayMs:0,easing:'ease-out',curve:[0,0,.2,1],bounce:25,velocity:0}}]},{...request,blocks:pose.blocks,prompt:'Animate',availablePageSlots:63});
+ }
+ return plan;
+}
+export function compileStudioAnimationRevision(pages,value,request,{now=Date.now()}={}){
+ const plan=validateStudioAnimationRevision(value,request),updates=new Map(plan.updates.map(update=>[update.assetId,update]));
+ return pages.map(page=>{
+  const update=updates.get(page.id);if(!update)return page;
+  const pose=request.sequence.find(item=>item.assetId===page.id);
+  return {...structuredClone(page),editor:applyPose(page.editor,update.changes,{...request,blocks:pose.blocks}),...(update.transition?{animation:{enabled:true,transition:'smart-animate',...update.transition}}:{}),layouts:undefined,updatedAt:now};
  });
 }
 function applyPose(editor,changes,request){

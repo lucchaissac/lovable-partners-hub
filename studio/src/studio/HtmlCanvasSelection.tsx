@@ -123,6 +123,13 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
   useEffect(()=>{if(!enabled||!communityTemplateId)return;choose([communityTemplateId]);setDesign(true);host.panelChanged('html-selection',true);},[communityTemplateId,enabled]);
   useEffect(()=>{if(!enabled)return;const available=new Set(blocks.map(b=>b.id));setIds(old=>old.some(id=>!available.has(id))?old.filter(id=>available.has(id)):old);},[state,enabled]);
   useEffect(()=>{if(!enabled)return;const available=new Set(page.sections.map(s=>s.id));setSectionIds(old=>old.some(id=>!available.has(id))?old.filter(id=>available.has(id)):old);},[state,enabled]);
+  useLayoutEffect(()=>{
+    const hovered=makerDesign?.hovered;
+    if(!enabled||!makerDesign?.visible||makerDesign.tab!=='layers'||!hovered||root.current?.closest('.community-canvas-page')?.getAttribute('data-page-id')!==hovered.assetId)return;
+    const elements=hovered.ids.flatMap(id=>{const node=element(id);return node?[node]:[];});
+    elements.forEach(node=>node.setAttribute('data-layer-hover',''));
+    return()=>elements.forEach(node=>node.removeAttribute('data-layer-hover'));
+  },[enabled,makerDesign?.hovered,makerDesign?.visible,makerDesign?.tab,state]);
   // A Layers request survives the playback preview being replaced by this editor.
   // Consume it after this canvas's initial selection reset, never in its parent.
   useEffect(()=>{

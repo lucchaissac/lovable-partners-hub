@@ -38,6 +38,7 @@ details:not([open]) > summary > .we-transcript-chevron { transform: rotate(-90de
 .we-chat-activity-list li > span { min-width: 0; overflow-wrap: anywhere; }
 .we-chat-activity-list small { margin-left: auto; flex-shrink: 0; font: inherit; }
 .we-user-message { display: flex; flex-direction: column; gap: var(--ui-space-3); }
+.we-chat-turn .ui-msg[data-role='user'] .ui-msg-bubble { box-sizing: border-box; max-width: 100%; }
 .we-chat-turn .ui-msg-bubble .we-user-message p { margin: 0; }
 .we-chat-turn .we-user-message :is(ol, ul) { display: flex; flex-direction: column; gap: var(--ui-space-2); margin: 0; padding-left: var(--ui-space-5); }
 

@@ -63,6 +63,7 @@ export function mountGalleryPreview(root, mountMedia, refreshMedia) {
     width = rect.width;
     height = rect.height;
     const copy = card.cloneNode(true);
+    copy.querySelectorAll('.gallery-card-edit').forEach(link=>link.remove());
     copy.removeAttribute('tabindex');
     copy.removeAttribute('aria-haspopup');
     copy.setAttribute('role', 'img');
@@ -110,16 +111,28 @@ export function mountGalleryPreview(root, mountMedia, refreshMedia) {
       });
     }
   }
+  const editLinks=[];
   cards.forEach(card => {
     card.tabIndex = 0;
-    card.setAttribute('role', 'button');
+    card.setAttribute('role', card.dataset.galleryEdit?'group':'button');
     card.setAttribute('aria-haspopup', 'dialog');
+    if(card.dataset.galleryEdit){
+      const edit=document.createElement('a');
+      edit.className='gallery-preview-edit gallery-card-edit';
+      edit.href=card.dataset.galleryEdit;
+      edit.setAttribute('aria-label',`Use ${card.getAttribute('aria-label') || 'this design'}`);
+      edit.dataset.hubTooltip='Use this design';
+      edit.append(createElement(Plus,{width:16,height:16,'stroke-width':1.8,'aria-hidden':'true'}));
+      card.append(edit);editLinks.push(edit);
+    }
   });
   const click = event => {
+    if(event.target.closest('.gallery-card-edit'))return;
     const card = event.target.closest('.gallery-item');
     if (card && root.contains(card)) open(card);
   };
   const key = event => {
+    if(event.target.closest('.gallery-card-edit'))return;
     const card = event.target.closest('.gallery-item');
     if (card && ['Enter', ' '].includes(event.key)) { event.preventDefault(); open(card); }
   };
@@ -137,6 +150,7 @@ export function mountGalleryPreview(root, mountMedia, refreshMedia) {
   return () => {
     if (dialog.open) finishClose(false);
     dialog.remove();
+    editLinks.forEach(link=>link.remove());
     root.removeEventListener('click', click);
     root.removeEventListener('keydown', key);
     window.removeEventListener('resize', resize);

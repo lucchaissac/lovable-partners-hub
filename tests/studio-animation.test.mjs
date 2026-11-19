@@ -4,7 +4,7 @@ import {createServer as createHttpServer} from 'node:http';
 import {createServer} from 'vite';
 import {appStudioTemplate} from '../shared/brandTemplates.mjs';
 import {curveDefaults,gridDefaults,interpolateTechArtwork} from '../shared/techArtwork.mjs';
-import {requestsCanvasAnimation,requestedAnimationSteps,studioAnimationRequest,compileStudioAnimation,validateStudioAnimationPlan,animationCanvasKey} from '../shared/studioAnimation.mjs';
+import {requestsCanvasAnimation,routesToAnimation,isAnimationFollowUp,requestedAnimationSteps,studioAnimationRequest,compileStudioAnimation,compileStudioAnimationRevision,validateStudioAnimationPlan,validateStudioAnimationRevision,animationCanvasKey} from '../shared/studioAnimation.mjs';
 import {generateStudioAnimation,studioAnimationBody,studioAnimationPlugin} from '../server/studioAnimation.mjs';
 
 // Load the actual native schemas and playback/compiler modules, without a browser.
@@ -12,7 +12,7 @@ const vite=await createServer({configFile:false,server:{middlewareMode:true,hmr:
 after(()=>vite.close());
 const {assetSchema,makeNode}=await vite.ssrLoadModule('/studio/src/assets-tool/model.ts');
 const {animationRequest,planCanvasAnimation}=await vite.ssrLoadModule('/studio/src/assets-tool/studioAnimation.ts');
-const {linkAssetPages,replaceAssetPage,restoreAssetArrangement}=await vite.ssrLoadModule('/studio/src/assets-tool/assetSeries.ts');
+const {linkAssetPages,replaceAssetPage,restoreAssetArrangement,currentAnimationSequence}=await vite.ssrLoadModule('/studio/src/assets-tool/assetSeries.ts');
 const {matchingPlaybackBlocks,playbackTimeline,playbackPosition,canExportAnimation}=await vite.ssrLoadModule('/studio/src/assets-tool/assetPlayback.ts');
 const blocks=asset=>asset.editor.pages[0].sections[0].columns[0];
 const layer=(asset,id)=>blocks(asset).find(block=>block.id===id);
@@ -41,6 +41,57 @@ test('animation intent and explicit state counts distinguish total poses from ad
  assert.equal(requestedAnimationSteps('Anime en 3 étapes'),2);
  assert.equal(requestedAnimationSteps('Animate and add 4 assets'),4);
  assert.equal(requestedAnimationSteps('Animate the logo'),undefined);
+});
+test('follow-ups keep animation context across multiple replies, including the old App Studio fallback',()=>{
+ const history=[{user:true,text:'Animate this cover'},{user:false,text:'Created a subtle entrance animation.'}];
+ for(const prompt of ['Make it epicccc','plus dynamique','slower please','a bit more','Change the easing']){
+  assert.equal(isAnimationFollowUp(prompt,history),true);assert.equal(routesToAnimation(prompt,history),true);
+  history.push({user:true,text:prompt},{user:false,text:'Ask me to make a banner for App Studio.'});
+ }
+ for(const prompt of ['Open App Studio','Make a new banner','Stop','Do not animate this'])assert.equal(isAnimationFollowUp(prompt,history),false,prompt);
+ assert.equal(routesToAnimation('Make it epicccc',[]),false);
+ assert.equal(routesToAnimation('More subtle',[...history,{user:true,text:'Create a new poster'}]),false);
+});
+test('the planner sees one normalized object opacity; its response schema excludes percentages',()=>{
+ const base=canvas();layer(base,details).editor.opacity=.2;
+ const req=request(base),text=req.blocks.find(block=>block.id===details);
+ assert.equal(text.frame.opacity,.75);assert.equal(text.appearance.opacity,undefined);
+ const curves=layer(base,'logo');curves.techArtwork={...curveDefaults,opacity:30};
+ const next=request(base);assert.equal(next.blocks.find(block=>block.id==='logo').frame.opacity,1);assert.equal(next.blocks.find(block=>block.id==='logo').techArtwork.opacity,30);
+ const variants=studioAnimationBody(next).text.format.schema.properties.initialChanges.items.anyOf;
+ const whole=variants.find(item=>item.properties.property.const==='opacity'),ink=variants.find(item=>item.properties.property.const==='tech.opacity');
+ assert.equal(whole.properties.value.type,'number');assert.equal(whole.properties.value.maximum,1);assert.equal(ink.properties.value.maximum,100);
+ for(const value of [100,30,'100%'])assert.throws(()=>validateStudioAnimationPlan({...entrance(base),initialChanges:[patch(details,'opacity',value)]},next));
+});
+test('follow-up revises the existing sequence in place, preserving IDs, the final pose and unrelated pages',()=>{
+ const base=canvas(),poses=compileStudioAnimation(base,entrance(base),request(base)),other=canvas();other.editor.pages[0].sections[0].columns[0][0].id='unrelated';
+ const collection=linkAssetPages([...poses,other]),sequence=currentAnimationSequence(collection,poses[1].id);
+ assert.deepEqual(sequence.map(page=>page.id),poses.map(page=>page.id));
+ const prepared=animationRequest(collection[1],'Make it epicccc','lovable',undefined,0,sequence);
+ const revision={summary:'A stronger entrance.',updates:[{assetId:poses[0].id,changes:[patch(details,'y',900),patch(details,'rotationX',25)],transition:{...timing,durationMs:1200,easing:'spring'}}]};
+ const revised=compileStudioAnimationRevision(prepared.sequence,revision,prepared.payload);
+ assert.deepEqual(revised.map(page=>page.id),poses.map(page=>page.id));assert.equal(revised[0].animation.durationMs,1200);
+ assert.deepEqual(revised[1].editor,prepared.sequence[1].editor);assert.equal(layer(revised[0],details).editor.y,900);
+ revised.forEach(page=>assetSchema.parse(page));
+ const combined=collection.map(page=>revised.find(pose=>pose.id===page.id)??page);
+ const restored=restoreAssetArrangement(combined,collection,collection.map(page=>page.id),sequence);
+ assert.deepEqual(restored.pages.map(page=>page.editor),collection.map(page=>page.editor));assert.equal(restored.detached.length,0);
+ assert.throws(()=>validateStudioAnimationRevision({...revision,updates:[{...revision.updates[0],assetId:other.id}]},prepared.payload),/current animation/);
+ assert.throws(()=>validateStudioAnimationRevision({...revision,updates:[{...revision.updates[0],assetId:poses[1].id}]},prepared.payload),/last pose/);
+ prepared.payload.sequence[0].blocks.find(block=>block.id===details).locked=true;
+ assert.throws(()=>validateStudioAnimationRevision(revision,prepared.payload),/Unlock/);
+});
+test('follow-up provider and client use revision output even when no extra asset slots remain',async()=>{
+ const base=canvas(),poses=compileStudioAnimation(base,entrance(base),request(base));
+ const prepared=animationRequest(poses[1],'Make it epicccc','lovable',undefined,0,poses);
+ const revision={summary:'More dynamic.',updates:[{assetId:poses[0].id,changes:[],transition:{...timing,durationMs:1400}}]};
+ const body=studioAnimationBody(prepared.payload);assert.ok(body.text.format.schema.properties.updates);assert.ok(!body.text.format.schema.properties.steps);assert.match(body.instructions,/FOLLOW-UP/);
+ const response=await generateStudioAnimation(prepared.payload,{env,budget,fetchImpl:async()=>Response.json({status:'completed',output:[{type:'message',content:[{type:'output_text',text:JSON.stringify(revision)}]}]})});
+ const previous=globalThis.fetch;try{
+  globalThis.fetch=async()=>Response.json(response);
+  const result=await planCanvasAnimation(prepared,new AbortController().signal);
+  assert.equal(result.revision,true);assert.deepEqual(result.poses.map(page=>page.id),poses.map(page=>page.id));assert.equal(result.poses[0].animation.durationMs,1400);
+ }finally{globalThis.fetch=previous;}
 });
 test('App Studio entrance keeps the source ID and every unrelated native object exactly intact',()=>{
  const base=canvas(),before=JSON.stringify(base),poses=compileStudioAnimation(base,entrance(base),request(base));

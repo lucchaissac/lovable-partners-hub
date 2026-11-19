@@ -61,7 +61,12 @@ export function EditorChatUserText({ text, sourceTurnId }: { text: string; sourc
   useLayoutEffect(() => {
     const content = contentRef.current;
     if (!content) return;
+    const bubble = content.closest<HTMLElement>('.ui-msg-bubble')!;
+    const container = content.closest<HTMLElement>('.we-chat-turn');
+    let active = true;
     const measure = () => {
+      if (!active) return;
+      bubble.style.width = '';
       const paragraph = content.firstElementChild;
       const styles = getComputedStyle(content);
       const lineHeight = Number.parseFloat(styles.lineHeight);
@@ -77,14 +82,31 @@ export function EditorChatUserText({ text, sourceTurnId }: { text: string; sourc
       setSingleLine(content.children.length === 1 && paragraph?.tagName === 'P'
         && content.getBoundingClientRect().height <= lineHeight + 1
         && textRange.getBoundingClientRect().width <= availableWidth - pillInset + 1);
+      // Hug the longest rendered line, including wrapped text. Leave attachments
+      // and structured messages to their existing layouts.
+      if (bubble.children.length === 1 && [...content.children].every(child => child.tagName === 'P')) {
+        const walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT);
+        const left = content.getBoundingClientRect().left;
+        let width = 0;
+        while (walker.nextNode()) {
+          textRange.selectNodeContents(walker.currentNode);
+          for (const rect of textRange.getClientRects()) width = Math.max(width, rect.right - left);
+        }
+        const inset = getComputedStyle(bubble);
+        if (width) bubble.style.width = `${Math.ceil(width + parseFloat(inset.paddingLeft) + parseFloat(inset.paddingRight) + 1)}px`;
+      }
     };
     measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(content);
-    const container = content.closest('.we-chat-turn');
+    let previousWidth = container?.clientWidth;
+    const observer = new ResizeObserver(() => {
+      if (container?.clientWidth === previousWidth) return;
+      previousWidth = container?.clientWidth;
+      measure();
+    });
     if (container) observer.observe(container);
-    return () => observer.disconnect();
-  }, [displayText]);
+    document.fonts.ready.then(measure);
+    return () => { active = false; observer.disconnect(); bubble.style.width = ''; };
+  }, [displayText, singleLine]);
   return <div ref={contentRef} className="we-user-message" data-single-line={singleLine || undefined}>
     <ChatMarkdown text={displayText} preserveLineBreaks links />
   </div>;

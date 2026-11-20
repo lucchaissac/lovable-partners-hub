@@ -3,6 +3,8 @@ import {graphicEventFormat,applyCommunityContrast} from './communityGraphic';
 import {techStarterAsset} from './techAsset';
 import {brandStarterAsset,isAppStudioAsset} from './brandAsset';
 import {partnerLogoRequest} from '../../../shared/partnerLogo.mjs';
+import {isBrandReviewRequest} from '../../../shared/brandReview.mjs';
+import {brandChatStatus,prepareBrandReview,rebuildBrandAsset} from './brandReview';
 import {partnerLogoTarget,layoutPartnershipLogo,partnershipIdentityInk} from './brandLogo';
 import {prepareChatPartnerLogo} from './partnerLogoChat';
 import {animationChatStatus,animationRequest,planCanvasAnimation} from './studioAnimation';
@@ -259,8 +261,10 @@ function AssetPageContent() {
     request={...request,chatId:request.chatId??workspaceChats(current.current,assetMessages(current.current)).active.id};
     const conversation=assetMessages(current.current).filter(message=>messageWorkspaceChat(message)===request.chatId);
     if(request.recorded&&conversation.at(-1)?.user&&conversation.at(-1)?.text===request.prompt)conversation.pop();
-    const logoRequest=studioWorkspace==='lovable'?partnerLogoRequest(request.prompt,request.sources,conversation,request.chatId):null;
-    const animationIntent=!logoRequest&&routesToAnimation(request.prompt,current.current.messages??[]),animationFollowUp=isAnimationFollowUp(request.prompt,current.current.messages??[]);
+    const logoCandidate=studioWorkspace==='lovable'?partnerLogoRequest(request.prompt,request.sources,conversation,request.chatId):null;
+    const brandReviewIntent=studioWorkspace==='lovable'&&isBrandReviewRequest(request.prompt,request.sources,!!logoCandidate);
+    const logoRequest=brandReviewIntent?null:logoCandidate;
+    const animationIntent=!brandReviewIntent&&!logoRequest&&routesToAnimation(request.prompt,current.current.messages??[]),animationFollowUp=isAnimationFollowUp(request.prompt,current.current.messages??[]);
     if((studioWorkspace==='ambassadors'||animationIntent)&&!localChat.enabled){setError(localChat.reason||'The chat service is unavailable. Please retry later.');return;}
     setError('');
     if(!request.recorded) {
@@ -273,11 +277,20 @@ function AssetPageContent() {
     const run=++operation.current,document=current.current;
     setBusy(true);setGenerationStage('Refining your asset…');
     try {
-      // Luc requested this two-message transcript for the local Coffee Rave
-      // demo. Only append its reply; keep every authored canvas field intact.
-      if(import.meta.env.DEV&&studioWorkspace==='lovable'&&document.id==='6b74f0ec-1002-48ea-b4c3-4b0caef348d7'&&request.prompt.trim()==='Make it on-brand, 600 × 400.'&&!request.sources.length){
-        appendMessage({id:crypto.randomUUID(),createdAt:new Date().toISOString(),text:'Done — 600 × 400, Camera Plain, balanced spacing and Lovable first. Everything is editable.',user:false,workspaceChatId:request.chatId});
-        lastRequest.current=undefined;return;
+      if(brandReviewIntent){
+        const status=await brandChatStatus(active.signal);if(!status.enabled)throw Error(status.reason||'Brand review is unavailable.');
+        const key=animationCanvasKey(document);
+        setGenerationStage('Reviewing your artwork…');
+        const payload=await prepareBrandReview({...document,messages:conversation},request.prompt,request.sources,active.signal,()=>{
+          if(!exportBoard.current)throw Error('Wait for the canvas to load, then retry.');
+          return renderPng(exportBoard.current,document);
+        },request.visual?.context);
+        const result=await rebuildBrandAsset(document,payload,active.signal);
+        if(!mounted.current||run!==operation.current||active.signal.aborted||current.current?.id!==document.id)return;
+        if(animationCanvasKey(current.current)!==key)throw Error('The canvas changed during the review. Retry to keep your latest edits.');
+        change(result.asset);
+        appendMessage({id:crypto.randomUUID(),createdAt:new Date().toISOString(),text:result.summary,user:false,workspaceChatId:request.chatId});
+        lastRequest.current=undefined;setVisual(undefined);return;
       }
       if(import.meta.env.DEV&&studioWorkspace==='lovable'&&request.prompt.includes('Q5hVpPc6dKxLT5xoi7eYPN')&&/community logo/i.test(request.prompt)&&!request.sources.length){
         const {isHolidayAsset,communityHolidayIdentity,holidayDemoReply}=await import('./holidayAsset');
@@ -326,7 +339,7 @@ function AssetPageContent() {
       }
       if(studioWorkspace==='lovable'){
         let partnerLogoEdit:StudioMessage['partnerLogoEdit'];
-        let reply='I can replace the Partnership logo from a website or attached image, open the App Studio banner, or animate this canvas. This request was not applied.';
+        let reply='Attach an artwork and ask “Make it on-brand” to rebuild it with Lovable’s rules. I can also replace a partner logo, open App Studio, or animate this canvas. This request was not applied.';
         if(logoRequest){
           if(logoRequest.kind==='ambiguous')throw Error('Send one partner website or one logo image at a time.');
           if(logoRequest.kind==='missing')throw Error('Attach the partner logo or include its website address, for example “Replace the partner logo with ramp.com”.');

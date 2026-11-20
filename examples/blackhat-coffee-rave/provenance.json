@@ -87,6 +87,7 @@
     "modelCall": false,
     "prompt": "Make it on-brand, 600 × 400.",
     "response": "Done — 600 × 400, Camera Plain, balanced spacing and Lovable first. Everything is editable.",
-    "behavior": "The existing saved asset receives only the two-message demo transcript. Its URL, dimensions, eight editable layers and all artwork settings are preserved. The exact response shortcut is development-only and scoped to this document and prompt."
-  }
+    "behavior": "Archived original two-message demo transcript; its saved artwork and conversation remain unchanged. The exact-response shortcut was removed when the real image-review workflow was implemented. New on-brand requests now read the submitted artwork or current canvas and rebuild through the validated native compiler."
+  },
+  "liveReview": "real-chat/provenance.json"
 }

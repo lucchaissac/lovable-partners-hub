@@ -1,0 +1,23 @@
+{
+  "date": "2026-11-20",
+  "localOnly": true,
+  "modelCall": true,
+  "provider": "Existing local Codex sign-in",
+  "prompt": "Make it on-brand, 600 × 400.",
+  "source": "../source-reference.png",
+  "approvedLayout": "event",
+  "document": "http://127.0.0.1:5173/brand#brand/create/61381489-e1a7-4ac7-90e8-1e381c593d6b",
+  "editableSource": "generated.asset.json",
+  "capture": "in-make.jpg",
+  "verification": [
+    "Submitted the original poster through the existing chat attachment UI.",
+    "Received an actual image-reading model response; no fixed-response shortcut.",
+    "Preserved the source headline, date, venue and city.",
+    "Constructed eight native layers at 600 × 400 with Camera Plain 700/600 and original Lovable/Aikido/incident.io vectors in that order.",
+    "Undo restored the previous Partnership; redo restored the generated asset at the same document URL.",
+    "Exported the editable source through the existing Export menu.",
+    "Reopened the saved result at the same URL; its canvas, source attachment and actual chat response persisted.",
+    "68 regression tests and the production build passed."
+  ],
+  "originalApprovedDocumentUnchanged": "../Post Blackhat Coffee Shop Rave.asset.json"
+}

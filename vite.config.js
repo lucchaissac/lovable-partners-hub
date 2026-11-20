@@ -2,6 +2,7 @@ import { defineConfig,loadEnv } from 'vite';
 import {communityChatPlugin} from './server/communityChat.mjs';
 import {studioAnimationPlugin} from './server/studioAnimation.mjs';
 import {partnerLogoPlugin} from './server/partnerLogo.mjs';
+import {brandReviewPlugin} from './server/brandReview.mjs';
 import {sharePagesPlugin} from './server/sharePages.mjs';
 import {demoPagesPlugin,opportunitiesDemoEnabled} from './server/demoPages.mjs';
 import { fileURLToPath } from 'node:url';
@@ -10,7 +11,7 @@ export default defineConfig(({mode})=>{
  const demoEnabled=opportunitiesDemoEnabled({...loadEnv(mode,process.cwd(),['DEMO_']),...process.env});
  return {
   // These variables stay in Node; Vite only exposes VITE_-prefixed values to the page.
-  plugins: [communityChatPlugin({env:loadEnv(mode,process.cwd(),['COMMUNITY_','OPENAI_','BLOB_'])}),studioAnimationPlugin({env:loadEnv(mode,process.cwd(),['COMMUNITY_','OPENAI_','BLOB_'])}),partnerLogoPlugin(),sharePagesPlugin(),demoPagesPlugin(demoEnabled)],
+  plugins: [communityChatPlugin({env:loadEnv(mode,process.cwd(),['COMMUNITY_','OPENAI_','BLOB_'])}),studioAnimationPlugin({env:loadEnv(mode,process.cwd(),['COMMUNITY_','OPENAI_','BLOB_'])}),brandReviewPlugin({env:loadEnv(mode,process.cwd(),['BRAND_','COMMUNITY_','OPENAI_','BLOB_'])}),partnerLogoPlugin(),sharePagesPlugin(),demoPagesPlugin(demoEnabled)],
   optimizeDeps: { include: ['react', 'react-dom', 'react-dom/client', 'react-router-dom', 'mediabunny', 'html-to-image', 'fflate'] },
   resolve: {
     dedupe: ['react', 'react-dom'],

@@ -27,7 +27,7 @@ async function referenceImage(template){
 }
 export function loadBrandReferences(){
  return gallery??=Promise.all([
-  readFile(new URL('../examples/blackhat-coffee-rave/preview-600x400.png',import.meta.url)).then(data=>({reference:'event',data:`data:image/png;base64,${data.toString('base64')}`})),
+  readFile(new URL('../public/brand/previews/event-review.png',import.meta.url)).then(data=>({reference:'event',data:`data:image/png;base64,${data.toString('base64')}`})),
   ...[partnershipTemplate,appStudioTemplate].map(async template=>({reference:template.id==='collaboration'?'partnership':'app-studio',data:`data:image/webp;base64,${(await referenceImage(template)).toString('base64')}`})),
  ]).catch(error=>{gallery=undefined;throw error;});
 }

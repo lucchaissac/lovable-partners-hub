@@ -3,12 +3,13 @@ import {randomUUID} from 'node:crypto';
 
 // One private, pre-created ledger is shared by localhost and every Vercel instance.
 // Amounts are integer microdollars. Never reset or recreate a missing ledger at runtime.
-export const budgetLimit=18_000_000;
+// Luc authorized a $40 total ceiling on November 20; renewals retain spent usage.
+export const budgetLimit=40_000_000;
 export const planReservation=500_000;
 export const imageReservation=1_000_000;
 export function budgetConfig(env){
  const expiry=Date.parse(env.COMMUNITY_OPENAI_EXPIRES_AT??'');
- if(!Number.isFinite(expiry)||Date.now()>=expiry)throw Error('This two-day demo has expired. Create a new limited key to continue.');
+ if(!Number.isFinite(expiry)||Date.now()>=expiry)throw Error('This demo has expired. Renew its limited key and expiry to continue.');
  if(!env.BLOB_READ_WRITE_TOKEN||!env.COMMUNITY_BUDGET_PATH)throw Error('The shared demo budget is not configured. Generation is disabled.');
  return {expiry,path:env.COMMUNITY_BUDGET_PATH,token:env.BLOB_READ_WRITE_TOKEN};
 }
@@ -41,7 +42,7 @@ export function createBudget(store,{now=Date.now}={}){
    if(!Number.isSafeInteger(amount)||amount<=0)throw Error('Invalid budget reservation.');
    const id=randomUUID();
    return change(state=>{
-    if(now()>=state.expiresAt)throw Error('This two-day demo has expired.');
+    if(now()>=state.expiresAt)throw Error('This demo has expired.');
     const held=Object.values(state.reservations).reduce((sum,value)=>sum+value,0);
     if(!Number.isSafeInteger(held)||held<0||state.spent+held+amount>state.limit)throw Error('The demo spending limit has been reached. No additional API request was sent.');
     state.reservations[id]=amount;return id;

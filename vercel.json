@@ -79,6 +79,10 @@
     },
     "api/studio-animation.mjs": {
       "maxDuration": 300
+    },
+    "api/brand-review.mjs": {
+      "maxDuration": 300,
+      "includeFiles": "public/{brand/assets/*.svg,brand/previews/event-review.png,ambassadors/assets/heart-overlay.webp}"
     }
   }
 }

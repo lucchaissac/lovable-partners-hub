@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import sharp from 'sharp';
-import {createBudget,budgetConfig,planReservation} from '../server/communityBudget.mjs';
+import {createBudget,budgetConfig,budgetLimit,planReservation} from '../server/communityBudget.mjs';
 import {openAICommunityBody,openAICommunityStatus,createOpenAICaller,generateOpenAICommunityPlan} from '../server/communityOpenAI.mjs';
 import {monochromeGlyph} from '../server/communityImageTools.mjs';
 import {validateMediaPlan} from '../shared/communityMediaPlan.mjs';
@@ -16,6 +16,15 @@ test('simultaneous local and production reservations cannot exceed the shared bu
  const results=await Promise.allSettled([a.reserve(600000),b.reserve(600000)]);
  assert.equal(results.filter(r=>r.status==='fulfilled').length,1);
  assert.match(results.find(r=>r.status==='rejected').reason.message,/spending limit/);
+});
+test('the renewed $40 ceiling keeps previous spend and rejects higher ledger limits',async()=>{
+ assert.equal(budgetLimit,40_000_000);
+ const shared=store(budgetLimit),snapshot=await shared.read();
+ snapshot.state.spent=1_410_249;await shared.write(snapshot.state,snapshot.version);
+ const budget=createBudget(shared);await budget.reserve(38_000_000);
+ await assert.rejects(budget.reserve(600_000),/spending limit/);
+ assert.equal((await shared.read()).state.spent,1_410_249);
+ await assert.rejects(createBudget(store(budgetLimit+1)).reserve(1),/invalid/);
 });
 test('unknown billing stays reserved; settling once never credits it twice',async()=>{
  const shared=store(),budget=createBudget(shared),id=await budget.reserve(800000);

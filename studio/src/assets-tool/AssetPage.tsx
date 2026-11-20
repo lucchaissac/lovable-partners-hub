@@ -2,6 +2,8 @@ import {MakerDesignProvider} from './MakerDesignContext';
 import {graphicEventFormat,applyCommunityContrast} from './communityGraphic';
 import {techStarterAsset} from './techAsset';
 import {brandStarterAsset,isAppStudioAsset} from './brandAsset';
+import {isScreenDemo} from './screenDemoModel';
+import {ScreenImageMenu} from './ScreenImageMenu';
 import {partnerLogoRequest} from '../../../shared/partnerLogo.mjs';
 import {isBrandReviewRequest} from '../../../shared/brandReview.mjs';
 import {brandChatStatus,prepareBrandReview,rebuildBrandAsset} from './brandReview';
@@ -189,6 +191,11 @@ function AssetPageContent() {
     let cancelled = false;
     setLoading(true);
     const opening=async()=>{
+      if(import.meta.env.DEV&&studioWorkspace==='lovable'&&requestedBadge==='screen-demo'){
+        const {screenDemoAsset}=await import('./screenDemo');
+        const next=await screenDemoAsset();
+        if(!cancelled)put(next);return;
+      }
       if(import.meta.env.DEV&&studioWorkspace==='lovable'&&requestedBadge==='display-ads'){
         const {displayAdsAssets}=await import('./displayAdsAsset');
         const pages=await displayAdsAssets();
@@ -272,8 +279,9 @@ function AssetPageContent() {
     const logoCandidate=studioWorkspace==='lovable'?partnerLogoRequest(request.prompt,request.sources,conversation,request.chatId):null;
     const brandReviewIntent=studioWorkspace==='lovable'&&isBrandReviewRequest(request.prompt,request.sources,!!logoCandidate);
     const logoRequest=brandReviewIntent?null:logoCandidate;
+    const screenRequest=import.meta.env.DEV&&studioWorkspace==='lovable'&&isScreenDemo(current.current)&&!brandReviewIntent&&!logoRequest&&!requestsAppStudioTemplate(request.prompt);
     const animationIntent=!brandReviewIntent&&!logoRequest&&routesToAnimation(request.prompt,current.current.messages??[]),animationFollowUp=isAnimationFollowUp(request.prompt,current.current.messages??[]);
-    if((studioWorkspace==='ambassadors'||animationIntent)&&!localChat.enabled){setError(localChat.reason||'The chat service is unavailable. Please retry later.');return;}
+    if(!screenRequest&&(studioWorkspace==='ambassadors'||animationIntent)&&!localChat.enabled){setError(localChat.reason||'The chat service is unavailable. Please retry later.');return;}
     setError('');
     if(!request.recorded) {
       const user=readStudioConfig()?.user;
@@ -285,6 +293,19 @@ function AssetPageContent() {
     const run=++operation.current,document=current.current;
     setBusy(true);setGenerationStage('Refining your asset…');
     try {
+      if(screenRequest){
+        const {editImportedScreen,importEditableScreen}=await import('./screenImport');
+        const attached=request.sources.find(source=>source.kind==='image');
+        const key=animationCanvasKey(document);
+        setGenerationStage(attached?'Rebuilding editable layers…':'Updating the component…');
+        let result;
+        if(attached?.kind==='image'){const image=new Image();image.src=attached.image;await image.decode();active.signal.throwIfAborted();result=await importEditableScreen(document,{name:attached.name,src:attached.image,width:image.naturalWidth,height:image.naturalHeight},active.signal);}
+        else result=await editImportedScreen(document,request.prompt,request.visual?.context,active.signal);
+        if(!mounted.current||run!==operation.current||active.signal.aborted||current.current?.id!==document.id)return;
+        if(animationCanvasKey(current.current)!==key)throw Error('The component changed. Retry to keep your latest edits.');
+        change(result.asset);appendMessage({id:crypto.randomUUID(),createdAt:new Date().toISOString(),text:result.summary,user:false,workspaceChatId:request.chatId});
+        lastRequest.current=undefined;setVisual(undefined);return;
+      }
       if(brandReviewIntent){
         const status=await brandChatStatus(active.signal);if(!status.enabled)throw Error(status.reason||'Brand review is unavailable.');
         const key=animationCanvasKey(document);
@@ -439,13 +460,26 @@ function AssetPageContent() {
     const [request,...rest]=queued;setQueued(rest);void refine(request);
   },[busy,error,queued,localChat.enabled]);
   const stop = () => { setQueued([]); operation.current++; controller.current?.abort(); controller.current = undefined; setBusy(false); setGenerationPreview(undefined); setReviewCandidate(undefined); };
-  const loadImage = async (file?: File) => {
-    if (!file || busy || readingFile.current) return;
-    if(file.name.toLowerCase().endsWith('.json')){await importSource(file);return;}
+  const loadImage = async (file?: File,editable=false):Promise<boolean> => {
+    if (!file || busy || readingFile.current) return false;
+    if(file.name.toLowerCase().endsWith('.json')){await importSource(file);return true;}
     readingFile.current = true;
     setReading(true); setError('');
+    const importingInto=current.current;
     try {
-      if (file.type.startsWith('video/') || /\.(mp4|webm|ogv|mov)$/i.test(file.name)) {
+      if(import.meta.env.DEV&&studioWorkspace==='lovable'&&editable&&importingInto){
+        const reference=await readReference(file),active=new AbortController();
+        controller.current=active;lastRequest.current=undefined;setBusy(true);setGenerationStage('Rebuilding editable layers…');
+        const key=animationCanvasKey(importingInto);
+        try{
+          const {importEditableScreen}=await import('./screenImport');
+          const result=await importEditableScreen(importingInto!,reference,active.signal);
+          if(mounted.current&&!active.signal.aborted&&current.current?.id===importingInto?.id){
+            if(animationCanvasKey(current.current)!==key)throw Error('The canvas changed during import. Retry to keep your edits.');
+            change(result.asset);setVisual(undefined);
+          }
+        }finally{if(controller.current===active){controller.current=undefined;if(mounted.current)setBusy(false);}}
+      } else if (file.type.startsWith('video/') || /\.(mp4|webm|ogv|mov)$/i.test(file.name)) {
         const block = await readHtmlVideo(file);
         if (mounted.current) insert.current?.(block);
       } else {
@@ -453,7 +487,8 @@ function AssetPageContent() {
         const scale = Math.min(480 / reference.width, 360 / reference.height, 1);
         if (mounted.current) insert.current?.({ id: crypto.randomUUID(), kind: 'image', value: { src: reference.src, alt: reference.name, caption: '', alignment: 'center', width: 100 }, editor: { widthPx: reference.width * scale, height: reference.height * scale, appearance: { imageFit: 'contain' } } });
       }
-    } catch (reason) { setError((reason as Error).message); }
+      return true;
+    } catch (reason) { if(mounted.current)setError((reason as Error).message);return false; }
     finally { readingFile.current = false; if (mounted.current) setReading(false); }
   };
   useEffect(() => {
@@ -673,14 +708,15 @@ function AssetPageContent() {
     }catch(reason){if(mounted.current)setError(reason instanceof Error?reason.message:'Could not duplicate these assets.');}
     finally{if(mounted.current)setAddingPage(false);}
   };
+  const screenMode=import.meta.env.DEV&&studioWorkspace==='lovable'&&isScreenDemo(asset);
   const canvasToolbar = asset && <div className="lovable-canvas-toolbar">
     <Input className="lovable-design-title" aria-label="Asset name" maxLength={100} disabled={busy} value={asset.title} onChange={event=>{if(event.target.value.trim())change({...asset,title:event.target.value});}}/>
     <div className="lovable-canvas-tools">
 
 
       <AssetLibrary open={libraryOpen} onOpenChange={setLibraryOpen}/>
-      <HtmlPresentationTools primitivesOnly/>
-      {studioWorkspace==='lovable'&&<Dropdown align="end" value={isAppStudioAsset(asset)?'app-studio':'collaboration'} items={[{id:'collaboration',label:'Partnership'},{id:'app-studio',label:'App Studio'}]} onChange={value=>void switchBrandTemplate(value)} trigger={<Button variant="ghost" disabled={busy||changingTemplate} aria-label="Lovable template" trailingIcon={<Icon name="chevron-down" size={14}/>}>Template</Button>}/>}
+      <HtmlPresentationTools primitivesOnly imageTool={import.meta.env.DEV&&studioWorkspace==='lovable'?<ScreenImageMenu key={asset.id} disabled={busy||reading||changingTemplate||exporting} onImport={loadImage}/>:undefined}/>
+      {studioWorkspace==='lovable'&&<Dropdown align="end" value={screenMode?undefined:isAppStudioAsset(asset)?'app-studio':'collaboration'} items={[{id:'collaboration',label:'Partnership'},{id:'app-studio',label:'App Studio'}]} onChange={value=>void switchBrandTemplate(value)} trigger={<Button variant="ghost" disabled={busy||changingTemplate} aria-label="Lovable template" trailingIcon={<Icon name="chevron-down" size={14}/>}>Template</Button>}/>}
       {studioWorkspace==='ambassadors'?<Dropdown align="end" value={templateFormat?.id} items={[...ambassadorFormats,graphicEventFormat].map(format=>({id:format.id,label:format.name,leadingIcon:<Icon name={format.width===format.height?'square':'rectangle-horizontal'} size={16} style={format.width<format.height?{transform:'rotate(90deg)'}:undefined}/>}))} onChange={value=>void switchCommunityTemplate(value)} trigger={<Button variant="ghost" disabled={busy||changingTemplate||exporting} className="asset-format-trigger" aria-label={`Community template: ${templateFormat?.name??'Custom'}`} trailingIcon={<Icon name="chevron-down" size={14}/>}>{templateFormat?.name??'Template'}</Button>}/>:<Dropdown align="end" value={asset.format} items={Object.entries(formats).map(([id,item])=>({id,label:item.label,leadingIcon:<Icon name={id==='square'?'square':'rectangle-horizontal'} size={16} style={id==='portrait'?{transform:'rotate(90deg)'}:undefined}/>}))} onChange={value=>{change(resizeAsset({...asset,editor:nativeDocument(asset)},value as AssetFormat,import.meta.env.DEV&&asset.editor?.pages.some(page=>page.sections.some(section=>section.columns.flat().some(block=>block.id==='holiday-motif')))));setZoom(0);}} trigger={<Button variant="ghost" disabled={busy} className="asset-format-trigger" aria-label={`Canvas format: ${formats[asset.format].label}`} leadingIcon={<Icon name={asset.format==='square'?'square':'rectangle-horizontal'} size={16} style={asset.format==='portrait'?{transform:'rotate(90deg)'}:undefined}/>} trailingIcon={<Icon name="chevron-down" size={14}/>}/>}/>}
       <span className="asset-tools-divider" aria-hidden="true"/>
       <Button className="lovable-mobile-design-toggle" variant="ghost" aria-label="Open design panel" leadingIcon={<Icon name="sliders-horizontal" size={16}/>} onClick={()=>setDesignOpen(value=>!value)}/>
@@ -696,7 +732,7 @@ function AssetPageContent() {
     {loading ? <div className="asset-empty"><p role="status">Opening your asset…</p></div> : !asset ? <div className="we-body asset-workspace"><WorkspaceChat singleAsset/><AssetHome reading={reading} onBrowse={() => upload.current?.click()}>
       {(recentLoading || recent.length > 0) && <AssetRecents loading={recentLoading}>{recent.map(item=><AssetLibraryCard key={item.id} asset={item} onOpen={()=>navigate(`/assets/${item.id}`)}/>)}</AssetRecents>}
     </AssetHome></div> : <>
-      <div className="we-body asset-workspace"><WorkspaceChat singleAsset preserveSourceTransparency={studioWorkspace!=='partners'} placeholder="Work with Studio..."/><AssetCanvas toolbar={canvasToolbar} asset={generationPreview??asset} pages={generationPreview?pages.map(page=>page.id===asset.id?generationPreview:page):pages} generating={busy} busy={busy||addingPage||changingTemplate} zoom={zoom} onZoom={setZoom} onChange={change} onOpen={openAssetPage} onAdd={(afterId,kind)=>void addAssetPage(afterId,kind)} onOverview={()=>setVisual(undefined)} onDuplicate={duplicatePages} onRename={renameAssetPage} onMove={(pageId,targetId,side)=>void arrangeAssetPages('move',pageId,targetId,side)} onRemove={pageId=>void arrangeAssetPages('remove',pageId)}/>
+      <div className="we-body asset-workspace"><WorkspaceChat singleAsset preserveSourceTransparency={studioWorkspace!=='partners'} placeholder={screenMode?'Edit or animate the component…':'Work with Studio...'}/><AssetCanvas toolbar={canvasToolbar} asset={generationPreview??asset} pages={generationPreview?pages.map(page=>page.id===asset.id?generationPreview:page):pages} generating={busy} busy={busy||addingPage||changingTemplate} zoom={zoom} onZoom={setZoom} onChange={change} onOpen={openAssetPage} onAdd={(afterId,kind)=>void addAssetPage(afterId,kind)} onOverview={()=>setVisual(undefined)} onDuplicate={duplicatePages} onRename={renameAssetPage} onMove={(pageId,targetId,side)=>void arrangeAssetPages('move',pageId,targetId,side)} onRemove={pageId=>void arrangeAssetPages('remove',pageId)}/>
         <AssetDesignPanel mobileOpen={designOpen} onClose={()=>setDesignOpen(false)} asset={asset} onChange={change} onImport={() => upload.current?.click()}/>
       </div>
       <div className="asset-export-host" aria-hidden="true"><Artwork ref={exportBoard} asset={reviewCandidate??asset} /></div>

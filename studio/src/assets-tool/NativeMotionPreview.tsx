@@ -23,7 +23,7 @@ export function NativeMotionPreview({asset,motion=asset.motion!,time,scale,onExi
   return()=>{elements.current.forEach(item=>{item.text?.restore();for(const [key,value] of Object.entries(item.written))if(item.node.style.getPropertyValue(key)===value)item.node.style.setProperty(key,item.original[key]);});elements.current=[];};
  },[asset,characterIds]);
  useLayoutEffect(()=>{
-  const states=sampleNativeMotion(motion,time,compiled);
+  const states=sampleNativeMotion(motion,time,compiled,blocks);
   elements.current.forEach(({id,node,transform,opacity,text,written})=>{
    const state=states.get(id);
    node.style.translate=`${state?.x??0}px ${state?.y??0}px`;

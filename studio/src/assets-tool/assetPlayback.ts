@@ -80,6 +80,7 @@ export function canExportAnimation(pages: AssetDocument[]) {
 
 /** A single animated post is independent of the collection's page transitions. */
 export function canExportVideoAsset(asset: AssetDocument) {
+  if(asset.motion?.clips.length)return true;
   if(import.meta.env?.DEV&&newsletterAnimationGlobe(asset))return true;
   return !!asset.editor?.pages.some(page => page.sections.some(section => section.columns.flat().some(block =>
     block.kind === 'media' && block.format === 'Video' && !block.editor?.hidden &&

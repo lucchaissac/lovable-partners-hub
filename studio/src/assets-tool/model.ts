@@ -1,4 +1,5 @@
 import {withoutRetiredEffect} from '../studio/retiredEffects';
+import {nativeMotionSchema} from '../../../shared/nativeMotionSchema.mjs';
 import { z } from 'zod';
 import {ambassadorSchema} from './ambassadorSettings';
 import { conversationSchema, documentSchema } from '../studio/schema.js';
@@ -60,6 +61,7 @@ export const assetSchema = z.preprocess(withoutRetiredEffect,compositionSchema.e
   dimensions: z.object({ width: z.number().min(100).max(4000), height: z.number().min(100).max(4000) }).strict().optional(),
   editor: htmlEditorSchema.optional(),
   animation: canvasAnimationSchema.optional(),
+  motion: nativeMotionSchema.optional(),
   series:z.array(z.object({id:z.uuid(),title:z.string().max(100)}).strict()).max(64).optional(),
   community:z.object({settings:ambassadorSchema,bindings:z.record(z.string(),z.string()),layout:z.literal('graphic').optional(),autoContrast:z.boolean().optional()}).strict().optional(),
   layouts: assetLayoutsSchema.optional(),

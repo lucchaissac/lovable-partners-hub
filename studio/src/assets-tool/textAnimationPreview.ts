@@ -19,6 +19,14 @@ export function animateNativeText(element:HTMLElement,mode:NonNullable<ElementAp
  }
  return {
   sample:(progress:number)=>spans.forEach(({element,unit})=>element.style.opacity=String(textAnimationOpacity(unit,progress))),
+  sampleCharacters:(progress:number,cursor:boolean,time:number)=>{
+   const count=Math.max(0,Math.min(units.length,Math.floor(progress*units.length+1e-6)));
+   spans.forEach(({element,unit})=>{
+    const visible=units.indexOf(unit)<count;
+    element.style.opacity=visible?'1':'0';
+    element.style.boxShadow=cursor&&count>0&&unit===units[count-1]&&Math.floor(time/550)%2===0?'1px 0 0 currentColor':'none';
+   });
+  },
   restore:()=>fragments.forEach(({original,nodes})=>{nodes[0].parentNode?.insertBefore(original,nodes[0]);nodes.forEach(node=>node.parentNode?.removeChild(node));}),
  };
 }

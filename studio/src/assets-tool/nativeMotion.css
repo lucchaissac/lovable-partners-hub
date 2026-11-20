@@ -1,0 +1,11 @@
+.asset-motion-slot{height:252px;max-height:40vh;flex:none;min-height:150px;border-top:1px solid var(--ui-border);position:relative}
+.dialkit-root.dialkit-timeline{left:var(--asset-motion-left);top:var(--asset-motion-top);width:var(--asset-motion-width);height:var(--asset-motion-height);right:auto;bottom:auto;z-index:15}
+.dialkit-root{--dial-glass-bg:var(--asset-motion-bg,#1b1b1b)!important;--dial-dropdown-bg:var(--asset-motion-bg,#1b1b1b)!important;--dial-surface:var(--asset-motion-bg-subtle)!important;--dial-surface-hover:var(--asset-motion-bg-muted)!important;--dial-surface-active:var(--asset-motion-bg-muted)!important;--dial-surface-subtle:var(--asset-motion-bg-subtle)!important;--dial-text-root:var(--asset-motion-text)!important;--dial-text-section:var(--asset-motion-text-muted)!important;--dial-text-label:var(--asset-motion-text-muted)!important;--dial-text-primary:var(--asset-motion-text)!important;--dial-text-secondary:var(--asset-motion-text-muted)!important;--dial-text-tertiary:var(--asset-motion-text-muted)!important;--dial-text-focus:var(--asset-motion-text)!important;--dial-border:var(--asset-motion-border)!important;--dial-row-height:30px;--dial-shadow:none;--dial-backdrop-blur:0px}
+.dialkit-root,.dialkit-root *{font-family:'Camera Plain',sans-serif!important;font-weight:600!important;text-transform:none!important;font-variant-caps:normal!important}
+.dialkit-root .dialkit-timeline-dock{height:100%;max-height:100%!important;border:0;border-radius:0;box-shadow:none;padding:0 16px 12px;backdrop-filter:none}
+.dialkit-root .dialkit-timeline-resize-handle{display:none}
+.dialkit-root .dialkit-timeline-actions .dialkit-preset-manager,.dialkit-root .dialkit-timeline-actions button[aria-label="Copy parameters"]{display:none}
+.dialkit-root .dialkit-timeline-section{--dial-timeline-label-w:128px}
+.asset-playback-slot{width:242px}
+@container lovable-preview (max-width:680px){.asset-playback-slot{width:226px}}
+@container lovable-preview (max-width:460px){.asset-playback-slot{width:226px}}

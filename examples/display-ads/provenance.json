@@ -1,0 +1,41 @@
+{
+  "title": "Display ads · Version 1 · 300 × 250",
+  "created": "2026-11-20",
+  "localOnly": true,
+  "source": "https://lovable-display-ads-review.lovable-7595.chatgpt.site/",
+  "sourceBanner": "https://lovable-display-ads-review.lovable-7595.chatgpt.site/versions/original/HTML5/300x250/index.html",
+  "publishedReviewRevision": "7a2783d1-298d-41e4-bf9d-776a86a04445",
+  "freshLocalRoute": "http://127.0.0.1:5173/brand#brand/create/display-ads",
+  "scope": "One animated 300 × 250 asset, Version 1, with thirteen editable native layers. Existing saved collections remain untouched.",
+  "components": "Existing native text, rectangle, Lucide plus/arrow-up and image blocks. Composer and CTA are editable grouped primitives, not screenshots or live buttons.",
+  "originalArtwork": [
+    "gradient.png",
+    "logo.svg"
+  ],
+  "typography": "Bundled Camera Plain Bold headlines. Practical copy uses Semibold to respect the project minimum.",
+  "motion": "One 12-second timeline: original gradient movement and Bézier curves; first prompt typing, hold and deletion; second prompt typing; Send press; upward exit; final headline entrance. Per-layer DialKit tracks drive both preview and offline video export. Visibility cuts use a short 50 ms transition. Practical copy remains Semibold.",
+  "regeneration": "node examples/display-ads/build.mjs writes a validated fresh collection to /tmp/display-ads-300x250.collection.json. Saved manual edits stay authoritative.",
+  "advancedMode": "Lucide Settings beside Loop replaces only the thumbnail strip with the actual DialKit timeline. Timing, per-track values and easing or spring curves remain in the editable source and participate in Undo/Redo. Chat and Design stay in place.",
+  "validation": {
+    "build": "npm run build",
+    "tests": "20 passing: native-motion, asset-playback, text-animation",
+    "browser": [
+      "Native typing and final pose visually checked",
+      "Duration edited, exported in source and restored after reopening",
+      "Undo and Redo verified",
+      "Dark and light appearance verified"
+    ],
+    "video": {
+      "durationSeconds": 12,
+      "width": 300,
+      "height": 250,
+      "decodedFramesSeconds": [
+        1.2,
+        6,
+        9.5
+      ]
+    },
+    "screenshot": "advanced-mode.jpg"
+  },
+  "editableSnapshot": "Display ad.collection.json"
+}

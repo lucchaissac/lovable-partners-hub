@@ -3,6 +3,8 @@ import { flushSync } from 'react-dom';
 import { toCanvas } from 'html-to-image';
 import { BufferTarget, CanvasSource, Mp4OutputFormat, Output, Quality, WebMOutputFormat, canEncodeVideo } from 'mediabunny';
 import { AssetPlaybackPreview } from './AssetPlaybackPreview';
+import {NativeMotionPreview} from './NativeMotionPreview';
+import {nativeMotionDuration} from './nativeMotion';
 import { canExportAnimation, canExportVideoAsset, newsletterAnimationGlobe, videoLoopDuration, playbackPosition, playbackTimeline, playbackEndHoldMs } from './assetPlayback';
 import { assetDimensions, type AssetDocument } from './model';
 import { embeddedAssetFonts, filename } from './media';
@@ -86,7 +88,7 @@ export async function exportVideo(pages: AssetDocument[], parent: HTMLElement, s
     if (single) {
       flushSync(() => root.render(<AssetPlaybackPreview from={pages[0]} progress={0} smart={false} reducedMotion={false} scale={1} playing={false} time={0} onExit={() => {}} exporting/>));
       await seekVideos(host, 0, signal);
-      duration = videoLoopDuration([...host.querySelectorAll('video')].map(video => video.duration));
+      duration = pages[0].motion?nativeMotionDuration(pages[0].motion):videoLoopDuration([...host.querySelectorAll('video')].map(video => video.duration));
     }
     const frames = Math.max(1, single ? Math.round(duration / 1000 * frameRate) : Math.ceil(duration / 1000 * frameRate));
     await output.start();
@@ -97,7 +99,7 @@ export async function exportVideo(pages: AssetDocument[], parent: HTMLElement, s
       const time = single ? frame / frames * duration : Math.min(timeline.total, frame / frameRate * 1000);
       const position = single ? { index: 0, progress: 0, smart: false } : playbackPosition(timeline, time);
       const from = pages[position.index], to = pages[position.index + 1];
-      flushSync(() => root.render(<AssetPlaybackPreview from={from} to={to} {...position} reducedMotion={false} scale={1} playing={false} time={time} onExit={() => {}} exporting/>));
+      flushSync(() => root.render(single&&from.motion?<NativeMotionPreview asset={from} time={time} scale={1} onExit={()=>{}} exporting/>:<AssetPlaybackPreview from={from} to={to} {...position} reducedMotion={false} scale={1} playing={false} time={time} onExit={() => {}} exporting/>));
       const board = host.querySelector<HTMLElement>('.asset-playback-preview')!;
       if (lastIndex !== position.index) {
         await Promise.all([...board.querySelectorAll('img')].map(image => image.decode()));
@@ -105,7 +107,7 @@ export async function exportVideo(pages: AssetDocument[], parent: HTMLElement, s
       }
       const videos = board.querySelector('video');
       if (videos) await seekVideos(board, time, signal);
-      const key = `${position.index}:${position.smart ? position.progress : 0}:${videos ? time : ''}`;
+      const key = `${position.index}:${position.smart ? position.progress : 0}:${videos||(single&&from.motion) ? time : ''}`;
       if (key !== lastFrame) {
         // html-to-image deep-clones SVG without visiting its children. Bake
         // their sampled styles into this disposable export DOM so animated

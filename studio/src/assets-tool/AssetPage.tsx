@@ -189,6 +189,14 @@ function AssetPageContent() {
     let cancelled = false;
     setLoading(true);
     const opening=async()=>{
+      if(import.meta.env.DEV&&studioWorkspace==='lovable'&&requestedBadge==='display-ads'){
+        const {displayAdsAssets}=await import('./displayAdsAsset');
+        const pages=await displayAdsAssets();
+        if(cancelled)return;
+        await saveAssets(owner,pages,{shouldCommit:()=>!cancelled});
+        if(cancelled)return;
+        setRecent(pages);put(pages[0]);return;
+      }
       if(import.meta.env.DEV&&studioWorkspace==='lovable'&&requestedBadge==='holiday'){
         const {holidayAssets}=await import('./holidayAsset');
         const pages=await holidayAssets();

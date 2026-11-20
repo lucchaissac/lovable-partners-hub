@@ -1,0 +1,3 @@
+// Luc's explicit hub preference, November 20, 2026. This is not a claim about
+// a numeric construction rule from the external Lovable brand site.
+export const lovableLogoOrderRule = 'In co-branding signatures and sequences of separate brand logos, always place Lovable first in reading order: leftmost in a horizontal row and topmost in a vertical stack. Preserve the other partners’ relative order, original artwork, proportions, optical balance and equal divider gaps. In Community, the first identity is the complete Lovable Community lockup, never Lovable alone. Apply this when creating a composition or making a requested on-brand correction; do not silently rewrite unrelated saved artwork or rearrange the internal modules of a partner badge.';

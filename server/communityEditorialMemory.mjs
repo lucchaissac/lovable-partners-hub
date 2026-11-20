@@ -1,9 +1,12 @@
+import {lovableLogoOrderRule} from '../shared/brandEditorialMemory.mjs';
+
 // Approved by Luc through the AI for impact iterations, November 16, 2026.
 // Imported into the local Community agent's instructions on every request.
 export const communityEditorialMemory = `Approved Community editorial memory:
 Scope: these are Luc-approved decisions from the AI for impact, Málaga and Montréal iterations. Apply the reusable principles to future Community artwork. Exact coordinates, copy, cities and subjects belong to their respective campaigns, not every request. Follow later explicit user instructions and preserve their latest manual refinements. Partners is outside this scope.
 
 Reusable art direction:
+- ${lovableLogoOrderRule}
 - A requested campaign-specific globe marker variation belongs only to that asset. Preserve the user’s exact manual native layout and original sphere; do not substitute a generic globe or move the surrounding type. Keep clear space around the focal symbol, distribute smaller secondary markers deliberately, and render close crops at enough source resolution for the enlarged layer. The local Community Newsletter snapshot in examples/community-newsletter records its Stockholm Mail exception; do not impose that symbol or city on other Community artwork.
 - Event · Graphic is an additional 1080-square Community composition: full Community lockup at the upper left and city opposite, a dominant native headline above a wide geometric band, and concise date/place blocks aligned in the lower-right area. Keep it an alternative, not the default Event globe. The editable SVG band can use diamonds, orbits, rays or flowing curves, with density, spread, rotation, scale and X/Y crop offsets. Preserve the fixed mask when adjusting the drawing inside it. Use original Lovable background tokens; automatic contrast chooses white or #1b1b1b for native text, intact logo and geometric ink. Retain user overrides when automatic contrast is disabled. Unknown dates and venues stay explicit placeholders; never invent event facts.
 - Template first, approved November 17: filling an existing composition must not ask the model to recalculate coordinates, logo sizes, type scales or line-height. Select an approved layout and bind concise content in code. Reuse prepared library pixels before generating anything. Show the editable native layout as soon as content is extracted, while separately generating only a necessary new image. Do not wait for raster generation to reveal the composition. Preserve the user’s manual geometry during refinements.

@@ -17,8 +17,8 @@ export const screenEditPlanSchema=z.object({summary:z.string().min(1).max(1500),
  clearMotion:z.boolean(),
 }).strict();
 export const screenImportRequestSchema=z.object({mode:z.literal('import'),prompt:z.string().max(4000),image:z.string().max(4_000_000).regex(/^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/]+=*$/),width:z.number().int().positive().max(20000),height:z.number().int().positive().max(20000)}).strict();
-export const screenEditRequestSchema=z.object({mode:z.literal('edit'),prompt:z.string().min(1).max(4000),selectedIds:z.array(id).max(80),
- blocks:z.array(z.object({id,kind:z.enum(['text','shape','image']),text:z.string().max(2000).nullable(),x:z.number(),y:z.number(),width:z.number(),height:z.number(),fontSize:z.number().nullable(),color:z.string().nullable(),fill:z.string().nullable(),locked:z.boolean()}).strict()).max(80),
+export const screenEditRequestSchema=z.object({mode:z.literal('edit'),prompt:z.string().min(1).max(4000),selectedIds:z.array(id).max(320),
+ blocks:z.array(z.object({id,kind:z.enum(['text','shape','image']),text:z.string().max(8000).nullable(),x:z.number(),y:z.number(),width:z.number(),height:z.number(),fontSize:z.number().nullable(),color:z.string().nullable(),fill:z.string().nullable(),locked:z.boolean()}).strict()).max(320),
 }).strict();
 export const screenRequestSchema=z.discriminatedUnion('mode',[screenImportRequestSchema,screenEditRequestSchema]);
 export function validateScreenPlan(value,request){

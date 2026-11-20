@@ -16,32 +16,27 @@ const {assetSchema}=await server.ssrLoadModule('/studio/src/assets-tool/model.ts
 const {duplicateAssetPages}=await server.ssrLoadModule('/studio/src/assets-tool/assetSeries.ts');
 const {buildScreenDemo,isScreenDemo}=await server.ssrLoadModule('/studio/src/assets-tool/screenDemoModel.ts');
 const {materializeScreenComponent,screenComponentBlocks,applyScreenEdits,screenEditRequest}=await server.ssrLoadModule('/studio/src/assets-tool/screenComponent.ts');
+const {materializeWebPage}=await server.ssrLoadModule('/studio/src/assets-tool/webPageComponent.ts');
 const {scaleSelection,patchScaledSelection}=await server.ssrLoadModule('/studio/src/studio/selectionScale.ts');
-const {screenImageFromUrl}=await server.ssrLoadModule('/studio/src/assets-tool/screenImageSource.ts');
 const prepared=JSON.parse(await readFile(new URL('../examples/screen-demo/prepared.plan.json',import.meta.url),'utf8'));
 const png=await readFile(new URL('../examples/display-ads/gradient.png',import.meta.url));
 const [asset]=buildDisplayAdsAssets({name:'Gradient',src:`data:image/png;base64,${png.toString('base64')}`,width:240,height:259});
 const state=(time,id,motion=asset.motion)=>sampleNativeMotion(motion,time).get(id);
 const close=(a,b)=>assert.ok(Math.abs(a-b)<1e-6,`${a} ≈ ${b}`);
 
-test('Image URL import reads only explicit image bytes without credentials',async t=>{
- let options,received;
- t.mock.method(globalThis,'fetch',async(url,init)=>{received=url;options=init;return new Response(png,{headers:{'content-type':'image/png'}});});
- const signal=new AbortController().signal,file=await screenImageFromUrl(' https://example.test/screen.png ',signal);
- assert.equal(received,'https://example.test/screen.png');assert.equal(options.credentials,'omit');assert.equal(options.referrerPolicy,'no-referrer');assert.equal(options.signal,signal);
- assert.equal(file.name,'screen.png');assert.equal(file.type,'image/png');assert.deepEqual(Buffer.from(await file.arrayBuffer()),png);
- await assert.rejects(screenImageFromUrl('javascript:alert(1)',signal),/HTTP/);
- await assert.rejects(screenImageFromUrl('https://user:secret@example.test/image.png',signal),/credentials/);
-});
-test('Image URL import rejects HTML, unreadable hosts and oversized streamed bodies',async t=>{
- const signal=new AbortController().signal;
- const fetch=t.mock.method(globalThis,'fetch',async()=>new Response('<html/>',{headers:{'content-type':'text/html'}}));
- await assert.rejects(screenImageFromUrl('https://example.test/page',signal),/direct PNG/);
- fetch.mock.mockImplementation(async()=>{throw new TypeError('Failed to fetch');});
- await assert.rejects(screenImageFromUrl('https://example.test/image.png',signal),/choose the image file/);
- let cancelled=false;
- fetch.mock.mockImplementation(async()=>new Response(new ReadableStream({start(controller){controller.enqueue(new Uint8Array(12_000_001));},cancel(){cancelled=true;}}),{headers:{'content-type':'image/png'}}));
- await assert.rejects(screenImageFromUrl('https://example.test/image.png',signal),/12 MB/);assert.equal(cancelled,true);
+test('Actual DOM elements preserve source copy, geometry, group scale and unrelated manual layers',()=>{
+ const snapshot={version:1,sourceUrl:'https://lovable.dev',title:'Lovable',width:1440,height:900,preview:'data:image/jpeg;base64,aGVsbG8=',warnings:[],layers:Array.from({length:120},(_,i)=>({id:`dom-${i}`,kind:'text',text:`Original text ${i}`,x:40+i,y:60+i*5,width:300,height:25,fontSize:20,fontWeight:600,lineHeight:125,color:'#1b1b1b'}))};
+ const original=screenDemo(),next=materializeWebPage(original,snapshot),blocks=screenComponentBlocks(next),scale=800*.73/900;
+ assert.equal(blocks.length,120);assert.equal(next.id,original.id);assert.deepEqual(next.dimensions,original.dimensions);
+ assert.equal(blocks[0].value.runs[0].text,'Original text 0');close(blocks[1].editor.x-blocks[0].editor.x,scale);close(blocks[0].editor.appearance.fontSize,20*scale);
+ assert.ok(blocks.every(block=>block.editor.groupId==='screen-component'));
+ const flatten=doc=>doc.editor.pages.flatMap(page=>page.sections.flatMap(section=>section.columns.flat()));
+ assert.deepEqual(flatten(next).filter(b=>!b.id.startsWith('screen-ui-')),flatten(original).filter(b=>!b.id.startsWith('screen-ui-')));
+ assert.deepEqual(assetSchema.parse(JSON.parse(JSON.stringify(next))),next);
+ assert.equal(screenEditRequest(next,'Change the first text').blocks.length,120);
+ assert.equal(next.motion.clips.find(clip=>clip.id==='screenCamera').blockIds.length,120);
+ const tiny=materializeWebPage(original,{...snapshot,layers:[{id:'dom-line',kind:'shape',x:10,y:20,width:.5,height:40,fill:'#ffffff'},{...snapshot.layers[0],align:'center'}]});
+ assert.equal(screenComponentBlocks(tiny)[0].editor.widthPx,1);assert.equal(screenComponentBlocks(tiny)[1].value.align,'center');
 });
 
 test('Import from the normal canvas preserves all existing layers, dimensions and document identity',()=>{

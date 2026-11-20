@@ -11,6 +11,7 @@
   --studio-foreground: #f7f4ed;
   --studio-primary-label: #1b1b1b;
   --studio-panel: #252525;
+  --studio-floating-shadow: 0 0 0 .5px rgb(255 255 255 / 20%), 0 4px 16px rgb(0 0 0 / 16%);
 }
 :root[data-theme='light'] {
   color-scheme: light;
@@ -59,6 +60,7 @@ html, body, #root { background: var(--studio-background); color: var(--ui-text);
 .ui-btn[data-variant='primary'] { color: var(--studio-primary-label); border-radius: 999px; font-weight: 600; }
 .ui-btn[data-variant='neutral'] { background: rgb(var(--studio-fg-rgb) / 5%); border-color: var(--ui-border); box-shadow: none; }
 .ui-dropdown-content, .ui-picker-content, .ui-panel, .ui-color-picker { background-color: var(--studio-panel); }
+:root:not([data-theme='light']) :is(.ui-dropdown-content, .ui-picker-content, .ui-color-picker, .hcs-toolbar, .ewb-text-toolbar, .studio-text-toolbar) { box-shadow: var(--studio-floating-shadow); }
 .asset-workspace { padding: 0 0 4px; gap: 0; }
 .asset-app .we-chat { border: 0; box-shadow: none; background: var(--ui-bg); }
 .asset-app .we-chat-header, .asset-app .we-panel-header { border: 0; }

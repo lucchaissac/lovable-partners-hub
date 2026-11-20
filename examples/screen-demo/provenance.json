@@ -5,7 +5,7 @@
   "reference": "User-supplied Screen Recording 2026-11-20 at 15.51.14.mov",
   "source": "lovable-hub.jpg: screenshot of this repository’s Lovable Guidelines UI",
   "entry": "Make → Image → Choose image file / Import from URL",
-  "mode": "Make editable is on by default; off retains ordinary image insertion",
+  "mode": "Make image editable is on by default for files; off retains ordinary image insertion. Import from URL now extracts a public HTML page directly.",
   "preparedExample": "prepared.plan.json: local Codex reconstruction, reviewed to use original Lovable vector artwork",
   "format": {
     "width": 1200,
@@ -26,12 +26,12 @@
     "source": "verified.asset.json (conversation omitted)",
     "motionContactSheet": "verified-motion.jpg",
     "groupScale": "100% → 75% → 100%; geometry and text confirmed proportional",
-    "toolbarUrlImport": "Actual Image → Import from URL produced 38 grouped native elements in an existing Partnership canvas, retaining original layers and 1200 × 675 dimensions.",
+    "toolbarUrlImport": "Historical image-URL check, superseded by the public HTML importer. See ../web-page-import/REHEARSAL.md.",
     "classicImage": "Choose image file with Make editable off inserted a standard image through the existing editor flow.",
     "toolbarScreenshot": "verified-menu.jpg"
   },
   "limits": [
-    "Direct image URLs only (PNG, JPG, WebP); browser cross-origin permissions apply.",
+    "URL imports now read public HTML, independently of the screenshot/file reconstruction path.",
     "One imported screen component per asset; replacing its source preserves other layers.",
     "Compact viewport emulation did not take effect in the connected browser; mobile not verified."
   ]

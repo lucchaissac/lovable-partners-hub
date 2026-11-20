@@ -460,6 +460,20 @@ function AssetPageContent() {
     const [request,...rest]=queued;setQueued(rest);void refine(request);
   },[busy,error,queued,localChat.enabled]);
   const stop = () => { setQueued([]); operation.current++; controller.current?.abort(); controller.current = undefined; setBusy(false); setGenerationPreview(undefined); setReviewCandidate(undefined); };
+  const loadWebPage = async (url:string,signal:AbortSignal) => {
+    const original=current.current;if(!original||busy||readingFile.current)throw Error('Wait for the current import to finish.');
+    const abort=new AbortController(),cancel=()=>abort.abort();signal.addEventListener('abort',cancel,{once:true});
+    const run=++operation.current,key=animationCanvasKey(original);controller.current=abort;lastRequest.current=undefined;
+    setBusy(true);setError('');setGenerationStage('Reading the page’s HTML…');
+    try{
+      const {importEditableWebPage}=await import('./webPageComponent');
+      const result=await importEditableWebPage(original,url,AbortSignal.any([abort.signal,signal]));
+      if(!mounted.current||run!==operation.current||abort.signal.aborted||signal.aborted)throw Error('Cancelled');
+      if(current.current?.id!==original.id||animationCanvasKey(current.current)!==key)throw Error('The canvas changed during import. Retry to keep your edits.');
+      change(result.asset);setVisual(undefined);
+      if(result.warnings.length)setError(result.warnings.join(' '));
+    }finally{signal.removeEventListener('abort',cancel);if(controller.current===abort){controller.current=undefined;if(mounted.current)setBusy(false);}}
+  };
   const loadImage = async (file?: File,editable=false):Promise<boolean> => {
     if (!file || busy || readingFile.current) return false;
     if(file.name.toLowerCase().endsWith('.json')){await importSource(file);return true;}
@@ -715,7 +729,7 @@ function AssetPageContent() {
 
 
       <AssetLibrary open={libraryOpen} onOpenChange={setLibraryOpen}/>
-      <HtmlPresentationTools primitivesOnly imageTool={import.meta.env.DEV&&studioWorkspace==='lovable'?<ScreenImageMenu key={asset.id} disabled={busy||reading||changingTemplate||exporting} onImport={loadImage}/>:undefined}/>
+      <HtmlPresentationTools primitivesOnly imageTool={import.meta.env.DEV&&studioWorkspace==='lovable'?<ScreenImageMenu key={asset.id} disabled={busy||reading||changingTemplate||exporting} onImport={loadImage} onImportPage={loadWebPage}/>:undefined}/>
       {studioWorkspace==='lovable'&&<Dropdown align="end" value={screenMode?undefined:isAppStudioAsset(asset)?'app-studio':'collaboration'} items={[{id:'collaboration',label:'Partnership'},{id:'app-studio',label:'App Studio'}]} onChange={value=>void switchBrandTemplate(value)} trigger={<Button variant="ghost" disabled={busy||changingTemplate} aria-label="Lovable template" trailingIcon={<Icon name="chevron-down" size={14}/>}>Template</Button>}/>}
       {studioWorkspace==='ambassadors'?<Dropdown align="end" value={templateFormat?.id} items={[...ambassadorFormats,graphicEventFormat].map(format=>({id:format.id,label:format.name,leadingIcon:<Icon name={format.width===format.height?'square':'rectangle-horizontal'} size={16} style={format.width<format.height?{transform:'rotate(90deg)'}:undefined}/>}))} onChange={value=>void switchCommunityTemplate(value)} trigger={<Button variant="ghost" disabled={busy||changingTemplate||exporting} className="asset-format-trigger" aria-label={`Community template: ${templateFormat?.name??'Custom'}`} trailingIcon={<Icon name="chevron-down" size={14}/>}>{templateFormat?.name??'Template'}</Button>}/>:<Dropdown align="end" value={asset.format} items={Object.entries(formats).map(([id,item])=>({id,label:item.label,leadingIcon:<Icon name={id==='square'?'square':'rectangle-horizontal'} size={16} style={id==='portrait'?{transform:'rotate(90deg)'}:undefined}/>}))} onChange={value=>{change(resizeAsset({...asset,editor:nativeDocument(asset)},value as AssetFormat,import.meta.env.DEV&&asset.editor?.pages.some(page=>page.sections.some(section=>section.columns.flat().some(block=>block.id==='holiday-motif')))));setZoom(0);}} trigger={<Button variant="ghost" disabled={busy} className="asset-format-trigger" aria-label={`Canvas format: ${formats[asset.format].label}`} leadingIcon={<Icon name={asset.format==='square'?'square':'rectangle-horizontal'} size={16} style={asset.format==='portrait'?{transform:'rotate(90deg)'}:undefined}/>} trailingIcon={<Icon name="chevron-down" size={14}/>}/>}/>}
       <span className="asset-tools-divider" aria-hidden="true"/>

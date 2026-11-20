@@ -273,6 +273,12 @@ function AssetPageContent() {
     const run=++operation.current,document=current.current;
     setBusy(true);setGenerationStage('Refining your asset…');
     try {
+      // Luc requested this two-message transcript for the local Coffee Rave
+      // demo. Only append its reply; keep every authored canvas field intact.
+      if(import.meta.env.DEV&&studioWorkspace==='lovable'&&document.id==='6b74f0ec-1002-48ea-b4c3-4b0caef348d7'&&request.prompt.trim()==='Make it on-brand, 600 × 400.'&&!request.sources.length){
+        appendMessage({id:crypto.randomUUID(),createdAt:new Date().toISOString(),text:'Done — 600 × 400, Camera Plain, balanced spacing and Lovable first. Everything is editable.',user:false,workspaceChatId:request.chatId});
+        lastRequest.current=undefined;return;
+      }
       if(import.meta.env.DEV&&studioWorkspace==='lovable'&&request.prompt.includes('Q5hVpPc6dKxLT5xoi7eYPN')&&/community logo/i.test(request.prompt)&&!request.sources.length){
         const {isHolidayAsset,communityHolidayIdentity,holidayDemoReply}=await import('./holidayAsset');
         if(isHolidayAsset(document)){

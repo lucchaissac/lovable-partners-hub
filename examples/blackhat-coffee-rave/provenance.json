@@ -9,22 +9,66 @@
   "preview": "preview-600x400.png",
   "studioCapture": "in-make.jpg",
   "savedDocument": "http://127.0.0.1:5173/brand#brand/create/6b74f0ec-1002-48ea-b4c3-4b0caef348d7",
-  "canvas": {"width": 600, "height": 400, "background": "#1b1b1b"},
+  "canvas": {
+    "width": 600,
+    "height": 400,
+    "background": "#1b1b1b"
+  },
   "typography": {
-    "headline": {"family": "Camera Plain", "weight": 700, "size": 48, "leading": 50, "text": "Post Blackhat\nCoffee Shop Rave"},
-    "details": {"family": "Camera Plain", "weight": 600, "size": 19, "leading": 25, "text": "9 December — Grind Shoreditch, London"},
+    "headline": {
+      "family": "Camera Plain",
+      "weight": 700,
+      "size": 48,
+      "leading": 50,
+      "text": "Post Blackhat\nCoffee Shop Rave"
+    },
+    "details": {
+      "family": "Camera Plain",
+      "weight": 600,
+      "size": 19,
+      "leading": 25,
+      "text": "9 December — Grind Shoreditch, London"
+    },
     "uppercase": false
   },
   "signature": {
-    "order": ["Lovable", "Aikido", "incident.io"],
+    "order": [
+      "Lovable",
+      "Aikido",
+      "incident.io"
+    ],
     "treatment": "Original proportional white vectors; balanced visible lettering and baselines; two independent native 1 px lines with 20 px clear gaps on both sides. Grouped for movement; each component remains editable.",
     "sources": [
-      {"name": "Lovable", "file": "../../public/brand/assets/full-white-pure.svg", "source": "Bundled original Lovable identity"},
-      {"name": "Aikido", "file": "../../public/brand/assets/aikido-logo-white.svg", "source": "https://www.aikido.dev/company/press-kit", "download": "https://cdn.prod.website-files.com/642adcaf364024654c71df23/6434003235c4e271c0a2bf4e_aikido%20white.svg"},
-      {"name": "incident.io", "file": "../../public/brand/assets/incident-logo-white.svg", "source": "https://incident.io/", "download": "https://incident.io/brand/resources/incidentio-brand-svgs.zip", "archiveEntry": "SVGs/Wordmark/wordmark-mono-light.svg"}
+      {
+        "name": "Lovable",
+        "file": "../../public/brand/assets/full-white-pure.svg",
+        "source": "Bundled original Lovable identity"
+      },
+      {
+        "name": "Aikido",
+        "file": "../../public/brand/assets/aikido-logo-white.svg",
+        "source": "https://www.aikido.dev/company/press-kit",
+        "download": "https://cdn.prod.website-files.com/642adcaf364024654c71df23/6434003235c4e271c0a2bf4e_aikido%20white.svg"
+      },
+      {
+        "name": "incident.io",
+        "file": "../../public/brand/assets/incident-logo-white.svg",
+        "source": "https://incident.io/",
+        "download": "https://incident.io/brand/resources/incidentio-brand-svgs.zip",
+        "archiveEntry": "SVGs/Wordmark/wordmark-mono-light.svg"
+      }
     ]
   },
-  "gradient": {"file": "../../public/ambassadors/assets/heart-overlay.webp", "frame": {"x": -200, "y": -10, "width": 1000, "height": 1000}, "treatment": "Existing Lovable artwork placed as a separate editable layer; its blue/pink top is cropped by the 600 × 400 canvas."},
+  "gradient": {
+    "file": "../../public/ambassadors/assets/heart-overlay.webp",
+    "frame": {
+      "x": -200,
+      "y": -10,
+      "width": 1000,
+      "height": 1000
+    },
+    "treatment": "Existing Lovable artwork placed as a separate editable layer; its blue/pink top is cropped by the 600 × 400 canvas."
+  },
   "verification": [
     "Validated against the existing asset schema: eight native editable layers.",
     "Imported through Make's existing editable-source flow, with a fresh ID and no changes to unrelated saved assets.",
@@ -33,7 +77,16 @@
     "Reopened the saved document and confirmed its appearance and dimensions.",
     "Exported the PNG through Make and verified its exact 600 × 400 pixel dimensions.",
     "Exported the editable source through Make; Camera Plain 700/600 and all eight layers are retained.",
-    "npm run build passed."
+    "npm run build passed.",
+    "Demo conversation survives reopening; exported source comparison confirms that only chat metadata and updatedAt changed."
   ],
-  "regeneration": "node examples/blackhat-coffee-rave/build.mjs writes the initial recipe to /tmp/blackhat-coffee-rave.asset.json. The saved editable source remains authoritative for subsequent manual refinements."
+  "regeneration": "node examples/blackhat-coffee-rave/build.mjs writes the initial recipe to /tmp/blackhat-coffee-rave.asset.json. The saved editable source remains authoritative for subsequent manual refinements.",
+  "demoConversation": {
+    "explicitlyRequested": true,
+    "localOnly": true,
+    "modelCall": false,
+    "prompt": "Make it on-brand, 600 × 400.",
+    "response": "Done — 600 × 400, Camera Plain, balanced spacing and Lovable first. Everything is editable.",
+    "behavior": "The existing saved asset receives only the two-message demo transcript. Its URL, dimensions, eight editable layers and all artwork settings are preserved. The exact response shortcut is development-only and scoped to this document and prompt."
+  }
 }

@@ -17,12 +17,14 @@ import { guidelines } from './guidelines.js';
 import { studio } from './studio.js';
 import { gallery, mountGallery } from './gallery.js';
 
+const makeHomePreview = import.meta.env.DEV ? await import('./make-home.js') : null;
+
 const icons={rectangle:RectangleHorizontal,globe:Globe,grid:Grid3X3,moon:Moon,sun:Sun,search:Search,x:X,arrow:ArrowUpRight,next:ArrowRight,chevron:ChevronDown,download:Download,check:Check,copy:Copy,upload:Upload,replay:RotateCcw,pause:Pause,play:Play};
 export const icon=name=>`<i data-icon="${name}" aria-hidden="true"></i>`;
 export const sections=[['overview','Overview'],['construction','Construction'],['connections','Connections'],['clear-space','Clear space'],['scale','Scale'],['motion','Motion'],['formats','Formats'],['color','Color'],['typography','Typography'],['incorrect-usage','Incorrect usage'],['for-your-agent','For your agent'],['usage','In use']];
 const app=document.querySelector('#app');
 const state={workspace:'partners',view:'guidelines',filter:'all',tier:'Select',format:'solution-compact',year:'2026',partnerName:'',partnerImage:'',symbolSize:'large',guides:false,background:'dark',scale:2};
-let guidelineNavigation,assemblyObserver,toastTimer,cleanupGallery,cleanupAmbassadors,cleanupBrand,cleanupAgentGuide,cleanupTech;
+let guidelineNavigation,assemblyObserver,toastTimer,cleanupGallery,cleanupAmbassadors,cleanupBrand,cleanupAgentGuide,cleanupTech,cleanupMakeHome;
 const currentSections=()=>state.workspace==='tech-blog'?techSections:state.workspace==='lovable'?brandSections:state.workspace==='ambassadors'?ambassadorSections:sections;
 const currentFormats=()=>state.workspace==='tech-blog'?[]:state.workspace==='lovable'?[]:state.workspace==='ambassadors'?ambassadorFormats:FORMATS;
 const route=(view,section)=>`#${state.workspace==='tech-blog'?'tech-blog/':state.workspace==='lovable'?'brand/':state.workspace==='ambassadors'?'ambassadors/':''}${view}${section?`/${section}`:''}`;
@@ -50,10 +52,13 @@ function render(view=state.view,{reset=true}={}){
  showWorkspaceTransition(state.workspace);
  const showLibrary=view==='library';if(showLibrary||view==='badge')view='create';
  const requestedBadge=parseRoute().section,badge=currentFormats().some(format=>format.id===requestedBadge)||(state.workspace==='ambassadors'&&[ambassadorDefaultFormat,'event-graphic'].includes(requestedBadge))?requestedBadge:undefined,starter=state.workspace==='partners'&&requestedBadge==='grow-your-business';
+ const showMakeHome=!!makeHomePreview&&view==='create'&&!requestedBadge&&!showLibrary;
+ cleanupMakeHome?.();cleanupMakeHome=undefined;
  state.view=view;guidelineNavigation?.destroy();guidelineNavigation=undefined;assemblyObserver?.disconnect();cleanupGallery?.();cleanupGallery=undefined;cleanupAmbassadors?.();cleanupAmbassadors=undefined;cleanupBrand?.();cleanupBrand=undefined;cleanupAgentGuide?.();cleanupAgentGuide=undefined;cleanupTech?.();cleanupTech=undefined;
  const brand=state.workspace==='lovable',ambassadors=state.workspace==='ambassadors';
  const asset=/^[a-f0-9-]{36}$/i.test(requestedBadge??'')?requestedBadge:undefined;
- app.innerHTML=state.workspace==='tech-blog'?(view==='gallery'?techGallery():view==='create'?studio({workspace:'tech-blog',badge:requestedBadge==='cover'||!requestedBadge?'cover':undefined,asset:/^[a-f0-9-]{36}$/i.test(requestedBadge??'')?requestedBadge:undefined}):techGuidelines({icon})):brand?(view==='gallery'?brandGallery():view==='create'?studio({workspace:'lovable',badge:['collaboration','app-studio',...(import.meta.env.DEV?['holiday','display-ads','screen-demo']:[])].includes(requestedBadge)?requestedBadge:!requestedBadge?'collaboration':undefined,asset:/^[a-f0-9-]{36}$/i.test(requestedBadge??'')?requestedBadge:undefined}):brandGuidelines({icon})):view==='gallery'?(ambassadors?ambassadorGallery():gallery()):view==='create'?studio({library:showLibrary,badge,asset,starter,workspace:state.workspace}):ambassadors?ambassadorGuidelines({icon}):guidelines(state.tier,{icon,formatCard,sections});
+ app.innerHTML=showMakeHome?makeHomePreview.makeHome(state.workspace):state.workspace==='tech-blog'?(view==='gallery'?techGallery():view==='create'?studio({workspace:'tech-blog',badge:requestedBadge==='cover'||!requestedBadge?'cover':undefined,asset:/^[a-f0-9-]{36}$/i.test(requestedBadge??'')?requestedBadge:undefined}):techGuidelines({icon})):brand?(view==='gallery'?brandGallery():view==='create'?studio({workspace:'lovable',badge:['collaboration','app-studio',...(import.meta.env.DEV?['holiday','display-ads','screen-demo']:[])].includes(requestedBadge)?requestedBadge:!requestedBadge?'collaboration':undefined,asset:/^[a-f0-9-]{36}$/i.test(requestedBadge??'')?requestedBadge:undefined}):brandGuidelines({icon})):view==='gallery'?(ambassadors?ambassadorGallery():gallery()):view==='create'?studio({library:showLibrary,badge,asset,starter,workspace:state.workspace}):ambassadors?ambassadorGuidelines({icon}):guidelines(state.tier,{icon,formatCard,sections});
+ if(showMakeHome)cleanupMakeHome=makeHomePreview.mountMakeHome(app,state.workspace);
  document.querySelectorAll('[data-workspace]').forEach(button=>{const selected=!brand&&button.dataset.workspace===state.workspace;button.classList.toggle('is-selected',selected);if(button.dataset.workspace!=='lovable')button.setAttribute('aria-pressed',String(selected));});
  updateWorkspaceMetadata(state.workspace);
  if(state.workspace==='tech-blog'&&view!=='create')cleanupTech=mountTech(app);
@@ -80,7 +85,7 @@ document.addEventListener('click',event=>{
  const replay=event.target.closest('[data-replay]');if(replay){const stage=document.querySelector('.assembly-stage'),control=stage.closest('.motion-example').querySelector('[data-pause]');stage.classList.remove('is-paused');stage.classList.add('is-restarting');control.setAttribute('aria-pressed','false');control.setAttribute('aria-label','Pause badge assembly');control.innerHTML=icon('pause');hydrateIcons(control);requestAnimationFrame(()=>requestAnimationFrame(()=>stage.classList.remove('is-restarting')));return;}
  const section=event.target.closest('[data-section]');if(section){event.preventDefault();const id=section.dataset.section;history.replaceState(null,'',route('guidelines',id));guidelineNavigation?.go(id);return;}
  const workspace=event.target.closest('[data-workspace]:not([aria-disabled="true"])');if(workspace){state.workspace=workspace.dataset.workspace;navigate('gallery');return;}
- const view=event.target.closest('[data-view]');if(view){event.preventDefault();navigate(view.dataset.view,view.dataset.createTemplate||(state.workspace==='lovable'&&view.dataset.view==='create'?'collaboration':undefined));return;}
+ const view=event.target.closest('[data-view]');if(view){event.preventDefault();navigate(view.dataset.view,view.dataset.createTemplate||(!makeHomePreview&&state.workspace==='lovable'&&view.dataset.view==='create'?'collaboration':undefined));return;}
  const customize=event.target.closest('[data-customize]');if(customize){state.format=customize.dataset.customize;navigate('create',state.format);return;}
  const filter=event.target.closest('[data-filter]');if(filter){state.filter=filter.dataset.filter;render('library',{reset:false});return;}
  const bg=event.target.closest('[data-background]');if(bg){state.background=bg.dataset.background;document.querySelectorAll('[data-background]').forEach(b=>{b.classList.toggle('is-active',b===bg);b.setAttribute('aria-pressed',b===bg);});document.querySelector('#creator-preview').className=`creator-preview ${state.background==='transparent'?'checkerboard':''}`;return;}

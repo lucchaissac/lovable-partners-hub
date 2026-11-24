@@ -1,5 +1,7 @@
 import {createElement, ArrowUp, Plus, X, Images, Users} from 'lucide';
 import profileAvatar from './local-profile-avatar.webp';
+import teamAvatarOne from './local-team-avatar-1.webp';
+import teamAvatarTwo from './local-team-avatar-2.webp';
 import {badgeSvg, FORMATS} from './badges.js';
 import {brandGalleryAssets} from './lovable/galleryMedia.js';
 import {partnershipSpecimen} from './lovable/partnership.js';
@@ -57,7 +59,9 @@ function collections(workspace) {
   });
   const templates = FORMATS.map(format => ({name:format.name, width:16, height:9, template:format.id,
     html:`<div class="make-home-badge">${badgeSvg(format.id, {tier:'Select', year:'2026', partnerName:'Logo'})}</div>`}));
-  return {mine:originals, team:[originals[4], originals[5], originals[2], originals[3]], templates:[originals[0], ...templates]};
+  const team = [originals[4], originals[5], originals[2], originals[3]];
+  team.forEach((asset, index) => { asset.teamAvatar = [teamAvatarOne, teamAvatarTwo][index % 2]; });
+  return {mine:originals, team, templates:[originals[0], ...templates]};
 }
 
 export function makeHome(workspace) {
@@ -142,7 +146,8 @@ export function mountMakeHome(root, workspace) {
       const preview = asset.template
         ? `<a class="make-home-card" href="${brand.prefix}/${asset.template}" aria-label="Open ${escape(asset.name)} in Studio">${content}</a>`
         : `<figure class="make-home-card gallery-item" aria-label="${escape(asset.name)}">${content}</figure>`;
-      return `<article class="make-home-item">${preview}<div class="make-home-caption"><img src="${profileAvatar}" alt="Created by Luc Chaissac" width="32" height="32"/><div class="make-home-caption-copy"><h2>${escape(asset.name)}</h2><p>${asset.editedLabel}</p></div></div></article>`;
+      const teamAvatar = filter === 'team' && asset.teamAvatar;
+      return `<article class="make-home-item">${preview}<div class="make-home-caption"><img src="${teamAvatar || profileAvatar}" alt="${teamAvatar ? 'Created by a team member' : 'Created by Luc Chaissac'}" width="32" height="32"/><div class="make-home-caption-copy"><h2>${escape(asset.name)}</h2><p>${asset.editedLabel}</p></div></div></article>`;
     }).join('');
     cleanupTech = mountTech(grid);
     cleanupGallery = mountGallery(grid);

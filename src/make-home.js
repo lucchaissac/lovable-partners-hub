@@ -1,4 +1,6 @@
-import {createElement, ArrowUp, Plus, X, Images, Users} from 'lucide';
+import {createElement, ArrowUp, Plus, X, Check} from 'lucide';
+import {getPreviewRole, setPreviewRole} from './local-access.js';
+import {canUseTeamGallery} from '../shared/previewAccess.mjs';
 import profileAvatar from './local-profile-avatar.webp';
 import teamAvatarOne from './local-team-avatar-1.webp';
 import teamAvatarTwo from './local-team-avatar-2.webp';
@@ -16,6 +18,13 @@ import './make-home.css';
 const drafts = new Map();
 const escape = value => String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const glyph = shape => createElement(shape, {width:18, height:18, 'stroke-width':1.8, 'aria-hidden':'true'}).outerHTML;
+const profiles = [
+  {id:'designer', name:'Luc Chaissac', role:'Designer', avatar:profileAvatar},
+  {id:'internal', name:'Internal', role:'Internal', avatar:teamAvatarOne},
+  {id:'external', name:'External', role:'External', avatar:teamAvatarTwo},
+];
+const currentProfile = () => profiles.find(profile => profile.id === getPreviewRole());
+const draftKey = workspace => `${getPreviewRole()}:${workspace}`;
 const config = {
   lovable: {name:'Lovable', prefix:'#brand/create', starter:'collaboration', logo:'/brand/assets/full-white-pure.svg', lightLogo:'/brand/assets/full-black.svg'},
   partners: {name:'Lovable Partners', prefix:'#create', starter:'grow-your-business'},
@@ -50,8 +59,10 @@ function collections(workspace) {
     return {mine:visuals, team:[visuals[2], visuals[1], visuals[0]], templates:[cover]};
   }
   const source = document.createElement('div');
-  source.innerHTML = gallery();
-  const originals = [['3:76',2680,1445,'Grow your business'],['4:118',2679,1444,'Partner programme'],['4:154',1,1,'Storefront'],['3:52',1,1,'Partner badge'],['4:209',16,9,'Team portrait'],['4:119',1706,908,'Locomotive']].map(([id,width,height,name]) => {
+  const external = getPreviewRole() === 'external';
+  source.innerHTML = external ? externalPartnerGallery() : gallery();
+  const items = external ? [['3:76',2680,1445,'Grow your business'],['3:52',1,1,'Partner badge']] : [['3:76',2680,1445,'Grow your business'],['4:118',2679,1444,'Partner programme'],['4:154',1,1,'Storefront'],['3:52',1,1,'Partner badge'],['4:209',16,9,'Team portrait'],['4:119',1706,908,'Locomotive']];
+  const originals = items.map(([id,width,height,name]) => {
     const node = source.querySelector(`[data-gallery-node="${id}"]`);
     // Use the existing authored composition; posters keep this home lightweight.
     node.querySelectorAll('video,canvas').forEach(media => media.remove());
@@ -59,9 +70,19 @@ function collections(workspace) {
   });
   const templates = FORMATS.map(format => ({name:format.name, width:16, height:9, template:format.id,
     html:`<div class="make-home-badge">${badgeSvg(format.id, {tier:'Select', year:'2026', partnerName:'Logo'})}</div>`}));
-  const team = [originals[4], originals[5], originals[2], originals[3]];
+  const team = external ? [] : [originals[4], originals[5], originals[2], originals[3]];
   team.forEach((asset, index) => { asset.teamAvatar = [teamAvatarOne, teamAvatarTwo][index % 2]; });
   return {mine:originals, team, templates:[originals[0], ...templates]};
+}
+
+export function externalPartnerGallery() {
+  const source = document.createElement('div');
+  source.innerHTML = gallery();
+  source.querySelectorAll('.gallery-item').forEach(item => {
+    if (!['3:76','3:52'].includes(item.dataset.galleryNode)) item.remove();
+  });
+  source.querySelectorAll('.gallery-badge').forEach(badge => { badge.innerHTML = badgeSvg('solution-stacked', {tier:'Select', year:'2026', partnerName:'Logo'}); });
+  return source.innerHTML;
 }
 
 export function makeHome(workspace) {
@@ -87,7 +108,7 @@ export function makeHome(workspace) {
     <section class="make-home-library" aria-label="Your assets">
       <div class="make-home-toolbar">
         <div class="make-home-filters" role="group" aria-label="Filter gallery">
-          ${[['mine','My gallery'],['team','Team gallery'],['templates','Templates']].map(([id,label])=>`<button type="button" data-make-filter="${id}" aria-pressed="${id==='mine'}">${label}</button>`).join('')}
+          ${[['mine','My gallery'],...(canUseTeamGallery(getPreviewRole()) ? [['team','Team gallery']] : []),['templates','Templates']].map(([id,label])=>`<button type="button" data-make-filter="${id}" aria-pressed="${id==='mine'}">${label}</button>`).join('')}
         </div>
         <a class="make-home-new" href="${brand.prefix}/${brand.starter}" aria-label="New asset" data-hub-tooltip="New asset">${glyph(Plus)}<span>New asset</span></a>
       </div>
@@ -97,28 +118,31 @@ export function makeHome(workspace) {
 }
 
 export function setGalleryFilter(workspace, filter) {
-  const draft = drafts.get(workspace) || {prompt:'', filter:'mine', files:[]};
-  draft.filter = filter;
-  drafts.set(workspace, draft);
+  const draft = drafts.get(draftKey(workspace)) || {prompt:'', filter:'mine', files:[]};
+  draft.filter = filter === 'team' && !canUseTeamGallery(getPreviewRole()) ? 'mine' : filter;
+  drafts.set(draftKey(workspace), draft);
 }
 
-export function mountProfilePreview(openGallery) {
+export function mountProfilePreview(onRoleChange) {
   const profile = document.createElement('div');
   profile.className = 'hub-profile';
-  profile.innerHTML = `<button class="icon-control hub-profile-trigger" popovertarget="hub-profile-menu" aria-label="Open Luc’s profile" aria-haspopup="dialog" aria-expanded="false" data-hub-tooltip="Your profile"><img src="${profileAvatar}" alt="" width="32" height="32"/></button>
-    <div class="hub-profile-menu" id="hub-profile-menu" popover aria-label="Your profile" role="dialog">
-      <div class="hub-profile-identity"><img src="${profileAvatar}" alt="" width="40" height="40"/><div><strong>Luc Chaissac</strong><span>Personal workspace</span></div></div>
-      <div class="hub-profile-actions"><button type="button" data-profile-gallery="mine">${glyph(Images)}<span>My gallery</span></button><button type="button" data-profile-gallery="team">${glyph(Users)}<span>Team gallery</span></button></div>
+  profile.innerHTML = `<button class="icon-control hub-profile-trigger" popovertarget="hub-profile-menu" aria-label="Preview as" aria-haspopup="dialog" aria-expanded="false" data-hub-tooltip="Preview as"><img src="${profileAvatar}" alt="" width="32" height="32"/></button>
+    <div class="hub-profile-menu" id="hub-profile-menu" popover aria-label="Preview as" role="dialog">
+      <h2 class="hub-team-title">Preview as</h2>
+      <div class="hub-team-members" role="group" aria-label="Choose a use case">${profiles.map(person=>`<button type="button" class="hub-team-member" data-profile-role="${person.id}" aria-pressed="${person.id===getPreviewRole()}"><span class="hub-team-copy">${person.role}</span>${glyph(Check)}</button>`).join('')}</div>
     </div>`;
   document.querySelector('.header-end').append(profile);
   const panel = profile.querySelector('[popover]'), trigger = profile.querySelector('.hub-profile-trigger');
   panel.addEventListener('toggle', event => trigger.setAttribute('aria-expanded', String(event.newState === 'open')));
   panel.addEventListener('click', event => {
-    const button = event.target.closest('[data-profile-gallery]');
+    const button = event.target.closest('[data-profile-role]');
     if (!button) return;
+    const previous = getPreviewRole();
+    setPreviewRole(button.dataset.profileRole);
+    panel.querySelectorAll('[data-profile-role]').forEach(row => row.setAttribute('aria-pressed', String(row.dataset.profileRole === getPreviewRole())));
     panel.hidePopover();
-    openGallery(button.dataset.profileGallery);
-    document.querySelector(`[data-make-filter="${button.dataset.profileGallery}"]`)?.focus({preventScroll:true});
+    onRoleChange(getPreviewRole(), previous);
+    trigger.focus({preventScroll:true});
   });
 }
 
@@ -129,8 +153,9 @@ export function mountMakeHome(root, workspace) {
   // Illustrative metadata only: the prototype does not read or edit saved drafts.
   const editedLabels = ['Edited just now', 'Edited yesterday', 'Edited 2 days ago', 'Edited 5 days ago', 'Edited 1 week ago'];
   [...new Set(Object.values(assets).flat())].forEach((asset, index) => { asset.editedLabel = editedLabels[index % editedLabels.length]; });
-  const draft = drafts.get(workspace) || {prompt:'', filter:'mine', files:[]};
-  drafts.set(workspace, draft);
+  const draft = drafts.get(draftKey(workspace)) || {prompt:'', filter:'mine', files:[]};
+  if (draft.filter === 'team' && !canUseTeamGallery(getPreviewRole())) draft.filter = 'mine';
+  drafts.set(draftKey(workspace), draft);
   const controller = new AbortController(), options = {signal:controller.signal};
   const grid = home.querySelector('.make-home-grid'), prompt = home.querySelector('textarea');
   const submit = home.querySelector('.make-home-send'), feedback = home.querySelector('.make-home-feedback');
@@ -147,7 +172,7 @@ export function mountMakeHome(root, workspace) {
         ? `<a class="make-home-card" href="${brand.prefix}/${asset.template}" aria-label="Open ${escape(asset.name)} in Studio">${content}</a>`
         : `<figure class="make-home-card gallery-item" aria-label="${escape(asset.name)}">${content}</figure>`;
       const teamAvatar = filter === 'team' && asset.teamAvatar;
-      return `<article class="make-home-item">${preview}<div class="make-home-caption"><img src="${teamAvatar || profileAvatar}" alt="${teamAvatar ? 'Created by a team member' : 'Created by Luc Chaissac'}" width="32" height="32"/><div class="make-home-caption-copy"><h2>${escape(asset.name)}</h2><p>${asset.editedLabel}</p></div></div></article>`;
+      return `<article class="make-home-item">${preview}<div class="make-home-caption"><img src="${teamAvatar || currentProfile().avatar}" alt="${teamAvatar ? 'Created by a team member' : `Created by ${currentProfile().name}`}" width="32" height="32"/><div class="make-home-caption-copy"><h2>${escape(asset.name)}</h2><p>${asset.editedLabel}</p></div></div></article>`;
     }).join('');
     cleanupTech = mountTech(grid);
     cleanupGallery = mountGallery(grid);

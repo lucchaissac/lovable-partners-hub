@@ -1,3 +1,5 @@
+import {usePreviewAccess} from './usePreviewAccess';
+import {addsLayers} from '../../../shared/previewAccess.mjs';
 import {MakerDesignProvider} from './MakerDesignContext';
 import {graphicEventFormat,applyCommunityContrast} from './communityGraphic';
 import {techStarterAsset} from './techAsset';
@@ -68,6 +70,7 @@ export default function AssetPage() {
   return <CommunityTypographyContext.Provider value={studioWorkspace==='ambassadors'}><ColorPickerPaletteProvider value={studioWorkspace==='ambassadors'?communityPalette:assetPalette}><WorkspaceWidgetHost><HtmlSelectionMode.Provider value={true}><MakerDesignProvider><HtmlEditorInsertProvider><AssetPageContent/></HtmlEditorInsertProvider></MakerDesignProvider></HtmlSelectionMode.Provider></WorkspaceWidgetHost></ColorPickerPaletteProvider></CommunityTypographyContext.Provider>;
 }
 function AssetPageContent() {
+  const {canInsert}=usePreviewAccess();
   const { active } = useStudioSession();
   const insert = useHtmlEditorInsert();
   const { id } = useParams(), navigate = useNavigate(), location=useLocation();
@@ -142,7 +145,8 @@ function AssetPageContent() {
   // Imported Community layers retain their renderer in a mixed collection.
   const communityErrors=useCommunityRendering(asset,current,put,communityBlocks(asset).length>0);
   useEffect(() => { if (!id && current.current) put(current.current); }, []);
-  const change = useCallback((next: AssetDocument) => {
+  const change = useCallback((next: AssetDocument, fromTemplate=false) => {
+    if(!canInsert&&!fromTemplate&&current.current&&addsLayers(nativeDocument(current.current),nativeDocument(next))){setError('This profile can edit existing elements. Choose a template to start a new design.');return;}
     if (current.current && JSON.stringify(current.current) === JSON.stringify(next)) return;
     if(studioWorkspace==='ambassadors'){next=syncCommunityDocument(next,current.current);if(next.community?.autoContrast&&next.background!==current.current?.background)next=applyCommunityContrast(next);}
     const oldTemplate=communitySettings(current.current),newTemplate=communitySettings(next);
@@ -156,7 +160,7 @@ function AssetPageContent() {
     if (current.current&&(!scrub||scrub!==numberScrub.current)) past.current = [...past.current.slice(-49), current.current];
     numberScrub.current=scrub;
     future.current = []; put(parsed.data); setHistoryVersion(value => value + 1);
-  }, [put]);
+  }, [put,canInsert]);
   const undo = useCallback(() => { if(pageArrangement&&current.current&&(current.current.id===pageArrangement.activeId?animationCanvasKey(current.current)===pageArrangement.anchor:!past.current.length)){undoArrangement.current();return;}const previous = past.current.pop(); if (!previous || !current.current) return; future.current.push(current.current); put({ ...previous, series:current.current.series, messages:current.current.messages,workspaceChats:current.current.workspaceChats,workspaceActiveChatId:current.current.workspaceActiveChatId, updatedAt: Date.now() }); setHistoryVersion(value => value + 1);  }, [put,pageArrangement]);
   const redo = useCallback(() => { const next = future.current.pop(); if (!next || !current.current) return; past.current.push(current.current); put({ ...next, series:current.current.series, messages:current.current.messages,workspaceChats:current.current.workspaceChats,workspaceActiveChatId:current.current.workspaceActiveChatId, updatedAt: Date.now() }); setHistoryVersion(value => value + 1);  }, [put]);
   useEffect(() => {
@@ -273,6 +277,7 @@ function AssetPageContent() {
   };
   const refine = async (request:AssetRequest) => {
     if(!current.current || controller.current)return;
+    if(!canInsert){appendMessage({id:crypto.randomUUID(),createdAt:new Date().toISOString(),text:request.prompt,user:true});appendMessage({id:crypto.randomUUID(),createdAt:new Date().toISOString(),text:'Customize the existing elements in the Design panel, or choose another template to start a new asset.',user:false});return;}
     request={...request,chatId:request.chatId??workspaceChats(current.current,assetMessages(current.current)).active.id};
     const conversation=assetMessages(current.current).filter(message=>messageWorkspaceChat(message)===request.chatId);
     if(request.recorded&&conversation.at(-1)?.user&&conversation.at(-1)?.text===request.prompt)conversation.pop();
@@ -460,7 +465,9 @@ function AssetPageContent() {
     const [request,...rest]=queued;setQueued(rest);void refine(request);
   },[busy,error,queued,localChat.enabled]);
   const stop = () => { setQueued([]); operation.current++; controller.current?.abort(); controller.current = undefined; setBusy(false); setGenerationPreview(undefined); setReviewCandidate(undefined); };
+  useEffect(()=>{if(!canInsert){stop();setLibraryOpen(false);}},[canInsert]);
   const loadWebPage = async (url:string,signal:AbortSignal) => {
+    if(!canInsert)throw Error('This profile can edit existing template elements.');
     const original=current.current;if(!original||busy||readingFile.current)throw Error('Wait for the current import to finish.');
     const abort=new AbortController(),cancel=()=>abort.abort();signal.addEventListener('abort',cancel,{once:true});
     const run=++operation.current,key=animationCanvasKey(original);controller.current=abort;lastRequest.current=undefined;
@@ -475,7 +482,7 @@ function AssetPageContent() {
     }finally{signal.removeEventListener('abort',cancel);if(controller.current===abort){controller.current=undefined;if(mounted.current)setBusy(false);}}
   };
   const loadImage = async (file?: File,editable=false):Promise<boolean> => {
-    if (!file || busy || readingFile.current) return false;
+    if (!canInsert || !file || busy || readingFile.current) return false;
     if(file.name.toLowerCase().endsWith('.json')){await importSource(file);return true;}
     readingFile.current = true;
     setReading(true); setError('');
@@ -518,6 +525,7 @@ function AssetPageContent() {
     return () => window.removeEventListener('paste', paste);
   }, [active, busy, reading, loadImage]);
   const importSource = async (file:File, afterId?:string) => {
+    if(!canInsert)return;
     setError('');
     try {
       if (file.size > 100_000_000) throw new Error('This source file is too large.');
@@ -600,7 +608,7 @@ function AssetPageContent() {
   const switchBrandTemplate=async(templateId:string)=>{
     const previous=current.current;if(!previous||changingTemplate)return;
     setChangingTemplate(true);setError('');
-    try{const next=await brandStarterAsset(templateId);if(mounted.current&&current.current?.id===previous.id){change({...next,id:previous.id,series:previous.series,animation:previous.animation,messages:previous.messages});setVisual(undefined);setZoom(0);}}
+    try{const next=await brandStarterAsset(templateId);if(mounted.current&&current.current?.id===previous.id){change({...next,id:previous.id,series:previous.series,animation:previous.animation,messages:previous.messages},true);setVisual(undefined);setZoom(0);}}
     catch(reason){setError(reason instanceof Error?reason.message:'Could not open this template.');}
     finally{if(mounted.current)setChangingTemplate(false);}
   };
@@ -611,7 +619,7 @@ function AssetPageContent() {
       const oldTemplate=communitySettings(previous),next=await ambassadorAsset(formatId,oldTemplate);
       if(!mounted.current||current.current?.id!==previous.id)return;
       const automaticTitle=oldTemplate?`${previous.community?.layout==='graphic'?graphicEventFormat.name:ambassadorFormats.find(format=>format.id===oldTemplate.format)!.name} · ${oldTemplate.city||'Community'}`:previous.title;
-      change({...previous,...next,id:previous.id,series:previous.series,title:previous.title===automaticTitle?next.title:previous.title,community:next.community,layouts:undefined});setZoom(0);
+      change({...previous,...next,id:previous.id,series:previous.series,title:previous.title===automaticTitle?next.title:previous.title,community:next.community,layouts:undefined},true);setZoom(0);
     }catch(reason){setError(reason instanceof Error?reason.message:'Could not open this template.');}
     finally{if(mounted.current)setChangingTemplate(false);}
   };
@@ -625,6 +633,7 @@ function AssetPageContent() {
   };
   const addAssetPage=async(afterId:string,kind:string)=>{
     if(busy||addingPage||changingTemplate||!current.current)return;
+    if(!canInsert&&['blank','source'].includes(kind))return;
     if(kind==='source'){sourceAfter.current=afterId;sourceUpload.current?.click();return;}
     setAddingPage(true);setError('');
     try{
@@ -728,17 +737,17 @@ function AssetPageContent() {
     <div className="lovable-canvas-tools">
 
 
-      <AssetLibrary open={libraryOpen} onOpenChange={setLibraryOpen}/>
-      <HtmlPresentationTools primitivesOnly imageTool={import.meta.env.DEV&&studioWorkspace==='lovable'?<ScreenImageMenu key={asset.id} disabled={busy||reading||changingTemplate||exporting} onImport={loadImage} onImportPage={loadWebPage}/>:undefined}/>
+      {canInsert&&<AssetLibrary open={libraryOpen} onOpenChange={setLibraryOpen}/>}
+      {canInsert&&<HtmlPresentationTools primitivesOnly imageTool={import.meta.env.DEV&&studioWorkspace==='lovable'?<ScreenImageMenu key={asset.id} disabled={busy||reading||changingTemplate||exporting} onImport={loadImage} onImportPage={loadWebPage}/>:undefined}/>}
       {studioWorkspace==='lovable'&&<Dropdown align="end" value={screenMode?undefined:isAppStudioAsset(asset)?'app-studio':'collaboration'} items={[{id:'collaboration',label:'Partnership'},{id:'app-studio',label:'App Studio'}]} onChange={value=>void switchBrandTemplate(value)} trigger={<Button variant="ghost" disabled={busy||changingTemplate} aria-label="Lovable template" trailingIcon={<Icon name="chevron-down" size={14}/>}>Template</Button>}/>}
       {studioWorkspace==='ambassadors'?<Dropdown align="end" value={templateFormat?.id} items={[...ambassadorFormats,graphicEventFormat].map(format=>({id:format.id,label:format.name,leadingIcon:<Icon name={format.width===format.height?'square':'rectangle-horizontal'} size={16} style={format.width<format.height?{transform:'rotate(90deg)'}:undefined}/>}))} onChange={value=>void switchCommunityTemplate(value)} trigger={<Button variant="ghost" disabled={busy||changingTemplate||exporting} className="asset-format-trigger" aria-label={`Community template: ${templateFormat?.name??'Custom'}`} trailingIcon={<Icon name="chevron-down" size={14}/>}>{templateFormat?.name??'Template'}</Button>}/>:<Dropdown align="end" value={asset.format} items={Object.entries(formats).map(([id,item])=>({id,label:item.label,leadingIcon:<Icon name={id==='square'?'square':'rectangle-horizontal'} size={16} style={id==='portrait'?{transform:'rotate(90deg)'}:undefined}/>}))} onChange={value=>{change(resizeAsset({...asset,editor:nativeDocument(asset)},value as AssetFormat,import.meta.env.DEV&&asset.editor?.pages.some(page=>page.sections.some(section=>section.columns.flat().some(block=>block.id==='holiday-motif')))));setZoom(0);}} trigger={<Button variant="ghost" disabled={busy} className="asset-format-trigger" aria-label={`Canvas format: ${formats[asset.format].label}`} leadingIcon={<Icon name={asset.format==='square'?'square':'rectangle-horizontal'} size={16} style={asset.format==='portrait'?{transform:'rotate(90deg)'}:undefined}/>} trailingIcon={<Icon name="chevron-down" size={14}/>}/>}/>}
       <span className="asset-tools-divider" aria-hidden="true"/>
       <Button className="lovable-mobile-design-toggle" variant="ghost" aria-label="Open design panel" leadingIcon={<Icon name="sliders-horizontal" size={16}/>} onClick={()=>setDesignOpen(value=>!value)}/>
-      {studioWorkspace==='ambassadors'&&<Tooltip label="Coming soon" side="bottom"><span className="studio-insert-tool"><Button variant="ghost" className="community-add-template" disabled>Add to templates</Button></span></Tooltip>}
+      {canInsert&&studioWorkspace==='ambassadors'&&<Tooltip label="Coming soon" side="bottom"><span className="studio-insert-tool"><Button variant="ghost" className="community-add-template" disabled>Add to templates</Button></span></Tooltip>}
       {videoProgress !== undefined ? <Tooltip label="Cancel export" side="bottom"><Button className="asset-export-control asset-export-progress" variant="primary" aria-label={`Cancel export, ${videoProgress}%`} onClick={() => videoExportAbort.current?.abort()}>Export<span className="asset-export-progress-value" aria-hidden="true">{videoProgress}%<Icon name="x" size={12}/></span></Button></Tooltip> : <Dropdown align="end" items={[...[1,2].map(scale=>({id:scale===1?'png':'png-2x',label:`.png · ${scale}× · ${assetDimensions(asset).width*scale} × ${assetDimensions(asset).height*scale}`,leadingIcon:<Icon name="image" size={16}/>})),...(canExportVideoAsset(asset)?[{id:'video-asset',label:'Video · Current asset',leadingIcon:<Icon name="video" size={16}/>}]:[]),...(canExportAnimation(pages)?[{id:'video',label:'Video · All assets',leadingIcon:<Icon name="video" size={16}/>}]:[]),{id:'source',label:'Editable source',leadingIcon:<Icon name="file-text" size={16}/>},...(pages.length>1?[{id:'collection-source',label:'All editable sources',leadingIcon:<Icon name="files" size={16}/>},{id:'all',label:'All assets · ZIP',leadingIcon:<Icon name="archive" size={16}/>}]:[])]} onChange={value=>{if(value==='png')void exportImage();else if(value==='png-2x')void exportImage(2);else if(value==='video-asset')void exportAnimation('asset');else if(value==='video')void exportAnimation();else if(value==='all')void exportAll();else if(value==='collection-source')exportCollectionSource(pages,asset.id);else exportSource(asset);}} trigger={<Button className="asset-export-control" variant="primary" disabled={busy||changingTemplate||exporting} loading={exporting}>Export</Button>}/>}
     </div>
   </div>;
-  return <CommunityRenderErrors.Provider value={communityErrors}><WorkspaceRuntimeContext.Provider value={runtime}><WorkspaceSelectionContext.Provider value={{visual,setVisual}}><div className="workspace-editor asset-app" data-asset data-workspace={studioWorkspace} data-view="editor" style={assetTheme as CSSProperties} data-history={historyVersion} onDragOverCapture={event => { if ((event.target as Element).closest('.we-chat')) setDragging(false); }} onDragOver={event => { if (!event.defaultPrevented && !(event.target as Element).closest('.we-chat') && event.dataTransfer.types.includes('Files') && !busy) { event.preventDefault(); setDragging(true); } }} onDragLeave={event => { if (!event.currentTarget.contains(event.relatedTarget as Node)) setDragging(false); }} onDrop={event => { setDragging(false); if(event.defaultPrevented || (event.target as Element).closest('.we-chat'))return; event.preventDefault(); void loadImage(event.dataTransfer.files[0]); }}>
+  return <CommunityRenderErrors.Provider value={communityErrors}><WorkspaceRuntimeContext.Provider value={runtime}><WorkspaceSelectionContext.Provider value={{visual,setVisual}}><div className="workspace-editor asset-app" data-asset data-workspace={studioWorkspace} data-view="editor" style={assetTheme as CSSProperties} data-history={historyVersion} onDragOverCapture={event => { if ((event.target as Element).closest('.we-chat')) setDragging(false); }} onDragOver={event => { if (!event.defaultPrevented && !(event.target as Element).closest('.we-chat') && event.dataTransfer.types.includes('Files') && canInsert && !busy) { event.preventDefault(); setDragging(true); } }} onDragLeave={event => { if (!event.currentTarget.contains(event.relatedTarget as Node)) setDragging(false); }} onDrop={event => { setDragging(false); if(event.defaultPrevented || (event.target as Element).closest('.we-chat'))return; event.preventDefault(); void loadImage(event.dataTransfer.files[0]); }}>
     <input ref={upload} type="file" hidden accept="image/png,image/jpeg,image/webp,video/mp4,video/webm,video/ogg,video/quicktime,.asset.json,.json" aria-label="Upload image, video or editable source" onChange={event => { void loadImage(event.target.files?.[0]); event.target.value = ''; }} />
     <input ref={sourceUpload} type="file" hidden accept=".asset.json,.json" aria-label="Import editable source into collection" onChange={event=>{const file=event.target.files?.[0],after=sourceAfter.current;event.target.value='';sourceAfter.current=undefined;if(file&&after)void importSource(file,after);}}/>
 

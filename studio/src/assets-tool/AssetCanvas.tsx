@@ -24,10 +24,11 @@ const AssetThumbnail=memo(function AssetThumbnail({asset}:{asset:AssetDocument})
  return <div className="community-page-thumbnail" ref={host} aria-hidden="true" inert><div style={{width:size.width*scale,height:size.height*scale}}><div style={{transform:`scale(${scale})`,transformOrigin:'top left'}}><Artwork asset={asset}/></div></div></div>;
 });
 function AddAsset({disabled,onAdd,compact=false}:{disabled:boolean;onAdd:(kind:string)=>void;compact?:boolean}){
+ const canInsert=useMakerDesign()?.canInsert!==false;
  return <Dropdown placement="top" align="center" items={[
-  {id:'blank',label:'Blank asset',leadingIcon:<Icon name="plus" size={16}/>},
+  ...(canInsert?[{id:'blank',label:'Blank asset',leadingIcon:<Icon name="plus" size={16}/>}]:[]),
   {id:'duplicate',label:'Duplicate asset',leadingIcon:<Icon name="copy" size={16}/>},
-  {id:'source',label:'Import editable source',leadingIcon:<Icon name="file-up" size={16}/>},
+  ...(canInsert?[{id:'source',label:'Import editable source',leadingIcon:<Icon name="file-up" size={16}/>}]:[]),
   {kind:'separator'},...workspaceAssetTemplates(studioWorkspace).map(format=>({id:format.id,label:format.name,leadingIcon:<Icon name={format.width===format.height?'square':'rectangle-horizontal'} size={16}/>})),
  ]} onChange={onAdd} trigger={<Button variant="ghost" disabled={disabled} className={compact?'community-page-add-tile':'community-page-add'} aria-label="Add asset" leadingIcon={<Icon name="plus" size={16}/>} trailingIcon={!compact?<Icon name="chevron-down" size={14}/>:undefined}>{!compact&&'Add asset'}</Button>}/>;
 }
@@ -59,7 +60,7 @@ export function AssetCanvas({toolbar,asset,pages,busy,generating,zoom,onZoom,onC
  useLayoutEffect(()=>{
   if(!maker)return;
   const beginInsert=()=>{
-   if(busy)return false;
+   if(busy||!maker.canInsert)return false;
    if(playback.active||grid)flushSync(()=>{
     if(playback.active){const page=pages[playback.position.index];if(page&&page.id!==asset.id){expectedActive.current=page.id;onOpen(page.id);}playback.reset();}
     setGrid(false);
@@ -68,7 +69,7 @@ export function AssetCanvas({toolbar,asset,pages,busy,generating,zoom,onZoom,onC
   };
   maker.beginInsert.current=beginInsert;
   return()=>{if(maker.beginInsert.current===beginInsert)maker.beginInsert.current=undefined;};
- },[busy,playback.active,playback.position.index,grid,asset.id,pages,onOpen,maker?.beginInsert]);
+ },[maker?.canInsert,busy,playback.active,playback.position.index,grid,asset.id,pages,onOpen,maker?.beginInsert]);
  useLayoutEffect(()=>{
   if(!selectionRequest||busy)return;
   if(playback.active)playback.reset();

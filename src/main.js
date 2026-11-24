@@ -16,6 +16,8 @@ import { exportBadge } from './export.js';
 import { guidelines } from './guidelines.js';
 import { studio } from './studio.js';
 import { gallery, mountGallery } from './gallery.js';
+import {getPreviewRole} from './local-access.js';
+import {previewRoute} from '../shared/previewAccess.mjs';
 
 const makeHomePreview = import.meta.env.DEV ? await import('./make-home.js') : null;
 
@@ -48,7 +50,17 @@ function creator(){
 }
 function options(){return {tier:state.tier,year:/^20\d{2}$/.test(state.year)?state.year:'2026',partnerName:state.partnerName||'Logo',partnerImage:state.partnerImage,symbolSize:state.symbolSize};}
 function updatePreview(){const target=document.querySelector('#live-badge');if(!target)return;target.innerHTML=badgeSvg(state.format,{...options(),guides:state.guides,clearSpace:state.guides});const geo=badgeGeometry(state.format,state.tier,options());target.className=geo.format.layout;document.querySelector('#badge-dimensions').textContent=`${Math.ceil(geo.width)} × ${Math.ceil(geo.height)} · Vector master`;}
+function syncPreviewNavigation(){
+ if(!makeHomePreview)return;
+ const external=getPreviewRole()==='external';
+ document.documentElement.dataset.previewRole=getPreviewRole();
+ document.documentElement.dataset.previewWorkspace=state.workspace;
+ document.querySelectorAll('[data-workspace]').forEach(button=>{button.hidden=external&&!['lovable','partners'].includes(button.dataset.workspace);});
+ document.querySelectorAll('.section-switcher [data-view]').forEach(button=>{button.hidden=external&&state.workspace==='lovable'&&button.dataset.view!=='guidelines';});
+}
 function render(view=state.view,{reset=true}={}){
+ const allowed=previewRoute(getPreviewRole(),{...parseRoute(),workspace:state.workspace,view});
+ if(allowed.workspace!==state.workspace||allowed.view!==view){state.workspace=allowed.workspace;view=allowed.view;history.replaceState(null,'',route(view,allowed.section));}
  showWorkspaceTransition(state.workspace);
  const showLibrary=view==='library';if(showLibrary||view==='badge')view='create';
  const requestedBadge=parseRoute().section,badge=currentFormats().some(format=>format.id===requestedBadge)||(state.workspace==='ambassadors'&&[ambassadorDefaultFormat,'event-graphic'].includes(requestedBadge))?requestedBadge:undefined,starter=state.workspace==='partners'&&requestedBadge==='grow-your-business';
@@ -57,10 +69,10 @@ function render(view=state.view,{reset=true}={}){
  state.view=view;guidelineNavigation?.destroy();guidelineNavigation=undefined;assemblyObserver?.disconnect();cleanupGallery?.();cleanupGallery=undefined;cleanupAmbassadors?.();cleanupAmbassadors=undefined;cleanupBrand?.();cleanupBrand=undefined;cleanupAgentGuide?.();cleanupAgentGuide=undefined;cleanupTech?.();cleanupTech=undefined;
  const brand=state.workspace==='lovable',ambassadors=state.workspace==='ambassadors';
  const asset=/^[a-f0-9-]{36}$/i.test(requestedBadge??'')?requestedBadge:undefined;
- app.innerHTML=showMakeHome?makeHomePreview.makeHome(state.workspace):state.workspace==='tech-blog'?(view==='gallery'?techGallery():view==='create'?studio({workspace:'tech-blog',badge:requestedBadge==='cover'||!requestedBadge?'cover':undefined,asset:/^[a-f0-9-]{36}$/i.test(requestedBadge??'')?requestedBadge:undefined}):techGuidelines({icon})):brand?(view==='gallery'?brandGallery():view==='create'?studio({workspace:'lovable',badge:['collaboration','app-studio',...(import.meta.env.DEV?['holiday','display-ads','screen-demo']:[])].includes(requestedBadge)?requestedBadge:!requestedBadge?'collaboration':undefined,asset:/^[a-f0-9-]{36}$/i.test(requestedBadge??'')?requestedBadge:undefined}):brandGuidelines({icon})):view==='gallery'?(ambassadors?ambassadorGallery():gallery()):view==='create'?studio({library:showLibrary,badge,asset,starter,workspace:state.workspace}):ambassadors?ambassadorGuidelines({icon}):guidelines(state.tier,{icon,formatCard,sections});
+ app.innerHTML=showMakeHome?makeHomePreview.makeHome(state.workspace):state.workspace==='tech-blog'?(view==='gallery'?techGallery():view==='create'?studio({workspace:'tech-blog',badge:requestedBadge==='cover'||!requestedBadge?'cover':undefined,asset:/^[a-f0-9-]{36}$/i.test(requestedBadge??'')?requestedBadge:undefined}):techGuidelines({icon})):brand?(view==='gallery'?brandGallery():view==='create'?studio({workspace:'lovable',badge:['collaboration','app-studio',...(import.meta.env.DEV?['holiday','display-ads','screen-demo']:[])].includes(requestedBadge)?requestedBadge:!requestedBadge?'collaboration':undefined,asset:/^[a-f0-9-]{36}$/i.test(requestedBadge??'')?requestedBadge:undefined}):brandGuidelines({icon})):view==='gallery'?(ambassadors?ambassadorGallery():makeHomePreview&&getPreviewRole()==='external'?makeHomePreview.externalPartnerGallery():gallery()):view==='create'?studio({library:showLibrary,badge,asset,starter,workspace:state.workspace}):ambassadors?ambassadorGuidelines({icon}):guidelines(state.tier,{icon,formatCard,sections});
  if(showMakeHome)cleanupMakeHome=makeHomePreview.mountMakeHome(app,state.workspace);
  document.querySelectorAll('[data-workspace]').forEach(button=>{const selected=!brand&&button.dataset.workspace===state.workspace;button.classList.toggle('is-selected',selected);if(button.dataset.workspace!=='lovable')button.setAttribute('aria-pressed',String(selected));});
- updateWorkspaceMetadata(state.workspace);
+ updateWorkspaceMetadata(state.workspace);syncPreviewNavigation();
  if(state.workspace==='tech-blog'&&view!=='create')cleanupTech=mountTech(app);
  if(view==='guidelines')cleanupAgentGuide=mountAgentGuide(app,toast);
  if(brand)cleanupBrand=mountBrandHub(app,toast);
@@ -111,7 +123,14 @@ syncThemeButton();
 function openHash(){const {workspace,view,section}=parseRoute();state.workspace=workspace;if(view==='badge'){navigate('create',currentFormats().some(format=>format.id===section)?section:undefined);return;}const valid=['gallery','library','guidelines','create'].includes(view)?view:'gallery';render(valid);if(valid==='guidelines'&&currentSections().some(([id])=>id===section))guidelineNavigation?.go(section,'instant');}
 window.addEventListener('hashchange',openHash);
 const typographyReady=prepareTypography();
-makeHomePreview?.mountProfilePreview(filter=>{makeHomePreview.setGalleryFilter(state.workspace,filter);navigate('create');});
+makeHomePreview?.mountProfilePreview((role,previous)=>{
+ const current=parseRoute(),allowed=previewRoute(role,current);
+ if(document.querySelector('.partner-studio iframe')&&current.workspace===allowed.workspace&&current.view===allowed.view){
+  if((role==='external')!==(previous==='external')){navigate('create');return;}
+  syncPreviewNavigation();return;
+ }
+ openHash();
+});
 if(parseRoute().workspace==='partners')await typographyReady;
 openHash();
 warmGallery(parseRoute().workspace);

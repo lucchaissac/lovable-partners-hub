@@ -221,6 +221,7 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
     requestAnimationFrame(()=>onSelect(result.ids.length===1?root.current?.querySelector(`#section-${CSS.escape(result.ids[0])}`)||undefined:undefined));
   }
   function action(action:SelectionAction){
+    if(action==='duplicate'&&makerDesign?.canInsert===false)return;
     if(sectionSelection){sectionAction(action);return;}
     if(locked&&action!=='unlock'&&action!=='lock')return;
     const result=htmlSelectionAction(source.current,ids,action);save(result.state,result.copies);choose(result.ids);
@@ -473,7 +474,7 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
       if(!sectionSelection&&['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)&&!e.metaKey&&!e.ctrlKey){e.preventDefault();const amount=e.shiftKey?10:1;nudge(e.key==='ArrowRight'?amount:e.key==='ArrowLeft'?-amount:0,e.key==='ArrowDown'?amount:e.key==='ArrowUp'?-amount:0);}
     };
     document.addEventListener('pointerdown',outside);document.addEventListener('keydown',key);return()=>{document.removeEventListener('pointerdown',outside);document.removeEventListener('keydown',key);};
-  },[enabled,ids,members,locked,one,sectionIds.join(','),selectedSection]);
+  },[enabled,ids,members,locked,one,sectionIds.join(','),selectedSection,makerDesign?.canInsert]);
   useEffect(()=>{
     if(!enabled||!fixedCanvas)return;
     const editingTarget=(event:ClipboardEvent)=>event.defaultPrevented||!(event.target instanceof Element)||!!event.target.closest('input,textarea,[contenteditable=true],[role=menu],[role=dialog],.workspace-widget-panelhost,.we-chat');
@@ -485,6 +486,7 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
       event.preventDefault();
     };
     const paste=(event:ClipboardEvent)=>{
+      if(makerDesign?.canInsert===false)return;
       if(editingTarget(event)||!event.clipboardData)return;
       const plain=event.clipboardData.getData('text/plain'),raw=event.clipboardData.getData(canvasClipboardType)||(plain.startsWith(canvasClipboardPrefix)?plain.slice(canvasClipboardPrefix.length):'');
       if(!raw||raw.length>80_000_000)return;
@@ -498,7 +500,7 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
     };
     document.addEventListener('copy',copy);document.addEventListener('paste',paste);
     return()=>{document.removeEventListener('copy',copy);document.removeEventListener('paste',paste);};
-  },[enabled,fixedCanvas,members,pageId,imageSources]);
+  },[enabled,fixedCanvas,members,pageId,imageSources,makerDesign?.canInsert]);
   const handlers=useRef({finish,move,startMarquee});handlers.current={finish,move,startMarquee};
   useEffect(()=>{if(!enabled)return;const up=()=>handlers.current.finish(),cancel=()=>handlers.current.finish(true);window.addEventListener('pointerup',up,true);window.addEventListener('pointercancel',cancel,true);window.addEventListener('blur',cancel);return()=>{window.removeEventListener('pointerup',up,true);window.removeEventListener('pointercancel',cancel,true);window.removeEventListener('blur',cancel);};},[enabled]);
   useEffect(()=>{
@@ -554,14 +556,14 @@ export function useHtmlCanvasSelection({ root, state, pageId, editable, zoom = 1
           {one?.kind==='media'&&one.format==='Video'&&toolButton('Play or pause video','play',()=>{const video=element(one.id)?.querySelector('video');if(video?.paused)void video.play().catch(()=>{});else video?.pause();})}
           {one?.kind==='image'&&!one.badge&&!one.ambassador&&!one.brandRole&&!isTechArtwork(one)&&toolButton('Replace image','image',()=>onReplace(one.id),locked)}
           {multipleSections&&<>{toolButton('Move selected sections up','arrow-up',()=>action('up'),locked||!page.sections.some((s,i)=>sectionIds.includes(s.id)&&i>0&&!sectionIds.includes(page.sections[i-1].id)))}{toolButton('Move selected sections down','arrow-down',()=>action('down'),locked||!page.sections.some((s,i)=>sectionIds.includes(s.id)&&i<page.sections.length-1&&!sectionIds.includes(page.sections[i+1].id)))}</>}
-          {!(fixedCanvas&&sectionSelection)&&toolButton('Duplicate selection','copy',()=>action('duplicate'),locked)}
+          {makerDesign?.canInsert!==false&&!(fixedCanvas&&sectionSelection)&&toolButton('Duplicate selection','copy',()=>action('duplicate'),locked)}
           {!(fixedCanvas&&sectionSelection)&&toolButton('Delete selection','trash-2',()=>action('delete'),locked)}
           {!(fixedCanvas&&sectionSelection)&&<SelectionMenu open={menu} onOpenChange={setMenu} items={[
             ...(one?.kind==='text'?[{id:'bullet',label:one.value.list==='bullet'?'Remove bullet':'Add bullet',leadingIcon:<Icon name="list" size={16}/>,disabled:locked}]:[]),
             ...(!communityCanvas&&studioWorkspace!=='lovable'&&studioWorkspace!=='tech-blog'&&one?.kind==='image'&&!one.badge&&!one.ambassador?[{id:'play-icon',label:one.value.playIcon?'Hide play icon':'Show play icon',disabled:locked}]:[]),
             ...(one?[{id:'edit',label:one.kind==='text'?'Edit text':'Edit content',leadingIcon:<Icon name="pencil" size={16}/>,disabled:locked}]:[]),
             ...(layeredSelection?layerItems:[{id:'up',label:'Move up',leadingIcon:<Icon name="arrow-up" size={16}/>,disabled:locked},{id:'down',label:'Move down',leadingIcon:<Icon name="arrow-down" size={16}/>,disabled:locked},{id:'first',label:'Move to beginning',disabled:locked},{id:'last',label:'Move to end',disabled:locked}]),
-            {kind:'separator'}, {id:'duplicate',label:'Duplicate',leadingIcon:<Icon name="copy" size={16}/>,disabled:locked},
+            {kind:'separator'}, {id:'duplicate',label:'Duplicate',leadingIcon:<Icon name="copy" size={16}/>,disabled:locked||makerDesign?.canInsert===false},
             {id:locked?'unlock':'lock',label:locked?'Unlock':'Lock',leadingIcon:<Icon name={locked?'lock':'lock-open'} size={16}/>},
             {id:'delete',label:'Delete',leadingIcon:<Icon name="trash-2" size={16}/>,disabled:locked},
             ...(one?[{kind:'separator' as const},{id:'position',label:one.editor?.position==='absolute'?'Return to normal flow':'Absolute position',leadingIcon:<Icon name="move" size={16}/>,disabled:locked}]:[])

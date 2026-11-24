@@ -131,6 +131,7 @@ export function HtmlEditorV1({initialDesign, canvasOnly=false, zoom=1, imageSour
     insertPanel.showAt(anchor,label=>{const id=addSection(index,false);if(label!=='Section')chooseContent(label,id,0,0);});
   };
   const insertBlock = (section: string, column: number, index: number, block: HtmlBlock) => {
+    if(makerDesign?.canInsert===false)return;
     if(canvasOnly){
       const width=root.current?.offsetWidth??1200;
       const height=stateRef.current.pages.flatMap(p=>p.sections).find(s=>s.id===section)?.minHeight??738;

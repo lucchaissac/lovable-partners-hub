@@ -111,6 +111,7 @@ syncThemeButton();
 function openHash(){const {workspace,view,section}=parseRoute();state.workspace=workspace;if(view==='badge'){navigate('create',currentFormats().some(format=>format.id===section)?section:undefined);return;}const valid=['gallery','library','guidelines','create'].includes(view)?view:'gallery';render(valid);if(valid==='guidelines'&&currentSections().some(([id])=>id===section))guidelineNavigation?.go(section,'instant');}
 window.addEventListener('hashchange',openHash);
 const typographyReady=prepareTypography();
+makeHomePreview?.mountProfilePreview(filter=>{makeHomePreview.setGalleryFilter(state.workspace,filter);navigate('create');});
 if(parseRoute().workspace==='partners')await typographyReady;
 openHash();
 warmGallery(parseRoute().workspace);

@@ -1,4 +1,5 @@
-import {createElement, ArrowUp, Plus, X} from 'lucide';
+import {createElement, ArrowUp, Plus, X, Images, Users} from 'lucide';
+import profileAvatar from './local-profile-avatar.webp';
 import {badgeSvg, FORMATS} from './badges.js';
 import {brandGalleryAssets} from './lovable/galleryMedia.js';
 import {partnershipSpecimen} from './lovable/partnership.js';
@@ -14,10 +15,10 @@ const drafts = new Map();
 const escape = value => String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const glyph = shape => createElement(shape, {width:18, height:18, 'stroke-width':1.8, 'aria-hidden':'true'}).outerHTML;
 const config = {
-  lovable: {title:'Make something Lovable.', name:'Lovable', prefix:'#brand/create', starter:'collaboration', logo:'/brand/assets/full-white-pure.svg', lightLogo:'/brand/assets/full-black.svg'},
-  partners: {title:'Make your partnership shine.', name:'Lovable Partners', prefix:'#create', starter:'grow-your-business'},
-  ambassadors: {title:'Make something for your community.', name:'Lovable Community', prefix:'#ambassadors/create', starter:'event-square', logo:'/ambassadors/assets/lovable-community.svg', lightLogo:'/ambassadors/assets/lovable-community-dark.svg'},
-  'tech-blog': {title:'Make your next story.', name:'Lovable Tech blog', prefix:'#tech-blog/create', starter:'cover', logo:'/tech-blog/tech-logo.svg'},
+  lovable: {name:'Lovable', prefix:'#brand/create', starter:'collaboration', logo:'/brand/assets/full-white-pure.svg', lightLogo:'/brand/assets/full-black.svg'},
+  partners: {name:'Lovable Partners', prefix:'#create', starter:'grow-your-business'},
+  ambassadors: {name:'Lovable Community', prefix:'#ambassadors/create', starter:'event-square', logo:'/ambassadors/assets/lovable-community.svg', lightLogo:'/ambassadors/assets/lovable-community-dark.svg'},
+  'tech-blog': {name:'Lovable Tech blog', prefix:'#tech-blog/create', starter:'cover', logo:'/tech-blog/tech-logo.svg'},
 };
 const image = (src, name, width, height) => `<img src="${src}" alt="${escape(name)}" width="${width}" height="${height}" loading="lazy" decoding="async"/>`;
 
@@ -66,8 +67,7 @@ export function makeHome(workspace) {
     : `<img class="make-home-logo-dark" src="${brand.logo}" alt="${brand.name}"/><img class="make-home-logo-light${brand.lightLogo ? '' : ' make-home-monochrome'}" src="${brand.lightLogo || brand.logo}" alt="${brand.name}"/>`;
   return `<section class="make-home" data-make-workspace="${workspace}" aria-label="Make">
     <div class="make-home-intro">
-      <div class="make-home-identity">${logo}</div>
-      <h1>${brand.title}</h1>
+      <h1 class="make-home-identity" aria-label="${brand.name}">${logo}</h1>
       <form class="make-home-composer">
         <label class="sr-only" for="make-home-prompt">Describe your design for ${brand.name}</label>
         <textarea id="make-home-prompt" name="prompt" rows="2" placeholder="Work with Studio..." maxlength="6000"></textarea>
@@ -90,6 +90,32 @@ export function makeHome(workspace) {
       <div class="make-home-grid"></div>
     </section>
   </section>`;
+}
+
+export function setGalleryFilter(workspace, filter) {
+  const draft = drafts.get(workspace) || {prompt:'', filter:'mine', files:[]};
+  draft.filter = filter;
+  drafts.set(workspace, draft);
+}
+
+export function mountProfilePreview(openGallery) {
+  const profile = document.createElement('div');
+  profile.className = 'hub-profile';
+  profile.innerHTML = `<button class="icon-control hub-profile-trigger" popovertarget="hub-profile-menu" aria-label="Open Luc’s profile" aria-haspopup="dialog" aria-expanded="false" data-hub-tooltip="Your profile"><img src="${profileAvatar}" alt="" width="32" height="32"/></button>
+    <div class="hub-profile-menu" id="hub-profile-menu" popover aria-label="Your profile" role="dialog">
+      <div class="hub-profile-identity"><img src="${profileAvatar}" alt="" width="40" height="40"/><div><strong>Luc Chaissac</strong><span>Personal workspace</span></div></div>
+      <div class="hub-profile-actions"><button type="button" data-profile-gallery="mine">${glyph(Images)}<span>My gallery</span></button><button type="button" data-profile-gallery="team">${glyph(Users)}<span>Team gallery</span></button></div>
+    </div>`;
+  document.querySelector('.header-end').append(profile);
+  const panel = profile.querySelector('[popover]'), trigger = profile.querySelector('.hub-profile-trigger');
+  panel.addEventListener('toggle', event => trigger.setAttribute('aria-expanded', String(event.newState === 'open')));
+  panel.addEventListener('click', event => {
+    const button = event.target.closest('[data-profile-gallery]');
+    if (!button) return;
+    panel.hidePopover();
+    openGallery(button.dataset.profileGallery);
+    document.querySelector(`[data-make-filter="${button.dataset.profileGallery}"]`)?.focus({preventScroll:true});
+  });
 }
 
 export function mountMakeHome(root, workspace) {

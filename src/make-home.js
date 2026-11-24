@@ -49,11 +49,11 @@ function collections(workspace) {
   }
   const source = document.createElement('div');
   source.innerHTML = gallery();
-  const originals = [['3:76',2680,1445],['4:118',2679,1444],['4:154',1,1],['3:52',1,1],['4:209',16,9],['4:119',1706,908]].map(([id,width,height]) => {
+  const originals = [['3:76',2680,1445,'Grow your business'],['4:118',2679,1444,'Partner programme'],['4:154',1,1,'Storefront'],['3:52',1,1,'Partner badge'],['4:209',16,9,'Team portrait'],['4:119',1706,908,'Locomotive']].map(([id,width,height,name]) => {
     const node = source.querySelector(`[data-gallery-node="${id}"]`);
     // Use the existing authored composition; posters keep this home lightweight.
     node.querySelectorAll('video,canvas').forEach(media => media.remove());
-    return {name:node.getAttribute('aria-label'), html:node.innerHTML, className:node.className.replace('gallery-item',''), width, height, template:id === '3:76' ? 'grow-your-business' : undefined};
+    return {name, html:node.innerHTML, className:node.className.replace('gallery-item',''), width, height, template:id === '3:76' ? 'grow-your-business' : undefined};
   });
   const templates = FORMATS.map(format => ({name:format.name, width:16, height:9, template:format.id,
     html:`<div class="make-home-badge">${badgeSvg(format.id, {tier:'Select', year:'2026', partnerName:'Logo'})}</div>`}));
@@ -122,6 +122,9 @@ export function mountMakeHome(root, workspace) {
   const home = root.querySelector('.make-home');
   if (!home) return () => {};
   const brand = config[workspace], assets = collections(workspace);
+  // Illustrative metadata only: the prototype does not read or edit saved drafts.
+  const editedLabels = ['Edited just now', 'Edited yesterday', 'Edited 2 days ago', 'Edited 5 days ago', 'Edited 1 week ago'];
+  [...new Set(Object.values(assets).flat())].forEach((asset, index) => { asset.editedLabel = editedLabels[index % editedLabels.length]; });
   const draft = drafts.get(workspace) || {prompt:'', filter:'mine', files:[]};
   drafts.set(workspace, draft);
   const controller = new AbortController(), options = {signal:controller.signal};
@@ -136,9 +139,10 @@ export function mountMakeHome(root, workspace) {
     home.querySelectorAll('[data-make-filter]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.makeFilter === filter)));
     grid.innerHTML = assets[filter].map(asset => {
       const content = `<div class="make-home-art ${asset.className || ''}" style="aspect-ratio:${asset.width}/${asset.height};width:${Math.min(100, (asset.width / asset.height) / (16/10) * 100)}%">${asset.html}</div>`;
-      return asset.template
+      const preview = asset.template
         ? `<a class="make-home-card" href="${brand.prefix}/${asset.template}" aria-label="Open ${escape(asset.name)} in Studio">${content}</a>`
         : `<figure class="make-home-card gallery-item" aria-label="${escape(asset.name)}">${content}</figure>`;
+      return `<article class="make-home-item">${preview}<div class="make-home-caption"><img src="${profileAvatar}" alt="Created by Luc Chaissac" width="32" height="32"/><div class="make-home-caption-copy"><h2>${escape(asset.name)}</h2><p>${asset.editedLabel}</p></div></div></article>`;
     }).join('');
     cleanupTech = mountTech(grid);
     cleanupGallery = mountGallery(grid);

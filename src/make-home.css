@@ -44,6 +44,12 @@
 :root .make-home-new[data-hub-tooltip]::after { left: auto; right: 0; transform: none; }
 :root .make-home-icon[data-hub-tooltip]::after { left: 0; transform: none; }
 .make-home-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+.make-home-item { min-width: 0; }
+.make-home-caption { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+.make-home-caption > img { display: block; flex: none; border-radius: 50%; object-fit: cover; }
+.make-home-caption-copy { min-width: 0; }
+.make-home-caption h2 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; font-weight: 600; line-height: 20px; }
+.make-home-caption p { color: var(--color-muted); font-size: 12px; font-weight: 600; line-height: 18px; }
 .make-home-card { display: flex; align-items: center; justify-content: center; aspect-ratio: 16 / 10; width: 100%; min-width: 0; margin: 0; background: var(--color-surface); border-radius: 8px; position: relative; overflow: hidden; isolation: isolate; cursor: pointer; }
 .make-home-card:focus-visible { outline: 2px solid var(--color-guide); outline-offset: 4px; }
 .make-home-art { position: relative; flex: none; overflow: hidden; isolation: isolate; background: #1b1b1b; }

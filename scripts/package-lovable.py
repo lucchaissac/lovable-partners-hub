@@ -10,6 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 source = Path(sys.argv[1]).expanduser().resolve()
 target = Path(sys.argv[2]).expanduser().resolve()
+max_bytes = int(sys.argv[3]) if len(sys.argv) > 3 else None
 if target.exists():
     raise SystemExit('Choose a new archive path.')
 manifest = json.loads((source / 'docs/SOURCE_MANIFEST.json').read_text())
@@ -52,6 +53,9 @@ with zipfile.ZipFile(target) as archive:
     bad=archive.testzip()
     if bad:
         raise SystemExit('ZIP integrity check failed: '+bad)
+if max_bytes is not None and target.stat().st_size >= max_bytes:
+    target.unlink()
+    raise SystemExit(f'Archive must be smaller than {max_bytes:,} bytes.')
 digest=hashlib.sha256(target.read_bytes()).hexdigest()
 target.with_suffix('.zip.sha256').write_text(f'{digest}  {target.name}\n')
 print(json.dumps({'archive':str(target),'files':len(paths),'bytes':target.stat().st_size,'sha256':digest,'privacyAudit':'passed','integrity':'passed'},indent=2))

@@ -1,0 +1,350 @@
+{
+  "title": "A shared brand brain for our team and agents",
+  "date": "2026-11-26",
+  "intent": "Target vision and user-supplied project status",
+  "width": 1600,
+  "height": 1280,
+  "description": "Vision for the Lovable Brand Hub: designers publish from any creative tool to a central source of truth and brand execution layer. Lovable teams and external partners have direct access, with full design-team control and granular permissions for others. Hue is the Creative OS orchestrator: it calls specialized Brand Hub agents and receives a link to an individual asset or a multi-asset playbook. Other agents and tools use the same brand intelligence. The Hub hosts campaigns, playbooks, gallery, guidelines, assets, Makers and specialized agents per brand or sub-brand, with bulk upload and creation, direct editing, exports and sharing. Access is available through Lovable, Web, Slack, MCP and other tools. Project status supplied by Luc: core primitives achieved; agents and sub-agents in progress; roles, permissions and tool integrations next. The diagram describes the target vision, not a claim that planned integrations or permissions already ship.",
+  "labels": [
+    {
+      "id": "headline-1",
+      "x": 800,
+      "y": 126,
+      "value": "A shared brand brain",
+      "size": 66,
+      "weight": 700,
+      "fill": "#1b1b1b",
+      "align": "middle"
+    },
+    {
+      "id": "headline-2",
+      "x": 800,
+      "y": 196,
+      "value": "for our team and agents.",
+      "size": 66,
+      "weight": 700,
+      "fill": "#1b1b1b",
+      "align": "middle"
+    },
+    {
+      "id": "ambition",
+      "x": 800,
+      "y": 250,
+      "value": "One source of truth. A brand factory at scale.",
+      "size": 26,
+      "weight": 600,
+      "fill": "#65635f",
+      "align": "middle"
+    },
+    {
+      "id": "people",
+      "x": 800,
+      "y": 342,
+      "value": "Lovable teams & external partners",
+      "size": 28,
+      "weight": 700,
+      "fill": "#1b1b1b",
+      "align": "middle"
+    },
+    {
+      "id": "permissions",
+      "x": 800,
+      "y": 380,
+      "value": "Design team: full control · Others: granular permissions",
+      "size": 21,
+      "weight": 600,
+      "fill": "#65635f",
+      "align": "middle"
+    },
+    {
+      "id": "direct-access-label",
+      "x": 824,
+      "y": 427,
+      "value": "Direct access",
+      "size": 18,
+      "weight": 600,
+      "fill": "#65635f",
+      "align": "start"
+    },
+    {
+      "id": "designers",
+      "x": 88,
+      "y": 562,
+      "value": "Designers",
+      "size": 32,
+      "weight": 700,
+      "fill": "#1b1b1b",
+      "align": "start"
+    },
+    {
+      "id": "design-tools",
+      "x": 88,
+      "y": 603,
+      "value": "Figma · Paper · After Effects",
+      "size": 21,
+      "weight": 600,
+      "fill": "#65635f",
+      "align": "start"
+    },
+    {
+      "id": "any-creative-tool",
+      "x": 88,
+      "y": 634,
+      "value": "Or any creative tool",
+      "size": 21,
+      "weight": 600,
+      "fill": "#65635f",
+      "align": "start"
+    },
+    {
+      "id": "handoff-content",
+      "x": 88,
+      "y": 682,
+      "value": "Rules, assets & playbooks",
+      "size": 21,
+      "weight": 600,
+      "fill": "#65635f",
+      "align": "start"
+    },
+    {
+      "id": "handoff-label",
+      "x": 503,
+      "y": 587,
+      "value": "Publish",
+      "size": 18,
+      "weight": 600,
+      "fill": "#65635f",
+      "align": "middle"
+    },
+    {
+      "id": "hub-name",
+      "x": 800,
+      "y": 579,
+      "value": "Brand Hub",
+      "size": 40,
+      "weight": 700,
+      "fill": "#1b1b1b",
+      "align": "middle"
+    },
+    {
+      "id": "hub-purpose",
+      "x": 800,
+      "y": 622,
+      "value": "Brand intelligence",
+      "size": 23,
+      "weight": 600,
+      "fill": "#1b1b1b",
+      "align": "middle"
+    },
+    {
+      "id": "hub-purpose-execution",
+      "x": 800,
+      "y": 652,
+      "value": "& creative execution",
+      "size": 23,
+      "weight": 600,
+      "fill": "#1b1b1b",
+      "align": "middle"
+    },
+    {
+      "id": "hub-resources",
+      "x": 800,
+      "y": 710,
+      "value": "Gallery · Guidelines · Assets",
+      "size": 19,
+      "weight": 600,
+      "fill": "#65635f",
+      "align": "middle"
+    },
+    {
+      "id": "hub-execution",
+      "x": 800,
+      "y": 740,
+      "value": "Makers · Specialized agents",
+      "size": 19,
+      "weight": 600,
+      "fill": "#65635f",
+      "align": "middle"
+    },
+    {
+      "id": "hub-scope",
+      "x": 800,
+      "y": 786,
+      "value": "Per brand & sub-brand",
+      "size": 18,
+      "weight": 600,
+      "fill": "#65635f",
+      "align": "middle"
+    },
+    {
+      "id": "hue-call-label",
+      "x": 1114,
+      "y": 532,
+      "value": "Call brand agents",
+      "size": 18,
+      "weight": 600,
+      "fill": "#65635f",
+      "align": "middle"
+    },
+    {
+      "id": "hue-return-label",
+      "x": 1114,
+      "y": 652,
+      "value": "Asset or playbook link",
+      "size": 18,
+      "weight": 600,
+      "fill": "#65635f",
+      "align": "middle"
+    },
+    {
+      "id": "hue-name",
+      "x": 1240,
+      "y": 565,
+      "value": "Hue",
+      "size": 32,
+      "weight": 700,
+      "fill": "#1b1b1b",
+      "align": "start"
+    },
+    {
+      "id": "hue-role",
+      "x": 1240,
+      "y": 599,
+      "value": "Creative OS orchestrator",
+      "size": 20,
+      "weight": 600,
+      "fill": "#65635f",
+      "align": "start"
+    },
+    {
+      "id": "other-agents",
+      "x": 1240,
+      "y": 742,
+      "value": "Other agents & tools",
+      "size": 27,
+      "weight": 700,
+      "fill": "#1b1b1b",
+      "align": "start"
+    },
+    {
+      "id": "shared-intelligence",
+      "x": 1240,
+      "y": 776,
+      "value": "The same brand intelligence",
+      "size": 19,
+      "weight": 600,
+      "fill": "#65635f",
+      "align": "start"
+    },
+    {
+      "id": "campaigns",
+      "x": 800,
+      "y": 918,
+      "value": "Campaigns & playbooks",
+      "size": 32,
+      "weight": 700,
+      "fill": "#1b1b1b",
+      "align": "middle"
+    },
+    {
+      "id": "production",
+      "x": 800,
+      "y": 955,
+      "value": "Bulk upload & creation · Edit · Export · Share",
+      "size": 23,
+      "weight": 600,
+      "fill": "#65635f",
+      "align": "middle"
+    },
+    {
+      "id": "access-anywhere",
+      "x": 800,
+      "y": 1008,
+      "value": "Access from anywhere: Lovable · Web · Slack · MCP · Your tools",
+      "size": 23,
+      "weight": 600,
+      "fill": "#1b1b1b",
+      "align": "middle"
+    },
+    {
+      "id": "project-status",
+      "x": 88,
+      "y": 1090,
+      "value": "Project status",
+      "size": 23,
+      "weight": 700,
+      "fill": "#1b1b1b",
+      "align": "start"
+    },
+    {
+      "id": "done-label",
+      "x": 120,
+      "y": 1142,
+      "value": "Achieved",
+      "size": 21,
+      "weight": 600,
+      "fill": "#65635f",
+      "align": "start"
+    },
+    {
+      "id": "done-title",
+      "x": 88,
+      "y": 1184,
+      "value": "Core primitives",
+      "size": 29,
+      "weight": 700,
+      "fill": "#1b1b1b",
+      "align": "start"
+    },
+    {
+      "id": "progress-label",
+      "x": 624,
+      "y": 1142,
+      "value": "In progress",
+      "size": 21,
+      "weight": 600,
+      "fill": "#65635f",
+      "align": "start"
+    },
+    {
+      "id": "progress-title",
+      "x": 592,
+      "y": 1184,
+      "value": "Agents & sub-agents",
+      "size": 29,
+      "weight": 700,
+      "fill": "#1b1b1b",
+      "align": "start"
+    },
+    {
+      "id": "next-label",
+      "x": 1128,
+      "y": 1142,
+      "value": "Next",
+      "size": 21,
+      "weight": 600,
+      "fill": "#65635f",
+      "align": "start"
+    },
+    {
+      "id": "next-permissions",
+      "x": 1096,
+      "y": 1184,
+      "value": "Roles & permissions",
+      "size": 29,
+      "weight": 700,
+      "fill": "#1b1b1b",
+      "align": "start"
+    },
+    {
+      "id": "next-integrations",
+      "x": 1096,
+      "y": 1220,
+      "value": "Connect all our tools",
+      "size": 23,
+      "weight": 600,
+      "fill": "#65635f",
+      "align": "start"
+    }
+  ]
+}

@@ -52,6 +52,14 @@
   ],
   "rewrites": [
     {
+      "source": "/developers",
+      "destination": "/developers.html"
+    },
+    {
+      "source": "/api/hub/v1/:path*",
+      "destination": "/api/hub?path=:path*"
+    },
+    {
       "source": "/1000-opportunities",
       "destination": "/demo/1000-opportunities/index.html"
     },
@@ -83,6 +91,10 @@
     "api/brand-review.mjs": {
       "maxDuration": 300,
       "includeFiles": "public/{brand/assets/*.svg,brand/previews/event-review.png,ambassadors/assets/heart-overlay.webp}"
+    },
+    "api/hub.mjs": {
+      "maxDuration": 60,
+      "includeFiles": "server/generated/**"
     }
   }
 }

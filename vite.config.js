@@ -1,4 +1,5 @@
 import { defineConfig,loadEnv } from 'vite';
+import {hubApiPlugin} from './server/hubApi.mjs';
 import {communityChatPlugin} from './server/communityChat.mjs';
 import {studioAnimationPlugin} from './server/studioAnimation.mjs';
 import {partnerLogoPlugin} from './server/partnerLogo.mjs';
@@ -13,7 +14,7 @@ export default defineConfig(({mode})=>{
  const demoEnabled=opportunitiesDemoEnabled({...loadEnv(mode,process.cwd(),['DEMO_']),...process.env});
  return {
   // These variables stay in Node; Vite only exposes VITE_-prefixed values to the page.
-  plugins: [webPageImportPlugin(),screenImportPlugin({env:loadEnv(mode,process.cwd(),['COMMUNITY_'])}),communityChatPlugin({env:loadEnv(mode,process.cwd(),['COMMUNITY_','OPENAI_','BLOB_'])}),studioAnimationPlugin({env:loadEnv(mode,process.cwd(),['COMMUNITY_','OPENAI_','BLOB_'])}),brandReviewPlugin({env:loadEnv(mode,process.cwd(),['BRAND_','COMMUNITY_','OPENAI_','BLOB_'])}),partnerLogoPlugin(),sharePagesPlugin(),demoPagesPlugin(demoEnabled)],
+  plugins: [hubApiPlugin({env:loadEnv(mode,process.cwd(),['HUB_','BLOB_'])}),webPageImportPlugin(),screenImportPlugin({env:loadEnv(mode,process.cwd(),['COMMUNITY_'])}),communityChatPlugin({env:loadEnv(mode,process.cwd(),['COMMUNITY_','OPENAI_','BLOB_'])}),studioAnimationPlugin({env:loadEnv(mode,process.cwd(),['COMMUNITY_','OPENAI_','BLOB_'])}),brandReviewPlugin({env:loadEnv(mode,process.cwd(),['BRAND_','COMMUNITY_','OPENAI_','BLOB_'])}),partnerLogoPlugin(),sharePagesPlugin(),demoPagesPlugin(demoEnabled)],
   optimizeDeps: { include: ['react', 'react-dom', 'react-dom/client', 'react-router-dom', 'mediabunny', 'html-to-image', 'fflate'] },
   resolve: {
     dedupe: ['react', 'react-dom'],
@@ -26,6 +27,7 @@ export default defineConfig(({mode})=>{
     rollupOptions: {
       input: {
         hub: fileURLToPath(new URL('./index.html', import.meta.url)),
+        developers: fileURLToPath(new URL('./developers.html', import.meta.url)),
         studio: fileURLToPath(new URL('./studio/index.html', import.meta.url)),
         ...(demoEnabled?{opportunities:fileURLToPath(new URL('./demo/1000-opportunities/index.html', import.meta.url))}:{}),
       },

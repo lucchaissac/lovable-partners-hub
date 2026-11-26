@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "build": "tsc --noEmit -p studio/tsconfig.json && vite build",
-    "preview": "vite preview --host 127.0.0.1"
+    "build": "node scripts/build-hub-document.mjs && tsc --noEmit -p studio/tsconfig.json && vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "hub:key": "node scripts/hub-key.mjs"
   },
   "devDependencies": {
     "@types/node": "^24.19.0",

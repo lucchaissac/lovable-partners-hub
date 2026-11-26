@@ -74,8 +74,8 @@ for weight in [600,700]:
   line('design-handoff', 'M418 608 L588 608');
   text('handoff-label', 503, 587, 'Publish', 18, { align: 'middle', fill: secondary });
 
-  raw('<rect id="brand-hub" x="608" y="452" width="384" height="384" rx="40" fill="#ffffff" filter="url(#hub-shadow)"/>');
-  await originalSvg('logomark-color', 'hub-heart', 782, 487, 36, 36.64);
+  raw('<rect id="brand-hub" x="608" y="452" width="384" height="384" rx="40" fill="#ffffff"/>');
+  await originalSvg('logomark-black', 'hub-heart', 782, 487, 36, 36.7);
   text('hub-name', 800, 579, 'Brand Hub', 40, { weight: 700, align: 'middle' });
   text('hub-purpose', 800, 622, 'Brand intelligence', 23, { align: 'middle' });
   text('hub-purpose-execution', 800, 652, '& creative execution', 23, { align: 'middle' });
@@ -83,10 +83,10 @@ for weight in [600,700]:
   text('hub-execution', 800, 740, 'Makers · Specialized agents', 19, { fill: secondary, align: 'middle' });
   text('hub-scope', 800, 786, 'Per brand & sub-brand', 18, { fill: secondary, align: 'middle' });
 
-  line('hue-calls-agents', 'M1216 553 L1012 553');
-  text('hue-call-label', 1114, 532, 'Call brand agents', 18, { align: 'middle', fill: secondary });
-  line('hue-receives-link', 'M1012 618 L1216 618');
-  text('hue-return-label', 1114, 652, 'Asset or playbook link', 18, { align: 'middle', fill: secondary });
+  line('hue-calls-agents', 'M1216 576 L1012 576');
+  text('hue-call-label', 1114, 555, 'Call brand agents', 18, { align: 'middle', fill: secondary });
+  line('hue-receives-link', 'M1012 596 L1216 596');
+  text('hue-return-label', 1114, 630, 'Asset or playbook link', 18, { align: 'middle', fill: secondary });
   text('hue-name', 1240, 565, 'Hue', 32, { weight: 700 });
   text('hue-role', 1240, 599, 'Creative OS orchestrator', 20, { fill: secondary });
 
@@ -130,7 +130,6 @@ for weight in [600,700]:
 <title id="title">A shared brand brain for our team and agents</title>
 <desc id="description">${escape(description)}</desc>
 <defs>
-  <filter id="hub-shadow" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="8" stdDeviation="14" flood-color="#1b1b1b" flood-opacity=".035"/></filter>
   <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M2 1 L8 5 L2 9" fill="none" stroke="${connector}" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/></marker>
 </defs>
 ${outlined ? '' : `<style>@font-face{font-family:'Camera Plain';src:url(data:font/woff2;base64,${fontData}) format('woff2');font-weight:100 900}text{font-family:'Camera Plain',sans-serif}</style>`}

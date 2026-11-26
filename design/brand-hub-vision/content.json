@@ -179,7 +179,7 @@
     {
       "id": "hue-call-label",
       "x": 1114,
-      "y": 532,
+      "y": 555,
       "value": "Call brand agents",
       "size": 18,
       "weight": 600,
@@ -189,7 +189,7 @@
     {
       "id": "hue-return-label",
       "x": 1114,
-      "y": 652,
+      "y": 630,
       "value": "Asset or playbook link",
       "size": 18,
       "weight": 600,

@@ -2,8 +2,10 @@
   "title": "A shared brand brain for our team and agents",
   "date": "2026-11-26",
   "intent": "Target vision and user-supplied project status",
-  "width": 1600,
-  "height": 1280,
+  "width": 1760,
+  "height": 1440,
+  "outerPadding": 80,
+  "diagramOffsetY": 32,
   "description": "Vision for the Lovable Brand Hub: designers publish from any creative tool to a central source of truth and brand execution layer. Lovable teams and external partners have direct access, with full design-team control and granular permissions for others. Hue is the Creative OS orchestrator: it calls specialized Brand Hub agents and receives a link to an individual asset or a multi-asset playbook. Other agents and tools use the same brand intelligence. The Hub hosts campaigns, playbooks, gallery, guidelines, assets, Makers and specialized agents per brand or sub-brand, with bulk upload and creation, direct editing, exports and sharing. Access is available through Lovable, Web, Slack, MCP and other tools. Project status supplied by Luc: core primitives achieved; agents and sub-agents in progress; roles, permissions and tool integrations next. The diagram describes the target vision, not a claim that planned integrations or permissions already ship.",
   "labels": [
     {
@@ -34,6 +36,16 @@
       "size": 26,
       "weight": 600,
       "fill": "#65635f",
+      "align": "middle"
+    },
+    {
+      "id": "access-anywhere",
+      "x": 800,
+      "y": 292,
+      "value": "Access from anywhere: Lovable · Web · Slack · MCP · Your tools",
+      "size": 23,
+      "weight": 600,
+      "fill": "#1b1b1b",
       "align": "middle"
     },
     {
@@ -179,7 +191,7 @@
     {
       "id": "hue-call-label",
       "x": 1114,
-      "y": 555,
+      "y": 561,
       "value": "Call brand agents",
       "size": 18,
       "weight": 600,
@@ -189,7 +201,7 @@
     {
       "id": "hue-return-label",
       "x": 1114,
-      "y": 630,
+      "y": 624,
       "value": "Asset or playbook link",
       "size": 18,
       "weight": 600,
@@ -254,16 +266,6 @@
       "size": 23,
       "weight": 600,
       "fill": "#65635f",
-      "align": "middle"
-    },
-    {
-      "id": "access-anywhere",
-      "x": 800,
-      "y": 1008,
-      "value": "Access from anywhere: Lovable · Web · Slack · MCP · Your tools",
-      "size": 23,
-      "weight": 600,
-      "fill": "#1b1b1b",
       "align": "middle"
     },
     {

@@ -12,12 +12,14 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '../..');
 const temp = await fs.mkdtemp(path.join(os.tmpdir(), 'brand-hub-vision-'));
 const fontSource = path.join(root, 'public/fonts/CameraPlainVariable.woff2');
-const width = 1600;
-const height = 1280;
+const width = 1760;
+const height = 1440;
+const outerPadding = 80;
+const diagramOffsetY = 32;
 const ink = '#1b1b1b';
 const background = '#f7f4ed';
 const secondary = '#65635f';
-const connector = '#a7a49e';
+const connector = ink;
 const escape = value => String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
 
 try {
@@ -58,10 +60,13 @@ for weight in [600,700]:
   };
 
   raw(`<rect width="${width}" height="${height}" fill="${background}"/>`);
+  raw(`<g id="composition" transform="translate(${outerPadding} ${outerPadding})">`);
   text('headline-1', 800, 126, 'A shared brand brain', 66, { weight: 700, align: 'middle' });
   text('headline-2', 800, 196, 'for our team and agents.', 66, { weight: 700, align: 'middle' });
   text('ambition', 800, 250, 'One source of truth. A brand factory at scale.', 26, { fill: secondary, align: 'middle' });
+  text('access-anywhere', 800, 292, 'Access from anywhere: Lovable · Web · Slack · MCP · Your tools', 23, { align: 'middle' });
 
+  raw(`<g id="diagram" transform="translate(0 ${diagramOffsetY})">`);
   text('people', 800, 342, 'Lovable teams & external partners', 28, { align: 'middle', weight: 700 });
   text('permissions', 800, 380, 'Design team: full control · Others: granular permissions', 21, { align: 'middle', fill: secondary });
   line('direct-access', 'M800 407 L800 432', { start: true });
@@ -83,10 +88,10 @@ for weight in [600,700]:
   text('hub-execution', 800, 740, 'Makers · Specialized agents', 19, { fill: secondary, align: 'middle' });
   text('hub-scope', 800, 786, 'Per brand & sub-brand', 18, { fill: secondary, align: 'middle' });
 
-  line('hue-calls-agents', 'M1216 576 L1012 576');
-  text('hue-call-label', 1114, 555, 'Call brand agents', 18, { align: 'middle', fill: secondary });
-  line('hue-receives-link', 'M1012 596 L1216 596');
-  text('hue-return-label', 1114, 630, 'Asset or playbook link', 18, { align: 'middle', fill: secondary });
+  line('hue-calls-agents', 'M1216 582 L1012 582');
+  text('hue-call-label', 1114, 561, 'Call brand agents', 18, { align: 'middle', fill: secondary });
+  line('hue-receives-link', 'M1012 590 L1216 590');
+  text('hue-return-label', 1114, 624, 'Asset or playbook link', 18, { align: 'middle', fill: secondary });
   text('hue-name', 1240, 565, 'Hue', 32, { weight: 700 });
   text('hue-role', 1240, 599, 'Creative OS orchestrator', 20, { fill: secondary });
 
@@ -97,7 +102,7 @@ for weight in [600,700]:
   line('campaign-output', 'M800 852 L800 876');
   text('campaigns', 800, 918, 'Campaigns & playbooks', 32, { weight: 700, align: 'middle' });
   text('production', 800, 955, 'Bulk upload & creation · Edit · Export · Share', 23, { fill: secondary, align: 'middle' });
-  text('access-anywhere', 800, 1008, 'Access from anywhere: Lovable · Web · Slack · MCP · Your tools', 23, { align: 'middle' });
+  raw('</g>');
 
   raw(`<line x1="88" y1="1046" x2="1512" y2="1046" stroke="${ink}" stroke-opacity=".16"/>`);
   text('project-status', 88, 1090, 'Project status', 23, { weight: 700 });
@@ -113,6 +118,7 @@ for weight in [600,700]:
   text('next-label', 1128, 1142, 'Next', 21, { fill: secondary });
   text('next-permissions', 1096, 1184, 'Roles & permissions', 29, { weight: 700 });
   text('next-integrations', 1096, 1220, 'Connect all our tools', 23, { fill: secondary });
+  raw('</g>');
 
   const description = 'Vision for the Lovable Brand Hub: designers publish from any creative tool to a central source of truth and brand execution layer. Lovable teams and external partners have direct access, with full design-team control and granular permissions for others. Hue is the Creative OS orchestrator: it calls specialized Brand Hub agents and receives a link to an individual asset or a multi-asset playbook. Other agents and tools use the same brand intelligence. The Hub hosts campaigns, playbooks, gallery, guidelines, assets, Makers and specialized agents per brand or sub-brand, with bulk upload and creation, direct editing, exports and sharing. Access is available through Lovable, Web, Slack, MCP and other tools. Project status supplied by Luc: core primitives achieved; agents and sub-agents in progress; roles, permissions and tool integrations next. The diagram describes the target vision, not a claim that planned integrations or permissions already ship.';
   const makeSvg = outlined => {
@@ -138,16 +144,38 @@ ${content}
   };
   const editable = makeSvg(false);
   const outlined = makeSvg(true);
+  const html = `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="The Brand Hub vision: a shared brand brain for our team and agents.">
+  <title>Brand Hub — A shared brand brain</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: ${background}; }
+    main { max-width: ${width}px; margin-inline: auto; }
+    main > svg { display: block; width: 100%; height: auto; }
+  </style>
+</head>
+<body>
+  <main aria-label="Brand Hub vision and project status">
+${editable}
+  </main>
+</body>
+</html>
+`;
   await fs.writeFile(path.join(here, 'brand-hub-vision.editable.svg'), editable);
   await fs.writeFile(path.join(here, 'brand-hub-vision.svg'), outlined);
-  await fs.writeFile(path.join(here, 'content.json'), `${JSON.stringify({ title: 'A shared brand brain for our team and agents', date: '2026-11-26', intent: 'Target vision and user-supplied project status', width, height, description, labels }, null, 2)}\n`);
+  await fs.writeFile(path.join(here, 'brand-hub-vision.html'), html);
+  await fs.writeFile(path.join(here, 'content.json'), `${JSON.stringify({ title: 'A shared brand brain for our team and agents', date: '2026-11-26', intent: 'Target vision and user-supplied project status', width, height, outerPadding, diagramOffsetY, description, labels }, null, 2)}\n`);
 
   const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', headless: true });
   try {
     const page = await browser.newPage({ viewport: { width, height }, deviceScaleFactor: 2 });
     await page.setContent(`<html><head><meta charset="utf-8"/></head><body style="margin:0">${outlined}</body></html>`);
     await page.screenshot({ path: path.join(here, 'brand-hub-vision.png') });
-    await page.setContent(`<html><head><meta charset="utf-8"/></head><body style="margin:0">${editable}</body></html>`);
+    await page.goto(new URL('brand-hub-vision.html', import.meta.url).href);
     await page.evaluate(() => document.fonts.ready);
     const violations = await page.evaluate(() => [...document.querySelectorAll('text')].flatMap(node => {
       const box = node.getBBox();
@@ -158,7 +186,12 @@ ${content}
       return errors;
     }));
     if (violations.length) throw new Error(violations.join('\n'));
-    console.log(`Created 3200 × 2560 PNG and two self-contained SVGs. Checked ${labels.length} text labels.`);
+    for (const viewportWidth of [1440, 680, 390]) {
+      await page.setViewportSize({ width: viewportWidth, height: 1000 });
+      const fits = await page.evaluate(() => document.documentElement.scrollWidth === window.innerWidth);
+      if (!fits) throw new Error(`HTML overflows at ${viewportWidth}px`);
+    }
+    console.log(`Created ${width * 2} × ${height * 2} PNG, two self-contained SVGs and standalone HTML. Checked ${labels.length} text labels and HTML at three viewport widths.`);
   } finally {
     await browser.close();
   }
